@@ -67,7 +67,7 @@ export default function ProfileSetup() {
     onSuccess: () => {
       toast({
         title: "Profile Created!",
-        description: "Welcome to Halal Hearts. Start discovering matches!",
+        description: "Welcome to Halalmatch. Start discovering matches!",
       });
       setLocation("/");
     },

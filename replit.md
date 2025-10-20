@@ -1,8 +1,8 @@
-# Halal Hearts - Muslim Dating & Marriage Platform
+# Halalmatch - Muslim Dating & Marriage Platform
 
 ## Overview
 
-Halal Hearts is a Muslim dating and marriage platform designed to help Muslim singles find meaningful connections in a halal, respectful way. The application emphasizes Islamic values, privacy, and safety while providing modern dating app features like profile discovery, matching, messaging, and chaperone support for traditional courtship.
+Halalmatch is a Muslim dating and marriage platform designed to help Muslim singles find meaningful connections in a halal, respectful way. The application emphasizes Islamic values, privacy, and safety while providing modern dating app features like profile discovery, matching, messaging, and chaperone support for traditional courtship.
 
 The platform is built as a full-stack TypeScript application with a React frontend and Express backend, using PostgreSQL for data persistence and Replit Auth for authentication.
 

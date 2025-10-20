@@ -52,7 +52,7 @@ export default function Landing() {
           <div className="flex items-center gap-2">
             <Heart className="h-7 w-7 text-primary fill-primary" />
             <span className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Halal Hearts
+              Halalmatch
             </span>
           </div>
           <Button asChild data-testid="button-login">
@@ -219,10 +219,10 @@ export default function Landing() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <Heart className="h-6 w-6 text-primary fill-primary" />
-              <span className="font-semibold">Halal Hearts</span>
+              <span className="font-semibold">Halalmatch</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              © 2025 Halal Hearts. All rights reserved.
+              © 2025 Halalmatch. All rights reserved.
             </p>
           </div>
         </div>
