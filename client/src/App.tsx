@@ -59,15 +59,23 @@ function Router() {
   );
 }
 
-function App() {
+function AppContent() {
   const { isAuthenticated } = useAuth();
 
+  return (
+    <>
+      <Router />
+      {isAuthenticated && <BottomNav />}
+    </>
+  );
+}
+
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        <Router />
-        {isAuthenticated && <BottomNav />}
+        <AppContent />
       </TooltipProvider>
     </QueryClientProvider>
   );
