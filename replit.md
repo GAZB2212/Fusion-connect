@@ -19,6 +19,8 @@ Preferred communication style: Simple, everyday language.
   - Session storage via PostgreSQL with connect-pg-simple
   - Created custom Login and Signup pages with forms
   - Updated all API routes to use `req.user.id` instead of OAuth claims
+  - Added logout functionality with session destruction
+  - Logout button in profile setup header redirects to landing page
 
 ### Luxury Brand Redesign
 - **Implemented premium luxury aesthetic**
