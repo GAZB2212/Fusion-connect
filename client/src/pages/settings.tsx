@@ -1,0 +1,302 @@
+import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { Shield, Eye, EyeOff, UserPlus, LogOut } from "lucide-react";
+import type { Profile, Chaperone } from "@shared/schema";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+export default function Settings() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [chaperoneName, setChaperoneName] = useState("");
+  const [chaperoneEmail, setChaperoneEmail] = useState("");
+  const [relationshipType, setRelationshipType] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Fetch user profile
+  const { data: profile } = useQuery<Profile>({
+    queryKey: ["/api/profile"],
+  });
+
+  // Fetch chaperones
+  const { data: chaperones = [] } = useQuery<Chaperone[]>({
+    queryKey: ["/api/chaperones"],
+  });
+
+  // Update privacy settings
+  const updatePrivacyMutation = useMutation({
+    mutationFn: async (settings: Partial<Profile>) => {
+      return apiRequest("PATCH", "/api/profile", settings);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Settings Updated",
+        description: "Your privacy settings have been saved.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Add chaperone
+  const addChaperoneMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/chaperones", {
+        chaperoneName,
+        chaperoneEmail,
+        relationshipType,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Chaperone Added",
+        description: "Your chaperone has been added successfully.",
+      });
+      setChaperoneName("");
+      setChaperoneEmail("");
+      setRelationshipType("");
+      setDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/chaperones"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Remove chaperone
+  const removeChaperoneMutation = useMutation({
+    mutationFn: async (chaperoneId: string) => {
+      return apiRequest("DELETE", `/api/chaperones/${chaperoneId}`, {});
+    },
+    onSuccess: () => {
+      toast({
+        title: "Chaperone Removed",
+        description: "Your chaperone has been removed.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/chaperones"] });
+    },
+  });
+
+  if (!profile) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-background pb-20">
+      <div className="container max-w-2xl mx-auto py-8 px-4">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Settings</h1>
+          <p className="text-muted-foreground">
+            Manage your privacy and account preferences
+          </p>
+        </div>
+
+        {/* Privacy Settings */}
+        <Card className="p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+            <Eye className="h-5 w-5" />
+            Privacy Settings
+          </h2>
+
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Photo Visibility</Label>
+                <p className="text-sm text-muted-foreground">
+                  Blur your photos until you match
+                </p>
+              </div>
+              <Switch
+                checked={profile.photoVisibility === 'blurred'}
+                onCheckedChange={(checked) => {
+                  updatePrivacyMutation.mutate({
+                    photoVisibility: checked ? 'blurred' : 'visible',
+                  });
+                }}
+                data-testid="switch-blur-photos"
+              />
+            </div>
+
+            <Separator />
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Use Nickname</Label>
+                <p className="text-sm text-muted-foreground">
+                  Show only your first name to others
+                </p>
+              </div>
+              <Switch
+                checked={profile.useNickname}
+                onCheckedChange={(checked) => {
+                  updatePrivacyMutation.mutate({
+                    useNickname: checked,
+                  });
+                }}
+                data-testid="switch-nickname"
+              />
+            </div>
+
+            <Separator />
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Profile Visibility</Label>
+                <p className="text-sm text-muted-foreground">
+                  Hide your profile from others
+                </p>
+              </div>
+              <Switch
+                checked={!profile.isActive}
+                onCheckedChange={(checked) => {
+                  updatePrivacyMutation.mutate({
+                    isActive: !checked,
+                  });
+                }}
+                data-testid="switch-hide-profile"
+              />
+            </div>
+          </div>
+        </Card>
+
+        {/* Chaperone Settings */}
+        <Card className="p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Chaperone (Wali)
+            </h2>
+
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" data-testid="button-add-chaperone">
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Add Chaperone
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add Chaperone</DialogTitle>
+                  <DialogDescription>
+                    Add a family member or guardian to view your conversations
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 pt-4">
+                  <div>
+                    <Label>Name</Label>
+                    <Input
+                      value={chaperoneName}
+                      onChange={(e) => setChaperoneName(e.target.value)}
+                      placeholder="Chaperone's name"
+                      data-testid="input-chaperone-name"
+                    />
+                  </div>
+                  <div>
+                    <Label>Email</Label>
+                    <Input
+                      type="email"
+                      value={chaperoneEmail}
+                      onChange={(e) => setChaperoneEmail(e.target.value)}
+                      placeholder="chaperone@example.com"
+                      data-testid="input-chaperone-email"
+                    />
+                  </div>
+                  <div>
+                    <Label>Relationship</Label>
+                    <Input
+                      value={relationshipType}
+                      onChange={(e) => setRelationshipType(e.target.value)}
+                      placeholder="e.g., Father, Mother, Guardian"
+                      data-testid="input-relationship"
+                    />
+                  </div>
+                  <Button
+                    onClick={() => addChaperoneMutation.mutate()}
+                    disabled={!chaperoneName || !chaperoneEmail || addChaperoneMutation.isPending}
+                    className="w-full"
+                    data-testid="button-submit-chaperone"
+                  >
+                    Add Chaperone
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+          {chaperones.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No chaperones added. Add a chaperone to involve family in your conversations.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {chaperones.map((chaperone) => (
+                <div
+                  key={chaperone.id}
+                  className="flex items-center justify-between p-4 rounded-lg border"
+                  data-testid={`chaperone-${chaperone.id}`}
+                >
+                  <div>
+                    <p className="font-medium">{chaperone.chaperoneName}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {chaperone.chaperoneEmail}
+                      {chaperone.relationshipType && ` • ${chaperone.relationshipType}`}
+                    </p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeChaperoneMutation.mutate(chaperone.id)}
+                    data-testid={`button-remove-${chaperone.id}`}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+
+        {/* Account */}
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Account</h2>
+          <Button
+            variant="outline"
+            className="w-full"
+            asChild
+            data-testid="button-logout"
+          >
+            <a href="/api/logout">
+              <LogOut className="h-4 w-4 mr-2" />
+              Log Out
+            </a>
+          </Button>
+        </Card>
+      </div>
+    </div>
+  );
+}
