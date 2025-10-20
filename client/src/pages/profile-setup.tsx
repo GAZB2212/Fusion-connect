@@ -25,7 +25,7 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { insertProfileSchema, type InsertProfile } from "@shared/schema";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, CheckCircle2, LogOut } from "lucide-react";
 
@@ -84,7 +84,10 @@ export default function ProfileSetup() {
     mutationFn: async () => {
       return apiRequest("POST", "/api/logout", {});
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
+      queryClient.clear();
       setLocation("/");
     },
     onError: (error) => {
@@ -431,7 +434,7 @@ export default function ProfileSetup() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Marital Status</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value ?? undefined}>
                           <FormControl>
                             <SelectTrigger data-testid="select-marital">
                               <SelectValue placeholder="Select status" />
@@ -455,7 +458,7 @@ export default function ProfileSetup() {
                       <FormItem>
                         <FormLabel>Education (Optional)</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="e.g., Bachelor's in Computer Science" data-testid="input-education" />
+                          <Input {...field} value={field.value ?? ""} placeholder="e.g., Bachelor's in Computer Science" data-testid="input-education" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -469,7 +472,7 @@ export default function ProfileSetup() {
                       <FormItem>
                         <FormLabel>Occupation (Optional)</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="e.g., Software Engineer" data-testid="input-occupation" />
+                          <Input {...field} value={field.value ?? ""} placeholder="e.g., Software Engineer" data-testid="input-occupation" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
