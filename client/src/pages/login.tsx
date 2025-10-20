@@ -3,8 +3,8 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import logoImage from "@assets/ChatGPT Image Oct 20, 2025 at 10_42_27 PM_1760996558103.png";
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -35,7 +35,6 @@ export default function Login() {
         description: "You've successfully logged in.",
       });
 
-      // Redirect to home
       window.location.href = "/";
     } catch (error: any) {
       toast({
@@ -49,24 +48,21 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#0A0E17] flex items-center justify-center px-4 islamic-pattern">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Heart className="h-10 w-10 text-primary fill-primary" />
-            <span className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Halalmatch
-            </span>
+        <div className="text-center mb-10">
+          <div className="flex items-center justify-center mb-6">
+            <img src={logoImage} alt="HalalMatch Logo" className="h-24 w-auto" />
           </div>
-          <h1 className="text-2xl font-bold mb-2">Welcome Back</h1>
-          <p className="text-muted-foreground">Sign in to continue your journey</p>
+          <h1 className="text-3xl font-bold mb-3 text-[#F8F4E3] font-serif">Welcome Back</h1>
+          <p className="text-[#F8F4E3]/70">Sign in to continue your journey</p>
         </div>
 
-        <Card className="p-8">
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <Card className="p-8 bg-[#0E1220] border-[#F8F4E3]/20">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="email" className="text-sm font-medium mb-2 block">
+              <label htmlFor="email" className="text-sm font-medium mb-2 block text-[#F8F4E3]">
                 Email
               </label>
               <Input
@@ -77,11 +73,12 @@ export default function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 data-testid="input-email"
+                className="bg-[#0A0E17]/50 border-[#F8F4E3]/20 text-[#F8F4E3] placeholder:text-[#F8F4E3]/40 focus:border-primary"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="text-sm font-medium mb-2 block">
+              <label htmlFor="password" className="text-sm font-medium mb-2 block text-[#F8F4E3]">
                 Password
               </label>
               <Input
@@ -92,12 +89,13 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 data-testid="input-password"
+                className="bg-[#0A0E17]/50 border-[#F8F4E3]/20 text-[#F8F4E3] placeholder:text-[#F8F4E3]/40 focus:border-primary"
               />
             </div>
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full shadow-lg shadow-primary/20"
               disabled={isLoading}
               data-testid="button-login"
             >
@@ -105,12 +103,12 @@ export default function Login() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground">
+          <div className="mt-8 text-center">
+            <p className="text-sm text-[#F8F4E3]/70">
               Don't have an account?{" "}
               <button
                 onClick={() => setLocation("/signup")}
-                className="text-primary font-medium hover:underline"
+                className="text-primary font-semibold hover:underline"
                 data-testid="link-signup"
               >
                 Sign Up

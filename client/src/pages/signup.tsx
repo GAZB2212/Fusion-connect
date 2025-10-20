@@ -3,8 +3,8 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import logoImage from "@assets/ChatGPT Image Oct 20, 2025 at 10_42_27 PM_1760996558103.png";
 
 export default function Signup() {
   const [, setLocation] = useLocation();
@@ -60,11 +60,10 @@ export default function Signup() {
       }
 
       toast({
-        title: "Welcome to Halalmatch!",
+        title: "Welcome to HalalMatch!",
         description: "Your account has been created successfully.",
       });
 
-      // Redirect to home
       window.location.href = "/";
     } catch (error: any) {
       toast({
@@ -78,25 +77,22 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-[#0A0E17] flex items-center justify-center px-4 py-12 islamic-pattern">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Heart className="h-10 w-10 text-primary fill-primary" />
-            <span className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-              Halalmatch
-            </span>
+        <div className="text-center mb-10">
+          <div className="flex items-center justify-center mb-6">
+            <img src={logoImage} alt="HalalMatch Logo" className="h-24 w-auto" />
           </div>
-          <h1 className="text-2xl font-bold mb-2">Create Your Account</h1>
-          <p className="text-muted-foreground">Join thousands finding meaningful connections</p>
+          <h1 className="text-3xl font-bold mb-3 text-[#F8F4E3] font-serif">Create Your Account</h1>
+          <p className="text-[#F8F4E3]/70">Join thousands finding meaningful connections</p>
         </div>
 
-        <Card className="p-8">
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <Card className="p-8 bg-[#0E1220] border-[#F8F4E3]/20">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="firstName" className="text-sm font-medium mb-2 block">
+                <label htmlFor="firstName" className="text-sm font-medium mb-2 block text-[#F8F4E3]">
                   First Name
                 </label>
                 <Input
@@ -107,10 +103,11 @@ export default function Signup() {
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                   required
                   data-testid="input-firstname"
+                  className="bg-[#0A0E17]/50 border-[#F8F4E3]/20 text-[#F8F4E3] placeholder:text-[#F8F4E3]/40 focus:border-primary"
                 />
               </div>
               <div>
-                <label htmlFor="lastName" className="text-sm font-medium mb-2 block">
+                <label htmlFor="lastName" className="text-sm font-medium mb-2 block text-[#F8F4E3]">
                   Last Name
                 </label>
                 <Input
@@ -120,12 +117,13 @@ export default function Signup() {
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                   data-testid="input-lastname"
+                  className="bg-[#0A0E17]/50 border-[#F8F4E3]/20 text-[#F8F4E3] placeholder:text-[#F8F4E3]/40 focus:border-primary"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="email" className="text-sm font-medium mb-2 block">
+              <label htmlFor="email" className="text-sm font-medium mb-2 block text-[#F8F4E3]">
                 Email
               </label>
               <Input
@@ -136,11 +134,12 @@ export default function Signup() {
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
                 data-testid="input-email"
+                className="bg-[#0A0E17]/50 border-[#F8F4E3]/20 text-[#F8F4E3] placeholder:text-[#F8F4E3]/40 focus:border-primary"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="text-sm font-medium mb-2 block">
+              <label htmlFor="password" className="text-sm font-medium mb-2 block text-[#F8F4E3]">
                 Password
               </label>
               <Input
@@ -151,11 +150,12 @@ export default function Signup() {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
                 data-testid="input-password"
+                className="bg-[#0A0E17]/50 border-[#F8F4E3]/20 text-[#F8F4E3] placeholder:text-[#F8F4E3]/40 focus:border-primary"
               />
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="text-sm font-medium mb-2 block">
+              <label htmlFor="confirmPassword" className="text-sm font-medium mb-2 block text-[#F8F4E3]">
                 Confirm Password
               </label>
               <Input
@@ -166,12 +166,13 @@ export default function Signup() {
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 required
                 data-testid="input-confirm-password"
+                className="bg-[#0A0E17]/50 border-[#F8F4E3]/20 text-[#F8F4E3] placeholder:text-[#F8F4E3]/40 focus:border-primary"
               />
             </div>
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full shadow-lg shadow-primary/20"
               disabled={isLoading}
               data-testid="button-signup"
             >
@@ -179,12 +180,12 @@ export default function Signup() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground">
+          <div className="mt-8 text-center">
+            <p className="text-sm text-[#F8F4E3]/70">
               Already have an account?{" "}
               <button
                 onClick={() => setLocation("/login")}
-                className="text-primary font-medium hover:underline"
+                className="text-primary font-semibold hover:underline"
                 data-testid="link-login"
               >
                 Sign In
@@ -193,7 +194,7 @@ export default function Signup() {
           </div>
         </Card>
 
-        <p className="text-center text-xs text-muted-foreground mt-6">
+        <p className="text-center text-xs text-[#F8F4E3]/50 mt-6">
           By signing up, you agree to our Terms of Service and Privacy Policy
         </p>
       </div>
