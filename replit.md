@@ -1,14 +1,46 @@
-# Halalmatch - Muslim Dating & Marriage Platform
+# HalalMatch - Luxury Muslim Matchmaking Platform
 
 ## Overview
 
-Halalmatch is a Muslim dating and marriage platform designed to help Muslim singles find meaningful connections in a halal, respectful way. The application emphasizes Islamic values, privacy, and safety while providing modern dating app features like profile discovery, matching, messaging, and chaperone support for traditional courtship.
+HalalMatch is a premium Muslim matchmaking platform designed to help Muslim singles find meaningful connections in a halal, respectful way. The application emphasizes Islamic values, privacy, and safety while providing modern dating app features like profile discovery, matching, messaging, and chaperone support for traditional courtship.
 
-The platform is built as a full-stack TypeScript application with a React frontend and Express backend, using PostgreSQL for data persistence and Replit Auth for authentication.
+The platform is built as a full-stack TypeScript application with a React frontend and Express backend, using PostgreSQL for data persistence and custom email/password authentication via Passport Local Strategy.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+## Recent Changes (October 2025)
+
+### Authentication System Overhaul
+- **Replaced Replit OAuth with custom email/password authentication**
+  - Implemented Passport Local Strategy for native login experience
+  - Added bcrypt for secure password hashing
+  - Session storage via PostgreSQL with connect-pg-simple
+  - Created custom Login and Signup pages with forms
+  - Updated all API routes to use `req.user.id` instead of OAuth claims
+
+### Luxury Brand Redesign
+- **Implemented premium luxury aesthetic**
+  - Primary: Deep Navy (#0A0E17) - sophisticated background matching logo
+  - Accent: Gold (#D4AF37) - used sparingly for buttons, icons, premium features
+  - Secondary: Emerald Green (#0F5132) - success states, verified badges
+  - Neutral: Ivory (#F8F4E3) - text on dark backgrounds, elegant contrast
+  - Highlights: Rose Gold (#B76E79), Maroon (#7B1E26)
+
+- **Design Elements**
+  - New logo: Golden crescent moon with heart symbol on navy background
+  - Islamic geometric patterns as subtle background textures (low opacity)
+  - Gold accents used sparingly to maintain premium feel
+  - Deep navy backgrounds throughout for luxury aesthetic
+  - Ivory text for high contrast readability
+  - Playfair Display serif font for headers (elegance)
+  - Inter sans-serif for body text (readability)
+
+- **Updated Pages**
+  - Landing page: Premium hero section with logo, luxury styling
+  - Login/Signup: Navy cards with gold accents, ivory text
+  - All forms: Dark mode optimized with luxury palette
 
 ## System Architecture
 
