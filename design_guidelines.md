@@ -1,189 +1,311 @@
-# Design Guidelines: Muslim Dating & Marriage Platform
+# Design Guidelines: HalalMatch - Luxury Muslim Matchmaking Platform
 
-## Design Approach
+## Design Philosophy
 
-**Reference-Based Approach**: Drawing inspiration from Hinge's thoughtful profile design, Bumble's clean modern interface, and LinkedIn's professional trustworthiness, adapted specifically for Muslim users seeking halal relationships. The design must balance contemporary dating app aesthetics with cultural sensitivity and faith-based values.
+**Premium Luxury Aesthetic**: HalalMatch is positioned as a sophisticated, marriage-focused platform for Muslim singles. The design emphasizes trust, elegance, and Islamic heritage through a carefully curated luxury palette and refined visual language.
 
 **Core Principles**:
-- **Trust & Safety First**: Every design decision reinforces security, privacy, and Islamic values
-- **Modern Professionalism**: Contemporary interface that feels credible and serious about marriage
-- **Cultural Sensitivity**: Respectful imagery, modest aesthetics, faith-forward features
-- **Clarity Over Cleverness**: Direct, honest communication in all UI elements
+- **Luxury & Sophistication**: Premium feel that communicates quality and seriousness about marriage
+- **Islamic Elegance**: Rooted in Islamic values with subtle cultural references
+- **Trust & Safety**: Visual design reinforces credibility and privacy
+- **Modern Refinement**: Contemporary interface that feels timeless and elegant
 
 ---
 
-## Color Palette
+## Luxury Color Palette
 
-**Primary Colors** (Dark Mode):
-- **Emerald Green**: 160 45% 45% - Primary brand color, symbolizing growth, peace, and Islamic tradition
-- **Deep Emerald**: 160 50% 25% - Darker variant for depth and hierarchy
+**Primary Color - Deep Navy**:
+- **Main**: #0A0E17 (HSL: 219 39% 6%) - Deep, sophisticated navy background
+- **Use**: Primary backgrounds, headers, premium sections
+- **Symbolism**: Trust, depth, sophistication, night sky
 
-**Primary Colors** (Light Mode):
-- **Emerald Green**: 160 60% 40% - Vibrant yet professional
-- **Light Emerald**: 160 40% 95% - Subtle backgrounds and highlights
+**Accent Color - Gold**:
+- **Main**: #D4AF37 (HSL: 45 62% 53%) - Luxurious gold
+- **Use**: Buttons, icons, dividers, premium features (USE SPARINGLY)
+- **Symbolism**: Luxury, value, Islamic tradition (golden domes, calligraphy)
 
-**Neutral Palette** (Dark Mode):
-- **Background**: 220 15% 8% - Deep neutral background
-- **Surface**: 220 12% 12% - Card and component backgrounds
-- **Surface Elevated**: 220 10% 16% - Elevated components, modals
-- **Border**: 220 10% 20% - Subtle borders and dividers
-- **Text Primary**: 0 0% 95% - High contrast text
-- **Text Secondary**: 0 0% 70% - Supporting text
+**Secondary Color - Emerald Green**:
+- **Muted**: #0F5132 (HSL: 151 70% 19%) - Deep emerald
+- **Use**: Success states, verified badges, secondary CTAs
+- **Symbolism**: Growth, peace, Islamic significance
 
-**Neutral Palette** (Light Mode):
-- **Background**: 0 0% 98% - Clean, soft white
-- **Surface**: 0 0% 100% - Pure white for cards
-- **Border**: 220 10% 88% - Gentle borders
-- **Text Primary**: 220 15% 15% - Deep readable text
-- **Text Secondary**: 220 10% 45% - Supporting text
+**Neutral Color - Ivory**:
+- **Main**: #F8F4E3 (HSL: 45 38% 94%) - Warm ivory/cream
+- **Use**: Text on dark backgrounds, light surfaces, elegant contrast
+- **Symbolism**: Purity, warmth, traditional Islamic architecture
 
-**Accent Colors**:
-- **Success/Verified**: 150 60% 45% - For verified profiles, matches
-- **Warning/Alert**: 25 85% 55% - Gentle orange for important notices
-- **Error**: 0 70% 50% - For critical alerts only
+**Highlight Colors**:
+- **Rose Gold**: #B76E79 (HSL: 348 32% 58%) - Soft, romantic accent
+- **Maroon**: #7B1E26 (HSL: 355 68% 30%) - Deep, rich accent
+- **Use**: Special features, romantic moments, premium indicators
+
+---
+
+## Design Principles
+
+### Gold Usage - The Premium Touch
+**CRITICAL**: Gold must be used sparingly to maintain its premium feel. Overuse diminishes luxury.
+
+**Appropriate Gold Uses**:
+- Primary CTA buttons (one per screen maximum)
+- Premium feature badges
+- Verification checkmarks
+- Decorative dividers (subtle, thin lines)
+- Icon accents (hearts, stars, key features)
+- Logo elements
+
+**Never Use Gold For**:
+- Large background areas
+- Body text
+- Multiple buttons on the same screen
+- Borders on cards (use subtle ivory/navy variants)
+
+### Deep Backgrounds for Elegance
+- Primary sections use deep navy (#0A0E17)
+- Gold and ivory text/elements stand out beautifully against navy
+- Create visual hierarchy through subtle navy variants
+- Use ivory for high-contrast readability
+
+### Islamic Geometric Patterns
+- Include subtle geometric patterns as background textures
+- Very low opacity (5-10%) watermark effect
+- Traditional Islamic star/tile patterns
+- Never distract from content
 
 ---
 
 ## Typography
 
 **Font Families**:
-- **Primary**: 'Inter' from Google Fonts - Clean, modern, excellent readability
-- **Display**: 'Playfair Display' from Google Fonts - Elegant serif for marketing sections only
-- **Arabic Support**: 'Noto Sans Arabic' for Arabic text and names
+- **Primary**: 'Inter' - Clean, modern, premium readability
+- **Display/Headers**: 'Playfair Display' - Elegant serif for premium feel
+- **Arabic**: 'Noto Sans Arabic' - For Arabic text support
 
-**Type Scale**:
-- **Hero Display**: text-6xl (3.75rem) font-bold - Landing page headlines only
-- **Page Titles**: text-4xl (2.25rem) font-bold - Main section headers
-- **Section Headers**: text-2xl (1.5rem) font-semibold - Card titles, subsections
-- **Body Large**: text-lg (1.125rem) font-normal - Profile descriptions, important text
-- **Body**: text-base (1rem) font-normal - Standard text, messages
-- **Body Small**: text-sm (0.875rem) font-normal - Labels, metadata
-- **Caption**: text-xs (0.75rem) font-normal - Timestamps, helper text
+**Hierarchy**:
+- **Hero**: 4xl-6xl, bold, Playfair Display - Landing headlines
+- **Section Titles**: 2xl-3xl, semibold, Playfair Display
+- **Body Large**: lg, normal, Inter - Profiles, descriptions
+- **Body**: base, normal, Inter - Standard text
+- **Captions**: sm-xs, normal, Inter - Metadata, timestamps
 
----
-
-## Layout System
-
-**Spacing Primitives**: Use Tailwind units of **2, 4, 6, 8, 12, 16** consistently
-- Micro spacing: p-2, gap-2 (8px)
-- Standard spacing: p-4, gap-4 (16px)
-- Section spacing: p-8, gap-8 (32px)
-- Large sections: p-16 (64px) for desktop landing pages
-
-**Grid Layouts**:
-- **Profile Cards**: grid-cols-2 md:grid-cols-3 lg:grid-cols-4 with gap-4
-- **Feature Sections**: max-w-6xl mx-auto for content containment
-- **Forms**: max-w-md mx-auto for focused input experiences
-
-**Responsive Breakpoints**: Follow Tailwind defaults (sm: 640px, md: 768px, lg: 1024px, xl: 1280px)
+**Colors**:
+- On navy backgrounds: Ivory (#F8F4E3) for primary, muted ivory for secondary
+- On light backgrounds: Navy (#0A0E17) for primary, muted navy for secondary
+- Gold for accents and CTAs ONLY
 
 ---
 
-## Component Library
-
-### Navigation
-- **Top Navigation Bar**: Sticky header with logo left, profile/settings right, emerald accent on active items
-- **Tab Navigation**: Underlined tabs with emerald indicator for active state, used for Discover/Matches/Messages/Profile sections
-- **Bottom Navigation** (Mobile): Fixed bottom nav with icons and labels for primary actions
-
-### Cards & Profiles
-- **Profile Cards**: Rounded corners (rounded-xl), subtle shadow (shadow-md), image top, content below with padding-4
-- **Match Cards**: Larger format with prominent photo, name, age, location, brief bio preview
-- **Message Previews**: Avatar left, name/last message stacked right, timestamp top-right, unread indicator (emerald dot)
-
-### Forms & Inputs
-- **Text Inputs**: Rounded (rounded-lg), border-2, focus:border-emerald with subtle ring, padding-3
-- **Dropdowns/Selects**: Consistent styling with inputs, clear chevron indicators
-- **Toggle Switches**: Emerald when active, gray when inactive, smooth transitions
-- **Checkboxes**: Rounded squares with emerald check, used for multi-select filters
-- **Range Sliders**: Emerald track fill, white thumb with subtle shadow
+## Component Styling
 
 ### Buttons
-- **Primary CTA**: bg-emerald, text-white, rounded-lg, px-6 py-3, font-semibold, hover state with slight darkening
-- **Secondary**: border-2 border-emerald, text-emerald, same size/padding as primary, transparent background
-- **Outline on Images**: Secondary style with backdrop-blur-md and semi-transparent white background
-- **Icon Buttons**: Circular (rounded-full), subtle background, emerald on active/hover
-- **Swipe Actions**: Large circular buttons - emerald for "like", gray for "pass", gold for "super like" (if included)
 
-### Modals & Overlays
-- **Modal Dialogs**: Centered, max-w-lg, rounded-2xl, backdrop-blur with dark overlay (bg-black/60)
-- **Bottom Sheets** (Mobile): Slide up from bottom, rounded-t-3xl, white background, drag handle at top
-- **Toast Notifications**: Fixed top-right, rounded-lg, emerald for success, sliding animation
+**Primary (Gold CTA)**:
+- Background: Gold (#D4AF37)
+- Text: Deep Navy (#0A0E17)
+- Rounded: rounded-lg
+- Shadow: Subtle gold glow on hover
+- **Limit**: One primary gold button per screen
 
-### Privacy & Safety Components
-- **Photo Blur Toggle**: Glassmorphism overlay with "Click to reveal" text, blur-2xl effect
-- **Verification Badge**: Emerald checkmark in circle, positioned top-right on profile photos
-- **Chaperone Indicator**: Subtle icon showing conversation has Wali present, with tooltip explanation
+**Secondary (Outline)**:
+- Border: 2px Gold (#D4AF37)
+- Text: Gold (#D4AF37)
+- Background: Transparent or subtle navy
+- Hover: Very subtle gold background
 
-### Media & Content
-- **Image Galleries**: Swipeable carousel with dots indicator, full-bleed on mobile
-- **Video Profiles**: Play button overlay (emerald), rounded corners matching cards
-- **Voice Messages**: Waveform visualization in emerald, play/pause controls
+**Tertiary (Emerald)**:
+- Background: Emerald (#0F5132)
+- Text: Ivory (#F8F4E3)
+- Use for success actions, verified features
 
-### Filters & Search
-- **Filter Panel**: Sidebar on desktop, bottom sheet on mobile, organized sections with clear labels
-- **Search Bar**: Full-width, rounded-full, emerald border on focus, search icon left
-- **Applied Filters**: Pill-shaped tags with emerald background, X to remove, displayed above results
+### Cards & Surfaces
 
----
+**Profile Cards**:
+- Background: Subtle navy elevation (#0E1220)
+- Border: 1px ivory 10% opacity
+- Rounded: rounded-xl
+- Shadow: Subtle for depth
+- Hover: Gentle lift effect
 
-## Images
+**Premium Features**:
+- Gold accent border (1px, left or top)
+- Navy background
+- Gold icon in corner
+- Ivory text
 
-**Hero Section** (Landing Page):
-- Large hero image showing diverse Muslim singles in modest, professional settings (coffee shop conversation, outdoor market, cultural venue)
-- Image should feel authentic, warm, and culturally respectful - avoid stock photo aesthetic
-- Apply subtle gradient overlay (emerald to transparent) for text readability
-- Placement: Full-width hero, 70vh height on desktop, 50vh on mobile
+### Navigation
 
-**Profile Section Images**:
-- Placeholder images should use subtle patterns or initials on emerald backgrounds
-- Real user photos displayed in rounded-xl containers with aspect-ratio-square
-- Gallery images use rounded-lg with small gaps between
+**Header/Nav**:
+- Background: Deep Navy (#0A0E17) - matches logo
+- Logo: HalalMatch with gold crescent and heart
+- Links: Ivory text
+- Active: Gold underline or accent
 
-**Feature Showcase Images**:
-- Phone mockups showing app interface in use (screenshot style)
-- 3-4 mockups displaying: swipe interface, chat with chaperone, profile creation, match notification
-- Placement: Alternating left/right in feature sections, max-w-md
+**Bottom Nav (Mobile)**:
+- Background: Navy with slight transparency
+- Icons: Ivory default
+- Active: Gold
+- Labels: Small ivory text
 
-**Trust & Safety Icons**:
-- Custom illustrated icons for: verification badge, privacy lock, chaperone feature, halal commitment
-- Emerald color with subtle stroke, consistent style across all icons
+### Forms & Inputs
 
----
+**Text Inputs**:
+- Background: Transparent or subtle navy elevation
+- Border: 1px ivory 20% opacity
+- Focus: Gold border
+- Text: Ivory
+- Placeholder: Muted ivory
 
-## Accessibility & Dark Mode
+**Select Dropdowns**:
+- Match input styling
+- Gold chevron icon
 
-- Maintain WCAG AA contrast ratios in both modes (4.5:1 for text)
-- All interactive elements have minimum 44px touch targets
-- Form inputs maintain consistent dark mode styling with lighter borders (border-neutral-600)
-- Focus states use emerald ring with 2px offset
-- Icons always paired with text labels for clarity
-
----
-
-## Marketing/Landing Page Specific
-
-**Layout Strategy**:
-- **Hero**: 70vh with centered headline, subheadline, dual CTA buttons, hero image background
-- **Social Proof**: Logo strip of media features (BBC, Al Jazeera, NYT style outlets)
-- **Features Grid**: 3-column on desktop showcasing: Privacy & Safety, Faith-Based Matching, Chaperone Feature
-- **How It Works**: 4-step visual process with phone mockups
-- **Testimonials**: 2-column cards with photos, quotes, names, "Married via App" badge
-- **Final CTA**: Full-width emerald section with app download buttons and success statistics
-
-**Visual Richness**:
-- Use subtle geometric Islamic patterns as background textures (very low opacity)
-- Generous whitespace - py-20 for desktop sections, py-12 for mobile
-- Each section tells complete story - no sparse single-element sections
+**Toggles/Switches**:
+- Off: Gray/navy
+- On: Gold
 
 ---
 
-## Animations
+## Images & Media
 
-**Use Sparingly**:
-- Swipe card animations: Smooth slide out with rotation on like/pass
-- Match success: Gentle scale-up pulse on mutual match notification
-- Message send: Slight slide-in animation for new messages
-- Tab transitions: Smooth fade between sections
+### Logo Usage
+- Gold crescent moon with heart symbol
+- White "HALALMATCH" text
+- Navy background (#0A0E17)
+- Use consistently across all pages
 
-**Avoid**: Excessive hover effects, distracting background animations, auto-playing videos
+### Hero Sections
+- Deep navy backgrounds
+- Overlay subtle Islamic geometric patterns
+- Gold accents for visual interest
+- Ivory text for contrast
+
+### Profile Photos
+- Rounded corners (rounded-xl)
+- Gold border for verified profiles (2px)
+- Emerald checkmark badge for verification
+- Optional blur for privacy (glassmorphism with ivory overlay)
+
+---
+
+## Layout Guidelines
+
+**Spacing**: Generous whitespace for premium feel
+- Micro: 2 (8px)
+- Standard: 4-6 (16-24px)
+- Section: 8-12 (32-48px)
+- Large: 16-20 (64-80px)
+
+**Containers**:
+- Max-width: Vary by content (forms: max-w-md, content: max-w-6xl)
+- Padding: Generous on all breakpoints
+
+**Grid System**:
+- Profile cards: 2-3 columns on desktop
+- Feature sections: 3-column layouts
+- Testimonials: 2-column with generous gap
+
+---
+
+## Premium Design Details
+
+### Subtle Enhancements
+- Gentle shadows on elevated elements
+- Smooth transitions (200-300ms)
+- Gold glow effects on hover (very subtle)
+- Elegant icon animations
+
+### Islamic Cultural Elements
+- Geometric patterns (low opacity backgrounds)
+- Crescent moon in logo
+- Respectful imagery
+- Elegant, modest aesthetic
+
+### Trust Indicators
+- Verification badges (gold + emerald)
+- Privacy controls with clear iconography
+- Professional photography style
+- Clean, organized layouts
+
+---
+
+## Accessibility
+
+- Maintain WCAG AA contrast:
+  - Ivory on navy: Excellent contrast
+  - Gold on navy: Good for accents, not long text
+- Minimum touch targets: 44px
+- Focus states: Gold ring with offset
+- Screen reader support on all interactive elements
+
+---
+
+## Dark Mode (Primary)
+
+HalalMatch's primary mode is **dark mode** with the navy background. Light mode can be offered as an alternative.
+
+**Light Mode Adjustments**:
+- Background: Ivory (#F8F4E3)
+- Text: Navy (#0A0E17)
+- Cards: White with subtle ivory tint
+- Gold remains accent color
+- Borders: Navy 10% opacity
+
+---
+
+## Marketing/Landing Page
+
+**Hero Section**:
+- Full-width navy background
+- Large logo
+- Gold CTA button
+- Ivory headline and subheading
+- Subtle geometric pattern overlay
+
+**Features Grid**:
+- 3 columns
+- Gold icons
+- Ivory text
+- Navy cards with subtle elevation
+
+**Social Proof**:
+- Testimonial cards
+- Gold quotes or accent lines
+- Professional photos
+- Married couples badge (emerald + gold)
+
+**Final CTA**:
+- Navy background with geometric pattern
+- Large gold button
+- Ivory supporting text
+- Trust badges
+
+---
+
+## Animation Guidelines
+
+**Use Subtly**:
+- Gentle fade-ins for content
+- Smooth swipe animations
+- Gold glow pulse on match notification
+- Elegant transitions between sections
+
+**Avoid**:
+- Excessive animations
+- Distracting effects
+- Auto-playing media
+- Jarring transitions
+
+---
+
+## Premium Feeling Checklist
+
+✓ Gold used sparingly and purposefully
+✓ Deep navy backgrounds create depth
+✓ Ivory text provides elegant contrast
+✓ Generous whitespace throughout
+✓ Subtle Islamic geometric patterns
+✓ Professional, high-quality imagery
+✓ Smooth, refined animations
+✓ Verified badges and trust indicators
+✓ Consistent luxury branding
+✓ Sophisticated typography hierarchy
