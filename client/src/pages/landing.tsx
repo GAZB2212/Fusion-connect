@@ -56,7 +56,7 @@ export default function Landing() {
             </span>
           </div>
           <Button asChild data-testid="button-login">
-            <a href="/api/login">Sign In</a>
+            <a href="/login">Sign In</a>
           </Button>
         </div>
       </nav>
@@ -82,7 +82,7 @@ export default function Landing() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" className="text-base" asChild data-testid="button-get-started">
-                <a href="/api/login">Get Started Free</a>
+                <a href="/signup">Get Started Free</a>
               </Button>
               <Button size="lg" variant="outline" className="text-base" asChild>
                 <a href="#features">Learn More</a>
@@ -205,7 +205,7 @@ export default function Landing() {
             Join thousands of Muslim singles who are finding meaningful connections while respecting their faith and values.
           </p>
           <Button size="lg" variant="secondary" className="text-base" asChild data-testid="button-join-now">
-            <a href="/api/login">Join Now - It's Free</a>
+            <a href="/signup">Join Now - It's Free</a>
           </Button>
           <p className="mt-4 text-sm opacity-75">
             No credit card required • 100% halal • Verified profiles

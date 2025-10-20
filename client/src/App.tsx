@@ -7,6 +7,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import type { Profile } from "@shared/schema";
 import Landing from "@/pages/landing";
+import Login from "@/pages/login";
+import Signup from "@/pages/signup";
 import Home from "@/pages/home";
 import ProfileSetup from "@/pages/profile-setup";
 import Matches from "@/pages/matches";
@@ -43,7 +45,11 @@ function Router() {
   return (
     <Switch>
       {!isAuthenticated ? (
-        <Route path="/" component={Landing} />
+        <>
+          <Route path="/" component={Landing} />
+          <Route path="/login" component={Login} />
+          <Route path="/signup" component={Signup} />
+        </>
       ) : !profile?.isComplete ? (
         <Route path="/" component={ProfileSetup} />
       ) : (

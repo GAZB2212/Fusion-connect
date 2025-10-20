@@ -24,10 +24,11 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table - Required for Replit Auth, extended for app needs
+// User storage table
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: varchar("email").unique(),
+  email: varchar("email").notNull().unique(),
+  password: varchar("password"), // Nullable for now to handle migration
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
@@ -229,9 +230,23 @@ export const insertChaperoneSchema = createInsertSchema(chaperones, {
   relationshipType: z.string().optional(),
 }).omit({ id: true, createdAt: true });
 
+export const registerUserSchema = z.object({
+  email: z.string().email("Valid email is required"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  firstName: z.string().min(2, "First name is required"),
+  lastName: z.string().optional(),
+});
+
+export const loginSchema = z.object({
+  email: z.string().email("Valid email is required"),
+  password: z.string().min(1, "Password is required"),
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
-export type User = typeof users.$inferSelect;
+export type User = Omit<typeof users.$inferSelect, 'password'>;
+export type RegisterUser = z.infer<typeof registerUserSchema>;
+export type LoginCredentials = z.infer<typeof loginSchema>;
 export type Profile = typeof profiles.$inferSelect;
 export type InsertProfile = z.infer<typeof insertProfileSchema>;
 export type Swipe = typeof swipes.$inferSelect;

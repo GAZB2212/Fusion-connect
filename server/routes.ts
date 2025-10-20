@@ -2,6 +2,8 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth, isAuthenticated } from "./auth";
 import { db } from "./db";
+import passport from "passport";
+import bcrypt from "bcrypt";
 import { 
   users, 
   profiles, 
@@ -12,6 +14,8 @@ import {
   insertProfileSchema,
   insertMessageSchema,
   insertChaperoneSchema,
+  registerUserSchema,
+  loginSchema,
   type Profile,
   type Match,
   type Message,
@@ -26,9 +30,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
   await setupAuth(app);
 
+  // Register new user
+  app.post("/api/register", async (req: Request, res: Response) => {
+    try {
+      const validatedData = registerUserSchema.parse(req.body);
+
+      // Check if user already exists
+      const [existingUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, validatedData.email.toLowerCase()))
+        .limit(1);
+
+      if (existingUser) {
+        return res.status(400).json({ message: "Email already registered" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+
+      // Create user
+      const [newUser] = await db
+        .insert(users)
+        .values({
+          email: validatedData.email.toLowerCase(),
+          password: hashedPassword,
+          firstName: validatedData.firstName,
+          lastName: validatedData.lastName || null,
+        })
+        .returning();
+
+      // Log the user in automatically
+      req.login({ id: newUser.id, email: newUser.email, firstName: newUser.firstName, lastName: newUser.lastName }, (err) => {
+        if (err) {
+          return res.status(500).json({ message: "Registration successful but login failed" });
+        }
+        
+        const { password: _, ...userWithoutPassword } = newUser;
+        res.json({ user: userWithoutPassword });
+      });
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ message: error.errors[0].message });
+      }
+      res.status(500).json({ message: "Registration failed" });
+    }
+  });
+
+  // Login
+  app.post("/api/login", (req: Request, res: Response, next) => {
+    try {
+      loginSchema.parse(req.body);
+    } catch (error: any) {
+      return res.status(400).json({ message: error.errors[0].message });
+    }
+
+    passport.authenticate("local", (err: any, user: any, info: any) => {
+      if (err) {
+        return res.status(500).json({ message: "Login failed" });
+      }
+      if (!user) {
+        return res.status(401).json({ message: info?.message || "Invalid credentials" });
+      }
+
+      req.login(user, (err) => {
+        if (err) {
+          return res.status(500).json({ message: "Login failed" });
+        }
+        res.json({ user });
+      });
+    })(req, res, next);
+  });
+
   // Profile endpoints
   app.get("/api/profile", isAuthenticated, async (req: any, res: Response) => {
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
 
     const [profile] = await db
       .select()
@@ -44,7 +121,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/profile", isAuthenticated, async (req: any, res: Response) => {
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
 
     try {
       const validatedData = insertProfileSchema.parse(req.body);
@@ -76,7 +153,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.patch("/api/profile", isAuthenticated, async (req: any, res: Response) => {
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
 
     const [profile] = await db
       .update(profiles)
@@ -96,7 +173,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Discover endpoint - get profiles to swipe on
   app.get("/api/discover", isAuthenticated, async (req: any, res: Response) => {
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
 
     // Get user's profile
     const [userProfile] = await db
@@ -146,7 +223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Swipe endpoint
   app.post("/api/swipe", isAuthenticated, async (req: any, res: Response) => {
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     const { swipedId, direction } = req.body;
 
     if (!swipedId || !direction) {
@@ -191,7 +268,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get matches
   app.get("/api/matches", isAuthenticated, async (req: any, res: Response) => {
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
 
     const userMatches = await db
       .select()
@@ -242,7 +319,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get single match
   app.get("/api/match/:matchId", isAuthenticated, async (req: any, res: Response) => {
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     const { matchId } = req.params;
 
     const [match] = await db
@@ -301,7 +378,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Messages endpoints
   app.get("/api/messages/:matchId", isAuthenticated, async (req: any, res: Response) => {
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     const { matchId } = req.params;
 
     // Verify user is part of this match
@@ -354,7 +431,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/messages", isAuthenticated, async (req: any, res: Response) => {
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
 
     try {
       const validatedData = insertMessageSchema.parse(req.body);
@@ -391,7 +468,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Chaperone endpoints
   app.get("/api/chaperones", isAuthenticated, async (req: any, res: Response) => {
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
 
     const userChaperones = await db
       .select()
@@ -402,7 +479,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/chaperones", isAuthenticated, async (req: any, res: Response) => {
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
 
     try {
       const validatedData = insertChaperoneSchema.parse(req.body);
@@ -422,7 +499,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.delete("/api/chaperones/:chaperoneId", isAuthenticated, async (req: any, res: Response) => {
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     const { chaperoneId } = req.params;
 
     const [deleted] = await db
