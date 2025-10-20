@@ -27,7 +27,7 @@ import {
 import { insertProfileSchema, type InsertProfile } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, CheckCircle2 } from "lucide-react";
+import { Upload, CheckCircle2, LogOut } from "lucide-react";
 
 export default function ProfileSetup() {
   const [, setLocation] = useLocation();
@@ -80,6 +80,22 @@ export default function ProfileSetup() {
     },
   });
 
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/logout", {});
+    },
+    onSuccess: () => {
+      setLocation("/");
+    },
+    onError: (error) => {
+      toast({
+        title: "Logout Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: InsertProfile) => {
     createProfileMutation.mutate(data);
   };
@@ -106,8 +122,25 @@ export default function ProfileSetup() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-12">
-      <div className="container max-w-2xl mx-auto px-4">
+    <div className="min-h-screen bg-background">
+      {/* Header with Logout */}
+      <div className="border-b bg-card">
+        <div className="container max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
+          <h2 className="font-semibold text-lg">HalalMatch</h2>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => logoutMutation.mutate()}
+            disabled={logoutMutation.isPending}
+            data-testid="button-logout"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            {logoutMutation.isPending ? "Logging out..." : "Logout"}
+          </Button>
+        </div>
+      </div>
+
+      <div className="container max-w-2xl mx-auto px-4 py-12">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold mb-2">Create Your Profile</h1>
           <p className="text-muted-foreground">
