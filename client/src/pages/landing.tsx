@@ -30,6 +30,17 @@ function CountUpNumber({ end, suffix = "", duration = 2000 }: { end: number; suf
 
 export default function Landing() {
   const [videoEnded, setVideoEnded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   const features = [
     {
       icon: Shield,
@@ -101,9 +112,9 @@ export default function Landing() {
             playsInline
             className="absolute inset-0 w-full h-full object-contain md:object-cover px-4 md:px-0"
             onEnded={() => setVideoEnded(true)}
+            key={isMobile ? 'mobile' : 'desktop'}
           >
-            <source src={heroVideoMobile} type="video/mp4" media="(max-width: 768px)" />
-            <source src={heroVideo} type="video/mp4" />
+            <source src={isMobile ? heroVideoMobile : heroVideo} type="video/mp4" />
           </video>
         )}
         
