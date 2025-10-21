@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Shield, Users, MessageSquare, CheckCircle2, Star, Sparkles } from "lucide-react";
 import logoImage from "@assets/logo 40_1761066001045.png";
 import heroVideo from "@assets/Animate_this_logo_202510211818 (1)_1761067145031.mp4";
+import heroVideoMobile from "@assets/Animate_this_logo_202510211838_5e5g3_1761068326631.mp4";
 
 function CountUpNumber({ end, suffix = "", duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
   const [count, setCount] = useState(0);
@@ -101,6 +102,7 @@ export default function Landing() {
             className="absolute inset-0 w-full h-full object-cover"
             onEnded={() => setVideoEnded(true)}
           >
+            <source src={heroVideoMobile} type="video/mp4" media="(max-width: 768px)" />
             <source src={heroVideo} type="video/mp4" />
           </video>
         )}
