@@ -21,9 +21,10 @@ export default function Home() {
   });
 
   // Swipe mutation
-  const swipeMutation = useMutation({
-    mutationFn: async ({ profileId, direction }: { profileId: string; direction: "right" | "left" }) => {
-      return apiRequest("POST", "/api/swipe", { swipedId: profileId, direction });
+  const swipeMutation = useMutation<{ success: boolean; isMatch: boolean }, Error, { profileId: string; direction: "right" | "left" }>({
+    mutationFn: async ({ profileId, direction }) => {
+      const result = await apiRequest("POST", "/api/swipe", { swipedId: profileId, direction });
+      return result as unknown as { success: boolean; isMatch: boolean };
     },
     onSuccess: (data) => {
       if (data.isMatch) {

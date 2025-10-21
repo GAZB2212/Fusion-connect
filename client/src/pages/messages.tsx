@@ -173,7 +173,7 @@ export default function Messages() {
                       <p className="text-sm leading-relaxed break-words">{message.content}</p>
                     </Card>
                     <p className={`text-xs text-muted-foreground mt-1 ${isMe ? 'text-right' : 'text-left'}`}>
-                      {formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
+                      {message.createdAt && formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
                     </p>
                   </div>
                 </div>

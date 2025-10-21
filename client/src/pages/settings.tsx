@@ -152,7 +152,7 @@ export default function Settings() {
                 </p>
               </div>
               <Switch
-                checked={profile.useNickname}
+                checked={profile.useNickname ?? false}
                 onCheckedChange={(checked) => {
                   updatePrivacyMutation.mutate({
                     useNickname: checked,
