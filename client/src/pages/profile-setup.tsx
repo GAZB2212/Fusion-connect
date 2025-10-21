@@ -67,7 +67,7 @@ export default function ProfileSetup() {
     onSuccess: () => {
       toast({
         title: "Profile Created!",
-        description: "Welcome to Halalmatch. Start discovering matches!",
+        description: "Welcome to Fusion. Start discovering matches!",
       });
       setLocation("/");
     },
@@ -129,7 +129,7 @@ export default function ProfileSetup() {
       {/* Header with Logout */}
       <div className="border-b bg-card">
         <div className="container max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h2 className="font-semibold text-lg">HalalMatch</h2>
+          <h2 className="font-semibold text-lg">Fusion</h2>
           <Button
             variant="outline"
             size="sm"

@@ -1,8 +1,8 @@
-# Design Guidelines: HalalMatch - Luxury Muslim Matchmaking Platform
+# Design Guidelines: Fusion - Luxury Muslim Matchmaking Platform
 
 ## Design Philosophy
 
-**Premium Luxury Aesthetic**: HalalMatch is positioned as a sophisticated, marriage-focused platform for Muslim singles. The design emphasizes trust, elegance, and Islamic heritage through a carefully curated luxury palette and refined visual language.
+**Premium Luxury Aesthetic**: Fusion is positioned as a sophisticated, marriage-focused platform for Muslim singles. The design emphasizes trust, elegance, and Islamic heritage through a carefully curated luxury palette and refined visual language.
 
 **Core Principles**:
 - **Luxury & Sophistication**: Premium feel that communicates quality and seriousness about marriage
@@ -136,7 +136,7 @@
 
 **Header/Nav**:
 - Background: Deep Navy (#0A0E17) - matches logo
-- Logo: HalalMatch with gold crescent and heart
+- Logo: Fusion with gold crescent and heart
 - Links: Ivory text
 - Active: Gold underline or accent
 
@@ -169,7 +169,7 @@
 
 ### Logo Usage
 - Gold crescent moon with heart symbol
-- White "HALALMATCH" text
+- White "FUSION" text
 - Navy background (#0A0E17)
 - Use consistently across all pages
 
@@ -241,7 +241,7 @@
 
 ## Dark Mode (Primary)
 
-HalalMatch's primary mode is **dark mode** with the navy background. Light mode can be offered as an alternative.
+Fusion's primary mode is **dark mode** with the navy background. Light mode can be offered as an alternative.
 
 **Light Mode Adjustments**:
 - Background: Ivory (#F8F4E3)

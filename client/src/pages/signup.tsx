@@ -60,7 +60,7 @@ export default function Signup() {
       }
 
       toast({
-        title: "Welcome to HalalMatch!",
+        title: "Welcome to Fusion!",
         description: "Your account has been created successfully.",
       });
 
@@ -82,7 +82,7 @@ export default function Signup() {
         {/* Logo */}
         <div className="text-center mb-10">
           <div className="flex items-center justify-center mb-6">
-            <img src={logoImage} alt="HalalMatch Logo" className="h-24 w-auto" />
+            <img src={logoImage} alt="Fusion Logo" className="h-24 w-auto" />
           </div>
           <h1 className="text-3xl font-bold mb-3 text-[#F8F4E3] font-serif">Create Your Account</h1>
           <p className="text-[#F8F4E3]/70">Join thousands finding meaningful connections</p>

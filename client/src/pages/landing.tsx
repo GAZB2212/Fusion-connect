@@ -51,7 +51,7 @@ export default function Landing() {
       <nav className="sticky top-0 z-50 border-b border-primary/20 bg-[#0A0E17] backdrop-blur-sm">
         <div className="container flex h-20 items-center justify-between px-4 md:px-8">
           <div className="flex items-center gap-3">
-            <img src={logoImage} alt="HalalMatch Logo" className="h-14 w-auto" />
+            <img src={logoImage} alt="Fusion Logo" className="h-14 w-auto" />
           </div>
           <Button 
             variant="outline" 
@@ -252,10 +252,10 @@ export default function Landing() {
         <div className="container px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <img src={logoImage} alt="HalalMatch" className="h-10 w-auto" />
+              <img src={logoImage} alt="Fusion" className="h-10 w-auto" />
             </div>
             <p className="text-sm text-[#F8F4E3]/50">
-              © 2025 HalalMatch. All rights reserved.
+              © 2025 Fusion. All rights reserved.
             </p>
           </div>
         </div>
