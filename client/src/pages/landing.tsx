@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Shield, Users, MessageSquare, CheckCircle2, Star, Sparkles } from "lucide-react";
-import logoImage from "@assets/ChatGPT Image Oct 20, 2025 at 10_42_27 PM_1760996558103.png";
+import logoImage from "@assets/logo 40_1761066001045.png";
 
 export default function Landing() {
   const features = [
