@@ -99,7 +99,7 @@ export default function Landing() {
             autoPlay
             muted
             playsInline
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-contain md:object-cover px-4 md:px-0"
             onEnded={() => setVideoEnded(true)}
           >
             <source src={heroVideoMobile} type="video/mp4" media="(max-width: 768px)" />
