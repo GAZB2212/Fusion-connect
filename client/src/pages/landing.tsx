@@ -51,7 +51,7 @@ export default function Landing() {
       <nav className="sticky top-0 z-50 border-b border-primary/20 bg-[#0A0E17] backdrop-blur-sm">
         <div className="container flex h-20 items-center justify-between px-4 md:px-8">
           <div className="flex items-center gap-3">
-            <img src={logoImage} alt="Fusion Logo" className="h-14 w-auto" />
+            <img src={logoImage} alt="Fusion Logo" className="h-[5.25rem] w-auto" />
           </div>
           <Button 
             variant="outline" 
