@@ -78,12 +78,12 @@
 
 **Font Families**:
 - **Primary**: 'Inter' - Clean, modern, premium readability
-- **Display/Headers**: 'Playfair Display' - Elegant serif for premium feel
+- **Display/Headers**: 'Montserrat' - Bold, geometric sans-serif matching logo
 - **Arabic**: 'Noto Sans Arabic' - For Arabic text support
 
 **Hierarchy**:
-- **Hero**: 4xl-6xl, bold, Playfair Display - Landing headlines
-- **Section Titles**: 2xl-3xl, semibold, Playfair Display
+- **Hero**: 4xl-6xl, bold/extrabold (700-800), Montserrat - Landing headlines
+- **Section Titles**: 2xl-3xl, bold (700), Montserrat - Section headers
 - **Body Large**: lg, normal, Inter - Profiles, descriptions
 - **Body**: base, normal, Inter - Standard text
 - **Captions**: sm-xs, normal, Inter - Metadata, timestamps
