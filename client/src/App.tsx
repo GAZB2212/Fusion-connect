@@ -1,10 +1,11 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Redirect, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import type { Profile } from "@shared/schema";
 import Landing from "@/pages/landing";
 import Login from "@/pages/login";
@@ -20,6 +21,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 function Router() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const [location, setLocation] = useLocation();
 
   // Fetch user profile if authenticated
   const { data: profile, isLoading: profileLoading } = useQuery<Profile>({
@@ -29,6 +31,13 @@ function Router() {
   });
 
   const isLoading = authLoading || (isAuthenticated && profileLoading);
+
+  // Redirect to profile setup if authenticated but no complete profile
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && !profile?.isComplete && location !== "/") {
+      setLocation("/");
+    }
+  }, [isLoading, isAuthenticated, profile, location, setLocation]);
 
   if (isLoading) {
     return (
@@ -42,24 +51,40 @@ function Router() {
     );
   }
 
+  // Not authenticated - show public routes
+  if (!isAuthenticated) {
+    return (
+      <Switch>
+        <Route path="/" component={Landing} />
+        <Route path="/login" component={Login} />
+        <Route path="/signup" component={Signup} />
+        <Route component={NotFound} />
+      </Switch>
+    );
+  }
+
+  // Authenticated but profile not complete - only show profile setup
+  if (!profile?.isComplete) {
+    return (
+      <Switch>
+        <Route path="/" component={ProfileSetup} />
+        <Route path="/:rest*">
+          {() => {
+            setLocation("/");
+            return null;
+          }}
+        </Route>
+      </Switch>
+    );
+  }
+
+  // Authenticated with complete profile - show app routes
   return (
     <Switch>
-      {!isAuthenticated ? (
-        <>
-          <Route path="/" component={Landing} />
-          <Route path="/login" component={Login} />
-          <Route path="/signup" component={Signup} />
-        </>
-      ) : !profile?.isComplete ? (
-        <Route path="/" component={ProfileSetup} />
-      ) : (
-        <>
-          <Route path="/" component={Home} />
-          <Route path="/matches" component={Matches} />
-          <Route path="/messages/:matchId?" component={Messages} />
-          <Route path="/settings" component={Settings} />
-        </>
-      )}
+      <Route path="/" component={Home} />
+      <Route path="/matches" component={Matches} />
+      <Route path="/messages/:matchId?" component={Messages} />
+      <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
   );
