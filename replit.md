@@ -36,7 +36,7 @@ Preferred communication style: Simple, everyday language.
   - Gold accents used sparingly to maintain premium feel
   - Deep navy backgrounds throughout for luxury aesthetic
   - Ivory text for high contrast readability
-  - Playfair Display serif font for headers (elegance)
+  - Handel Gothic font for headers (bold, geometric, luxury aesthetic)
   - Inter sans-serif for body text (readability)
 
 - **Updated Pages**

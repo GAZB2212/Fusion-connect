@@ -78,12 +78,12 @@
 
 **Font Families**:
 - **Primary**: 'Inter' - Clean, modern, premium readability
-- **Display/Headers**: 'Montserrat' - Bold, geometric sans-serif matching logo
+- **Display/Headers**: 'Handel Gothic' - Bold, geometric sans-serif for luxury branding
 - **Arabic**: 'Noto Sans Arabic' - For Arabic text support
 
 **Hierarchy**:
-- **Hero**: 4xl-6xl, bold/extrabold (700-800), Montserrat - Landing headlines
-- **Section Titles**: 2xl-3xl, bold (700), Montserrat - Section headers
+- **Hero**: 4xl-6xl, bold/extrabold (700-800), Handel Gothic - Landing headlines
+- **Section Titles**: 2xl-3xl, bold (700), Handel Gothic - Section headers
 - **Body Large**: lg, normal, Inter - Profiles, descriptions
 - **Body**: base, normal, Inter - Standard text
 - **Captions**: sm-xs, normal, Inter - Metadata, timestamps
