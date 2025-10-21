@@ -159,10 +159,8 @@ export default function Landing() {
       </section>
 
       {/* Features Section - Elevated Navy Cards */}
-      <section id="features" className="py-24 bg-[#0A0E17] relative">
-        <div className="absolute inset-0 opacity-5" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l30 30-30 30L0 30 30 0zm0 10L10 30l20 20 20-20-20-20z' fill='%23D4AF37'/%3E%3C/svg%3E")`
-        }} />
+      <section id="features" className="py-24 bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-20" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-[#F8F4E3]">
@@ -177,7 +175,7 @@ export default function Landing() {
             {features.map((feature, i) => (
               <div 
                 key={i} 
-                className="bg-[#0E1220] rounded-xl border border-[#F8F4E3]/10 p-8 hover-elevate transition-all duration-300"
+                className="bg-gradient-to-br from-[#0E1220] to-[#0A0E17] rounded-xl border border-[#F8F4E3]/10 p-8 hover-elevate transition-all duration-300"
               >
                 <div className="h-14 w-14 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center mb-6">
                   <feature.icon className="h-7 w-7 text-primary" />
@@ -191,8 +189,9 @@ export default function Landing() {
       </section>
 
       {/* How It Works */}
-      <section className="py-24 bg-[#0A0E17]">
-        <div className="container px-4">
+      <section className="py-24 bg-gradient-to-b from-[#0E1220] via-[#0A0E17] to-[#0A0E17] relative">
+        <div className="absolute inset-0 bg-gradient-to-tl from-primary/5 via-transparent to-transparent opacity-20" />
+        <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-[#F8F4E3]">
               How It Works
@@ -222,8 +221,9 @@ export default function Landing() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-24 bg-[#0E1220]">
-        <div className="container px-4">
+      <section className="py-24 bg-gradient-to-b from-[#0A0E17] via-[#0E1220] to-[#0A0E17] relative">
+        <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-transparent opacity-20" />
+        <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-[#F8F4E3]">
               Real Love Stories
@@ -237,7 +237,7 @@ export default function Landing() {
             {testimonials.map((testimonial, i) => (
               <div 
                 key={i} 
-                className="bg-[#0A0E17] rounded-xl border border-[#F8F4E3]/10 p-8 hover-elevate"
+                className="bg-gradient-to-br from-[#0A0E17] to-[#0E1220] rounded-xl border border-[#F8F4E3]/10 p-8 hover-elevate"
               >
                 <div className="flex gap-1 mb-4">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -263,10 +263,8 @@ export default function Landing() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-24 bg-gradient-to-b from-[#0A0E17] to-[#0E1220] relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l30 30-30 30L0 30 30 0zm0 10L10 30l20 20 20-20-20-20z' fill='%23D4AF37'/%3E%3C/svg%3E")`
-        }} />
+      <section className="py-24 bg-gradient-to-b from-[#0A0E17] via-[#0E1220] to-black relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/5 opacity-30" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-[#F8F4E3]">

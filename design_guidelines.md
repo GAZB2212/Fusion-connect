@@ -61,16 +61,17 @@
 - Borders on cards (use subtle ivory/navy variants)
 
 ### Deep Backgrounds for Elegance
-- Primary sections use deep navy (#0A0E17)
-- Gold and ivory text/elements stand out beautifully against navy
-- Create visual hierarchy through subtle navy variants
+- Primary sections use deep navy (#0A0E17), darker navy (#0E1220), and black
+- Gold and ivory text/elements stand out beautifully against dark backgrounds
+- Create visual hierarchy through subtle gradients and tonal variations
 - Use ivory for high-contrast readability
 
-### Islamic Geometric Patterns
-- Include subtle geometric patterns as background textures
-- Very low opacity (5-10%) watermark effect
-- Traditional Islamic star/tile patterns
-- Never distract from content
+### Gradients and Depth
+- Use subtle gradients to create depth (NO textures or patterns)
+- Layer dark tones: black → #0A0E17 → #0E1220
+- Add subtle gold gradient overlays (5-10% opacity) for dimension
+- Vary gradient directions (top-to-bottom, diagonal) between sections
+- Cards use gradient fills for visual interest
 
 ---
 
@@ -174,8 +175,8 @@
 - Use consistently across all pages
 
 ### Hero Sections
-- Deep navy backgrounds
-- Overlay subtle Islamic geometric patterns
+- Deep black backgrounds with subtle gradients
+- Layered gradient overlays for depth
 - Gold accents for visual interest
 - Ivory text for contrast
 
@@ -213,12 +214,13 @@
 - Smooth transitions (200-300ms)
 - Gold glow effects on hover (very subtle)
 - Elegant icon animations
+- Gradient transitions between sections for flow
 
 ### Islamic Cultural Elements
-- Geometric patterns (low opacity backgrounds)
 - Crescent moon in logo
 - Respectful imagery
 - Elegant, modest aesthetic
+- Gold and emerald color symbolism
 
 ### Trust Indicators
 - Verification badges (gold + emerald)
@@ -255,29 +257,30 @@ Fusion's primary mode is **dark mode** with the navy background. Light mode can 
 ## Marketing/Landing Page
 
 **Hero Section**:
-- Full-width navy background
-- Large logo
+- Full-width black background
+- Animated logo video that disappears on end
 - Gold CTA button
 - Ivory headline and subheading
-- Subtle geometric pattern overlay
+- Clean, gradient-based depth
 
 **Features Grid**:
-- 3 columns
+- 2 columns
 - Gold icons
 - Ivory text
-- Navy cards with subtle elevation
+- Gradient navy cards with subtle elevation
+- Layered section gradients
 
 **Social Proof**:
-- Testimonial cards
-- Gold quotes or accent lines
-- Professional photos
+- Testimonial cards with gradient backgrounds
+- Gold star ratings
+- Professional aesthetic
 - Married couples badge (emerald + gold)
 
 **Final CTA**:
-- Navy background with geometric pattern
+- Gradient background (navy to black)
 - Large gold button
 - Ivory supporting text
-- Trust badges
+- Subtle gradient overlays for depth
 
 ---
 
