@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import type { Profile } from "@shared/schema";
 import Landing from "@/pages/landing";
 import Login from "@/pages/login";
@@ -18,7 +18,6 @@ import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 import { BottomNav } from "@/components/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SplashScreen } from "@/components/splash-screen";
 
 function Router() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -103,28 +102,6 @@ function AppContent() {
 }
 
 function App() {
-  // Show splash screen only on initial load (not on HMR updates)
-  const [showSplash, setShowSplash] = useState(() => {
-    // Check if this is a fresh load
-    const isInitialLoad = !window.sessionStorage.getItem('app_loaded');
-    if (isInitialLoad) {
-      window.sessionStorage.setItem('app_loaded', 'true');
-      return true;
-    }
-    return false;
-  });
-
-  const handleSplashComplete = () => {
-    console.log("Splash complete callback");
-    setShowSplash(false);
-  };
-
-  console.log("App rendering, showSplash:", showSplash);
-
-  if (showSplash) {
-    return <SplashScreen onComplete={handleSplashComplete} />;
-  }
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
