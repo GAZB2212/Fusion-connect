@@ -90,55 +90,58 @@ export default function Landing() {
           </div>
         )}
         
-        {/* Dark overlay for text readability */}
-        <div className="absolute inset-0 bg-black/30" />
+        {/* Dark overlay for text readability - only show after video ends */}
+        {videoEnded && <div className="absolute inset-0 bg-black/30" />}
         
-        <div className="container relative z-10 px-4 py-20">
-          <div className="mx-auto max-w-4xl text-center">
-            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-6 py-2 backdrop-blur-sm">
-              <Star className="h-4 w-4 text-primary fill-primary" />
-              <span className="text-[#F8F4E3] text-sm font-medium">Trusted by Muslims worldwide</span>
-            </div>
-            <h1 className="mb-6 text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl font-serif text-[#F8F4E3]">
-              Where Muslims Meet
-              <span className="block mt-2 bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent">
-                For Marriage
-              </span>
-            </h1>
-            <p className="mb-10 text-lg md:text-xl max-w-2xl mx-auto text-[#F8F4E3]/80 leading-relaxed">
-              Join thousands of Muslim singles finding meaningful connections through halal interactions. 
-              Verified profiles, chaperone support, and complete privacy.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button 
-                size="lg" 
-                className="text-base font-semibold shadow-lg shadow-primary/20" 
-                asChild 
-                data-testid="button-get-started"
-              >
-                <a href="/signup">Get Started Free</a>
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
-                className="text-base border-[#F8F4E3]/30 text-[#F8F4E3] hover:bg-[#F8F4E3]/10 backdrop-blur-sm" 
-                asChild
-              >
-                <a href="#features">Learn More</a>
-              </Button>
-            </div>
-            
-            {/* Stats */}
-            <div className="mt-20 grid grid-cols-3 gap-6 md:gap-12">
-              {stats.map((stat, i) => (
-                <div key={i} className="text-center">
-                  <div className="text-3xl md:text-5xl font-bold text-primary font-serif">{stat.number}</div>
-                  <div className="text-sm md:text-base text-[#F8F4E3]/70 mt-2">{stat.label}</div>
-                </div>
-              ))}
+        {/* Hero content - only show after video ends */}
+        {videoEnded && (
+          <div className="container relative z-10 px-4 py-20 animate-in fade-in duration-1000">
+            <div className="mx-auto max-w-4xl text-center">
+              <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-6 py-2 backdrop-blur-sm">
+                <Star className="h-4 w-4 text-primary fill-primary" />
+                <span className="text-[#F8F4E3] text-sm font-medium">Trusted by Muslims worldwide</span>
+              </div>
+              <h1 className="mb-6 text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl font-serif text-[#F8F4E3]">
+                Where Muslims Meet
+                <span className="block mt-2 bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent">
+                  For Marriage
+                </span>
+              </h1>
+              <p className="mb-10 text-lg md:text-xl max-w-2xl mx-auto text-[#F8F4E3]/80 leading-relaxed">
+                Join thousands of Muslim singles finding meaningful connections through halal interactions. 
+                Verified profiles, chaperone support, and complete privacy.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  size="lg" 
+                  className="text-base font-semibold shadow-lg shadow-primary/20" 
+                  asChild 
+                  data-testid="button-get-started"
+                >
+                  <a href="/signup">Get Started Free</a>
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="text-base border-[#F8F4E3]/30 text-[#F8F4E3] hover:bg-[#F8F4E3]/10 backdrop-blur-sm" 
+                  asChild
+                >
+                  <a href="#features">Learn More</a>
+                </Button>
+              </div>
+              
+              {/* Stats */}
+              <div className="mt-20 grid grid-cols-3 gap-6 md:gap-12">
+                {stats.map((stat, i) => (
+                  <div key={i} className="text-center">
+                    <div className="text-3xl md:text-5xl font-bold text-primary font-serif">{stat.number}</div>
+                    <div className="text-sm md:text-base text-[#F8F4E3]/70 mt-2">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </section>
 
       {/* Features Section - Elevated Navy Cards */}
