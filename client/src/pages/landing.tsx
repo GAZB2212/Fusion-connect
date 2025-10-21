@@ -68,31 +68,33 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section - Navy with Islamic Pattern */}
-      <section className="relative overflow-hidden py-20 md:py-32 bg-[#0A0E17] islamic-pattern">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
-        <div className="container relative px-4">
+      <section className="relative overflow-hidden min-h-screen flex items-center justify-center bg-black">
+        {/* Full-screen Video or Image Background */}
+        {!videoEnded ? (
+          <video
+            autoPlay
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover"
+            onEnded={() => setVideoEnded(true)}
+          >
+            <source src={heroVideo} type="video/mp4" />
+          </video>
+        ) : (
+          <div className="absolute inset-0 bg-[#0A0E17] flex items-center justify-center">
+            <img 
+              src={logoImage} 
+              alt="Fusion Logo" 
+              className="w-[40%] md:w-[30%] max-w-md h-auto opacity-20"
+            />
+          </div>
+        )}
+        
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-black/30" />
+        
+        <div className="container relative z-10 px-4 py-20">
           <div className="mx-auto max-w-4xl text-center">
-            {/* Animated Logo */}
-            <div className="mb-8 flex justify-center">
-              {!videoEnded ? (
-                <video
-                  autoPlay
-                  muted
-                  playsInline
-                  className="w-[250px] md:w-[350px] h-auto"
-                  onEnded={() => setVideoEnded(true)}
-                >
-                  <source src={heroVideo} type="video/mp4" />
-                </video>
-              ) : (
-                <img 
-                  src={logoImage} 
-                  alt="Fusion Logo" 
-                  className="w-[250px] md:w-[350px] h-auto"
-                />
-              )}
-            </div>
-            
             <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-6 py-2 backdrop-blur-sm">
               <Star className="h-4 w-4 text-primary fill-primary" />
               <span className="text-[#F8F4E3] text-sm font-medium">Trusted by Muslims worldwide</span>
