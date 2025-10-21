@@ -67,10 +67,10 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* Hero Section - Navy with Islamic Pattern */}
+      {/* Hero Section - Black Background */}
       <section className="relative overflow-hidden min-h-screen flex items-center justify-center bg-black">
-        {/* Full-screen Video or Image Background */}
-        {!videoEnded ? (
+        {/* Full-screen Video - only show while playing */}
+        {!videoEnded && (
           <video
             autoPlay
             muted
@@ -80,18 +80,7 @@ export default function Landing() {
           >
             <source src={heroVideo} type="video/mp4" />
           </video>
-        ) : (
-          <div className="absolute inset-0 bg-[#0A0E17] flex items-center justify-center">
-            <img 
-              src={logoImage} 
-              alt="Fusion Logo" 
-              className="w-[40%] md:w-[30%] max-w-md h-auto opacity-20"
-            />
-          </div>
         )}
-        
-        {/* Dark overlay for text readability - only show after video ends */}
-        {videoEnded && <div className="absolute inset-0 bg-black/30" />}
         
         {/* Hero content - only show after video ends */}
         {videoEnded && (
