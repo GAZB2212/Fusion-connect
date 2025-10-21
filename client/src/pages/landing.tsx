@@ -89,14 +89,14 @@ export default function Landing() {
       <section className="relative overflow-hidden min-h-screen flex items-center justify-center bg-black golden-shimmer">
         {/* Navigation - Transparent overlay - only show after video ends */}
         {videoEnded && (
-          <nav className="absolute top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/20 backdrop-blur-md animate-in fade-in duration-1000">
-            <div className="container flex h-20 items-center justify-between px-4 md:px-8">
+          <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/20 backdrop-blur-md animate-in fade-in duration-1000">
+            <div className="container flex h-16 md:h-20 items-center justify-between px-4 md:px-8">
               <div className="flex items-center gap-3">
-                <img src={logoImage} alt="Fusion Logo" className="h-[5.25rem] w-auto" />
+                <img src={logoImage} alt="Fusion Logo" className="h-12 md:h-[5.25rem] w-auto" />
               </div>
               <Button 
                 variant="outline" 
-                className="border-primary text-primary hover:bg-primary/10"
+                className="border-primary text-primary hover:bg-primary/10 text-sm md:text-base"
                 asChild 
                 data-testid="button-login"
               >
