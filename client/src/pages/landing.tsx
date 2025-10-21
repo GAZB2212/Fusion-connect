@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Shield, Users, MessageSquare, CheckCircle2, Star, Sparkles } from "lucide-react";
 import logoImage from "@assets/logo 40_1761066001045.png";
+import heroVideo from "@assets/Animate_this_logo_202510211818 (1)_1761067145031.mp4";
 
 export default function Landing() {
+  const [videoEnded, setVideoEnded] = useState(false);
   const features = [
     {
       icon: Shield,
@@ -69,6 +72,27 @@ export default function Landing() {
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
         <div className="container relative px-4">
           <div className="mx-auto max-w-4xl text-center">
+            {/* Animated Logo */}
+            <div className="mb-8 flex justify-center">
+              {!videoEnded ? (
+                <video
+                  autoPlay
+                  muted
+                  playsInline
+                  className="w-[250px] md:w-[350px] h-auto"
+                  onEnded={() => setVideoEnded(true)}
+                >
+                  <source src={heroVideo} type="video/mp4" />
+                </video>
+              ) : (
+                <img 
+                  src={logoImage} 
+                  alt="Fusion Logo" 
+                  className="w-[250px] md:w-[350px] h-auto"
+                />
+              )}
+            </div>
+            
             <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-6 py-2 backdrop-blur-sm">
               <Star className="h-4 w-4 text-primary fill-primary" />
               <span className="text-[#F8F4E3] text-sm font-medium">Trusted by Muslims worldwide</span>
