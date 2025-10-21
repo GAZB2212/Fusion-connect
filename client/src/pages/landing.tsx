@@ -115,9 +115,6 @@ export default function Landing() {
               </div>
               <h1 className="mb-6 text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl font-serif text-[#F8F4E3]">
                 Where Muslims Meet
-                <span className="block mt-2 bg-gradient-to-r from-primary via-primary to-primary/80 bg-clip-text text-transparent">
-                  For Marriage
-                </span>
               </h1>
               <p className="mb-10 text-lg md:text-xl max-w-2xl mx-auto text-[#F8F4E3]/80 leading-relaxed">
                 Join thousands of Muslim singles finding meaningful connections through halal interactions. 
