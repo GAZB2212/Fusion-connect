@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { Profile } from "@shared/schema";
 import Landing from "@/pages/landing";
 import Login from "@/pages/login";
@@ -18,6 +18,7 @@ import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 import { BottomNav } from "@/components/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SplashScreen } from "@/components/splash-screen";
 
 function Router() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -102,6 +103,20 @@ function AppContent() {
 }
 
 function App() {
+  const [showSplash, setShowSplash] = useState(() => {
+    const hasSeenSplash = sessionStorage.getItem("hasSeenSplash");
+    return !hasSeenSplash;
+  });
+
+  const handleSplashComplete = () => {
+    sessionStorage.setItem("hasSeenSplash", "true");
+    setShowSplash(false);
+  };
+
+  if (showSplash) {
+    return <SplashScreen onComplete={handleSplashComplete} />;
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
