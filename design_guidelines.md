@@ -73,6 +73,14 @@
 - Vary gradient directions (top-to-bottom, diagonal) between sections
 - Cards use gradient fills for visual interest
 
+### Golden Shimmer Effect
+- Shimmering golden glitter particles across all backgrounds
+- Animated using CSS keyframes for smooth, continuous motion
+- Two layers of sparkle animation offset by 2 seconds for depth
+- Golden particles at varying opacity (8-15%) for subtle elegance
+- Creates luxury feel matching the animated logo aesthetic
+- Applied via `golden-shimmer` CSS class
+
 ---
 
 ## Typography

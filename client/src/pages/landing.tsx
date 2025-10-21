@@ -84,9 +84,9 @@ export default function Landing() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0A0E17]">
+    <div className="min-h-screen bg-black golden-shimmer">
       {/* Hero Section - Black Background */}
-      <section className="relative overflow-hidden min-h-screen flex items-center justify-center bg-black">
+      <section className="relative overflow-hidden min-h-screen flex items-center justify-center bg-black golden-shimmer">
         {/* Navigation - Transparent overlay - only show after video ends */}
         {videoEnded && (
           <nav className="absolute top-0 left-0 right-0 z-50 border-b border-white/10 bg-black/20 backdrop-blur-md animate-in fade-in duration-1000">
@@ -171,7 +171,7 @@ export default function Landing() {
       </section>
 
       {/* Features Section - Elevated Navy Cards */}
-      <section id="features" className="py-24 bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] relative">
+      <section id="features" className="py-24 bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] relative golden-shimmer">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-20" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
@@ -201,7 +201,7 @@ export default function Landing() {
       </section>
 
       {/* How It Works */}
-      <section className="py-24 bg-gradient-to-b from-[#0E1220] via-[#0A0E17] to-[#0A0E17] relative">
+      <section className="py-24 bg-gradient-to-b from-[#0E1220] via-[#0A0E17] to-[#0A0E17] relative golden-shimmer">
         <div className="absolute inset-0 bg-gradient-to-tl from-primary/5 via-transparent to-transparent opacity-20" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
@@ -233,7 +233,7 @@ export default function Landing() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-24 bg-gradient-to-b from-[#0A0E17] via-[#0E1220] to-[#0A0E17] relative">
+      <section className="py-24 bg-gradient-to-b from-[#0A0E17] via-[#0E1220] to-[#0A0E17] relative golden-shimmer">
         <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-transparent opacity-20" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
@@ -275,7 +275,7 @@ export default function Landing() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-24 bg-gradient-to-b from-[#0A0E17] via-[#0E1220] to-black relative overflow-hidden">
+      <section className="py-24 bg-gradient-to-b from-[#0A0E17] via-[#0E1220] to-black relative overflow-hidden golden-shimmer">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/5 opacity-30" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center">
@@ -301,7 +301,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-[#0A0E17] border-t border-[#F8F4E3]/10">
+      <footer className="py-12 bg-black border-t border-[#F8F4E3]/10 golden-shimmer">
         <div className="container px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
