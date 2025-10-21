@@ -1,8 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Shield, Users, MessageSquare, CheckCircle2, Star, Sparkles } from "lucide-react";
 import logoImage from "@assets/logo 40_1761066001045.png";
 import heroVideo from "@assets/Animate_this_logo_202510211818 (1)_1761067145031.mp4";
+
+function CountUpNumber({ end, suffix = "", duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let startTime: number | null = null;
+    const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime;
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+      
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      setCount(Math.floor(easeOutQuart * end));
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  }, [end, duration]);
+
+  return <>{count}{suffix}</>;
+}
 
 export default function Landing() {
   const [videoEnded, setVideoEnded] = useState(false);
@@ -30,9 +53,9 @@ export default function Landing() {
   ];
 
   const stats = [
-    { number: "15M+", label: "Muslim Singles" },
-    { number: "600K+", label: "Success Stories" },
-    { number: "500+", label: "Daily Matches" }
+    { number: 15, suffix: "M+", label: "Muslim Singles" },
+    { number: 600, suffix: "K+", label: "Success Stories" },
+    { number: 500, suffix: "+", label: "Daily Matches" }
   ];
 
   const testimonials = [
@@ -123,7 +146,9 @@ export default function Landing() {
               <div className="mt-20 grid grid-cols-3 gap-6 md:gap-12">
                 {stats.map((stat, i) => (
                   <div key={i} className="text-center">
-                    <div className="text-3xl md:text-5xl font-bold text-primary font-serif">{stat.number}</div>
+                    <div className="text-3xl md:text-5xl font-bold text-primary font-serif">
+                      <CountUpNumber end={stat.number} suffix={stat.suffix} />
+                    </div>
                     <div className="text-sm md:text-base text-[#F8F4E3]/70 mt-2">{stat.label}</div>
                   </div>
                 ))}
