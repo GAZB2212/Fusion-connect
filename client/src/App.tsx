@@ -103,15 +103,23 @@ function AppContent() {
 }
 
 function App() {
+  // Show splash screen only on initial load (not on HMR updates)
   const [showSplash, setShowSplash] = useState(() => {
-    const hasSeenSplash = sessionStorage.getItem("hasSeenSplash");
-    return !hasSeenSplash;
+    // Check if this is a fresh load
+    const isInitialLoad = !window.sessionStorage.getItem('app_loaded');
+    if (isInitialLoad) {
+      window.sessionStorage.setItem('app_loaded', 'true');
+      return true;
+    }
+    return false;
   });
 
   const handleSplashComplete = () => {
-    sessionStorage.setItem("hasSeenSplash", "true");
+    console.log("Splash complete callback");
     setShowSplash(false);
   };
+
+  console.log("App rendering, showSplash:", showSplash);
 
   if (showSplash) {
     return <SplashScreen onComplete={handleSplashComplete} />;

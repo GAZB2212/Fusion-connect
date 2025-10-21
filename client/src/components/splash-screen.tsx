@@ -9,7 +9,9 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
+    console.log("Splash screen mounted!");
     const timer = setTimeout(() => {
+      console.log("Splash screen timer complete");
       setFadeOut(true);
       setTimeout(onComplete, 500);
     }, 3500);
@@ -29,7 +31,10 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
           muted
           playsInline
           className="w-[300px] md:w-[400px] h-auto"
+          onLoadedData={() => console.log("Video loaded successfully")}
+          onError={(e) => console.error("Video error:", e)}
           onEnded={() => {
+            console.log("Video ended");
             setFadeOut(true);
             setTimeout(onComplete, 500);
           }}
