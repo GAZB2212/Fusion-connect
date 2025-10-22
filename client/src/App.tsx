@@ -15,6 +15,7 @@ import ProfileSetup from "@/pages/profile-setup";
 import Matches from "@/pages/matches";
 import Messages from "@/pages/messages";
 import Settings from "@/pages/settings";
+import Subscribe from "@/pages/subscribe";
 import NotFound from "@/pages/not-found";
 import { BottomNav } from "@/components/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -85,6 +86,7 @@ function Router() {
       <Route path="/matches" component={Matches} />
       <Route path="/messages/:matchId?" component={Messages} />
       <Route path="/settings" component={Settings} />
+      <Route path="/subscribe" component={Subscribe} />
       <Route component={NotFound} />
     </Switch>
   );

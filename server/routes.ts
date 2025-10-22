@@ -130,14 +130,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // If user already has active subscription, return existing
       if (user.stripeSubscriptionId && user.subscriptionStatus === 'active') {
-        const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
-        const latestInvoice = await stripe.invoices.retrieve(subscription.latest_invoice as string);
-        const paymentIntent = latestInvoice.payment_intent as string;
-        const pi = await stripe.paymentIntents.retrieve(paymentIntent);
+        const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId, {
+          expand: ['latest_invoice.payment_intent'],
+        });
+        
+        const latestInvoice = subscription.latest_invoice as Stripe.Invoice;
+        const paymentIntent = latestInvoice.payment_intent as Stripe.PaymentIntent;
 
         return res.json({
           subscriptionId: subscription.id,
-          clientSecret: pi.client_secret,
+          clientSecret: paymentIntent.client_secret,
           status: subscription.status,
         });
       }
@@ -160,21 +162,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create subscription with £9.99/month price
       // Using GBP instead of USD as per requirement
+      const price = await stripe.prices.create({
+        currency: 'gbp',
+        unit_amount: 999, // £9.99 in pence
+        recurring: { interval: 'month' },
+        product_data: {
+          name: 'Fusion Premium',
+          description: 'Monthly subscription to view matches and connect with potential partners',
+        },
+      });
+
       const subscription = await stripe.subscriptions.create({
         customer: customerId,
-        items: [{
-          price_data: {
-            currency: 'gbp',
-            product_data: {
-              name: 'Fusion Premium',
-              description: 'Monthly subscription to view matches and connect with potential partners',
-            },
-            recurring: {
-              interval: 'month',
-            },
-            unit_amount: 999, // £9.99 in pence
-          },
-        }],
+        items: [{ price: price.id }],
         payment_behavior: 'default_incomplete',
         payment_settings: {
           save_default_payment_method: 'on_subscription',
@@ -245,7 +245,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         hasActiveSubscription: isActive,
         status: subscription.status,
-        currentPeriodEnd: subscription.current_period_end,
+        currentPeriodEnd: subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : null,
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
       });
     } catch (error: any) {
@@ -461,6 +461,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get matches
   app.get("/api/matches", isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;
+
+    // Check subscription status - users must have active subscription to view matches
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    const hasActiveSubscription = user?.subscriptionStatus === 'active' || user?.subscriptionStatus === 'trialing';
+
+    if (!hasActiveSubscription) {
+      return res.status(403).json({ 
+        message: "Subscription required to view matches",
+        requiresSubscription: true,
+      });
+    }
 
     const userMatches = await db
       .select()
