@@ -25,6 +25,11 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showSubscribeDialog, setShowSubscribeDialog] = useState(false);
+  
+  // Swipe gesture state
+  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
 
   // Fetch discover profiles
   const { data: profiles = [], isLoading } = useQuery<ProfileWithUser[]>({
@@ -70,6 +75,72 @@ export default function Home() {
     }
   };
 
+  // Touch/drag handlers for mobile swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setDragStart({ x: touch.clientX, y: touch.clientY });
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!dragStart) return;
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - dragStart.x;
+    const deltaY = touch.clientY - dragStart.y;
+    setDragOffset({ x: deltaX, y: deltaY });
+  };
+
+  const handleTouchEnd = () => {
+    if (!dragStart) return;
+    
+    const swipeThreshold = 100; // pixels
+    
+    if (Math.abs(dragOffset.x) > swipeThreshold) {
+      if (dragOffset.x > 0) {
+        // Swiped right - like
+        handleSwipe("right");
+      } else {
+        // Swiped left - pass
+        handleSwipe("left");
+      }
+    }
+    
+    // Reset
+    setDragStart(null);
+    setDragOffset({ x: 0, y: 0 });
+    setIsDragging(false);
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setDragStart({ x: e.clientX, y: e.clientY });
+    setIsDragging(true);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!dragStart || !isDragging) return;
+    const deltaX = e.clientX - dragStart.x;
+    const deltaY = e.clientY - dragStart.y;
+    setDragOffset({ x: deltaX, y: deltaY });
+  };
+
+  const handleMouseUp = () => {
+    if (!dragStart) return;
+    
+    const swipeThreshold = 100;
+    
+    if (Math.abs(dragOffset.x) > swipeThreshold) {
+      if (dragOffset.x > 0) {
+        handleSwipe("right");
+      } else {
+        handleSwipe("left");
+      }
+    }
+    
+    setDragStart(null);
+    setDragOffset({ x: 0, y: 0 });
+    setIsDragging(false);
+  };
+
   const currentProfile = profiles[currentIndex];
 
   if (isLoading) {
@@ -106,11 +177,31 @@ export default function Home() {
   const photos = currentProfile.photos;
   const displayName = currentProfile.useNickname ? currentProfile.displayName.split(' ')[0] : currentProfile.displayName;
 
+  // Calculate card transform based on drag
+  const rotation = dragOffset.x / 20; // Rotate based on horizontal drag
+  const opacity = 1 - Math.abs(dragOffset.x) / 300;
+  const cardStyle = {
+    transform: `translateX(${dragOffset.x}px) translateY(${dragOffset.y}px) rotate(${rotation}deg)`,
+    opacity: isDragging ? opacity : 1,
+    transition: isDragging ? 'none' : 'all 0.3s ease-out',
+    cursor: isDragging ? 'grabbing' : 'grab',
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="container max-w-md mx-auto py-8 px-4">
         {/* Profile Card */}
-        <Card className="relative overflow-hidden rounded-2xl shadow-lg mb-6">
+        <Card 
+          className="relative overflow-hidden rounded-2xl shadow-lg mb-6 touch-none select-none"
+          style={cardStyle}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        >
           {/* Photo */}
           <div className="relative aspect-[3/4] bg-muted">
             {photos && photos[0] ? (
@@ -141,6 +232,22 @@ export default function Home() {
 
             {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            
+            {/* Swipe Indicators */}
+            {isDragging && (
+              <>
+                {dragOffset.x > 50 && (
+                  <div className="absolute top-8 left-8 bg-primary/90 text-white px-6 py-3 rounded-lg font-bold text-xl rotate-12 pointer-events-none">
+                    LIKE
+                  </div>
+                )}
+                {dragOffset.x < -50 && (
+                  <div className="absolute top-8 right-8 bg-destructive/90 text-white px-6 py-3 rounded-lg font-bold text-xl -rotate-12 pointer-events-none">
+                    PASS
+                  </div>
+                )}
+              </>
+            )}
 
             {/* Info Overlay */}
             <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
