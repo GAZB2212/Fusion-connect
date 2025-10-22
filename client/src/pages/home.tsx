@@ -204,29 +204,132 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background pb-20 relative">
-      {/* Swipe Animations */}
+      {/* Premium Swipe Animations */}
       <AnimatePresence>
         {showAnimation === 'like' && (
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1.5, opacity: 1 }}
-            exit={{ scale: 2, opacity: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="fixed inset-0 flex items-center justify-center pointer-events-none z-50"
-          >
-            <Heart className="h-32 w-32 text-primary fill-primary drop-shadow-2xl" />
-          </motion.div>
+          <>
+            {/* Elegant backdrop blur */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              className="fixed inset-0 bg-black/20 backdrop-blur-sm pointer-events-none z-50"
+            />
+            
+            {/* Golden glow effect */}
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 2, opacity: [0, 0.6, 0] }}
+              transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
+              className="fixed inset-0 flex items-center justify-center pointer-events-none z-50"
+            >
+              <div className="h-64 w-64 rounded-full bg-primary/30 blur-3xl" />
+            </motion.div>
+            
+            {/* Premium heart with shine */}
+            <motion.div
+              initial={{ scale: 0, opacity: 0, rotate: -180 }}
+              animate={{ 
+                scale: [0, 1.2, 1],
+                opacity: [0, 1, 1, 0],
+                rotate: [180, 0, 0]
+              }}
+              transition={{ 
+                duration: 0.8,
+                times: [0, 0.6, 0.8, 1],
+                ease: [0.34, 1.56, 0.64, 1]
+              }}
+              className="fixed inset-0 flex items-center justify-center pointer-events-none z-50"
+            >
+              <div className="relative">
+                {/* Glow layers */}
+                <div className="absolute inset-0 blur-2xl">
+                  <Heart className="h-40 w-40 text-primary fill-primary opacity-60" />
+                </div>
+                <div className="absolute inset-0 blur-xl">
+                  <Heart className="h-40 w-40 text-primary fill-primary opacity-80" />
+                </div>
+                {/* Main heart */}
+                <Heart className="h-40 w-40 text-primary fill-primary relative filter drop-shadow-[0_0_30px_rgba(212,175,55,0.8)]" />
+              </div>
+            </motion.div>
+
+            {/* Sparkle particles */}
+            {[...Array(8)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ 
+                  scale: 0,
+                  x: 0,
+                  y: 0,
+                  opacity: 0
+                }}
+                animate={{ 
+                  scale: [0, 1, 0],
+                  x: Math.cos((i / 8) * Math.PI * 2) * 150,
+                  y: Math.sin((i / 8) * Math.PI * 2) * 150,
+                  opacity: [0, 1, 0]
+                }}
+                transition={{ 
+                  duration: 0.8,
+                  delay: 0.1,
+                  ease: "easeOut"
+                }}
+                className="fixed top-1/2 left-1/2 pointer-events-none z-50"
+              >
+                <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_10px_rgba(212,175,55,1)]" />
+              </motion.div>
+            ))}
+          </>
         )}
+        
         {showAnimation === 'pass' && (
-          <motion.div
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1.5, opacity: 1 }}
-            exit={{ scale: 2, opacity: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-            className="fixed inset-0 flex items-center justify-center pointer-events-none z-50"
-          >
-            <HeartCrack className="h-32 w-32 text-destructive drop-shadow-2xl" />
-          </motion.div>
+          <>
+            {/* Subtle backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 bg-black/10 backdrop-blur-sm pointer-events-none z-50"
+            />
+            
+            {/* Red fade effect */}
+            <motion.div
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 2, opacity: [0, 0.3, 0] }}
+              transition={{ duration: 0.7, ease: "easeOut" }}
+              className="fixed inset-0 flex items-center justify-center pointer-events-none z-50"
+            >
+              <div className="h-64 w-64 rounded-full bg-destructive/20 blur-3xl" />
+            </motion.div>
+            
+            {/* Broken heart with elegant animation */}
+            <motion.div
+              initial={{ scale: 0, opacity: 0, rotate: 0 }}
+              animate={{ 
+                scale: [0, 1.15, 1],
+                opacity: [0, 1, 1, 0],
+                rotate: [0, -5, 5, 0]
+              }}
+              transition={{ 
+                duration: 0.7,
+                times: [0, 0.5, 0.7, 1],
+                ease: "easeInOut"
+              }}
+              className="fixed inset-0 flex items-center justify-center pointer-events-none z-50"
+            >
+              <div className="relative">
+                {/* Subtle glow */}
+                <div className="absolute inset-0 blur-xl">
+                  <HeartCrack className="h-36 w-36 text-destructive opacity-40" />
+                </div>
+                {/* Main broken heart */}
+                <HeartCrack className="h-36 w-36 text-destructive relative filter drop-shadow-[0_0_20px_rgba(239,68,68,0.5)]" />
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
       
