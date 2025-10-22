@@ -252,6 +252,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/subscription-status', isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;
 
+    // Prevent caching of subscription status
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
     const [user] = await db
       .select()
       .from(users)
