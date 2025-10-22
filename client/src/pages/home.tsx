@@ -286,49 +286,86 @@ export default function Home() {
         
         {showAnimation === 'pass' && (
           <>
-            {/* Subtle backdrop */}
+            {/* Elegant dark backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="fixed inset-0 bg-black/10 backdrop-blur-sm pointer-events-none z-50"
+              transition={{ duration: 0.4 }}
+              className="fixed inset-0 bg-black/30 backdrop-blur-md pointer-events-none z-50"
             />
             
-            {/* Red fade effect */}
+            {/* Elegant X with premium styling */}
             <motion.div
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 2, opacity: [0, 0.3, 0] }}
-              transition={{ duration: 0.7, ease: "easeOut" }}
-              className="fixed inset-0 flex items-center justify-center pointer-events-none z-50"
-            >
-              <div className="h-64 w-64 rounded-full bg-destructive/20 blur-3xl" />
-            </motion.div>
-            
-            {/* Broken heart with elegant animation */}
-            <motion.div
-              initial={{ scale: 0, opacity: 0, rotate: 0 }}
+              initial={{ scale: 0, opacity: 0, rotate: -90 }}
               animate={{ 
-                scale: [0, 1.15, 1],
+                scale: [0, 1.1, 1],
                 opacity: [0, 1, 1, 0],
-                rotate: [0, -5, 5, 0]
+                rotate: [-90, 0, 0]
               }}
               transition={{ 
-                duration: 0.7,
-                times: [0, 0.5, 0.7, 1],
-                ease: "easeInOut"
+                duration: 0.8,
+                times: [0, 0.6, 0.8, 1],
+                ease: [0.34, 1.56, 0.64, 1]
               }}
               className="fixed inset-0 flex items-center justify-center pointer-events-none z-50"
             >
               <div className="relative">
-                {/* Subtle glow */}
-                <div className="absolute inset-0 blur-xl">
-                  <HeartCrack className="h-36 w-36 text-destructive opacity-40" />
+                {/* Outer glow ring */}
+                <motion.div
+                  animate={{ 
+                    scale: [1, 1.3, 1],
+                    opacity: [0.3, 0.6, 0]
+                  }}
+                  transition={{ 
+                    duration: 0.8,
+                    repeat: 0,
+                    ease: "easeOut"
+                  }}
+                  className="absolute inset-0 flex items-center justify-center"
+                >
+                  <div className="h-48 w-48 rounded-full border-4 border-[#F8F4E3]/30" />
+                </motion.div>
+
+                {/* Inner glow layers */}
+                <div className="absolute inset-0 blur-2xl">
+                  <X className="h-40 w-40 text-[#F8F4E3] opacity-40" strokeWidth={3} />
                 </div>
-                {/* Main broken heart */}
-                <HeartCrack className="h-36 w-36 text-destructive relative filter drop-shadow-[0_0_20px_rgba(239,68,68,0.5)]" />
+                <div className="absolute inset-0 blur-xl">
+                  <X className="h-40 w-40 text-[#F8F4E3] opacity-60" strokeWidth={3} />
+                </div>
+                
+                {/* Main X symbol - elegant ivory color */}
+                <X className="h-40 w-40 text-[#F8F4E3] relative filter drop-shadow-[0_0_40px_rgba(248,244,227,0.8)]" strokeWidth={3} />
               </div>
             </motion.div>
+
+            {/* Elegant fade particles */}
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ 
+                  scale: 1,
+                  x: 0,
+                  y: 0,
+                  opacity: 0
+                }}
+                animate={{ 
+                  scale: [1, 0],
+                  x: Math.cos((i / 6) * Math.PI * 2) * 100,
+                  y: Math.sin((i / 6) * Math.PI * 2) * 100,
+                  opacity: [0, 0.6, 0]
+                }}
+                transition={{ 
+                  duration: 0.8,
+                  delay: 0.1,
+                  ease: "easeOut"
+                }}
+                className="fixed top-1/2 left-1/2 pointer-events-none z-50"
+              >
+                <div className="h-1.5 w-1.5 rounded-full bg-[#F8F4E3] shadow-[0_0_8px_rgba(248,244,227,0.8)]" />
+              </motion.div>
+            ))}
           </>
         )}
       </AnimatePresence>
