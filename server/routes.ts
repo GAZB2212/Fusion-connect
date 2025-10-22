@@ -134,8 +134,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           expand: ['latest_invoice.payment_intent'],
         });
         
-        const latestInvoice = subscription.latest_invoice as Stripe.Invoice;
-        const paymentIntent = latestInvoice.payment_intent as Stripe.PaymentIntent;
+        const latestInvoice = subscription.latest_invoice;
+        if (typeof latestInvoice === 'string') {
+          return res.status(400).json({ message: "Invalid invoice" });
+        }
+        
+        const paymentIntent = (latestInvoice as any)?.payment_intent;
+        if (!paymentIntent || typeof paymentIntent === 'string') {
+          return res.status(400).json({ message: "Invalid payment intent" });
+        }
 
         return res.json({
           subscriptionId: subscription.id,
@@ -168,7 +175,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         recurring: { interval: 'month' },
         product_data: {
           name: 'Fusion Premium',
-          description: 'Monthly subscription to view matches and connect with potential partners',
         },
       });
 
@@ -191,8 +197,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .where(eq(users.id, userId));
 
-      const latestInvoice = subscription.latest_invoice as Stripe.Invoice;
-      const paymentIntent = latestInvoice.payment_intent as Stripe.PaymentIntent;
+      const latestInvoice = subscription.latest_invoice;
+      if (typeof latestInvoice === 'string') {
+        return res.status(400).json({ message: "Invalid invoice" });
+      }
+      
+      const paymentIntent = (latestInvoice as any)?.payment_intent;
+      if (!paymentIntent || typeof paymentIntent === 'string') {
+        return res.status(400).json({ message: "Invalid payment intent" });
+      }
 
       res.json({
         subscriptionId: subscription.id,
@@ -245,7 +258,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         hasActiveSubscription: isActive,
         status: subscription.status,
-        currentPeriodEnd: subscription.current_period_end ? new Date(subscription.current_period_end * 1000).toISOString() : null,
+        currentPeriodEnd: (subscription as any).current_period_end ? new Date((subscription as any).current_period_end * 1000).toISOString() : null,
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
       });
     } catch (error: any) {
@@ -446,12 +459,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .limit(1);
 
       if (mutualSwipe) {
-        // Create match
-        await db.insert(matches).values({
-          user1Id: userId,
-          user2Id: swipedId,
-        });
-        isMatch = true;
+        // Check if at least one user has an active subscription
+        // Matches can only be created if at least one user is a premium subscriber
+        const [currentUser] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+
+        const [otherUser] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, swipedId))
+          .limit(1);
+
+        const currentUserHasSubscription = currentUser?.subscriptionStatus === 'active' || currentUser?.subscriptionStatus === 'trialing';
+        const otherUserHasSubscription = otherUser?.subscriptionStatus === 'active' || otherUser?.subscriptionStatus === 'trialing';
+
+        // Only create match if at least one user has an active subscription
+        if (currentUserHasSubscription || otherUserHasSubscription) {
+          await db.insert(matches).values({
+            user1Id: userId,
+            user2Id: swipedId,
+          });
+          isMatch = true;
+        }
       }
     }
 

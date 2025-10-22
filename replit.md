@@ -40,9 +40,40 @@ Preferred communication style: Simple, everyday language.
   - Inter sans-serif for body text (readability)
 
 - **Updated Pages**
-  - Landing page: Premium hero section with logo, luxury styling
+  - Landing page: Premium hero section with logo, luxury styling, pricing section
   - Login/Signup: Navy cards with gold accents, ivory text
   - All forms: Dark mode optimized with luxury palette
+
+### Subscription System (October 2025)
+- **Stripe Integration for Premium Subscriptions**
+  - £9.99/month premium subscription using Stripe
+  - Free tier: Users can signup, create profiles, browse, and swipe
+  - Premium tier: Required to view matches and send messages
+  - Stripe test mode configured with VITE_STRIPE_PUBLIC_KEY and STRIPE_SECRET_KEY
+  
+- **Subscription Logic**
+  - Swipes are always recorded for all users (free and premium)
+  - **Matches are only created if at least one user has an active subscription**
+  - Free users cannot view matches (403 error shows paywall)
+  - Free users cannot create matches (mutual right swipes don't create matches unless one user is subscribed)
+  - Premium users can match with anyone (including free users)
+  
+- **Database Changes**
+  - Added subscription fields to users table:
+    - stripeCustomerId
+    - stripeSubscriptionId
+    - subscriptionStatus ('active', 'trialing', 'canceled', etc.)
+    - subscriptionEndsAt
+  
+- **New API Endpoints**
+  - POST /api/create-subscription - Creates Stripe subscription and returns client secret
+  - GET /api/subscription-status - Checks current subscription status
+  - POST /api/cancel-subscription - Cancels subscription at period end
+  
+- **UI Updates**
+  - Landing page: Pricing section showing free vs premium tiers
+  - Matches page: Paywall component for non-subscribers
+  - Subscribe page: Stripe Elements payment form with card input
 
 ## System Architecture
 
@@ -92,11 +123,14 @@ The application follows design guidelines inspired by Hinge, Bumble, and LinkedI
 RESTful endpoints organized in `server/routes.ts`:
 - `/api/profile` - User profile CRUD operations
 - `/api/discover` - Fetch potential matches based on preferences
-- `/api/swipe` - Record swipe actions (like/pass)
-- `/api/matches` - Retrieve mutual matches
+- `/api/swipe` - Record swipe actions (like/pass), create matches if subscription active
+- `/api/matches` - Retrieve mutual matches (requires active subscription)
 - `/api/messages` - Message CRUD with polling for real-time updates
 - `/api/chaperones` - Manage chaperone (Wali/guardian) access
 - `/api/auth/user` - Authentication status endpoint
+- `/api/create-subscription` - Create Stripe subscription
+- `/api/subscription-status` - Check subscription status
+- `/api/cancel-subscription` - Cancel subscription at period end
 
 **Authentication & Authorization:**
 - Replit's OpenID Connect (OIDC) integration for user authentication
@@ -115,9 +149,12 @@ The application uses PostgreSQL with the following core entities:
 - **sessions** - Express session storage
 
 **Business Logic:**
-- **Matching Algorithm**: When a user swipes right, check if the other user has already swiped right. If yes, create a match and return `isMatch: true`.
+- **Matching Algorithm**: When a user swipes right, check if the other user has already swiped right. If yes AND at least one user has an active subscription, create a match and return `isMatch: true`. Free users cannot create matches.
 - **Discovery**: Filter out already-swiped profiles and return profiles matching user preferences (gender, age range, location, religious preferences).
 - **Privacy Controls**: Profile visibility settings, photo blur options, and chaperone-enabled conversations.
+- **Subscription Requirements**: 
+  - Free tier: Signup, profile creation, browsing, swiping
+  - Premium tier (£9.99/month): View matches, send messages, chaperone support
 
 ### Data Storage
 
