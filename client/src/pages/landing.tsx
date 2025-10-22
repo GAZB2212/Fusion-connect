@@ -236,6 +236,95 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section className="py-24 bg-gradient-to-b from-[#0E1220] via-[#0A0E17] to-[#0E1220] relative golden-shimmer">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-20" />
+        <div className="container px-4 relative">
+          <div className="mx-auto max-w-3xl text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-[#F8F4E3]">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="text-lg text-[#F8F4E3]/70">
+              Sign up for free, upgrade to connect with your matches
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Free Tier */}
+            <div className="bg-gradient-to-br from-[#0E1220] to-[#0A0E17] rounded-xl border border-[#F8F4E3]/10 p-8">
+              <h3 className="text-2xl font-bold mb-2 text-[#F8F4E3] font-serif">Free</h3>
+              <div className="text-4xl font-bold text-[#F8F4E3] mb-6 font-serif">£0</div>
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-[#F8F4E3]/70">Create your profile</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-[#F8F4E3]/70">Browse profiles</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-[#F8F4E3]/70">Swipe right and left</span>
+                </li>
+              </ul>
+              <Button 
+                variant="outline" 
+                className="w-full border-[#F8F4E3]/30 text-[#F8F4E3] hover:bg-[#F8F4E3]/10"
+                asChild
+                data-testid="button-get-started-free"
+              >
+                <a href="/signup">Get Started Free</a>
+              </Button>
+            </div>
+
+            {/* Premium Tier */}
+            <div className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl border-2 border-primary p-8 relative">
+              <div className="absolute top-0 right-8 -translate-y-1/2">
+                <div className="bg-primary text-black px-4 py-1 rounded-full text-sm font-semibold">
+                  MOST POPULAR
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold mb-2 text-[#F8F4E3] font-serif">Premium</h3>
+              <div className="mb-6">
+                <span className="text-5xl font-bold text-primary font-serif">£9.99</span>
+                <span className="text-[#F8F4E3]/70 ml-2">/month</span>
+              </div>
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-[#F8F4E3]">Everything in Free, plus:</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-[#F8F4E3]">View all your matches</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-[#F8F4E3]">Unlimited messaging</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-[#F8F4E3]">Chaperone support</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-[#F8F4E3]">Full privacy controls</span>
+                </li>
+              </ul>
+              <Button 
+                className="w-full shadow-lg shadow-primary/20"
+                asChild
+                data-testid="button-upgrade-premium"
+              >
+                <a href="/signup">Upgrade to Premium</a>
+              </Button>
+              <p className="text-xs text-[#F8F4E3]/50 text-center mt-4">Cancel anytime</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonials */}
       <section className="py-24 bg-gradient-to-b from-[#0A0E17] via-[#0E1220] to-[#0A0E17] relative golden-shimmer">
         <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-transparent opacity-20" />
