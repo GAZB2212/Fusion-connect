@@ -455,7 +455,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const swipedIds = alreadySwiped.map((s) => s.swipedId);
 
     // Get profiles to show (opposite gender, not self, not already swiped, active profiles)
-    const discoverProfiles = await db
+    let discoverProfiles = await db
       .select({
         profile: profiles,
         user: users,
@@ -472,6 +472,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         )
       )
       .limit(20);
+
+    // DEV MODE: If no profiles found and we're in development, loop all profiles (ignore swipes)
+    if (discoverProfiles.length === 0 && process.env.NODE_ENV === 'development') {
+      discoverProfiles = await db
+        .select({
+          profile: profiles,
+          user: users,
+        })
+        .from(profiles)
+        .innerJoin(users, eq(profiles.userId, users.id))
+        .where(
+          and(
+            ne(profiles.userId, userId),
+            eq(profiles.isActive, true),
+            eq(profiles.isComplete, true),
+            ne(profiles.gender, userProfile.gender)
+          )
+        )
+        .limit(20);
+    }
 
     const result: ProfileWithUser[] = discoverProfiles.map((dp) => ({
       ...dp.profile,
