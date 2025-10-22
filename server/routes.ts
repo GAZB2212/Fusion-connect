@@ -232,11 +232,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // If no subscription, return free tier
+    // Check database subscription status first
+    const hasActiveDbSubscription = user.subscriptionStatus === 'active' || user.subscriptionStatus === 'trialing';
+
+    // If no Stripe subscription ID, return database status
     if (!user.stripeSubscriptionId) {
       return res.json({
-        hasActiveSubscription: false,
-        status: 'none',
+        hasActiveSubscription: hasActiveDbSubscription,
+        status: user.subscriptionStatus || 'none',
+        currentPeriodEnd: user.subscriptionEndsAt ? user.subscriptionEndsAt.toISOString() : null,
+        cancelAtPeriodEnd: false,
       });
     }
 
@@ -263,9 +268,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error: any) {
       console.error('Subscription status check error:', error);
+      // Fall back to database status if Stripe check fails
       res.json({
-        hasActiveSubscription: false,
-        status: 'error',
+        hasActiveSubscription: hasActiveDbSubscription,
+        status: user.subscriptionStatus || 'error',
+        currentPeriodEnd: user.subscriptionEndsAt ? user.subscriptionEndsAt.toISOString() : null,
+        cancelAtPeriodEnd: false,
       });
     }
   });
