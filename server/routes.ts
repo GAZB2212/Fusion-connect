@@ -339,9 +339,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .limit(1);
 
       if (existing) {
-        return res.status(400).json({ message: "Profile already exists" });
+        // Update existing profile
+        const [profile] = await db
+          .update(profiles)
+          .set({
+            ...validatedData,
+            isComplete: true,
+            updatedAt: new Date(),
+          })
+          .where(eq(profiles.userId, userId))
+          .returning();
+
+        return res.json(profile);
       }
 
+      // Create new profile
       const [profile] = await db
         .insert(profiles)
         .values({
