@@ -4,6 +4,7 @@ import { setupAuth, isAuthenticated } from "./auth";
 import { db } from "./db";
 import passport from "passport";
 import bcrypt from "bcrypt";
+import Stripe from "stripe";
 import { 
   users, 
   profiles, 
@@ -25,6 +26,14 @@ import {
   type MessageWithSender,
 } from "@shared/schema";
 import { eq, and, or, ne, notInArray, desc, sql } from "drizzle-orm";
+
+// Initialize Stripe
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+}
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2025-09-30.clover",
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
@@ -101,6 +110,189 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json({ user });
       });
     })(req, res, next);
+  });
+
+  // Subscription endpoints - from blueprint:javascript_stripe
+  app.post('/api/create-subscription', isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+
+    try {
+      // Get current user
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // If user already has active subscription, return existing
+      if (user.stripeSubscriptionId && user.subscriptionStatus === 'active') {
+        const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+        const latestInvoice = await stripe.invoices.retrieve(subscription.latest_invoice as string);
+        const paymentIntent = latestInvoice.payment_intent as string;
+        const pi = await stripe.paymentIntents.retrieve(paymentIntent);
+
+        return res.json({
+          subscriptionId: subscription.id,
+          clientSecret: pi.client_secret,
+          status: subscription.status,
+        });
+      }
+
+      // Create or get Stripe customer
+      let customerId = user.stripeCustomerId;
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: user.email,
+          name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || undefined,
+        });
+        customerId = customer.id;
+
+        // Save customer ID
+        await db
+          .update(users)
+          .set({ stripeCustomerId: customerId })
+          .where(eq(users.id, userId));
+      }
+
+      // Create subscription with £9.99/month price
+      // Using GBP instead of USD as per requirement
+      const subscription = await stripe.subscriptions.create({
+        customer: customerId,
+        items: [{
+          price_data: {
+            currency: 'gbp',
+            product_data: {
+              name: 'Fusion Premium',
+              description: 'Monthly subscription to view matches and connect with potential partners',
+            },
+            recurring: {
+              interval: 'month',
+            },
+            unit_amount: 999, // £9.99 in pence
+          },
+        }],
+        payment_behavior: 'default_incomplete',
+        payment_settings: {
+          save_default_payment_method: 'on_subscription',
+        },
+        expand: ['latest_invoice.payment_intent'],
+      });
+
+      // Save subscription ID
+      await db
+        .update(users)
+        .set({
+          stripeSubscriptionId: subscription.id,
+          subscriptionStatus: subscription.status,
+        })
+        .where(eq(users.id, userId));
+
+      const latestInvoice = subscription.latest_invoice as Stripe.Invoice;
+      const paymentIntent = latestInvoice.payment_intent as Stripe.PaymentIntent;
+
+      res.json({
+        subscriptionId: subscription.id,
+        clientSecret: paymentIntent.client_secret,
+        status: subscription.status,
+      });
+    } catch (error: any) {
+      console.error('Subscription creation error:', error);
+      return res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Check subscription status
+  app.get('/api/subscription-status', isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // If no subscription, return free tier
+    if (!user.stripeSubscriptionId) {
+      return res.json({
+        hasActiveSubscription: false,
+        status: 'none',
+      });
+    }
+
+    // Fetch latest subscription status from Stripe
+    try {
+      const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
+
+      // Update local database with latest status
+      await db
+        .update(users)
+        .set({
+          subscriptionStatus: subscription.status,
+          subscriptionEndsAt: subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : null,
+        })
+        .where(eq(users.id, userId));
+
+      const isActive = subscription.status === 'active' || subscription.status === 'trialing';
+
+      res.json({
+        hasActiveSubscription: isActive,
+        status: subscription.status,
+        currentPeriodEnd: subscription.current_period_end,
+        cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      });
+    } catch (error: any) {
+      console.error('Subscription status check error:', error);
+      res.json({
+        hasActiveSubscription: false,
+        status: 'error',
+      });
+    }
+  });
+
+  // Cancel subscription
+  app.post('/api/cancel-subscription', isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!user || !user.stripeSubscriptionId) {
+      return res.status(400).json({ message: "No active subscription found" });
+    }
+
+    try {
+      const subscription = await stripe.subscriptions.update(user.stripeSubscriptionId, {
+        cancel_at_period_end: true,
+      });
+
+      await db
+        .update(users)
+        .set({
+          subscriptionStatus: subscription.status,
+          subscriptionEndsAt: subscription.cancel_at ? new Date(subscription.cancel_at * 1000) : null,
+        })
+        .where(eq(users.id, userId));
+
+      res.json({
+        success: true,
+        message: "Subscription will be canceled at period end",
+        cancelAt: subscription.cancel_at,
+      });
+    } catch (error: any) {
+      console.error('Subscription cancellation error:', error);
+      return res.status(400).json({ message: error.message });
+    }
   });
 
   // Profile endpoints
