@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, X, MapPin, Briefcase, GraduationCap, CheckCircle2, Info, Crown } from "lucide-react";
+import { Heart, X, MapPin, Briefcase, GraduationCap, CheckCircle2, Info, Crown, HeartCrack } from "lucide-react";
 import type { ProfileWithUser } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -18,6 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useLocation } from "wouter";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Home() {
   const { user } = useAuth();
@@ -30,6 +31,9 @@ export default function Home() {
   const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  
+  // Animation state
+  const [showAnimation, setShowAnimation] = useState<'like' | 'pass' | null>(null);
 
   // Fetch discover profiles
   const { data: profiles = [], isLoading } = useQuery<ProfileWithUser[]>({
@@ -74,6 +78,14 @@ export default function Home() {
 
   const handleSwipe = (direction: "right" | "left") => {
     if (currentProfile) {
+      // Show animation
+      setShowAnimation(direction === "right" ? 'like' : 'pass');
+      
+      // Hide animation after 800ms
+      setTimeout(() => {
+        setShowAnimation(null);
+      }, 800);
+      
       swipeMutation.mutate({ profileId: currentProfile.userId, direction });
     }
   };
@@ -191,7 +203,33 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-20 relative">
+      {/* Swipe Animations */}
+      <AnimatePresence>
+        {showAnimation === 'like' && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1.5, opacity: 1 }}
+            exit={{ scale: 2, opacity: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="fixed inset-0 flex items-center justify-center pointer-events-none z-50"
+          >
+            <Heart className="h-32 w-32 text-primary fill-primary drop-shadow-2xl" />
+          </motion.div>
+        )}
+        {showAnimation === 'pass' && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1.5, opacity: 1 }}
+            exit={{ scale: 2, opacity: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="fixed inset-0 flex items-center justify-center pointer-events-none z-50"
+          >
+            <HeartCrack className="h-32 w-32 text-destructive drop-shadow-2xl" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
       <div className="container max-w-md mx-auto py-8 px-4">
         {/* Profile Card */}
         <Card 
