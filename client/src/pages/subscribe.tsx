@@ -82,11 +82,27 @@ export default function Subscribe() {
   const [activatingDev, setActivatingDev] = useState(false);
 
   useEffect(() => {
-    apiRequest("POST", "/api/create-subscription")
+    // Check subscription status first
+    apiRequest("GET", "/api/subscription-status")
       .then((res) => res.json())
-      .then((data) => {
-        setClientSecret(data.clientSecret);
-        setIsLoading(false);
+      .then((statusData) => {
+        // If already has active subscription, redirect to matches
+        if (statusData.hasActiveSubscription) {
+          toast({
+            title: "Already Subscribed",
+            description: "You already have an active premium subscription!",
+          });
+          setLocation("/matches");
+          return;
+        }
+        
+        // Otherwise, create Stripe subscription
+        return apiRequest("POST", "/api/create-subscription")
+          .then((res) => res.json())
+          .then((data) => {
+            setClientSecret(data.clientSecret);
+            setIsLoading(false);
+          });
       })
       .catch((error) => {
         console.error("Failed to create subscription:", error);
