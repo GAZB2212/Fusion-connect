@@ -336,33 +336,14 @@ export default function Home() {
           </div>
         </Card>
 
-        {/* Action Buttons */}
-        <div className="flex items-center justify-center gap-6">
-          <Button
-            size="icon"
-            variant="outline"
-            className="h-16 w-16 rounded-full border-2"
-            onClick={() => handleSwipe("left")}
-            disabled={swipeMutation.isPending}
-            data-testid="button-pass"
-          >
-            <X className="h-8 w-8 text-muted-foreground" />
-          </Button>
-
-          <Button
-            size="icon"
-            className="h-20 w-20 rounded-full"
-            onClick={() => handleSwipe("right")}
-            disabled={swipeMutation.isPending}
-            data-testid="button-like"
-          >
-            <Heart className="h-10 w-10 fill-current" />
-          </Button>
-        </div>
-
         {/* Counter */}
-        <p className="text-center text-sm text-muted-foreground mt-4">
+        <p className="text-center text-sm text-muted-foreground mt-6">
           {currentIndex + 1} of {profiles.length}
+        </p>
+        
+        {/* Swipe Instructions */}
+        <p className="text-center text-xs text-muted-foreground mt-2">
+          Swipe right to like • Swipe left to pass
         </p>
       </div>
 
