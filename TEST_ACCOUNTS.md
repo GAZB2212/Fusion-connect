@@ -1,219 +1,166 @@
 # Test Accounts - Fusion Matchmaking
 
-## How to Login
+## Quick Access - New Test Accounts
 
-All test accounts use the same password: **test123**
+**All new test accounts use the password:** `Test123!`
 
-Simply use any email below with the password `test123` to login and explore the platform.
+### Male Test Accounts (15 new profiles)
+- test1000@fusion.com - Ahmed Hassan
+- test1001@fusion.com - Mohammed Ali
+- test1002@fusion.com - Omar Khan
+- test1003@fusion.com - Yusuf Ibrahim
+- test1004@fusion.com - Bilal Ahmed
+- test1005@fusion.com - Tariq Rahman
+- test1006@fusion.com - Hamza Malik
+- test1007@fusion.com - Ibrahim Siddiqui
+- test1008@fusion.com - Abdullah Hussain
+- test1009@fusion.com - Zain Abbas
+- test1010@fusion.com - Farhan Shaikh
+- test1011@fusion.com - Rashid Akhtar
+- test1012@fusion.com - Samir Patel
+- test1013@fusion.com - Khalid Nawaz
+- test1014@fusion.com - Usman Raza
 
----
-
-## Female Profiles (10 accounts)
-
-### 1. Aisha Khan
-- **Email**: aisha.khan@test.com
-- **Password**: test123
-- **Age**: 28 | **Location**: London, UK
-- **Occupation**: Healthcare Professional
-- **Sect**: Sunni | **Prayer**: Always
-- **Bio**: Practicing Muslim seeking a partner who values family and deen. Love reading, cooking, and spending time with loved ones.
-
-### 2. Fatima Ali
-- **Email**: fatima.ali@test.com
-- **Password**: test123
-- **Age**: 26 | **Location**: Toronto, Canada
-- **Occupation**: Software Engineer
-- **Sect**: Shia | **Prayer**: Always
-- **Bio**: Engineer by profession, Muslim by heart. Looking for someone kind, compassionate and God-fearing.
-
-### 3. Mariam Hassan
-- **Email**: mariam.hassan@test.com
-- **Password**: test123
-- **Age**: 31 | **Location**: New York, USA
-- **Occupation**: Teacher
-- **Sect**: Just Muslim | **Prayer**: Most times
-- **Bio**: Teacher who loves helping others. Seeking a partner to build a halal family together.
-
-### 4. Zainab Ahmed
-- **Email**: zainab.ahmed@test.com
-- **Password**: test123
-- **Age**: 29 | **Location**: Dubai, UAE
-- **Occupation**: Marketing Manager
-- **Sect**: Just Muslim | **Prayer**: Sometimes
-- **Bio**: Marketing professional passionate about my faith. Looking for someone serious about marriage.
-
-### 5. Khadija Malik
-- **Email**: khadija.malik@test.com
-- **Password**: test123
-- **Age**: 27 | **Location**: Manchester, UK
-- **Occupation**: Registered Nurse
-- **Sect**: Just Muslim | **Prayer**: Always
-- **Bio**: Healthcare worker who values honesty and kindness. Seeking a practicing Muslim for marriage.
-
-### 6. Sara Ibrahim
-- **Email**: sara.ibrahim@test.com
-- **Password**: test123
-- **Age**: 25 | **Location**: Chicago, USA
-- **Occupation**: Graphic Designer
-- **Sect**: Sunni | **Prayer**: Most times
-- **Bio**: Graphic designer and nature lover. Looking for a partner who values faith and family.
-
-### 7. Layla Hussain
-- **Email**: layla.hussain@test.com
-- **Password**: test123
-- **Age**: 30 | **Location**: Sydney, Australia
-- **Occupation**: Software Developer
-- **Sect**: Just Muslim | **Prayer**: Sometimes
-- **Bio**: Software developer seeking someone who shares my Islamic values and life goals.
-
-### 8. Noor Rahman
-- **Email**: noor.rahman@test.com
-- **Password**: test123
-- **Age**: 24 | **Location**: Birmingham, UK
-- **Occupation**: Pharmacist
-- **Sect**: Just Muslim | **Prayer**: Sometimes
-- **Bio**: Pharmacist with a love for travel and learning. Seeking a God-fearing partner.
-
-### 9. Amina Shah
-- **Email**: amina.shah@test.com
-- **Password**: test123
-- **Age**: 32 | **Location**: Los Angeles, USA
-- **Occupation**: Journalist
-- **Sect**: Just Muslim | **Prayer**: Sometimes
-- **Bio**: Journalist passionate about social justice. Looking for someone who values deen and education.
-
-### 10. Yasmin Siddiqui
-- **Email**: yasmin.siddiqui@test.com
-- **Password**: test123
-- **Age**: 26 | **Location**: Kuala Lumpur, Malaysia
-- **Occupation**: Entrepreneur
-- **Sect**: Just Muslim | **Prayer**: Sometimes
-- **Bio**: Entrepreneur seeking a partner who values faith, family, and personal growth.
+### Female Test Accounts (15 new profiles)
+- test1015@fusion.com - Aisha Rahman
+- test1016@fusion.com - Fatima Khan
+- test1017@fusion.com - Maryam Ali
+- test1018@fusion.com - Zainab Hassan
+- test1019@fusion.com - Safiya Ahmed
+- test1020@fusion.com - Amina Malik
+- test1021@fusion.com - Nadia Ibrahim
+- test1022@fusion.com - Hana Siddiqui
+- test1023@fusion.com - Layla Abbas
+- test1024@fusion.com - Yasmin Hussain
+- test1025@fusion.com - Salma Shaikh
+- test1026@fusion.com - Dina Akhtar
+- test1027@fusion.com - Rania Patel
+- test1028@fusion.com - Leila Nawaz
+- test1029@fusion.com - Sara Raza
 
 ---
 
-## Male Profiles (10 accounts)
+## Testing the Subscription System
 
-### 11. Omar Abdullah
-- **Email**: omar.abdullah@test.com
-- **Password**: test123
-- **Age**: 30 | **Location**: London, UK
-- **Occupation**: Software Engineer
-- **Sect**: Sunni | **Prayer**: Always
-- **Bio**: Software engineer who values family and faith. Seeking a partner for a halal marriage.
+### 1. Test Free Tier Experience
+1. Login as **test1000@fusion.com** (Password: Test123!)
+2. Browse profiles and swipe
+3. **Swipe right** on a profile you like
+4. ✨ **You'll see a dialog: "Upgrade to See Your Matches"**
+5. Click "Continue with Free" to keep swiping
 
-### 12. Ahmed Mohamed
-- **Email**: ahmed.mohamed@test.com
-- **Password**: test123
-- **Age**: 33 | **Location**: Toronto, Canada
-- **Occupation**: Medical Doctor
-- **Sect**: Shia | **Prayer**: Always
-- **Bio**: Doctor committed to helping others. Looking for a practicing Muslimah to build a family with.
+### 2. Test Premium Subscription
+1. Login as any test account
+2. Swipe right on someone
+3. Click **"Upgrade to Premium"** in the dialog
+4. Enter Stripe test card: **4242 4242 4242 4242**
+5. Use any future date (12/25), any CVC (123), any postal code
+6. After payment, go to **Matches** to see your matches
 
-### 13. Yusuf Ali
-- **Email**: yusuf.ali@test.com
-- **Password**: test123
-- **Age**: 28 | **Location**: New York, USA
-- **Occupation**: Business Analyst
-- **Sect**: Sunni | **Prayer**: Most times
-- **Bio**: Business analyst who loves sports and hiking. Seeking a kind and God-fearing wife.
+### 3. Test Matching Rules
 
-### 14. Ibrahim Khan
-- **Email**: ibrahim.khan@test.com
-- **Password**: test123
-- **Age**: 35 | **Location**: Dubai, UAE
-- **Occupation**: Architect
-- **Sect**: Just Muslim | **Prayer**: Always
-- **Bio**: Architect with strong family values. Looking for a partner who prioritizes deen.
+**Free + Free = No Match Created**
+- Login as test1000@fusion.com (free user)
+- Swipe right on test1015@fusion.com
+- Login as test1015@fusion.com (free user)
+- Swipe right on test1000@fusion.com
+- ❌ No match is created (both are free)
 
-### 15. Hassan Ahmed
-- **Email**: hassan.ahmed@test.com
-- **Password**: test123
-- **Age**: 29 | **Location**: Manchester, UK
-- **Occupation**: Teacher
-- **Sect**: Just Muslim | **Prayer**: Most times
-- **Bio**: Teacher passionate about education and community. Seeking marriage with the right person.
-
-### 16. Ali Hassan
-- **Email**: ali.hassan@test.com
-- **Password**: test123
-- **Age**: 31 | **Location**: Chicago, USA
-- **Occupation**: Financial Analyst
-- **Sect**: Just Muslim | **Prayer**: Sometimes
-- **Bio**: Financial analyst seeking a practicing Muslim woman for marriage and family.
-
-### 17. Bilal Malik
-- **Email**: bilal.malik@test.com
-- **Password**: test123
-- **Age**: 27 | **Location**: Sydney, Australia
-- **Occupation**: Civil Engineer
-- **Sect**: Just Muslim | **Prayer**: Sometimes
-- **Bio**: Civil engineer who values honesty and faith. Looking for a life partner.
-
-### 18. Hamza Ibrahim
-- **Email**: hamza.ibrahim@test.com
-- **Password**: test123
-- **Age**: 26 | **Location**: Birmingham, UK
-- **Occupation**: Physiotherapist
-- **Sect**: Just Muslim | **Prayer**: Sometimes
-- **Bio**: Physiotherapist seeking someone who shares my Islamic values and family goals.
-
-### 19. Tariq Hussain
-- **Email**: tariq.hussain@test.com
-- **Password**: test123
-- **Age**: 34 | **Location**: Los Angeles, USA
-- **Occupation**: Accountant
-- **Sect**: Just Muslim | **Prayer**: Sometimes
-- **Bio**: Accountant with traditional values. Looking for a God-fearing partner for marriage.
-
-### 20. Mustafa Rahman
-- **Email**: mustafa.rahman@test.com
-- **Password**: test123
-- **Age**: 32 | **Location**: Seattle, USA
-- **Occupation**: IT Consultant
-- **Sect**: Just Muslim | **Prayer**: Sometimes
-- **Bio**: IT consultant seeking a partner who values faith and family.
+**Premium + Free = Match Created!**
+- Subscribe with test1000@fusion.com
+- Swipe right on test1015@fusion.com (free user)
+- Login as test1015@fusion.com (free)
+- Swipe right on test1000@fusion.com (premium)
+- ✅ Match is created (one has premium)
+- test1000 can see the match
+- test1015 sees paywall when trying to view matches
 
 ---
 
-## Quick Test Scenarios
+## Stripe Test Cards
 
-### Test Matching Flow
-1. Login as **omar.abdullah@test.com** (male, London)
-2. You'll see female profiles from the same/nearby locations
-3. Swipe right on profiles you like
-4. If they swipe right back, you'll get a match!
+Use these when testing payments:
 
-### Test Different Perspectives
-- **Very Religious User**: Login as aisha.khan@test.com or ahmed.mohamed@test.com
-- **Professional Woman**: Login as fatima.ali@test.com (Engineer) or layla.hussain@test.com (Developer)
-- **Different Locations**: Try profiles from Dubai, Sydney, or Kuala Lumpur
-- **Age Variety**: From 24 (Noor) to 35 (Ibrahim)
+- **Successful payment:** 4242 4242 4242 4242
+- **Declined payment:** 4000 0000 0000 0002
+- **Authentication required:** 4000 0025 0000 3155
 
-### Test Messaging
-1. Login as two different accounts in different browser tabs
-2. Have both swipe right on each other to create a match
-3. Start messaging between the matched accounts
+Expiry: Any future date (e.g., 12/25)  
+CVC: Any 3 digits (e.g., 123)  
+Postal: Any code (e.g., 12345)
 
 ---
 
-## Features to Test
+## Database Stats
 
-✅ **Profile Discovery** - Browse potential matches
-✅ **Swipe System** - Like/Pass on profiles  
-✅ **Matching** - Get matched when both users like each other
-✅ **Messaging** - Chat with your matches
-✅ **Profile Settings** - Update your own profile
-✅ **Filters** - Filter by religion, location, age, etc.
+**Total Complete Profiles:** 54
+- 15 Male profiles (from new seed)
+- 15 Female profiles (from new seed)
+- 24 Original profiles (from earlier testing)
+
+**Profile Features:**
+- Ages: 22-39 years old
+- Locations: UK cities (London, Manchester, Birmingham, Leeds, etc.)
+- Occupations: Software Engineer, Doctor, Teacher, Accountant, etc.
+- Education: Bachelor's to PhD
+- Religious practices: Very Religious to Moderately Religious
+- Sects: Sunni and Shia
+- Prayer frequencies: 5 times daily, Regularly, Sometimes
+- Some verified ✓, some unverified
+- Mix of visible and blurred photos for privacy testing
 
 ---
 
-## Notes
+## Original Test Accounts (Password: test123)
 
-- All profiles are marked as **verified** and **complete**
-- All accounts are looking for **Marriage**
-- Profiles have diverse Islamic preferences (Sunni, Shia, Just Muslim)
-- Prayer frequencies vary (Always, Most times, Sometimes)
-- Geographic diversity: UK, USA, Canada, UAE, Australia, Malaysia
-- Age range: 24-35 years old
-- Professional backgrounds in healthcare, tech, education, business
+### Female Profiles (10 accounts)
+
+1. **Aisha Khan** - aisha.khan@test.com - London, UK - Healthcare Professional
+2. **Fatima Ali** - fatima.ali@test.com - Toronto, Canada - Software Engineer
+3. **Mariam Hassan** - mariam.hassan@test.com - New York, USA - Teacher
+4. **Zainab Ahmed** - zainab.ahmed@test.com - Dubai, UAE - Marketing Manager
+5. **Khadija Malik** - khadija.malik@test.com - Manchester, UK - Registered Nurse
+6. **Sara Ibrahim** - sara.ibrahim@test.com - Chicago, USA - Graphic Designer
+7. **Layla Hussain** - layla.hussain@test.com - Sydney, Australia - Software Developer
+8. **Noor Rahman** - noor.rahman@test.com - Birmingham, UK - Pharmacist
+9. **Amina Shah** - amina.shah@test.com - Los Angeles, USA - Journalist
+10. **Yasmin Siddiqui** - yasmin.siddiqui@test.com - Kuala Lumpur, Malaysia - Entrepreneur
+
+### Male Profiles (10 accounts)
+
+11. **Omar Abdullah** - omar.abdullah@test.com - London, UK - Software Engineer
+12. **Ahmed Mohamed** - ahmed.mohamed@test.com - Toronto, Canada - Medical Doctor
+13. **Yusuf Ali** - yusuf.ali@test.com - New York, USA - Business Analyst
+14. **Ibrahim Khan** - ibrahim.khan@test.com - Dubai, UAE - Architect
+15. **Hassan Ahmed** - hassan.ahmed@test.com - Manchester, UK - Teacher
+16. **Ali Hassan** - ali.hassan@test.com - Chicago, USA - Financial Analyst
+17. **Bilal Malik** - bilal.malik@test.com - Sydney, Australia - Civil Engineer
+18. **Hamza Ibrahim** - hamza.ibrahim@test.com - Birmingham, UK - Physiotherapist
+19. **Tariq Hussain** - tariq.hussain@test.com - Los Angeles, USA - Accountant
+20. **Mustafa Rahman** - mustafa.rahman@test.com - Seattle, USA - IT Consultant
+
+---
+
+## Key Features to Test
+
+✅ **Profile Discovery** - Browse potential matches based on gender preference  
+✅ **Swipe System** - Like (heart) or Pass (X) on profiles  
+✅ **Free Tier** - Swipe and browse without subscription  
+✅ **Upgrade Prompt** - Dialog appears when free users swipe right  
+✅ **Subscription** - £9.99/month Stripe payment  
+✅ **Match Creation** - Only works if at least one user is premium  
+✅ **Matches Page** - Paywall for free users, access for premium  
+✅ **Messaging** - Chat with your matches (premium only)  
+✅ **Profile Privacy** - Blurred photos, nickname usage  
+✅ **Verification Badges** - See verified profiles  
+
+---
+
+## Support
+
+If you need to reset or add more test data, run:
+```bash
+npx tsx scripts/seed-profiles.ts
+```
+
+This will add 30 more diverse profiles to test with.
