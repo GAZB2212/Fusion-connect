@@ -4,20 +4,36 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, X, MapPin, Briefcase, GraduationCap, CheckCircle2, Info } from "lucide-react";
+import { Heart, X, MapPin, Briefcase, GraduationCap, CheckCircle2, Info, Crown } from "lucide-react";
 import type { ProfileWithUser } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useLocation } from "wouter";
 
 export default function Home() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [showSubscribeDialog, setShowSubscribeDialog] = useState(false);
 
   // Fetch discover profiles
   const { data: profiles = [], isLoading } = useQuery<ProfileWithUser[]>({
     queryKey: ["/api/discover"],
+  });
+
+  // Check subscription status
+  const { data: subscriptionStatus } = useQuery<{ hasActiveSubscription: boolean }>({
+    queryKey: ["/api/subscription-status"],
   });
 
   // Swipe mutation
@@ -26,12 +42,15 @@ export default function Home() {
       const result = await apiRequest("POST", "/api/swipe", { swipedId: profileId, direction });
       return result as unknown as { success: boolean; isMatch: boolean };
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       if (data.isMatch) {
         toast({
           title: "🎉 It's a Match!",
           description: "You both liked each other! Start a conversation now.",
         });
+      } else if (variables.direction === "right" && !subscriptionStatus?.hasActiveSubscription) {
+        // Show subscribe dialog for free users who swipe right
+        setShowSubscribeDialog(true);
       }
       setCurrentIndex((prev) => prev + 1);
       queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
@@ -236,6 +255,58 @@ export default function Home() {
           {currentIndex + 1} of {profiles.length}
         </p>
       </div>
+
+      {/* Subscribe Dialog */}
+      <Dialog open={showSubscribeDialog} onOpenChange={setShowSubscribeDialog}>
+        <DialogContent className="sm:max-w-md bg-[#0A0E17] border-white/10">
+          <DialogHeader>
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <Crown className="h-6 w-6 text-primary" />
+            </div>
+            <DialogTitle className="text-center text-2xl text-[#F8F4E3] font-serif">
+              Upgrade to See Your Matches
+            </DialogTitle>
+            <DialogDescription className="text-center text-[#F8F4E3]/70">
+              To see who you've liked and connect with them, upgrade to Fusion Premium for just £9.99/month.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-4">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              <p className="text-[#F8F4E3]/90">View all your matches</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              <p className="text-[#F8F4E3]/90">Unlimited messaging</p>
+            </div>
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              <p className="text-[#F8F4E3]/90">Chaperone support</p>
+            </div>
+          </div>
+          <DialogFooter className="flex-col gap-2 sm:flex-col">
+            <Button
+              className="w-full"
+              onClick={() => {
+                setShowSubscribeDialog(false);
+                setLocation("/subscribe");
+              }}
+              data-testid="button-subscribe-dialog"
+            >
+              <Crown className="h-4 w-4 mr-2" />
+              Upgrade to Premium
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full border-[#F8F4E3]/30 text-[#F8F4E3] hover:bg-[#F8F4E3]/10"
+              onClick={() => setShowSubscribeDialog(false)}
+              data-testid="button-continue-free"
+            >
+              Continue with Free
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
