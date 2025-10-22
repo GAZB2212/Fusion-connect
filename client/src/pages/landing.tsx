@@ -129,6 +129,9 @@ export default function Landing() {
                 <Star className="h-4 w-4 text-primary fill-primary" />
                 <span className="text-[#F8F4E3] text-sm font-medium">Trusted by Muslims worldwide</span>
               </div>
+              <div className="mb-8 flex justify-center">
+                <img src={logoImage} alt="Fusion Logo" className="h-32 md:h-40 w-auto" data-testid="img-hero-logo" />
+              </div>
               <h1 className="mb-6 text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl font-serif text-[#F8F4E3]">
                 Where Muslims Meet
               </h1>
