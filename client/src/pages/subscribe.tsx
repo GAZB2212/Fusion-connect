@@ -1,11 +1,12 @@
 import { useStripe, Elements, PaymentElement, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useEffect, useState } from 'react';
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2, Zap } from "lucide-react";
+import { useLocation } from "wouter";
 
 if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
   throw new Error('Missing required Stripe key: VITE_STRIPE_PUBLIC_KEY');
@@ -76,6 +77,9 @@ function SubscribeForm() {
 export default function Subscribe() {
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const [activatingDev, setActivatingDev] = useState(false);
 
   useEffect(() => {
     apiRequest("POST", "/api/create-subscription")
@@ -89,6 +93,27 @@ export default function Subscribe() {
         setIsLoading(false);
       });
   }, []);
+
+  const activateDevPremium = async () => {
+    setActivatingDev(true);
+    try {
+      await apiRequest("POST", "/api/dev/activate-premium", {});
+      await queryClient.invalidateQueries({ queryKey: ["/api/subscription-status"] });
+      toast({
+        title: "Premium Activated!",
+        description: "Dev mode: You now have premium access for testing.",
+      });
+      setLocation("/matches");
+    } catch (error: any) {
+      toast({
+        title: "Activation Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setActivatingDev(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -111,7 +136,7 @@ export default function Subscribe() {
               Unable to create subscription. Please try again later.
             </CardDescription>
           </CardHeader>
-          <CardFooter>
+          <CardFooter className="flex-col gap-2">
             <Button 
               onClick={() => window.location.reload()} 
               variant="outline"
@@ -119,6 +144,25 @@ export default function Subscribe() {
               data-testid="button-retry"
             >
               Retry
+            </Button>
+            <div className="w-full border-t border-white/10 my-2"></div>
+            <Button 
+              onClick={activateDevPremium}
+              disabled={activatingDev}
+              className="w-full bg-emerald-600 hover:bg-emerald-700"
+              data-testid="button-dev-activate"
+            >
+              {activatingDev ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Activating...
+                </>
+              ) : (
+                <>
+                  <Zap className="mr-2 h-4 w-4" />
+                  Dev Mode: Activate Premium
+                </>
+              )}
             </Button>
           </CardFooter>
         </Card>
@@ -190,6 +234,27 @@ export default function Subscribe() {
           <p className="text-xs text-[#F8F4E3]/50 text-center">
             Your subscription will automatically renew each month. You can cancel at any time from your settings.
           </p>
+          <div className="w-full border-t border-white/10 my-2"></div>
+          <p className="text-xs text-[#F8F4E3]/40 text-center mb-2">Development Mode</p>
+          <Button 
+            onClick={activateDevPremium}
+            disabled={activatingDev}
+            variant="outline"
+            className="w-full border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+            data-testid="button-dev-activate"
+          >
+            {activatingDev ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Activating...
+              </>
+            ) : (
+              <>
+                <Zap className="mr-2 h-4 w-4" />
+                Skip Payment (Dev Mode)
+              </>
+            )}
+          </Button>
         </CardFooter>
       </Card>
     </div>

@@ -112,6 +112,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     })(req, res, next);
   });
 
+  // DEV MODE: Activate premium without payment
+  app.post('/api/dev/activate-premium', isAuthenticated, async (req: any, res: Response) => {
+    // Only allow in development mode
+    if (process.env.NODE_ENV !== 'development') {
+      return res.status(403).json({ message: "Only available in development mode" });
+    }
+
+    const userId = req.user.id;
+
+    try {
+      // Update user to have active premium subscription
+      await db
+        .update(users)
+        .set({
+          subscriptionStatus: 'active',
+          subscriptionEndsAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+        })
+        .where(eq(users.id, userId));
+
+      res.json({
+        success: true,
+        message: "Premium activated (dev mode)",
+        subscriptionStatus: 'active',
+      });
+    } catch (error: any) {
+      console.error('Dev premium activation error:', error);
+      return res.status(400).json({ message: error.message });
+    }
+  });
+
   // Subscription endpoints - from blueprint:javascript_stripe
   app.post('/api/create-subscription', isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;
