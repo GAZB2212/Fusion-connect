@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, MapPin, CheckCircle2, Heart } from "lucide-react";
+import { MessageSquare, MapPin, CheckCircle2, Heart, Crown, Lock } from "lucide-react";
 import type { MatchWithProfiles } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLocation } from "wouter";
@@ -10,9 +10,13 @@ import { useLocation } from "wouter";
 export default function Matches() {
   const [, setLocation] = useLocation();
   
-  const { data: matches = [], isLoading } = useQuery<MatchWithProfiles[]>({
+  const { data: matches = [], isLoading, error } = useQuery<MatchWithProfiles[]>({
     queryKey: ["/api/matches"],
+    retry: false,
   });
+
+  // Check if error is subscription required (403)
+  const requiresSubscription = error && (error as any).message?.includes("403");
 
   if (isLoading) {
     return (
@@ -24,6 +28,85 @@ export default function Matches() {
               <Skeleton key={i} className="h-48" />
             ))}
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show paywall if subscription is required
+  if (requiresSubscription) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] golden-shimmer pb-20">
+        <div className="container max-w-3xl mx-auto py-8 px-4">
+          <div className="mb-8 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+              <Crown className="h-8 w-8 text-primary" />
+            </div>
+            <h1 className="text-3xl font-bold mb-2 text-[#F8F4E3] font-serif">Upgrade to Premium</h1>
+            <p className="text-[#F8F4E3]/70">
+              You have matches waiting! Subscribe to view and connect with them.
+            </p>
+          </div>
+
+          <Card className="bg-[#0A0E17] border-white/10">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl text-[#F8F4E3] font-serif">Fusion Premium</CardTitle>
+              <CardDescription className="text-[#F8F4E3]/70">
+                Unlock all features for just £9.99/month
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-[#F8F4E3] font-medium">View All Your Matches</p>
+                    <p className="text-[#F8F4E3]/60 text-sm">See everyone who swiped right on you</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-[#F8F4E3] font-medium">Unlimited Messaging</p>
+                    <p className="text-[#F8F4E3]/60 text-sm">Chat with all your matches without limits</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-[#F8F4E3] font-medium">Chaperone Support</p>
+                    <p className="text-[#F8F4E3]/60 text-sm">Add your Wali or guardian to conversations</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-[#F8F4E3] font-medium">Full Privacy Controls</p>
+                    <p className="text-[#F8F4E3]/60 text-sm">Control who sees your photos and profile</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-center py-4 border-t border-white/10">
+                <div className="text-5xl font-bold text-primary mb-2 font-serif">£9.99</div>
+                <div className="text-[#F8F4E3]/70">per month • Cancel anytime</div>
+              </div>
+
+              <Button 
+                className="w-full" 
+                size="lg"
+                onClick={() => setLocation("/subscribe")}
+                data-testid="button-subscribe-now"
+              >
+                <Crown className="h-4 w-4 mr-2" />
+                Subscribe Now
+              </Button>
+
+              <p className="text-xs text-[#F8F4E3]/50 text-center">
+                Your subscription will automatically renew each month
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
