@@ -39,6 +39,9 @@ export default function Home() {
   // Check subscription status
   const { data: subscriptionStatus } = useQuery<{ hasActiveSubscription: boolean }>({
     queryKey: ["/api/subscription-status"],
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0, // Always refetch to ensure fresh subscription status
   });
 
   // Swipe mutation
