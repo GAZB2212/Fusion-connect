@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, X, MapPin, Briefcase, GraduationCap, CheckCircle2, Info, Crown, HeartCrack } from "lucide-react";
+import { Heart, X, MapPin, Briefcase, GraduationCap, CheckCircle2, Info, Crown, HeartCrack, Clock, Camera } from "lucide-react";
 import type { ProfileWithUser } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -191,6 +191,14 @@ export default function Home() {
   const age = currentProfile.age;
   const photos = currentProfile.photos;
   const displayName = currentProfile.useNickname ? currentProfile.displayName.split(' ')[0] : currentProfile.displayName;
+  
+  // Check if user was active today (within 24 hours)
+  const isActiveToday = currentProfile.lastActive 
+    ? new Date(currentProfile.lastActive).getTime() > Date.now() - 24 * 60 * 60 * 1000
+    : false;
+  
+  // Check if user has premium subscription (from user.subscriptionStatus)
+  const isPremium = currentProfile.user?.subscriptionStatus === 'active' || currentProfile.user?.subscriptionStatus === 'trialing';
 
   // Calculate card transform based on drag
   const rotation = dragOffset.x / 20; // Rotate based on horizontal drag
@@ -437,6 +445,11 @@ export default function Home() {
                 {currentProfile.isVerified && (
                   <CheckCircle2 className="h-6 w-6 text-primary fill-primary" />
                 )}
+                {currentProfile.photoVerified && (
+                  <div className="h-6 w-6 rounded-full bg-primary/90 flex items-center justify-center">
+                    <Camera className="h-4 w-4 text-white" />
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-2 text-sm mb-3">
                 <MapPin className="h-4 w-4" />
@@ -444,6 +457,29 @@ export default function Home() {
               </div>
 
               <div className="flex flex-wrap gap-2 mb-4">
+                {/* Premium Badge */}
+                {isPremium && (
+                  <Badge variant="secondary" className="bg-primary/90 text-white border-0 font-semibold">
+                    <Crown className="h-3 w-3 mr-1" />
+                    Premium
+                  </Badge>
+                )}
+                
+                {/* Active Today Badge */}
+                {isActiveToday && (
+                  <Badge variant="secondary" className="bg-emerald-500/90 text-white border-0">
+                    <Clock className="h-3 w-3 mr-1" />
+                    Active today
+                  </Badge>
+                )}
+                
+                {/* Profession Badge */}
+                {currentProfile.profession && (
+                  <Badge variant="secondary" className="bg-white/20 text-white border-0 font-medium">
+                    {currentProfile.profession}
+                  </Badge>
+                )}
+                
                 <Badge variant="secondary" className="bg-white/20 text-white border-0">
                   {currentProfile.lookingFor}
                 </Badge>
@@ -506,6 +542,24 @@ export default function Home() {
                   {currentProfile.halalImportance && (
                     <Badge variant="outline">
                       Halal: {currentProfile.halalImportance}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {currentProfile.interests && currentProfile.interests.length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-2">Interests</h3>
+                <div className="flex flex-wrap gap-2">
+                  {currentProfile.interests.slice(0, 10).map((interest, i) => (
+                    <Badge key={i} variant="outline" className="text-sm">
+                      {interest}
+                    </Badge>
+                  ))}
+                  {currentProfile.interests.length > 10 && (
+                    <Badge variant="outline" className="text-sm">
+                      +{currentProfile.interests.length - 10} more
                     </Badge>
                   )}
                 </div>
