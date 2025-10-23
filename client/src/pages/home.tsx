@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
+import heroBackgroundVideo from "@assets/In_want_a_202510231351_gqfd0_1761223892026.mp4";
 
 export default function Home() {
   const { user } = useAuth();
@@ -34,6 +35,37 @@ export default function Home() {
   
   // Animation state
   const [showAnimation, setShowAnimation] = useState<'like' | 'pass' | null>(null);
+  
+  // Video fade state
+  const [videoOpacity, setVideoOpacity] = useState(1);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  
+  // Video fade in/out loop effect
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleTimeUpdate = () => {
+      const duration = video.duration;
+      const currentTime = video.currentTime;
+      
+      // Fade in during first 1 second
+      if (currentTime < 1) {
+        setVideoOpacity(currentTime);
+      }
+      // Fade out during last 1 second
+      else if (currentTime > duration - 1) {
+        setVideoOpacity(duration - currentTime);
+      }
+      // Full opacity in the middle
+      else {
+        setVideoOpacity(1);
+      }
+    };
+
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    return () => video.removeEventListener('timeupdate', handleTimeUpdate);
+  }, []);
 
   // Fetch discover profiles
   const { data: profiles = [], isLoading } = useQuery<ProfileWithUser[]>({
@@ -204,6 +236,34 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background pb-20 relative">
+      {/* Hero Video Background Section */}
+      <div className="relative w-full h-64 md:h-80 overflow-hidden mb-8">
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ opacity: videoOpacity, transition: 'opacity 0.5s ease-in-out' }}
+        >
+          <source src={heroBackgroundVideo} type="video/mp4" />
+        </video>
+        
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
+        
+        {/* Text Overlay */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+          <h2 className="text-3xl md:text-5xl font-bold text-[#F8F4E3] mb-3 font-serif">
+            Find Your Perfect Match
+          </h2>
+          <p className="text-lg md:text-xl text-[#F8F4E3]/90 max-w-2xl">
+            Swipe through meaningful connections
+          </p>
+        </div>
+      </div>
+      
       {/* Premium Swipe Animations */}
       <AnimatePresence>
         {showAnimation === 'like' && (
