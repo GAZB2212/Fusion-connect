@@ -75,6 +75,47 @@ Preferred communication style: Simple, everyday language.
   - Matches page: Paywall component for non-subscribers
   - Subscribe page: Stripe Elements payment form with card input
 
+### Comprehensive Muzz-Inspired Profile System (October 2025)
+- **Expanded Profile Setup Flow (5 Steps)**
+  - Step 1: Basic Info (name, age, gender, location, height with cm/ft options, photo upload)
+  - Step 2: Islamic Values (born Muslim, detailed sect selection, religious practice levels)
+  - Step 3: Profession & Marital Status (searchable profession list, marital status, education)
+  - Step 4: Interests (100+ categorized interests with emojis from Sport, Food, Creative, Entertainment, Outdoors, Intellectual, Social, Wellness, Islamic categories)
+  - Step 5: Bio & Final Details (looking for, bio text area)
+
+- **New Profile Fields**
+  - Height: Integer (cm) with heightUnit field for display preference
+  - Born Muslim: Boolean field to indicate if user was born into Islam
+  - Detailed Sect Options: Sunni variants (Hanafi, Maliki, Shafi, Hanbali), Shia variants (Twelver, Ismaili, Zaydi), Sufi, Other
+  - Religious Practice: 4-level system (Strictly practising, Actively practising, Occasionally practising, Not practising at all) with descriptions
+  - Profession: Searchable dropdown from 200+ professional roles (Doctor, Engineer, Teacher, etc.)
+  - Marital Status: Never married, Separated, Divorced, Annulled, Widowed, Married
+  - Interests: Array of selected interests (max 15 recommended)
+  - Last Active: Timestamp for "Active today" badge
+  - Photo Verified: Boolean for photo verification status
+  - Main Photo Index: Integer to designate which photo is the main display photo
+
+- **Comprehensive Badge System on Profile Cards**
+  - Premium Badge: Golden crown icon with "Premium" text for subscribed users
+  - Active Today Badge: Emerald green with clock icon for users active within 24 hours
+  - Profession Badge: Displays user's profession (e.g., "Doctor", "Software Engineer")
+  - Photo Verified Badge: Golden camera icon for verified profile photos
+  - All badges styled with appropriate colors matching luxury brand palette
+
+- **Interests Display**
+  - Up to 10 interests shown on profile cards
+  - "+X more" badge if user has selected more than 10
+  - Full interests list in profile details section
+  - Each interest includes emoji for visual appeal
+
+- **Constants Library (shared/constants.ts)**
+  - INTEREST_CATEGORIES: Object with 9 categories and 100+ interests
+  - PROFESSIONS: Array of 200+ professional roles
+  - HEIGHT_OPTIONS_CM: Array of height options from 122cm (4'0") to 203cm (6'8")
+  - SECT_OPTIONS: Detailed Islamic sect breakdown
+  - RELIGIOUS_PRACTICE_OPTIONS: 4 levels with descriptions
+  - MARITAL_STATUS_OPTIONS: 6 options matching Muzz standards
+
 ## System Architecture
 
 ### Frontend Architecture
