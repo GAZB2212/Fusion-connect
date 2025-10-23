@@ -78,9 +78,19 @@ export default function Login() {
             </div>
 
             <div>
-              <label htmlFor="password" className="text-sm font-medium mb-2 block text-[#F8F4E3]">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="password" className="text-sm font-medium text-[#F8F4E3]">
+                  Password
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setLocation("/forgot-password")}
+                  className="text-xs text-primary hover:underline"
+                  data-testid="link-forgot-password"
+                >
+                  Forgot Password?
+                </button>
+              </div>
               <Input
                 id="password"
                 type="password"

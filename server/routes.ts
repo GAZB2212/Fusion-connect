@@ -5,6 +5,8 @@ import { db } from "./db";
 import passport from "passport";
 import bcrypt from "bcrypt";
 import Stripe from "stripe";
+import { randomBytes } from "crypto";
+import { sendPasswordResetEmail } from "./email";
 import { 
   users, 
   profiles, 
@@ -12,6 +14,7 @@ import {
   matches, 
   messages, 
   chaperones,
+  passwordResetTokens,
   insertProfileSchema,
   insertMessageSchema,
   insertChaperoneSchema,
@@ -25,7 +28,7 @@ import {
   type MatchWithProfiles,
   type MessageWithSender,
 } from "@shared/schema";
-import { eq, and, or, ne, notInArray, desc, sql } from "drizzle-orm";
+import { eq, and, or, ne, notInArray, desc, sql, lt } from "drizzle-orm";
 
 // Initialize Stripe
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -156,6 +159,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Change password error:", error);
       res.status(500).json({ message: "Failed to change password" });
+    }
+  });
+
+  // Request password reset
+  app.post("/api/forgot-password", async (req: Request, res: Response) => {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    try {
+      // Find user by email
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email.toLowerCase()))
+        .limit(1);
+
+      // Always return success even if user doesn't exist (security best practice)
+      if (!user) {
+        return res.json({ success: true, message: "If an account exists with that email, you will receive a password reset link" });
+      }
+
+      // Generate secure random token
+      const token = randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+
+      // Store token in database
+      await db.insert(passwordResetTokens).values({
+        userId: user.id,
+        token,
+        expiresAt,
+      });
+
+      // Send email
+      await sendPasswordResetEmail(user.email, token, user.firstName || '');
+
+      res.json({ success: true, message: "If an account exists with that email, you will receive a password reset link" });
+    } catch (error: any) {
+      console.error("Forgot password error:", error);
+      res.status(500).json({ message: "Failed to process password reset request" });
+    }
+  });
+
+  // Reset password with token
+  app.post("/api/reset-password", async (req: Request, res: Response) => {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ message: "Token and new password are required" });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters" });
+    }
+
+    try {
+      // Find valid token
+      const [resetToken] = await db
+        .select()
+        .from(passwordResetTokens)
+        .where(
+          and(
+            eq(passwordResetTokens.token, token),
+            eq(passwordResetTokens.used, false)
+          )
+        )
+        .limit(1);
+
+      if (!resetToken) {
+        return res.status(400).json({ message: "Invalid or expired reset token" });
+      }
+
+      // Check if token is expired
+      if (new Date() > resetToken.expiresAt) {
+        return res.status(400).json({ message: "Reset token has expired" });
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update user password
+      await db
+        .update(users)
+        .set({ password: hashedPassword })
+        .where(eq(users.id, resetToken.userId));
+
+      // Mark token as used
+      await db
+        .update(passwordResetTokens)
+        .set({ used: true })
+        .where(eq(passwordResetTokens.id, resetToken.id));
+
+      res.json({ success: true, message: "Password has been reset successfully" });
+    } catch (error: any) {
+      console.error("Reset password error:", error);
+      res.status(500).json({ message: "Failed to reset password" });
     }
   });
 

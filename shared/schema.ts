@@ -126,6 +126,19 @@ export const messages = pgTable("messages", {
   index("sender_idx").on(table.senderId),
 ]);
 
+// Password reset tokens
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  token: varchar("token").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  used: boolean("used").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("token_idx").on(table.token),
+  index("user_reset_idx").on(table.userId),
+]);
+
 // Chaperones - Wali/Guardian access to conversations
 export const chaperones = pgTable("chaperones", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
