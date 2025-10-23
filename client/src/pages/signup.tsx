@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import logoImage from "@assets/logo 40_1761066001045.png";
 
 export default function Signup() {
@@ -82,6 +82,19 @@ export default function Signup() {
   return (
     <div className="min-h-screen bg-[#0A0E17] flex items-center justify-center px-4 py-12 islamic-pattern">
       <div className="w-full max-w-md">
+        {/* Back Button */}
+        <div className="mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => setLocation("/")}
+            className="text-[#F8F4E3] hover:text-primary hover:bg-[#F8F4E3]/10"
+            data-testid="button-back"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+        </div>
+        
         {/* Logo */}
         <div className="text-center mb-10">
           <div className="flex items-center justify-center mb-6">
