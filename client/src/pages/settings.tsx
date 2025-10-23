@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Shield, Eye, EyeOff, UserPlus, LogOut } from "lucide-react";
+import { Shield, Eye, EyeOff, UserPlus, LogOut, KeyRound } from "lucide-react";
 import type { Profile, Chaperone } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -27,6 +27,12 @@ export default function Settings() {
   const [chaperoneEmail, setChaperoneEmail] = useState("");
   const [relationshipType, setRelationshipType] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  
+  // Password change state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
 
   // Fetch user profile
   const { data: profile } = useQuery<Profile>({
@@ -99,6 +105,56 @@ export default function Settings() {
         description: "Your chaperone has been removed.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/chaperones"] });
+    },
+  });
+
+  // Change password mutation
+  const changePasswordMutation = useMutation({
+    mutationFn: async () => {
+      if (newPassword !== confirmPassword) {
+        throw new Error("New passwords do not match");
+      }
+      if (newPassword.length < 6) {
+        throw new Error("Password must be at least 6 characters");
+      }
+      return apiRequest("POST", "/api/change-password", {
+        currentPassword,
+        newPassword,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Password Changed",
+        description: "Your password has been updated successfully.",
+      });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setPasswordDialogOpen(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to change password",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Logout mutation
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/logout", {});
+    },
+    onSuccess: () => {
+      window.location.href = "/";
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to logout. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -281,19 +337,83 @@ export default function Settings() {
           )}
         </Card>
 
+        {/* Security */}
+        <Card className="p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+            <KeyRound className="h-5 w-5" />
+            Security
+          </h2>
+          
+          <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="w-full" data-testid="button-change-password">
+                <KeyRound className="h-4 w-4 mr-2" />
+                Change Password
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Change Password</DialogTitle>
+                <DialogDescription>
+                  Enter your current password and choose a new one
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 pt-4">
+                <div>
+                  <Label>Current Password</Label>
+                  <Input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Enter current password"
+                    data-testid="input-current-password"
+                  />
+                </div>
+                <div>
+                  <Label>New Password</Label>
+                  <Input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter new password"
+                    data-testid="input-new-password"
+                  />
+                </div>
+                <div>
+                  <Label>Confirm New Password</Label>
+                  <Input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm new password"
+                    data-testid="input-confirm-password"
+                  />
+                </div>
+                <Button
+                  onClick={() => changePasswordMutation.mutate()}
+                  disabled={!currentPassword || !newPassword || !confirmPassword || changePasswordMutation.isPending}
+                  className="w-full"
+                  data-testid="button-submit-password"
+                >
+                  {changePasswordMutation.isPending ? "Changing..." : "Change Password"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </Card>
+
         {/* Account */}
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Account</h2>
           <Button
             variant="outline"
             className="w-full"
-            asChild
+            onClick={() => logoutMutation.mutate()}
+            disabled={logoutMutation.isPending}
             data-testid="button-logout"
           >
-            <a href="/api/logout">
-              <LogOut className="h-4 w-4 mr-2" />
-              Log Out
-            </a>
+            <LogOut className="h-4 w-4 mr-2" />
+            {logoutMutation.isPending ? "Logging out..." : "Log Out"}
           </Button>
         </Card>
       </div>
