@@ -123,7 +123,7 @@ export default function Landing() {
         
         {/* Hero content - only show after video ends */}
         {videoEnded && (
-          <div className="container relative z-10 px-4 py-20 animate-in fade-in duration-1000">
+          <div className="container relative z-10 px-4 pt-24 md:pt-28 pb-20 animate-in fade-in duration-1000">
             <div className="mx-auto max-w-4xl text-center">
               <div className="mb-8 flex justify-center">
                 <img src={logoImage} alt="Fusion Logo" className="h-32 md:h-40 w-auto" data-testid="img-hero-logo" />
