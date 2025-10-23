@@ -54,27 +54,35 @@ export const profiles = pgTable("profiles", {
   gender: varchar("gender", { length: 20 }).notNull(), // male, female
   location: varchar("location", { length: 200 }).notNull(),
   bio: text("bio"),
+  height: integer("height"), // in cm
+  heightUnit: varchar("height_unit", { length: 10 }).default('cm'), // cm or ft
   
   // Photos
   photos: text("photos").array().notNull().default(sql`ARRAY[]::text[]`),
+  mainPhotoIndex: integer("main_photo_index").default(0), // Which photo is the main one
   photoVisibility: varchar("photo_visibility", { length: 20 }).default('visible'), // visible, blurred, hidden
+  photoVerified: boolean("photo_verified").default(false), // Photo verification status
   
   // Islamic Preferences
-  sect: varchar("sect", { length: 50 }), // Sunni, Shia, Just Muslim, etc.
+  bornMuslim: boolean("born_muslim"), // Were you born a Muslim?
+  sect: varchar("sect", { length: 50 }), // No preference, Sunni, Sunni (Hanafi), Sunni (Maliki), Sunni (Shafi), Sunni (Hanbali), Shia, Shia (Twelver), Shia (Ismaili), Shia (Zaydi), Sufi, Other
   prayerFrequency: varchar("prayer_frequency", { length: 30 }), // Always, Sometimes, Rarely, Prefer not to say
   halalImportance: varchar("halal_importance", { length: 30 }), // Very important, Somewhat important, Not important
   religiosity: varchar("religiosity", { length: 30 }), // Very religious, Moderately religious, Not very religious
+  religiousPractice: varchar("religious_practice", { length: 50 }), // Strictly practising, Actively practising, Occasionally practising, Not practising at all
   
   // Intentions & Preferences
   lookingFor: varchar("looking_for", { length: 50 }).notNull(), // Marriage, Friendship, Networking
-  maritalStatus: varchar("marital_status", { length: 30 }), // Never married, Divorced, Widowed
+  maritalStatus: varchar("marital_status", { length: 30 }), // Never married, Separated, Divorced, Annulled, Widowed, Married
   hasChildren: boolean("has_children").default(false),
   wantsChildren: varchar("wants_children", { length: 30 }), // Yes, No, Maybe, Prefer not to say
   
   // Additional Details
   education: varchar("education", { length: 100 }),
   occupation: varchar("occupation", { length: 100 }),
+  profession: varchar("profession", { length: 100 }), // Detailed profession from list
   languages: text("languages").array().default(sql`ARRAY[]::text[]`),
+  interests: text("interests").array().default(sql`ARRAY[]::text[]`), // Array of interests
   
   // Privacy & Verification
   isVerified: boolean("is_verified").default(false),
@@ -84,6 +92,7 @@ export const profiles = pgTable("profiles", {
   // Profile Status
   isComplete: boolean("is_complete").default(false),
   isActive: boolean("is_active").default(true),
+  lastActive: timestamp("last_active").defaultNow(), // For "Active today" badge
   
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
