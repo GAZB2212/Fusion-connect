@@ -28,12 +28,23 @@ import { insertProfileSchema, type InsertProfile } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, CheckCircle2, LogOut } from "lucide-react";
+import {
+  INTEREST_CATEGORIES,
+  PROFESSIONS,
+  HEIGHT_OPTIONS_CM,
+  SECT_OPTIONS,
+  RELIGIOUS_PRACTICE_OPTIONS,
+  MARITAL_STATUS_OPTIONS,
+} from "@shared/constants";
+import { Badge } from "@/components/ui/badge";
 
 export default function ProfileSetup() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [step, setStep] = useState(1);
   const [photoPreview, setPhotoPreview] = useState<string>("");
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [professionSearch, setProfessionSearch] = useState("");
 
   const form = useForm<InsertProfile>({
     resolver: zodResolver(insertProfileSchema),
@@ -43,19 +54,27 @@ export default function ProfileSetup() {
       gender: "male",
       location: "",
       bio: "",
+      height: undefined,
+      heightUnit: "cm",
       photos: [],
+      mainPhotoIndex: 0,
       lookingFor: "Marriage",
+      bornMuslim: undefined,
       sect: "",
       prayerFrequency: "",
       halalImportance: "",
       religiosity: "",
+      religiousPractice: "",
       maritalStatus: "",
       hasChildren: false,
       wantsChildren: "",
       education: "",
       occupation: "",
+      profession: "",
       languages: [],
+      interests: [],
       photoVisibility: "visible",
+      photoVerified: false,
       useNickname: false,
     },
   });
@@ -117,12 +136,24 @@ export default function ProfileSetup() {
   };
 
   const nextStep = () => {
-    if (step < 3) setStep(step + 1);
+    if (step < 5) setStep(step + 1);
   };
 
   const prevStep = () => {
     if (step > 1) setStep(step - 1);
   };
+
+  const toggleInterest = (interest: string) => {
+    const newInterests = selectedInterests.includes(interest)
+      ? selectedInterests.filter((i) => i !== interest)
+      : [...selectedInterests, interest];
+    setSelectedInterests(newInterests);
+    form.setValue("interests", newInterests);
+  };
+
+  const filteredProfessions = PROFESSIONS.filter((prof) =>
+    prof.toLowerCase().includes(professionSearch.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -153,10 +184,10 @@ export default function ProfileSetup() {
           
           {/* Progress */}
           <div className="flex items-center justify-center gap-2 mt-6">
-            {[1, 2, 3].map((s) => (
+            {[1, 2, 3, 4, 5].map((s) => (
               <div
                 key={s}
-                className={`h-2 w-16 rounded-full ${
+                className={`h-2 w-12 rounded-full ${
                   s <= step ? 'bg-primary' : 'bg-muted'
                 }`}
               />
@@ -245,21 +276,27 @@ export default function ProfileSetup() {
 
                   <FormField
                     control={form.control}
-                    name="bio"
+                    name="height"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>About Me</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            {...field}
-                            placeholder="Tell potential matches about yourself..."
-                            className="min-h-24"
-                            data-testid="textarea-bio"
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Share your interests, values, and what you're looking for
-                        </FormDescription>
+                        <FormLabel>Height</FormLabel>
+                        <Select
+                          onValueChange={(value) => field.onChange(parseInt(value))}
+                          value={field.value?.toString()}
+                        >
+                          <FormControl>
+                            <SelectTrigger data-testid="select-height">
+                              <SelectValue placeholder="Select your height" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {HEIGHT_OPTIONS_CM.map((option) => (
+                              <SelectItem key={option.cm} value={option.cm.toString()}>
+                                {option.cm}cm • {option.ft}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -301,10 +338,214 @@ export default function ProfileSetup() {
                 </div>
               )}
 
-              {/* Step 2: Islamic Preferences */}
+              {/* Step 2: Islamic Values */}
               {step === 2 && (
                 <div className="space-y-6">
-                  <h2 className="text-xl font-semibold">Islamic Preferences</h2>
+                  <h2 className="text-xl font-semibold">Islamic Values</h2>
+
+                  <FormField
+                    control={form.control}
+                    name="bornMuslim"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Were you born a Muslim?</FormLabel>
+                        <Select
+                          onValueChange={(value) => field.onChange(value === "yes")}
+                          value={field.value === undefined ? "" : field.value ? "yes" : "no"}
+                        >
+                          <FormControl>
+                            <SelectTrigger data-testid="select-born-muslim">
+                              <SelectValue placeholder="Select" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="yes">Yes</SelectItem>
+                            <SelectItem value="no">No</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="sect"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Sect</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value ?? undefined}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-sect">
+                              <SelectValue placeholder="Select sect" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {SECT_OPTIONS.map((sect) => (
+                              <SelectItem key={sect} value={sect}>
+                                {sect}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="religiousPractice"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>How do you practise your religion?</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value ?? undefined}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-religious-practice">
+                              <SelectValue placeholder="Select level" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {RELIGIOUS_PRACTICE_OPTIONS.map((option) => (
+                              <SelectItem key={option.value} value={option.value}>
+                                <div>
+                                  <div className="font-medium">{option.value}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {option.description}
+                                  </div>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+
+              {/* Step 3: Profession & Marital Status */}
+              {step === 3 && (
+                <div className="space-y-6">
+                  <h2 className="text-xl font-semibold">About You</h2>
+
+                  <FormField
+                    control={form.control}
+                    name="profession"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>What's your profession?</FormLabel>
+                        <div className="space-y-2">
+                          <Input
+                            placeholder="Search jobs"
+                            value={professionSearch}
+                            onChange={(e) => setProfessionSearch(e.target.value)}
+                            data-testid="input-profession-search"
+                          />
+                          <Select onValueChange={field.onChange} value={field.value ?? undefined}>
+                            <FormControl>
+                              <SelectTrigger data-testid="select-profession">
+                                <SelectValue placeholder="Select profession" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {filteredProfessions.slice(0, 20).map((prof) => (
+                                <SelectItem key={prof} value={prof}>
+                                  {prof}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="maritalStatus"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>What's your marital status?</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value ?? undefined}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-marital">
+                              <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {MARITAL_STATUS_OPTIONS.map((status) => (
+                              <SelectItem key={status} value={status}>
+                                {status}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="education"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Education (Optional)</FormLabel>
+                        <FormControl>
+                          <Input {...field} value={field.value ?? ""} placeholder="e.g., Bachelor's in Computer Science" data-testid="input-education" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+
+              {/* Step 4: Interests */}
+              {step === 4 && (
+                <div className="space-y-6">
+                  <h2 className="text-xl font-semibold">What are your interests?</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Select up to 15 interests to make your profile stand out!
+                  </p>
+
+                  {Object.entries(INTEREST_CATEGORIES).map(([category, interests]) => (
+                    <div key={category}>
+                      <h3 className="font-semibold mb-3">{category}</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {interests.map((interest) => (
+                          <Badge
+                            key={interest.value}
+                            variant={selectedInterests.includes(interest.value) ? "default" : "outline"}
+                            className="cursor-pointer hover-elevate px-3 py-2"
+                            onClick={() => toggleInterest(interest.value)}
+                            data-testid={`badge-interest-${interest.value}`}
+                          >
+                            <span className="mr-1">{interest.emoji}</span>
+                            {interest.value}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+
+                  {selectedInterests.length > 0 && (
+                    <div className="bg-muted/50 rounded-lg p-4 border">
+                      <p className="text-sm text-muted-foreground">
+                        {selectedInterests.length} / 15 interests selected
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Step 5: Bio & Final Details */}
+              {step === 5 && (
+                <div className="space-y-6">
+                  <h2 className="text-xl font-semibold">Final Details</h2>
 
                   <FormField
                     control={form.control}
@@ -331,150 +572,21 @@ export default function ProfileSetup() {
 
                   <FormField
                     control={form.control}
-                    name="sect"
+                    name="bio"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Sect (Optional)</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-sect">
-                              <SelectValue placeholder="Select sect" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Sunni">Sunni</SelectItem>
-                            <SelectItem value="Shia">Shia</SelectItem>
-                            <SelectItem value="Just Muslim">Just Muslim</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="prayerFrequency"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Prayer Frequency</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-prayer">
-                              <SelectValue placeholder="Select frequency" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Always">Always (5 times daily)</SelectItem>
-                            <SelectItem value="Usually">Usually</SelectItem>
-                            <SelectItem value="Sometimes">Sometimes</SelectItem>
-                            <SelectItem value="Rarely">Rarely</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="halalImportance"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Halal Importance</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-halal">
-                              <SelectValue placeholder="Select importance" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Very Important">Very Important</SelectItem>
-                            <SelectItem value="Important">Important</SelectItem>
-                            <SelectItem value="Somewhat Important">Somewhat Important</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="religiosity"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Religiosity</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-religiosity">
-                              <SelectValue placeholder="Select level" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Very Religious">Very Religious</SelectItem>
-                            <SelectItem value="Moderately Religious">Moderately Religious</SelectItem>
-                            <SelectItem value="Not Very Religious">Not Very Religious</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              )}
-
-              {/* Step 3: Additional Details */}
-              {step === 3 && (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-semibold">Additional Details</h2>
-
-                  <FormField
-                    control={form.control}
-                    name="maritalStatus"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Marital Status</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value ?? undefined}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-marital">
-                              <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Never Married">Never Married</SelectItem>
-                            <SelectItem value="Divorced">Divorced</SelectItem>
-                            <SelectItem value="Widowed">Widowed</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="education"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Education (Optional)</FormLabel>
+                        <FormLabel>About Me</FormLabel>
                         <FormControl>
-                          <Input {...field} value={field.value ?? ""} placeholder="e.g., Bachelor's in Computer Science" data-testid="input-education" />
+                          <Textarea
+                            {...field}
+                            placeholder="Tell potential matches about yourself..."
+                            className="min-h-24"
+                            data-testid="textarea-bio"
+                          />
                         </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="occupation"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Occupation (Optional)</FormLabel>
-                        <FormControl>
-                          <Input {...field} value={field.value ?? ""} placeholder="e.g., Software Engineer" data-testid="input-occupation" />
-                        </FormControl>
+                        <FormDescription>
+                          Share your interests, values, and what you're looking for
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -504,7 +616,7 @@ export default function ProfileSetup() {
                   <div />
                 )}
 
-                {step < 3 ? (
+                {step < 5 ? (
                   <Button type="button" onClick={nextStep} data-testid="button-next">
                     Next
                   </Button>
