@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Shield, Users, MessageSquare, CheckCircle2, Star, Sparkles } from "lucide-react";
 import logoImage from "@assets/logo 40_1761066001045.png";
 import heroVideo from "@assets/Animate_this_logo_202510211818 (1)_1761067145031.mp4";
-import heroVideoMobile from "@assets/Animate_this_logo_202510211838_5e5g3_1761068326631.mp4";
+import heroVideoMobile from "@assets/In_want_a_202510231351_gqfd0_1761223892026.mp4";
 
 function CountUpNumber({ end, suffix = "", duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
   const [count, setCount] = useState(0);
