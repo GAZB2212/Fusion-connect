@@ -90,7 +90,7 @@ export default function Landing() {
         <nav className="fixed top-0 left-0 right-0 z-50 w-full border-b border-white/10 bg-black/20 backdrop-blur-md animate-in fade-in duration-1000">
           <div className="w-full max-w-7xl mx-auto flex flex-row h-16 md:h-20 items-center justify-between px-4 md:px-8">
             <div className="flex items-center gap-3">
-              <img src={logoImage} alt="Fusion Logo" className="h-12 md:h-[5.25rem] w-auto" />
+              <img src={logoImage} alt="Fusion Logo" className="hidden md:block h-12 md:h-[5.25rem] w-auto" />
             </div>
             <Button 
               variant="outline" 
