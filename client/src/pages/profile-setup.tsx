@@ -129,13 +129,14 @@ export default function ProfileSetup() {
       {/* Header with Logout */}
       <div className="border-b bg-card">
         <div className="container max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h2 className="font-semibold text-lg">Fusion</h2>
+          <h2 className="font-semibold text-lg hidden md:block">Fusion</h2>
           <Button
             variant="outline"
             size="sm"
             onClick={() => logoutMutation.mutate()}
             disabled={logoutMutation.isPending}
             data-testid="button-logout"
+            className="md:ml-auto"
           >
             <LogOut className="h-4 w-4 mr-2" />
             {logoutMutation.isPending ? "Logging out..." : "Logout"}
