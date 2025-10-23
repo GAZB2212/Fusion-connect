@@ -3,7 +3,7 @@ import { Resend } from 'resend';
 let connectionSettings: any;
 
 async function getCredentials() {
-  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME
+  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
   const xReplitToken = process.env.REPL_IDENTITY 
     ? 'repl ' + process.env.REPL_IDENTITY 
     : process.env.WEB_REPL_RENEWAL 
@@ -11,7 +11,14 @@ async function getCredentials() {
     : null;
 
   if (!xReplitToken) {
-    throw new Error('X_REPLIT_TOKEN not found for repl/depl');
+    // Fallback to RESEND_API_KEY if connector not available
+    if (process.env.RESEND_API_KEY) {
+      return { 
+        apiKey: process.env.RESEND_API_KEY, 
+        fromEmail: 'onboarding@resend.dev' 
+      };
+    }
+    throw new Error('Neither Resend connector nor RESEND_API_KEY found');
   }
 
   connectionSettings = await fetch(
@@ -25,25 +32,34 @@ async function getCredentials() {
   ).then(res => res.json()).then(data => data.items?.[0]);
 
   if (!connectionSettings || (!connectionSettings.settings.api_key)) {
+    // Fallback to RESEND_API_KEY
+    if (process.env.RESEND_API_KEY) {
+      return { 
+        apiKey: process.env.RESEND_API_KEY, 
+        fromEmail: 'onboarding@resend.dev' 
+      };
+    }
     throw new Error('Resend not connected');
   }
-  return {apiKey: connectionSettings.settings.api_key, fromEmail: connectionSettings.settings.from_email};
+  return {
+    apiKey: connectionSettings.settings.api_key, 
+    fromEmail: connectionSettings.settings.from_email
+  };
 }
 
 // WARNING: Never cache this client.
 // Access tokens expire, so a new client must be created each time.
 // Always call this function again to get a fresh client.
 export async function getUncachableResendClient() {
-  const {apiKey} = await getCredentials();
+  const { apiKey, fromEmail } = await getCredentials();
   return {
     client: new Resend(apiKey),
-    fromEmail: connectionSettings.settings.from_email
+    fromEmail: fromEmail
   };
 }
 
 export async function sendPasswordResetEmail(to: string, resetToken: string, userName: string) {
   const { client, fromEmail } = await getUncachableResendClient();
-  
   const resetUrl = `${process.env.REPLIT_DEV_DOMAIN ? 'https://' + process.env.REPLIT_DEV_DOMAIN : 'http://localhost:5000'}/reset-password?token=${resetToken}`;
   
   await client.emails.send({
