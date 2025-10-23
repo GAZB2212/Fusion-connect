@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { KeyRound, CheckCircle } from "lucide-react";
+import { KeyRound, CheckCircle, Eye, EyeOff } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,6 +15,8 @@ export default function ResetPassword() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [resetSuccess, setResetSuccess] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -123,13 +125,21 @@ export default function ResetPassword() {
                 <KeyRound className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#9CA3AF]" />
                 <Input
                   id="newPassword"
-                  type="password"
+                  type={showNewPassword ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Enter new password"
-                  className="pl-10 bg-[#0A0E17] border-[#2A2E37] text-[#F8F4E3] placeholder:text-[#6B7280]"
+                  className="pl-10 pr-10 bg-[#0A0E17] border-[#2A2E37] text-[#F8F4E3] placeholder:text-[#6B7280]"
                   data-testid="input-new-password-reset"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#F8F4E3]"
+                  data-testid="button-toggle-new-password"
+                >
+                  {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
               <p className="text-xs text-[#9CA3AF] mt-1">At least 6 characters</p>
             </div>
@@ -140,13 +150,21 @@ export default function ResetPassword() {
                 <KeyRound className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#9CA3AF]" />
                 <Input
                   id="confirmPassword"
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm new password"
-                  className="pl-10 bg-[#0A0E17] border-[#2A2E37] text-[#F8F4E3] placeholder:text-[#6B7280]"
+                  className="pl-10 pr-10 bg-[#0A0E17] border-[#2A2E37] text-[#F8F4E3] placeholder:text-[#6B7280]"
                   data-testid="input-confirm-password-reset"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#F8F4E3]"
+                  data-testid="button-toggle-confirm-password"
+                >
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
             </div>
 
