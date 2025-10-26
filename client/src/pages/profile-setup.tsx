@@ -35,15 +35,25 @@ import {
   SECT_OPTIONS,
   RELIGIOUS_PRACTICE_OPTIONS,
   MARITAL_STATUS_OPTIONS,
+  PERSONALITY_TRAITS,
+  ETHNICITY_OPTIONS,
+  EDUCATION_OPTIONS,
 } from "@shared/constants";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Slider } from "@/components/ui/slider";
 
 export default function ProfileSetup() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [step, setStep] = useState(1);
-  const [photoPreview, setPhotoPreview] = useState<string>("");
+  const [photos, setPhotos] = useState<string[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [selectedTraits, setSelectedTraits] = useState<string[]>([]);
+  const [selectedEthnicities, setSelectedEthnicities] = useState<string[]>([]);
+  const [partnerSects, setPartnerSects] = useState<string[]>([]);
+  const [partnerEthnicities, setPartnerEthnicities] = useState<string[]>([]);
+  const [ageRange, setAgeRange] = useState<[number, number]>([18, 45]);
   const [professionSearch, setProfessionSearch] = useState("");
 
   const form = useForm<InsertProfile>({
@@ -73,8 +83,13 @@ export default function ProfileSetup() {
       profession: "",
       languages: [],
       interests: [],
+      personalityTraits: [],
+      ethnicities: [],
+      partnerPreferences: undefined,
       photoVisibility: "visible",
       photoVerified: false,
+      phoneVerified: false,
+      faceVerified: false,
       useNickname: false,
     },
   });
@@ -126,20 +141,32 @@ export default function ProfileSetup() {
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setPhotoPreview(result);
-        form.setValue("photos", [result]);
-      };
-      reader.readAsDataURL(file);
-    }
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const newPhotos = [...photos];
+    Array.from(files).forEach((file) => {
+      if (newPhotos.length < 6) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result as string;
+          const updatedPhotos = [...newPhotos, result];
+          setPhotos(updatedPhotos);
+          form.setValue("photos", updatedPhotos);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  };
+
+  const removePhoto = (index: number) => {
+    const newPhotos = photos.filter((_, i) => i !== index);
+    setPhotos(newPhotos);
+    form.setValue("photos", newPhotos);
   };
 
   const nextStep = () => {
-    if (step < 5) setStep(step + 1);
+    if (step < 7) setStep(step + 1);
   };
 
   const prevStep = () => {
@@ -147,11 +174,70 @@ export default function ProfileSetup() {
   };
 
   const toggleInterest = (interest: string) => {
+    if (selectedInterests.length >= 15 && !selectedInterests.includes(interest)) {
+      return;
+    }
     const newInterests = selectedInterests.includes(interest)
       ? selectedInterests.filter((i) => i !== interest)
       : [...selectedInterests, interest];
     setSelectedInterests(newInterests);
     form.setValue("interests", newInterests);
+  };
+
+  const toggleTrait = (trait: string) => {
+    if (selectedTraits.length >= 5 && !selectedTraits.includes(trait)) {
+      return;
+    }
+    const newTraits = selectedTraits.includes(trait)
+      ? selectedTraits.filter((t) => t !== trait)
+      : [...selectedTraits, trait];
+    setSelectedTraits(newTraits);
+    form.setValue("personalityTraits", newTraits);
+  };
+
+  const toggleEthnicity = (ethnicity: string) => {
+    const newEthnicities = selectedEthnicities.includes(ethnicity)
+      ? selectedEthnicities.filter((e) => e !== ethnicity)
+      : [...selectedEthnicities, ethnicity];
+    setSelectedEthnicities(newEthnicities);
+    form.setValue("ethnicities", newEthnicities);
+  };
+
+  const togglePartnerSect = (sect: string) => {
+    const newSects = partnerSects.includes(sect)
+      ? partnerSects.filter((s) => s !== sect)
+      : [...partnerSects, sect];
+    setPartnerSects(newSects);
+    form.setValue("partnerPreferences", {
+      ageMin: ageRange[0],
+      ageMax: ageRange[1],
+      sects: newSects,
+      ethnicities: partnerEthnicities,
+    });
+  };
+
+  const togglePartnerEthnicity = (ethnicity: string) => {
+    const newEthnicities = partnerEthnicities.includes(ethnicity)
+      ? partnerEthnicities.filter((e) => e !== ethnicity)
+      : [...partnerEthnicities, ethnicity];
+    setPartnerEthnicities(newEthnicities);
+    form.setValue("partnerPreferences", {
+      ageMin: ageRange[0],
+      ageMax: ageRange[1],
+      sects: partnerSects,
+      ethnicities: newEthnicities,
+    });
+  };
+
+  const updateAgeRange = (values: number[]) => {
+    const newRange: [number, number] = [values[0], values[1]];
+    setAgeRange(newRange);
+    form.setValue("partnerPreferences", {
+      ageMin: newRange[0],
+      ageMax: newRange[1],
+      sects: partnerSects,
+      ethnicities: partnerEthnicities,
+    });
   };
 
   const filteredProfessions = PROFESSIONS.filter((prof) =>
@@ -187,10 +273,10 @@ export default function ProfileSetup() {
           
           {/* Progress */}
           <div className="flex items-center justify-center gap-2 mt-6">
-            {[1, 2, 3, 4, 5].map((s) => (
+            {[1, 2, 3, 4, 5, 6, 7].map((s) => (
               <div
                 key={s}
-                className={`h-2 w-12 rounded-full ${
+                className={`h-2 w-10 rounded-full ${
                   s <= step ? 'bg-primary' : 'bg-muted'
                 }`}
               />
@@ -305,38 +391,86 @@ export default function ProfileSetup() {
                     )}
                   />
 
-                  {/* Photo Upload */}
+                  {/* Ethnicity Multi-select */}
                   <div>
-                    <Label>Profile Photo</Label>
-                    <div className="mt-2">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePhotoUpload}
-                        className="hidden"
-                        id="photo-upload"
-                      />
-                      <label
-                        htmlFor="photo-upload"
-                        className="flex flex-col items-center justify-center h-48 border-2 border-dashed rounded-lg cursor-pointer hover-elevate"
-                        data-testid="label-upload-photo"
-                      >
-                        {photoPreview ? (
-                          <img
-                            src={photoPreview}
-                            alt="Preview"
-                            className="h-full w-full object-cover rounded-lg"
-                          />
-                        ) : (
-                          <>
-                            <Upload className="h-12 w-12 text-muted-foreground mb-2" />
-                            <span className="text-sm text-muted-foreground">
-                              Click to upload a photo
-                            </span>
-                          </>
-                        )}
-                      </label>
+                    <Label className="mb-3 block">Ethnicity (Optional)</Label>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Select all that apply
+                    </p>
+                    <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto border rounded-lg p-3">
+                      {ETHNICITY_OPTIONS.map((ethnicity) => (
+                        <Badge
+                          key={ethnicity}
+                          variant={selectedEthnicities.includes(ethnicity) ? "default" : "outline"}
+                          className="cursor-pointer hover-elevate px-3 py-1"
+                          onClick={() => toggleEthnicity(ethnicity)}
+                          data-testid={`badge-ethnicity-${ethnicity}`}
+                        >
+                          {ethnicity}
+                        </Badge>
+                      ))}
                     </div>
+                  </div>
+
+                  {/* Photo Upload - Min 3 photos required */}
+                  <div>
+                    <Label>Profile Photos (Minimum 3 required)</Label>
+                    <p className="text-sm text-muted-foreground mt-1 mb-3">
+                      Upload 3-6 clear photos showing your face
+                    </p>
+                    <div className="grid grid-cols-3 gap-4">
+                      {[...Array(6)].map((_, index) => (
+                        <div key={index} className="relative aspect-square">
+                          {photos[index] ? (
+                            <div className="relative h-full group">
+                              <img
+                                src={photos[index]}
+                                alt={`Photo ${index + 1}`}
+                                className="h-full w-full object-cover rounded-lg"
+                              />
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => removePhoto(index)}
+                                data-testid={`button-remove-photo-${index}`}
+                              >
+                                ×
+                              </Button>
+                              {index === 0 && (
+                                <Badge className="absolute bottom-2 left-2 text-xs">
+                                  Main
+                                </Badge>
+                              )}
+                            </div>
+                          ) : (
+                            <label
+                              htmlFor={`photo-upload-${index}`}
+                              className="flex flex-col items-center justify-center h-full border-2 border-dashed rounded-lg cursor-pointer hover-elevate"
+                              data-testid={`label-upload-photo-${index}`}
+                            >
+                              <Upload className="h-6 w-6 text-muted-foreground mb-1" />
+                              <span className="text-xs text-muted-foreground">
+                                Upload
+                              </span>
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handlePhotoUpload}
+                                className="hidden"
+                                id={`photo-upload-${index}`}
+                              />
+                            </label>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {photos.length < 3 && (
+                      <p className="text-sm text-destructive mt-2">
+                        Please upload at least 3 photos to continue
+                      </p>
+                    )}
                   </div>
                 </div>
               )}
@@ -428,7 +562,7 @@ export default function ProfileSetup() {
                 </div>
               )}
 
-              {/* Step 3: Profession & Marital Status */}
+              {/* Step 3: Profession & Personal */}
               {step === 3 && (
                 <div className="space-y-6">
                   <h2 className="text-xl font-semibold">About You</h2>
@@ -496,10 +630,21 @@ export default function ProfileSetup() {
                     name="education"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Education (Optional)</FormLabel>
-                        <FormControl>
-                          <Input {...field} value={field.value ?? ""} placeholder="e.g., Bachelor's in Computer Science" data-testid="input-education" />
-                        </FormControl>
+                        <FormLabel>Education Level (Optional)</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value ?? undefined}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-education">
+                              <SelectValue placeholder="Select education level" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="max-h-[40vh] overflow-y-auto">
+                            {EDUCATION_OPTIONS.map((option) => (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -507,8 +652,41 @@ export default function ProfileSetup() {
                 </div>
               )}
 
-              {/* Step 4: Interests */}
+              {/* Step 4: Personality Traits */}
               {step === 4 && (
+                <div className="space-y-6">
+                  <h2 className="text-xl font-semibold">How would you describe your personality?</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Select up to 5 traits to show off your personality!
+                  </p>
+
+                  <div className="flex flex-wrap gap-2 max-h-96 overflow-y-auto border rounded-lg p-4">
+                    {PERSONALITY_TRAITS.map((trait) => (
+                      <Badge
+                        key={trait.value}
+                        variant={selectedTraits.includes(trait.value) ? "default" : "outline"}
+                        className="cursor-pointer hover-elevate px-3 py-2"
+                        onClick={() => toggleTrait(trait.value)}
+                        data-testid={`badge-trait-${trait.value}`}
+                      >
+                        <span className="mr-1">{trait.emoji}</span>
+                        {trait.value}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  {selectedTraits.length > 0 && (
+                    <div className="bg-muted/50 rounded-lg p-4 border">
+                      <p className="text-sm text-muted-foreground">
+                        {selectedTraits.length} / 5 traits selected
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Step 5: Interests */}
+              {step === 5 && (
                 <div className="space-y-6">
                   <h2 className="text-xl font-semibold">What are your interests?</h2>
                   <p className="text-sm text-muted-foreground">
@@ -545,8 +723,80 @@ export default function ProfileSetup() {
                 </div>
               )}
 
-              {/* Step 5: Bio & Final Details */}
-              {step === 5 && (
+              {/* Step 6: Partner Preferences */}
+              {step === 6 && (
+                <div className="space-y-6">
+                  <h2 className="text-xl font-semibold">Partner Preferences</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Tell us about your ideal partner to help us find better matches
+                  </p>
+
+                  {/* Age Range */}
+                  <div className="space-y-4">
+                    <Label>Age Range</Label>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span>{ageRange[0]} years</span>
+                        <span>{ageRange[1]} years</span>
+                      </div>
+                      <Slider
+                        min={18}
+                        max={70}
+                        step={1}
+                        value={ageRange}
+                        onValueChange={updateAgeRange}
+                        className="w-full"
+                        data-testid="slider-age-range"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Sect Preference */}
+                  <div>
+                    <Label className="mb-3 block">Preferred Sects (Optional)</Label>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Select all that apply
+                    </p>
+                    <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto border rounded-lg p-3">
+                      {SECT_OPTIONS.map((sect) => (
+                        <Badge
+                          key={sect}
+                          variant={partnerSects.includes(sect) ? "default" : "outline"}
+                          className="cursor-pointer hover-elevate px-3 py-1"
+                          onClick={() => togglePartnerSect(sect)}
+                          data-testid={`badge-partner-sect-${sect}`}
+                        >
+                          {sect}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Ethnicity Preference */}
+                  <div>
+                    <Label className="mb-3 block">Preferred Ethnicities (Optional)</Label>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Select all that apply
+                    </p>
+                    <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto border rounded-lg p-3">
+                      {ETHNICITY_OPTIONS.map((ethnicity) => (
+                        <Badge
+                          key={ethnicity}
+                          variant={partnerEthnicities.includes(ethnicity) ? "default" : "outline"}
+                          className="cursor-pointer hover-elevate px-3 py-1"
+                          onClick={() => togglePartnerEthnicity(ethnicity)}
+                          data-testid={`badge-partner-ethnicity-${ethnicity}`}
+                        >
+                          {ethnicity}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Step 7: Bio & Final Details */}
+              {step === 7 && (
                 <div className="space-y-6">
                   <h2 className="text-xl font-semibold">Final Details</h2>
 
@@ -619,8 +869,13 @@ export default function ProfileSetup() {
                   <div />
                 )}
 
-                {step < 5 ? (
-                  <Button type="button" onClick={nextStep} data-testid="button-next">
+                {step < 7 ? (
+                  <Button 
+                    type="button" 
+                    onClick={nextStep} 
+                    data-testid="button-next"
+                    disabled={step === 1 && photos.length < 3}
+                  >
                     Next
                   </Button>
                 ) : (
