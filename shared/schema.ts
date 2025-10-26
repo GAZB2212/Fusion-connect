@@ -83,11 +83,19 @@ export const profiles = pgTable("profiles", {
   profession: varchar("profession", { length: 100 }), // Detailed profession from list
   languages: text("languages").array().default(sql`ARRAY[]::text[]`),
   interests: text("interests").array().default(sql`ARRAY[]::text[]`), // Array of interests
+  personalityTraits: text("personality_traits").array().default(sql`ARRAY[]::text[]`), // Up to 5 traits
+  ethnicities: text("ethnicities").array().default(sql`ARRAY[]::text[]`), // Multi-select ethnicities
+  
+  // Partner Preferences
+  partnerPreferences: jsonb("partner_preferences"), // { ageMin, ageMax, sects, ethnicities, religiousPractice }
   
   // Privacy & Verification
   isVerified: boolean("is_verified").default(false),
   verificationPhoto: varchar("verification_photo"),
   useNickname: boolean("use_nickname").default(false),
+  phoneNumber: varchar("phone_number"),
+  phoneVerified: boolean("phone_verified").default(false),
+  faceVerified: boolean("face_verified").default(false),
   
   // Profile Status
   isComplete: boolean("is_complete").default(false),
@@ -241,12 +249,21 @@ export const insertProfileSchema = createInsertSchema(profiles, {
   gender: z.enum(["male", "female"]),
   location: z.string().min(2, "Location is required"),
   bio: z.string().max(500, "Bio must be 500 characters or less").optional(),
-  photos: z.array(z.string()).max(6, "Maximum 6 photos").default([]),
+  photos: z.array(z.string()).min(3, "Minimum 3 photos required").max(6, "Maximum 6 photos"),
   lookingFor: z.enum(["Marriage", "Friendship", "Networking"]),
   sect: z.string().optional(),
   prayerFrequency: z.string().optional(),
   halalImportance: z.string().optional(),
   religiosity: z.string().optional(),
+  personalityTraits: z.array(z.string()).max(5, "Maximum 5 personality traits").optional(),
+  ethnicities: z.array(z.string()).optional(),
+  partnerPreferences: z.object({
+    ageMin: z.number().min(18).max(100).optional(),
+    ageMax: z.number().min(18).max(100).optional(),
+    sects: z.array(z.string()).optional(),
+    ethnicities: z.array(z.string()).optional(),
+    religiousPractice: z.array(z.string()).optional(),
+  }).optional(),
 }).omit({ id: true, userId: true, createdAt: true, updatedAt: true });
 
 export const insertMessageSchema = createInsertSchema(messages, {
