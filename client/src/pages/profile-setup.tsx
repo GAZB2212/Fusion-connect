@@ -119,7 +119,10 @@ export default function ProfileSetup() {
   });
 
   const onSubmit = (data: InsertProfile) => {
-    createProfileMutation.mutate(data);
+    createProfileMutation.mutate({
+      ...data,
+      isComplete: true,
+    });
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -249,7 +252,7 @@ export default function ProfileSetup() {
                                 <SelectValue />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
+                            <SelectContent className="max-h-[40vh] overflow-y-auto">
                               <SelectItem value="male">Male</SelectItem>
                               <SelectItem value="female">Female</SelectItem>
                             </SelectContent>
@@ -289,7 +292,7 @@ export default function ProfileSetup() {
                               <SelectValue placeholder="Select your height" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent className="max-h-[40vh] overflow-y-auto">
                             {HEIGHT_OPTIONS_CM.map((option) => (
                               <SelectItem key={option.cm} value={option.cm.toString()}>
                                 {option.cm}cm • {option.ft}
@@ -358,7 +361,7 @@ export default function ProfileSetup() {
                               <SelectValue placeholder="Select" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent className="max-h-[40vh] overflow-y-auto">
                             <SelectItem value="yes">Yes</SelectItem>
                             <SelectItem value="no">No</SelectItem>
                           </SelectContent>
@@ -380,7 +383,7 @@ export default function ProfileSetup() {
                               <SelectValue placeholder="Select sect" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent className="max-h-[40vh] overflow-y-auto">
                             {SECT_OPTIONS.map((sect) => (
                               <SelectItem key={sect} value={sect}>
                                 {sect}
@@ -405,7 +408,7 @@ export default function ProfileSetup() {
                               <SelectValue placeholder="Select level" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent className="max-h-[40vh] overflow-y-auto">
                             {RELIGIOUS_PRACTICE_OPTIONS.map((option) => (
                               <SelectItem key={option.value} value={option.value}>
                                 <div>
@@ -449,7 +452,7 @@ export default function ProfileSetup() {
                                 <SelectValue placeholder="Select profession" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
+                            <SelectContent className="max-h-[40vh] overflow-y-auto">
                               {filteredProfessions.slice(0, 20).map((prof) => (
                                 <SelectItem key={prof} value={prof}>
                                   {prof}
@@ -475,7 +478,7 @@ export default function ProfileSetup() {
                               <SelectValue placeholder="Select status" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent className="max-h-[40vh] overflow-y-auto">
                             {MARITAL_STATUS_OPTIONS.map((status) => (
                               <SelectItem key={status} value={status}>
                                 {status}
@@ -559,7 +562,7 @@ export default function ProfileSetup() {
                               <SelectValue />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent>
+                          <SelectContent className="max-h-[40vh] overflow-y-auto">
                             <SelectItem value="Marriage">Marriage</SelectItem>
                             <SelectItem value="Friendship">Friendship</SelectItem>
                             <SelectItem value="Networking">Networking</SelectItem>
