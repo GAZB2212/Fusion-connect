@@ -18,11 +18,13 @@ The platform features a luxury aesthetic with a primary deep navy color, gold ac
 **Profile System:** Features a detailed 5-step profile setup including basic info, Islamic values (sects, practice levels), profession, interests (100+ categorized), and a bio. Profiles include a comprehensive badge system for premium status, activity, profession, and photo verification.
 **Subscription System:** Implements a premium subscription model (£9.99/month) via Stripe. Free users can browse and swipe, but viewing matches and sending messages requires a subscription. Matches are only created if at least one user has an active subscription.
 **Matching Algorithm:** A match is created if both users swipe right AND at least one user has an active subscription.
+**Video Calling:** Real-time video calling powered by Agora RTC SDK. Matched users can initiate video calls from the messages page with full camera/mic controls, call duration tracking, and secure token-based authentication. Call history is stored in the database.
 
 ### Feature Specifications
 - **Profile Management:** Detailed user profiles, photo uploads, and comprehensive demographic and religious information.
 - **Discovery & Swiping:** Users can discover potential matches and perform swipe actions.
 - **Messaging:** Secure messaging between matched users.
+- **Video Calling:** Real-time video calls with camera/mic controls, duration tracking, and call history.
 - **Chaperone Support:** Optional guardian access to conversations for traditional courtship.
 - **Face Verification:** AI-driven identity verification to prevent fake profiles.
 - **Subscription Tiers:** Free and premium tiers with distinct feature sets.
@@ -36,6 +38,7 @@ The platform features a luxury aesthetic with a primary deep navy color, gold ac
 
 ## External Dependencies
 
+*   **Agora RTC SDK:** Real-time video calling with token-based authentication and channel management.
 *   **OpenAI Vision API (GPT-4o):** For advanced facial recognition and identity verification.
 *   **Stripe:** For handling premium subscriptions and payments.
 *   **PostgreSQL (Neon Serverless):** The primary database for all application data.
