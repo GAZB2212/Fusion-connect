@@ -98,12 +98,19 @@ export default function ProfileSetup() {
     mutationFn: async (data: InsertProfile) => {
       return apiRequest("POST", "/api/profile", data);
     },
-    onSuccess: () => {
+    onSuccess: async () => {
+      // Invalidate the profile query so App.tsx sees the updated profile
+      await queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
+      
       toast({
         title: "Profile Created!",
         description: "Welcome to Fusion. Start discovering matches!",
       });
-      setLocation("/");
+      
+      // Small delay to ensure cache is updated before redirect
+      setTimeout(() => {
+        setLocation("/");
+      }, 100);
     },
     onError: (error) => {
       toast({
