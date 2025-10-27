@@ -249,16 +249,25 @@
 
 ---
 
-## Dark Mode (Primary)
+## Theme Mode
 
-Fusion's primary mode is **dark mode** with the navy background. Light mode can be offered as an alternative.
+Fusion uses **dark mode as the default** with a luxurious navy + gold aesthetic inspired by premium Muslim matchmaking apps like Nikkah.
 
-**Light Mode Adjustments**:
+**Default Dark Theme** (Active):
+- Background: Deep Navy (#0A0E17 - HSL: 219 39% 6%)
+- Text: Ivory (#F8F4E3 - HSL: 45 38% 94%)
+- Cards: Elevated Navy (#0E1220 - HSL: 219 30% 9%)
+- Primary: Gold (#D4AF37 - HSL: 45 62% 53%)
+- Accent: Emerald Green (#0F5132 - HSL: 151 70% 19%)
+
+**Light Mode** (Alternative):
 - Background: Ivory (#F8F4E3)
 - Text: Navy (#0A0E17)
 - Cards: White with subtle ivory tint
 - Gold remains accent color
 - Borders: Navy 10% opacity
+
+The dark theme creates a premium, sophisticated feel that matches the luxury Muslim matchmaking brand identity while maintaining excellent readability with high-contrast ivory text on navy backgrounds.
 
 ---
 
