@@ -91,7 +91,7 @@ export default function Landing() {
       {/* Hero Section - Dark Navy Background */}
       <section className="relative overflow-hidden min-h-screen flex items-center justify-center bg-background golden-shimmer">
         {/* Hero content */}
-        <div className="container relative z-10 px-4 pt-20 md:pt-24 pb-20">
+        <div className="container relative z-10 px-4 pt-16 md:pt-24 pb-20">
             <div className="mx-auto max-w-4xl text-center">
               <div className="mb-8 flex justify-center">
                 <img src={logoImage} alt="Fusion Logo" className="w-full max-w-2xl h-auto" data-testid="img-hero-logo" />
