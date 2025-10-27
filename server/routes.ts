@@ -499,6 +499,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Face verification endpoint
+  app.post("/api/verify-face", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const { imageUrl } = req.body;
+
+      if (!imageUrl) {
+        return res.status(400).json({ message: "Image URL is required" });
+      }
+
+      const { verifyFrontFacingPhoto } = await import("./faceVerification");
+      const result = await verifyFrontFacingPhoto(imageUrl);
+
+      res.json(result);
+    } catch (error: any) {
+      console.error("Face verification error:", error);
+      res.status(500).json({ 
+        message: "Face verification failed", 
+        error: error.message 
+      });
+    }
+  });
+
   // Profile endpoints
   app.get("/api/profile", isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;
