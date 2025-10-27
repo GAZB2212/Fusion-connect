@@ -389,6 +389,15 @@
     inset: -1px;
   }
 
+  /* Islamic Geometric Pattern Background */
+  .geometric-pattern {
+    position: relative;
+    background-image: url('@assets/F background_1761587763278.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: repeat;
+  }
+
   /* Golden Shimmer Effect */
   @keyframes shimmer {
     0%, 100% {

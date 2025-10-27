@@ -70,7 +70,7 @@ export default function Landing() {
   ];
 
   return (
-    <div className="min-h-screen bg-background golden-shimmer">
+    <div className="min-h-screen bg-background geometric-pattern golden-shimmer">
       {/* Navigation - Fixed to top */}
       <nav className="fixed top-0 left-0 right-0 z-50 w-full border-b border-white/10 bg-background/20 backdrop-blur-md">
         <div className="w-full max-w-7xl mx-auto flex flex-row h-16 md:h-20 items-center justify-between px-4 md:px-8">
@@ -89,7 +89,7 @@ export default function Landing() {
       </nav>
       
       {/* Hero Section - Dark Navy Background */}
-      <section className="relative overflow-hidden min-h-screen flex items-center justify-center bg-background golden-shimmer">
+      <section className="relative overflow-hidden min-h-screen flex items-center justify-center bg-background">
         {/* Hero content */}
         <div className="container relative z-10 px-4 pt-16 md:pt-24 pb-20">
             <div className="mx-auto max-w-4xl text-center">
@@ -142,7 +142,7 @@ export default function Landing() {
       </section>
 
       {/* Features Section - Elevated Blue Cards */}
-      <section id="features" className="py-24 bg-gradient-to-b from-background via-background to-card relative golden-shimmer">
+      <section id="features" className="py-24 bg-gradient-to-b from-background via-background to-card relative">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-20" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
@@ -172,7 +172,7 @@ export default function Landing() {
       </section>
 
       {/* How It Works */}
-      <section className="py-24 bg-gradient-to-b from-card via-background to-background relative golden-shimmer">
+      <section className="py-24 bg-gradient-to-b from-card via-background to-background relative">
         <div className="absolute inset-0 bg-gradient-to-tl from-primary/5 via-transparent to-transparent opacity-20" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
@@ -204,7 +204,7 @@ export default function Landing() {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-24 bg-gradient-to-b from-card via-background to-card relative golden-shimmer">
+      <section className="py-24 bg-gradient-to-b from-card via-background to-card relative">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-20" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
@@ -293,7 +293,7 @@ export default function Landing() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-24 bg-gradient-to-b from-background via-card to-background relative golden-shimmer">
+      <section className="py-24 bg-gradient-to-b from-background via-card to-background relative">
         <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-transparent opacity-20" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
@@ -335,7 +335,7 @@ export default function Landing() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-24 bg-gradient-to-b from-background via-card to-background relative overflow-hidden golden-shimmer">
+      <section className="py-24 bg-gradient-to-b from-background via-card to-background relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/5 opacity-30" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center">
@@ -361,7 +361,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-background border-t border-foreground/10 golden-shimmer">
+      <footer className="py-12 bg-background border-t border-foreground/10">
         <div className="container px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
