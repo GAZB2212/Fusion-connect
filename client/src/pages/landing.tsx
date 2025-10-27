@@ -84,10 +84,10 @@ export default function Landing() {
   ];
 
   return (
-    <div className="min-h-screen bg-black golden-shimmer">
+    <div className="min-h-screen bg-background golden-shimmer">
       {/* Navigation - Fixed to top, outside hero section */}
       {videoEnded && (
-        <nav className="fixed top-0 left-0 right-0 z-50 w-full border-b border-white/10 bg-black/20 backdrop-blur-md animate-in fade-in duration-1000">
+        <nav className="fixed top-0 left-0 right-0 z-50 w-full border-b border-white/10 bg-background/20 backdrop-blur-md animate-in fade-in duration-1000">
           <div className="w-full max-w-7xl mx-auto flex flex-row h-16 md:h-20 items-center justify-between px-4 md:px-8">
             <div className="flex items-center gap-3">
               <img src={logoImage} alt="Fusion Logo" className="hidden md:block h-12 md:h-[5.25rem] w-auto" />
@@ -104,8 +104,8 @@ export default function Landing() {
         </nav>
       )}
       
-      {/* Hero Section - Black Background */}
-      <section className="relative overflow-hidden min-h-screen flex items-center justify-center bg-black golden-shimmer">
+      {/* Hero Section - Dark Navy Background */}
+      <section className="relative overflow-hidden min-h-screen flex items-center justify-center bg-background golden-shimmer">
         
         {/* Full-screen Video - only show while playing */}
         {!videoEnded && (
@@ -175,7 +175,7 @@ export default function Landing() {
       </section>
 
       {/* Features Section - Elevated Navy Cards */}
-      <section id="features" className="py-24 bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] relative golden-shimmer">
+      <section id="features" className="py-24 bg-gradient-to-b from-background via-[#0A0E17] to-card relative golden-shimmer">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-20" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
@@ -191,7 +191,7 @@ export default function Landing() {
             {features.map((feature, i) => (
               <div 
                 key={i} 
-                className="bg-gradient-to-br from-[#0E1220] to-[#0A0E17] rounded-xl border border-[#F8F4E3]/10 p-8 hover-elevate transition-all duration-300"
+                className="bg-gradient-to-br from-card to-background rounded-xl border border-foreground/10 p-8 hover-elevate transition-all duration-300"
               >
                 <div className="h-14 w-14 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center mb-6">
                   <feature.icon className="h-7 w-7 text-primary" />
@@ -205,7 +205,7 @@ export default function Landing() {
       </section>
 
       {/* How It Works */}
-      <section className="py-24 bg-gradient-to-b from-[#0E1220] via-[#0A0E17] to-[#0A0E17] relative golden-shimmer">
+      <section className="py-24 bg-gradient-to-b from-card via-background to-background relative golden-shimmer">
         <div className="absolute inset-0 bg-gradient-to-tl from-primary/5 via-transparent to-transparent opacity-20" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
@@ -237,7 +237,7 @@ export default function Landing() {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-24 bg-gradient-to-b from-[#0E1220] via-[#0A0E17] to-[#0E1220] relative golden-shimmer">
+      <section className="py-24 bg-gradient-to-b from-card via-background to-card relative golden-shimmer">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-20" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
@@ -251,7 +251,7 @@ export default function Landing() {
 
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Free Tier */}
-            <div className="bg-gradient-to-br from-[#0E1220] to-[#0A0E17] rounded-xl border border-[#F8F4E3]/10 p-8">
+            <div className="bg-gradient-to-br from-card to-background rounded-xl border border-foreground/10 p-8">
               <h3 className="text-2xl font-bold mb-2 text-[#F8F4E3] font-serif">Free</h3>
               <div className="text-4xl font-bold text-[#F8F4E3] mb-6 font-serif">£0</div>
               <ul className="space-y-4 mb-8">
@@ -326,7 +326,7 @@ export default function Landing() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-24 bg-gradient-to-b from-[#0A0E17] via-[#0E1220] to-[#0A0E17] relative golden-shimmer">
+      <section className="py-24 bg-gradient-to-b from-background via-card to-background relative golden-shimmer">
         <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-transparent opacity-20" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
@@ -342,7 +342,7 @@ export default function Landing() {
             {testimonials.map((testimonial, i) => (
               <div 
                 key={i} 
-                className="bg-gradient-to-br from-[#0A0E17] to-[#0E1220] rounded-xl border border-[#F8F4E3]/10 p-8 hover-elevate"
+                className="bg-gradient-to-br from-background to-card rounded-xl border border-foreground/10 p-8 hover-elevate"
               >
                 <div className="flex gap-1 mb-4">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -368,7 +368,7 @@ export default function Landing() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-24 bg-gradient-to-b from-[#0A0E17] via-[#0E1220] to-black relative overflow-hidden golden-shimmer">
+      <section className="py-24 bg-gradient-to-b from-background via-card to-background relative overflow-hidden golden-shimmer">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/5 opacity-30" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center">
@@ -394,7 +394,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-black border-t border-[#F8F4E3]/10 golden-shimmer">
+      <footer className="py-12 bg-background border-t border-foreground/10 golden-shimmer">
         <div className="container px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
