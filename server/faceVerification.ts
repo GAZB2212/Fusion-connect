@@ -103,49 +103,100 @@ Respond in JSON format with:
 }
 
 /**
- * Verifies multiple photos, ensuring the first one is front-facing
- * @param photoUrls - Array of image URLs to verify
- * @returns Verification results for all photos
+ * Compares two face images to verify they are the same person
+ * @param uploadedPhotoUrl - The profile photo uploaded by user
+ * @param liveSelfieUrl - The live selfie taken for verification
+ * @returns Verification result indicating if photos match
  */
-export async function verifyProfilePhotos(photoUrls: string[]): Promise<{
-  allValid: boolean;
-  firstPhotoValid: boolean;
-  results: FaceVerificationResult[];
-  errorMessage?: string;
+export async function compareFaces(uploadedPhotoUrl: string, liveSelfieUrl: string): Promise<{
+  isMatch: boolean;
+  confidence: number;
+  message: string;
+  details?: string;
 }> {
-  if (!photoUrls || photoUrls.length === 0) {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // Using gpt-4o for vision capabilities
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: `You are a face verification system. Compare these two images to determine if they show the same person.
+
+Image 1: Profile photo (uploaded by user)
+Image 2: Live selfie (taken for verification)
+
+Your task:
+1. Analyze both faces carefully
+2. Compare facial features: eyes, nose, mouth, face shape, skin tone, etc.
+3. Account for different lighting, angles, and expressions
+4. Determine if this is the SAME PERSON in both photos
+
+Important considerations:
+- Different lighting conditions are normal
+- Slight angle differences are acceptable
+- Different expressions (smiling vs neutral) are normal
+- Focus on permanent facial features, not temporary ones (makeup, glasses can vary)
+- Be strict - only match if you're confident it's the same person
+
+Respond in JSON format with:
+{
+  "isMatch": boolean (true only if you're confident these are the same person),
+  "confidence": number (0-100, your confidence in this assessment),
+  "details": string (brief explanation of key similarities or differences you noticed)
+}`
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: uploadedPhotoUrl,
+                detail: "high"
+              }
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: liveSelfieUrl,
+                detail: "high"
+              }
+            }
+          ]
+        }
+      ],
+      response_format: { type: "json_object" },
+      max_completion_tokens: 500
+    });
+
+    const content = response.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error("No response from AI");
+    }
+
+    const result = JSON.parse(content);
+
+    let message = "";
+    if (result.isMatch) {
+      message = "Verification successful! Your identity has been confirmed.";
+    } else {
+      message = "Verification failed. The photos do not appear to match. Please upload photos of yourself.";
+    }
+
     return {
-      allValid: false,
-      firstPhotoValid: false,
-      results: [],
-      errorMessage: "No photos provided"
+      isMatch: result.isMatch,
+      confidence: result.confidence || 0,
+      message,
+      details: result.details
+    };
+
+  } catch (error: any) {
+    console.error("Face comparison error:", error);
+    return {
+      isMatch: false,
+      confidence: 0,
+      message: "Unable to verify photos. Please try again.",
+      details: error.message
     };
   }
-
-  // Only verify the first photo (main profile photo)
-  const firstPhotoResult = await verifyFrontFacingPhoto(photoUrls[0]);
-
-  if (!firstPhotoResult.hasFace) {
-    return {
-      allValid: false,
-      firstPhotoValid: false,
-      results: [firstPhotoResult],
-      errorMessage: "Your main profile photo must show your face clearly."
-    };
-  }
-
-  if (!firstPhotoResult.isFrontFacing) {
-    return {
-      allValid: false,
-      firstPhotoValid: false,
-      results: [firstPhotoResult],
-      errorMessage: "Your main profile photo must be a front-facing photo for verification purposes. Please ensure you're looking directly at the camera."
-    };
-  }
-
-  return {
-    allValid: true,
-    firstPhotoValid: true,
-    results: [firstPhotoResult],
-  };
 }

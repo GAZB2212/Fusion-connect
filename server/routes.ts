@@ -521,6 +521,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Compare faces for identity verification
+  app.post("/api/compare-faces", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const { uploadedPhoto, liveSelfie } = req.body;
+
+      if (!uploadedPhoto || !liveSelfie) {
+        return res.status(400).json({ message: "Both uploaded photo and live selfie are required" });
+      }
+
+      const { compareFaces } = await import("./faceVerification");
+      const result = await compareFaces(uploadedPhoto, liveSelfie);
+
+      // If verification successful, update profile
+      if (result.isMatch) {
+        const userId = req.user.id;
+        await db
+          .update(profiles)
+          .set({
+            faceVerified: true,
+            photoVerified: true,
+            updatedAt: new Date(),
+          })
+          .where(eq(profiles.userId, userId));
+      }
+
+      res.json(result);
+    } catch (error: any) {
+      console.error("Face comparison error:", error);
+      res.status(500).json({ 
+        message: "Face comparison failed", 
+        error: error.message 
+      });
+    }
+  });
+
   // Profile endpoints
   app.get("/api/profile", isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;

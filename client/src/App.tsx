@@ -14,6 +14,7 @@ import ForgotPassword from "@/pages/forgot-password";
 import ResetPassword from "@/pages/reset-password";
 import Home from "@/pages/home";
 import ProfileSetup from "@/pages/profile-setup";
+import Verification from "@/pages/verification";
 import Matches from "@/pages/matches";
 import Messages from "@/pages/messages";
 import Settings from "@/pages/settings";
@@ -73,6 +74,21 @@ function Router() {
     return (
       <Switch>
         <Route path="/" component={ProfileSetup} />
+        <Route path="/:rest*">
+          {() => {
+            setLocation("/");
+            return null;
+          }}
+        </Route>
+      </Switch>
+    );
+  }
+
+  // Authenticated with complete profile but not verified - show verification
+  if (profile?.isComplete && !profile?.faceVerified) {
+    return (
+      <Switch>
+        <Route path="/" component={Verification} />
         <Route path="/:rest*">
           {() => {
             setLocation("/");
