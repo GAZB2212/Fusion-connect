@@ -393,8 +393,8 @@
   .geometric-pattern {
     position: relative;
     background-image: url('@assets/F background_1761587763278.png');
-    background-size: cover;
-    background-position: center;
+    background-size: auto;
+    background-position: top left;
     background-repeat: repeat;
   }
 
