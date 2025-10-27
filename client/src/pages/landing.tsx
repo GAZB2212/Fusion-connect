@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Shield, Users, MessageSquare, CheckCircle2, Star, Sparkles } from "lucide-react";
 import logoImage from "@assets/NEW logo 2_1761587557587.png";
+import loadingVideo from "@assets/Lets_animate_this_202510271804_z56n5_1761588281340.mp4";
 
 function CountUpNumber({ end, suffix = "", duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
   const [count, setCount] = useState(0);
@@ -27,6 +28,32 @@ function CountUpNumber({ end, suffix = "", duration = 2000 }: { end: number; suf
 }
 
 export default function Landing() {
+  const [showLoading, setShowLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoading(false);
+    }, 8000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (showLoading) {
+    return (
+      <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
+        <video
+          autoPlay
+          muted
+          playsInline
+          className="w-full h-full object-cover"
+          data-testid="video-loading"
+        >
+          <source src={loadingVideo} type="video/mp4" />
+        </video>
+      </div>
+    );
+  }
+
   const features = [
     {
       icon: Shield,
