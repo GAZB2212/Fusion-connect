@@ -29,18 +29,32 @@ function CountUpNumber({ end, suffix = "", duration = 2000 }: { end: number; suf
 
 export default function Landing() {
   const [showLoading, setShowLoading] = useState(true);
+  const [fadeOut, setFadeOut] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowLoading(false);
+    // Video plays for ~7 seconds, hold for 1 second, then fade
+    const fadeTimer = setTimeout(() => {
+      setFadeOut(true);
     }, 8000);
 
-    return () => clearTimeout(timer);
+    // Remove splash screen after fade completes
+    const removeTimer = setTimeout(() => {
+      setShowLoading(false);
+    }, 9000);
+
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(removeTimer);
+    };
   }, []);
 
   if (showLoading) {
     return (
-      <div className="fixed inset-0 bg-background flex items-center justify-center z-50">
+      <div 
+        className={`fixed inset-0 bg-background flex items-center justify-center z-50 transition-opacity duration-1000 ${
+          fadeOut ? 'opacity-0' : 'opacity-100'
+        }`}
+      >
         <video
           autoPlay
           muted
