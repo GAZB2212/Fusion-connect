@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Shield, Users, MessageSquare, CheckCircle2, Star, Sparkles } from "lucide-react";
 import logoImage from "@assets/logo 40_1761066001045.png";
-import heroVideo from "@assets/Animate_this_logo_202510211818 (1)_1761067145031.mp4";
-import heroVideoMobile from "@assets/Animate_this_logo_202510211838_5e5g3_1761068326631.mp4";
 
 function CountUpNumber({ end, suffix = "", duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
   const [count, setCount] = useState(0);
@@ -29,18 +27,6 @@ function CountUpNumber({ end, suffix = "", duration = 2000 }: { end: number; suf
 }
 
 export default function Landing() {
-  const [videoEnded, setVideoEnded] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
   const features = [
     {
       icon: Shield,
@@ -85,45 +71,27 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-background golden-shimmer">
-      {/* Navigation - Fixed to top, outside hero section */}
-      {videoEnded && (
-        <nav className="fixed top-0 left-0 right-0 z-50 w-full border-b border-white/10 bg-background/20 backdrop-blur-md animate-in fade-in duration-1000">
-          <div className="w-full max-w-7xl mx-auto flex flex-row h-16 md:h-20 items-center justify-between px-4 md:px-8">
-            <div className="flex items-center gap-3">
-              <img src={logoImage} alt="Fusion Logo" className="hidden md:block h-12 md:h-[5.25rem] w-auto" />
-            </div>
-            <Button 
-              variant="outline" 
-              className="border-primary text-primary hover:bg-primary/10 text-sm md:text-base"
-              asChild 
-              data-testid="button-login"
-            >
-              <a href="/login">Sign In</a>
-            </Button>
+      {/* Navigation - Fixed to top */}
+      <nav className="fixed top-0 left-0 right-0 z-50 w-full border-b border-white/10 bg-background/20 backdrop-blur-md">
+        <div className="w-full max-w-7xl mx-auto flex flex-row h-16 md:h-20 items-center justify-between px-4 md:px-8">
+          <div className="flex items-center gap-3">
+            <img src={logoImage} alt="Fusion Logo" className="hidden md:block h-12 md:h-[5.25rem] w-auto" />
           </div>
-        </nav>
-      )}
+          <Button 
+            variant="outline" 
+            className="border-primary text-primary hover:bg-primary/10 text-sm md:text-base"
+            asChild 
+            data-testid="button-login"
+          >
+            <a href="/login">Sign In</a>
+          </Button>
+        </div>
+      </nav>
       
       {/* Hero Section - Dark Navy Background */}
       <section className="relative overflow-hidden min-h-screen flex items-center justify-center bg-background golden-shimmer">
-        
-        {/* Full-screen Video - only show while playing */}
-        {!videoEnded && (
-          <video
-            autoPlay
-            muted
-            playsInline
-            className="absolute inset-0 w-full h-full object-contain md:object-cover px-4 md:px-0"
-            onEnded={() => setVideoEnded(true)}
-            key={isMobile ? 'mobile' : 'desktop'}
-          >
-            <source src={isMobile ? heroVideoMobile : heroVideo} type="video/mp4" />
-          </video>
-        )}
-        
-        {/* Hero content - only show after video ends */}
-        {videoEnded && (
-          <div className="container relative z-10 px-4 pt-24 md:pt-28 pb-20 animate-in fade-in duration-1000">
+        {/* Hero content */}
+        <div className="container relative z-10 px-4 pt-24 md:pt-28 pb-20">
             <div className="mx-auto max-w-4xl text-center">
               <div className="mb-8 flex justify-center">
                 <img src={logoImage} alt="Fusion Logo" className="h-32 md:h-40 w-auto" data-testid="img-hero-logo" />
@@ -171,7 +139,6 @@ export default function Landing() {
               </div>
             </div>
           </div>
-        )}
       </section>
 
       {/* Features Section - Elevated Navy Cards */}
