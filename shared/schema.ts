@@ -169,6 +169,24 @@ export const chaperones = pgTable("chaperones", {
   index("user_chaperone_idx").on(table.userId),
 ]);
 
+// Video Calls - track video call sessions
+export const videoCalls = pgTable("video_calls", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  matchId: varchar("match_id").notNull().references(() => matches.id, { onDelete: 'cascade' }),
+  callerId: varchar("caller_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  receiverId: varchar("receiver_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  channelName: varchar("channel_name", { length: 255 }).notNull(), // Agora channel name
+  status: varchar("status", { length: 20 }).notNull().default('initiated'), // initiated, ringing, active, ended, missed, declined
+  startedAt: timestamp("started_at"),
+  endedAt: timestamp("ended_at"),
+  duration: integer("duration"), // Duration in seconds
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("match_call_idx").on(table.matchId),
+  index("caller_call_idx").on(table.callerId),
+  index("receiver_call_idx").on(table.receiverId),
+]);
+
 // Relations
 export const usersRelations = relations(users, ({ one, many }) => ({
   profile: one(profiles, {
@@ -182,6 +200,8 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   sentMessages: many(messages, { relationName: "sender" }),
   receivedMessages: many(messages, { relationName: "receiver" }),
   chaperones: many(chaperones),
+  initiatedCalls: many(videoCalls, { relationName: "caller" }),
+  receivedCalls: many(videoCalls, { relationName: "receiver" }),
 }));
 
 export const profilesRelations = relations(profiles, ({ one }) => ({
@@ -216,6 +236,7 @@ export const matchesRelations = relations(matches, ({ one, many }) => ({
     relationName: "user2",
   }),
   messages: many(messages),
+  videoCalls: many(videoCalls),
 }));
 
 export const messagesRelations = relations(messages, ({ one }) => ({
@@ -239,6 +260,23 @@ export const chaperonesRelations = relations(chaperones, ({ one }) => ({
   user: one(users, {
     fields: [chaperones.userId],
     references: [users.id],
+  }),
+}));
+
+export const videoCallsRelations = relations(videoCalls, ({ one }) => ({
+  match: one(matches, {
+    fields: [videoCalls.matchId],
+    references: [matches.id],
+  }),
+  caller: one(users, {
+    fields: [videoCalls.callerId],
+    references: [users.id],
+    relationName: "caller",
+  }),
+  receiver: one(users, {
+    fields: [videoCalls.receiverId],
+    references: [users.id],
+    relationName: "receiver",
   }),
 }));
 
@@ -276,6 +314,11 @@ export const insertChaperoneSchema = createInsertSchema(chaperones, {
   relationshipType: z.string().optional(),
 }).omit({ id: true, createdAt: true });
 
+export const insertVideoCallSchema = createInsertSchema(videoCalls, {
+  channelName: z.string().min(1, "Channel name is required"),
+  status: z.enum(["initiated", "ringing", "active", "ended", "missed", "declined"]),
+}).omit({ id: true, createdAt: true, startedAt: true, endedAt: true, duration: true });
+
 export const registerUserSchema = z.object({
   email: z.string().email("Valid email is required"),
   password: z.string().min(8, "Password must be at least 8 characters"),
@@ -301,6 +344,8 @@ export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Chaperone = typeof chaperones.$inferSelect;
 export type InsertChaperone = z.infer<typeof insertChaperoneSchema>;
+export type VideoCall = typeof videoCalls.$inferSelect;
+export type InsertVideoCall = z.infer<typeof insertVideoCallSchema>;
 
 // Extended types for API responses
 export type ProfileWithUser = Profile & {
