@@ -6,13 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Send, ArrowLeft, Shield, CheckCircle2 } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Send, ArrowLeft, Shield, CheckCircle2, Video } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import type { MessageWithSender, MatchWithProfiles, Chaperone } from "@shared/schema";
+import type { MessageWithSender, MatchWithProfiles, Chaperone, VideoCall } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
+import VideoCallComponent from "@/components/VideoCall";
 
 export default function Messages() {
   const { user } = useAuth();
@@ -23,6 +25,9 @@ export default function Messages() {
 
   const [messageText, setMessageText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [isCallActive, setIsCallActive] = useState(false);
+  const [activeCall, setActiveCall] = useState<VideoCall | null>(null);
+  const [callToken, setCallToken] = useState<string>("");
 
   // Fetch match details
   const { data: match } = useQuery<MatchWithProfiles>({
@@ -65,6 +70,74 @@ export default function Messages() {
       });
     },
   });
+
+  // Start video call mutation
+  const startCallMutation = useMutation({
+    mutationFn: async () => {
+      if (!match) return;
+      const receiverId = match.user1Id === user?.id ? match.user2Id : match.user1Id;
+      const res = await apiRequest("POST", "/api/video-call/initiate", {
+        matchId: matchId!,
+        receiverId,
+      });
+      return res.json() as Promise<VideoCall>;
+    },
+    onSuccess: async (call) => {
+      if (!call) return;
+      
+      // Get token for the call
+      const tokenRes = await apiRequest(
+        "GET",
+        `/api/video-call/token/${call.id}`
+      );
+      const tokenData = await tokenRes.json() as { token: string; channelName: string };
+      
+      setActiveCall(call);
+      setCallToken(tokenData.token);
+      setIsCallActive(true);
+      
+      // Update call status to active
+      await apiRequest("PATCH", `/api/video-call/${call.id}/status`, {
+        status: "active",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to start call",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleEndCall = async () => {
+    if (!activeCall) return;
+    
+    try {
+      await apiRequest("PATCH", `/api/video-call/${activeCall.id}/status`, {
+        status: "ended",
+      });
+      
+      setIsCallActive(false);
+      setActiveCall(null);
+      setCallToken("");
+      
+      toast({
+        title: "Call ended",
+        description: "The video call has been ended",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleStartCall = () => {
+    startCallMutation.mutate();
+  };
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,6 +209,18 @@ export default function Messages() {
                 Chaperone Active
               </Badge>
             )}
+            
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleStartCall}
+              disabled={startCallMutation.isPending}
+              className="gap-2"
+              data-testid="button-start-video-call"
+            >
+              <Video className="h-4 w-4" />
+              Video Call
+            </Button>
           </div>
         </div>
       </div>
@@ -220,6 +305,21 @@ export default function Messages() {
           </form>
         </div>
       </div>
+
+      {/* Video Call Dialog */}
+      <Dialog open={isCallActive} onOpenChange={setIsCallActive}>
+        <DialogContent className="max-w-6xl h-[90vh] p-0">
+          {activeCall && callToken && (
+            <VideoCallComponent
+              callId={activeCall.id}
+              channelName={activeCall.channelName}
+              token={callToken}
+              onEndCall={handleEndCall}
+              isInitiator={activeCall.callerId === user?.id}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

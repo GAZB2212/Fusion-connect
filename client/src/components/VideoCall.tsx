@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import AgoraRTC from "agora-rtc-react";
 import {
   AgoraRTCProvider,
@@ -226,8 +226,10 @@ function VideoCallContent({
 }
 
 export default function VideoCall(props: VideoCallProps) {
+  const client = useMemo(() => AgoraRTC.createClient({ mode: "rtc", codec: "vp8" }), []);
+  
   return (
-    <AgoraRTCProvider>
+    <AgoraRTCProvider client={client}>
       <VideoCallContent {...props} />
     </AgoraRTCProvider>
   );
