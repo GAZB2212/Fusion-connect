@@ -70,7 +70,7 @@ export default function Landing() {
   ];
 
   return (
-    <div className="min-h-screen bg-background geometric-pattern golden-shimmer">
+    <div className="min-h-screen bg-background geometric-pattern">
       {/* Navigation - Fixed to top */}
       <nav className="fixed top-0 left-0 right-0 z-50 w-full border-b border-white/10 bg-background/20 backdrop-blur-md">
         <div className="w-full max-w-7xl mx-auto flex flex-row h-16 md:h-20 items-center justify-between px-4 md:px-8">
