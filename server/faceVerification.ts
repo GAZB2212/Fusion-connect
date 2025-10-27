@@ -115,6 +115,21 @@ export async function compareFaces(uploadedPhotoUrl: string, liveSelfieUrl: stri
   details?: string;
 }> {
   try {
+    // Validate that both images are proper data URLs
+    const validateDataUrl = (url: string): boolean => {
+      return url.startsWith('data:image/') && url.includes('base64,');
+    };
+
+    if (!validateDataUrl(uploadedPhotoUrl)) {
+      console.error("Invalid uploaded photo URL format");
+      throw new Error("Uploaded photo is not in valid format");
+    }
+
+    if (!validateDataUrl(liveSelfieUrl)) {
+      console.error("Invalid live selfie URL format");
+      throw new Error("Live selfie is not in valid format");
+    }
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o", // Using gpt-4o for vision capabilities
       messages: [
@@ -135,15 +150,18 @@ Your task:
 4. Determine if this is the SAME PERSON in both photos
 
 Important considerations:
-- Different lighting conditions are normal
-- Slight angle differences are acceptable
-- Different expressions (smiling vs neutral) are normal
-- Focus on permanent facial features, not temporary ones (makeup, glasses can vary)
-- Be strict - only match if you're confident it's the same person
+- Different lighting conditions are VERY NORMAL and expected
+- Slight to moderate angle differences are ACCEPTABLE
+- Different expressions (smiling vs neutral) are COMPLETELY NORMAL
+- Different camera quality between photos is expected
+- Focus on permanent facial features, not temporary ones (makeup, glasses, hair can vary)
+- Mirror/flip differences are normal (selfies are often mirrored)
+- Be REASONABLE - if the core facial features match, it's likely the same person
+- Only reject if you see CLEAR evidence of different people (different bone structure, completely different features)
 
 Respond in JSON format with:
 {
-  "isMatch": boolean (true only if you're confident these are the same person),
+  "isMatch": boolean (true if the core facial features match reasonably well),
   "confidence": number (0-100, your confidence in this assessment),
   "details": string (brief explanation of key similarities or differences you noticed)
 }`
@@ -176,11 +194,18 @@ Respond in JSON format with:
 
     const result = JSON.parse(content);
 
+    // Log the AI's decision for debugging
+    console.log("Face comparison result:", {
+      isMatch: result.isMatch,
+      confidence: result.confidence,
+      details: result.details
+    });
+
     let message = "";
     if (result.isMatch) {
       message = "Verification successful! Your identity has been confirmed.";
     } else {
-      message = "Verification failed. The photos do not appear to match. Please upload photos of yourself.";
+      message = `Verification failed. The photos do not appear to match. (Confidence: ${result.confidence}%)`;
     }
 
     return {
@@ -192,10 +217,20 @@ Respond in JSON format with:
 
   } catch (error: any) {
     console.error("Face comparison error:", error);
+    
+    // Provide more helpful error messages
+    let userMessage = "Unable to verify photos. Please try again.";
+    
+    if (error.message.includes("not in valid format")) {
+      userMessage = "Photo format error. Please retake your selfie and try again.";
+    } else if (error.message.includes("API") || error.message.includes("network")) {
+      userMessage = "Connection error. Please check your internet and try again.";
+    }
+    
     return {
       isMatch: false,
       confidence: 0,
-      message: "Unable to verify photos. Please try again.",
+      message: userMessage,
       details: error.message
     };
   }
