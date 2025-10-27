@@ -94,7 +94,7 @@ export default function Landing() {
         <div className="container relative z-10 px-4 pt-24 md:pt-28 pb-20">
             <div className="mx-auto max-w-4xl text-center">
               <div className="mb-8 flex justify-center">
-                <img src={logoImage} alt="Fusion Logo" className="h-32 md:h-40 w-auto" data-testid="img-hero-logo" />
+                <img src={logoImage} alt="Fusion Logo" className="h-64 md:h-80 w-auto" data-testid="img-hero-logo" />
               </div>
               <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-6 py-2 backdrop-blur-sm">
                 <Star className="h-4 w-4 text-primary fill-primary" />
