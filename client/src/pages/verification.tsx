@@ -33,6 +33,14 @@ export default function Verification() {
     };
   }, []);
 
+  useEffect(() => {
+    // Ensure video element has the stream when camera becomes active
+    if (cameraActive && streamRef.current && videoRef.current && !videoRef.current.srcObject) {
+      videoRef.current.srcObject = streamRef.current;
+      videoRef.current.play().catch((e) => console.error("Play error:", e));
+    }
+  }, [cameraActive]);
+
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -47,10 +55,17 @@ export default function Verification() {
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        // Explicitly play the video
+        try {
+          await videoRef.current.play();
+        } catch (playError) {
+          console.error("Video play error:", playError);
+        }
       }
       
       setCameraActive(true);
     } catch (error) {
+      console.error("Camera error:", error);
       toast({
         title: "Camera Access Denied",
         description: "Please allow camera access to complete verification.",
