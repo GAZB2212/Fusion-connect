@@ -147,23 +147,74 @@ export default function ProfileSetup() {
     });
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     const newPhotos = [...photos];
-    Array.from(files).forEach((file) => {
+    const isFirstPhoto = newPhotos.length === 0;
+
+    for (const file of Array.from(files)) {
       if (newPhotos.length < 6) {
         const reader = new FileReader();
-        reader.onloadend = () => {
-          const result = reader.result as string;
-          const updatedPhotos = [...newPhotos, result];
-          setPhotos(updatedPhotos);
-          form.setValue("photos", updatedPhotos);
-        };
-        reader.readAsDataURL(file);
+        
+        await new Promise((resolve) => {
+          reader.onloadend = async () => {
+            const result = reader.result as string;
+            
+            // Verify first photo is front-facing
+            if (isFirstPhoto && newPhotos.length === 0) {
+              try {
+                const verificationResponse = await apiRequest("POST", "/api/verify-face", {
+                  imageUrl: result
+                });
+
+                if (!verificationResponse.hasFace) {
+                  toast({
+                    title: "No Face Detected",
+                    description: "Your main profile photo must clearly show your face. Please upload a different photo.",
+                    variant: "destructive",
+                  });
+                  resolve(null);
+                  return;
+                }
+
+                if (!verificationResponse.isFrontFacing) {
+                  toast({
+                    title: "Photo Must Be Front-Facing",
+                    description: "Your main profile photo must show you looking directly at the camera. Please upload a front-facing photo for verification.",
+                    variant: "destructive",
+                  });
+                  resolve(null);
+                  return;
+                }
+
+                // Photo passed verification
+                toast({
+                  title: "Photo Verified ✓",
+                  description: "Your profile photo has been verified successfully!",
+                });
+              } catch (error: any) {
+                toast({
+                  title: "Verification Error",
+                  description: "Unable to verify photo. Please try again.",
+                  variant: "destructive",
+                });
+                resolve(null);
+                return;
+              }
+            }
+
+            const updatedPhotos = [...newPhotos, result];
+            newPhotos.push(result);
+            setPhotos(updatedPhotos);
+            form.setValue("photos", updatedPhotos);
+            resolve(null);
+          };
+          reader.readAsDataURL(file);
+        });
       }
-    });
+    }
   };
 
   const removePhoto = (index: number) => {
