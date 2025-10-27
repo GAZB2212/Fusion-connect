@@ -308,16 +308,20 @@
 
   body {
     @apply font-sans antialiased bg-background text-foreground;
+    /* Mobile: Use vertical pattern */
     background-image: url('@assets/Panel 2_1761588164090.png');
     background-size: 100% auto;
     background-position: top center;
     background-repeat: repeat-y;
     background-attachment: fixed;
   }
-  
+
+  /* Desktop: Use wide pattern */
   @media (min-width: 768px) {
     body {
-      background-size: auto;
+      background-image: url('@assets/wide background_1761589683754.png');
+      background-size: cover;
+      background-position: center center;
       background-repeat: repeat;
     }
   }
@@ -410,10 +414,12 @@
     background-repeat: repeat-y;
   }
   
-  /* Desktop: auto sizing */
+  /* Desktop: Use wide pattern */
   @media (min-width: 768px) {
     .geometric-pattern {
-      background-size: auto;
+      background-image: url('@assets/wide background_1761589683754.png');
+      background-size: cover;
+      background-position: center center;
       background-repeat: repeat;
     }
   }

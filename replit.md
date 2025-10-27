@@ -1,278 +1,56 @@
 # Fusion - Luxury Muslim Matchmaking Platform
 
 ## Overview
-
-Fusion is a premium Muslim matchmaking platform designed to help Muslim singles find meaningful connections in a halal, respectful way. The application emphasizes Islamic values, privacy, and safety while providing modern dating app features like profile discovery, matching, messaging, and chaperone support for traditional courtship.
-
-The platform is built as a full-stack TypeScript application with a React frontend and Express backend, using PostgreSQL for data persistence and custom email/password authentication via Passport Local Strategy.
+Fusion is a premium Muslim matchmaking platform designed to help Muslim singles find meaningful connections in a halal, respectful way. It emphasizes Islamic values, privacy, and safety, while offering modern features like profile discovery, matching, messaging, and chaperone support. The platform aims to provide a luxury experience for users seeking serious relationships.
 
 ## User Preferences
-
 Preferred communication style: Simple, everyday language.
-
-## Recent Changes (October 2025)
-
-### AI Face Verification (October 27, 2025)
-- **OpenAI Vision API Integration for Photo Verification**
-  - Implemented using Replit AI Integrations (no API key required, billed to Replit credits)
-  - Automatically verifies first uploaded photo is front-facing
-  - Checks for face presence and orientation before accepting photo
-  
-- **Verification Requirements**
-  - First photo MUST be front-facing for profile verification
-  - Face must be clearly visible looking directly at camera
-  - Both eyes must be visible
-  - No extreme angles, side views, or tilted heads allowed
-  
-- **New Backend Services**
-  - `server/faceVerification.ts`: Face detection and pose verification service
-  - POST `/api/verify-face`: API endpoint for real-time photo verification
-  
-- **User Experience**
-  - Real-time verification when uploading first photo
-  - Clear error messages if photo is not front-facing or no face detected
-  - Success confirmation when photo passes verification
-  - Prevents users from uploading invalid profile photos
-
-## Recent Changes (October 2025)
-
-### Authentication System Overhaul
-- **Replaced Replit OAuth with custom email/password authentication**
-  - Implemented Passport Local Strategy for native login experience
-  - Added bcrypt for secure password hashing
-  - Session storage via PostgreSQL with connect-pg-simple
-  - Created custom Login and Signup pages with forms
-  - Updated all API routes to use `req.user.id` instead of OAuth claims
-  - Added logout functionality with session destruction
-  - Logout button in profile setup header redirects to landing page
-
-### Luxury Brand Redesign
-- **Implemented premium luxury aesthetic**
-  - Primary: Deep Navy (#0A0E17) - sophisticated background matching logo
-  - Accent: Gold (#D4AF37) - used sparingly for buttons, icons, premium features
-  - Secondary: Emerald Green (#0F5132) - success states, verified badges
-  - Neutral: Ivory (#F8F4E3) - text on dark backgrounds, elegant contrast
-  - Highlights: Rose Gold (#B76E79), Maroon (#7B1E26)
-
-- **Design Elements**
-  - New logo: Golden crescent moon with heart symbol on navy background
-  - Islamic geometric patterns as subtle background textures (low opacity)
-  - Gold accents used sparingly to maintain premium feel
-  - Deep navy backgrounds throughout for luxury aesthetic
-  - Ivory text for high contrast readability
-  - Handel Gothic font for headers (bold, geometric, luxury aesthetic)
-  - Inter sans-serif for body text (readability)
-
-- **Updated Pages**
-  - Landing page: Premium hero section with logo, luxury styling, pricing section
-  - Login/Signup: Navy cards with gold accents, ivory text
-  - All forms: Dark mode optimized with luxury palette
-
-### Subscription System (October 2025)
-- **Stripe Integration for Premium Subscriptions**
-  - £9.99/month premium subscription using Stripe
-  - Free tier: Users can signup, create profiles, browse, and swipe
-  - Premium tier: Required to view matches and send messages
-  - Stripe test mode configured with VITE_STRIPE_PUBLIC_KEY and STRIPE_SECRET_KEY
-  
-- **Subscription Logic**
-  - Swipes are always recorded for all users (free and premium)
-  - **Matches are only created if at least one user has an active subscription**
-  - Free users cannot view matches (403 error shows paywall)
-  - Free users cannot create matches (mutual right swipes don't create matches unless one user is subscribed)
-  - Premium users can match with anyone (including free users)
-  
-- **Database Changes**
-  - Added subscription fields to users table:
-    - stripeCustomerId
-    - stripeSubscriptionId
-    - subscriptionStatus ('active', 'trialing', 'canceled', etc.)
-    - subscriptionEndsAt
-  
-- **New API Endpoints**
-  - POST /api/create-subscription - Creates Stripe subscription and returns client secret
-  - GET /api/subscription-status - Checks current subscription status
-  - POST /api/cancel-subscription - Cancels subscription at period end
-  
-- **UI Updates**
-  - Landing page: Pricing section showing free vs premium tiers
-  - Matches page: Paywall component for non-subscribers
-  - Subscribe page: Stripe Elements payment form with card input
-
-### Comprehensive Muzz-Inspired Profile System (October 2025)
-- **Expanded Profile Setup Flow (5 Steps)**
-  - Step 1: Basic Info (name, age, gender, location, height with cm/ft options, photo upload)
-  - Step 2: Islamic Values (born Muslim, detailed sect selection, religious practice levels)
-  - Step 3: Profession & Marital Status (searchable profession list, marital status, education)
-  - Step 4: Interests (100+ categorized interests with emojis from Sport, Food, Creative, Entertainment, Outdoors, Intellectual, Social, Wellness, Islamic categories)
-  - Step 5: Bio & Final Details (looking for, bio text area)
-
-- **New Profile Fields**
-  - Height: Integer (cm) with heightUnit field for display preference
-  - Born Muslim: Boolean field to indicate if user was born into Islam
-  - Detailed Sect Options: Sunni variants (Hanafi, Maliki, Shafi, Hanbali), Shia variants (Twelver, Ismaili, Zaydi), Sufi, Other
-  - Religious Practice: 4-level system (Strictly practising, Actively practising, Occasionally practising, Not practising at all) with descriptions
-  - Profession: Searchable dropdown from 200+ professional roles (Doctor, Engineer, Teacher, etc.)
-  - Marital Status: Never married, Separated, Divorced, Annulled, Widowed, Married
-  - Interests: Array of selected interests (max 15 recommended)
-  - Last Active: Timestamp for "Active today" badge
-  - Photo Verified: Boolean for photo verification status
-  - Main Photo Index: Integer to designate which photo is the main display photo
-
-- **Comprehensive Badge System on Profile Cards**
-  - Premium Badge: Golden crown icon with "Premium" text for subscribed users
-  - Active Today Badge: Emerald green with clock icon for users active within 24 hours
-  - Profession Badge: Displays user's profession (e.g., "Doctor", "Software Engineer")
-  - Photo Verified Badge: Golden camera icon for verified profile photos
-  - All badges styled with appropriate colors matching luxury brand palette
-
-- **Interests Display**
-  - Up to 10 interests shown on profile cards
-  - "+X more" badge if user has selected more than 10
-  - Full interests list in profile details section
-  - Each interest includes emoji for visual appeal
-
-- **Constants Library (shared/constants.ts)**
-  - INTEREST_CATEGORIES: Object with 9 categories and 100+ interests
-  - PROFESSIONS: Array of 200+ professional roles
-  - HEIGHT_OPTIONS_CM: Array of height options from 122cm (4'0") to 203cm (6'8")
-  - SECT_OPTIONS: Detailed Islamic sect breakdown
-  - RELIGIOUS_PRACTICE_OPTIONS: 4 levels with descriptions
-  - MARITAL_STATUS_OPTIONS: 6 options matching Muzz standards
 
 ## System Architecture
 
-### Frontend Architecture
+### UI/UX Decisions
+The platform features a luxury aesthetic with a primary deep navy color, gold accents, and emerald green for success states. Design elements include a golden crescent moon logo, subtle Islamic geometric patterns, and elegant typography (Handel Gothic for headers, Inter for body text). The UI is mobile-optimized and inspired by apps like Hinge and Bumble, adapted for Muslim cultural sensitivity. An AI-powered face verification system is integrated to ensure profile authenticity.
 
-**Technology Stack:**
-- **React 18** with TypeScript for type safety
-- **Wouter** for client-side routing (lightweight alternative to React Router)
-- **TanStack Query (React Query)** for server state management and data fetching
-- **Vite** as the build tool and development server
-- **shadcn/ui** component library built on Radix UI primitives
-- **Tailwind CSS** for styling with custom design tokens
+### Technical Implementations
+**Frontend:** Built with React 18, TypeScript, Wouter for routing, TanStack Query for data fetching, Vite as a build tool, shadcn/ui for components, and Tailwind CSS for styling.
+**Backend:** Developed with Node.js, Express.js, and TypeScript. It uses Drizzle ORM for PostgreSQL interactions and Passport.js with a custom local strategy for authentication.
+**Authentication:** Custom email/password authentication via Passport Local Strategy with bcrypt for password hashing and PostgreSQL for session storage. A comprehensive AI Face Verification system, using OpenAI Vision API (GPT-4o), ensures identity verification by comparing uploaded profile photos with live selfies.
+**Profile System:** Features a detailed 5-step profile setup including basic info, Islamic values (sects, practice levels), profession, interests (100+ categorized), and a bio. Profiles include a comprehensive badge system for premium status, activity, profession, and photo verification.
+**Subscription System:** Implements a premium subscription model (£9.99/month) via Stripe. Free users can browse and swipe, but viewing matches and sending messages requires a subscription. Matches are only created if at least one user has an active subscription.
+**Matching Algorithm:** A match is created if both users swipe right AND at least one user has an active subscription.
 
-**Design System:**
-The application follows design guidelines inspired by Hinge, Bumble, and LinkedIn, adapted for Muslim cultural sensitivity. It uses:
-- Emerald green as the primary brand color (symbolizing growth, peace, and Islamic tradition)
-- Inter font family for clean, modern readability
-- Dark and light mode support with comprehensive color tokens
-- Neutral color palette emphasizing trust and professionalism
+### Feature Specifications
+- **Profile Management:** Detailed user profiles, photo uploads, and comprehensive demographic and religious information.
+- **Discovery & Swiping:** Users can discover potential matches and perform swipe actions.
+- **Messaging:** Secure messaging between matched users.
+- **Chaperone Support:** Optional guardian access to conversations for traditional courtship.
+- **Face Verification:** AI-driven identity verification to prevent fake profiles.
+- **Subscription Tiers:** Free and premium tiers with distinct feature sets.
 
-**Component Architecture:**
-- Reusable UI components from shadcn/ui in `client/src/components/ui/`
-- Page components in `client/src/pages/` for each major view (landing, home, profile setup, matches, messages, settings)
-- Custom navigation component (`BottomNav`) for mobile-first navigation
-- Form handling with React Hook Form and Zod validation
+### System Design Choices
+- **Full-stack TypeScript:** Ensures type safety across the entire application.
+- **RESTful API:** Clearly defined endpoints for various functionalities.
+- **PostgreSQL Database:** Used for data persistence, including user profiles, swipes, matches, messages, chaperones, and session storage.
+- **Serverless PostgreSQL (Neon):** Utilized for efficient and scalable database connections.
+- **Session-based Authentication:** Secure, HTTP-only cookies for user sessions.
 
-**State Management:**
-- TanStack Query handles all server state, caching, and background refetching
-- Local component state for UI interactions
-- No global state management library needed due to Query's capabilities
+## External Dependencies
 
-**Authentication Flow:**
-- Unauthenticated users see the landing page
-- Authenticated users without complete profiles are redirected to profile setup
-- Authenticated users with complete profiles access the main app
-
-### Backend Architecture
-
-**Technology Stack:**
-- **Node.js** with **Express.js** for the REST API server
-- **TypeScript** for type safety across the stack
-- **Drizzle ORM** for database queries and schema management
-- **Passport.js** with OpenID Connect strategy for Replit Auth integration
-- **Express Session** with PostgreSQL session store for persistence
-
-**API Design:**
-RESTful endpoints organized in `server/routes.ts`:
-- `/api/profile` - User profile CRUD operations
-- `/api/discover` - Fetch potential matches based on preferences
-- `/api/swipe` - Record swipe actions (like/pass), create matches if subscription active
-- `/api/matches` - Retrieve mutual matches (requires active subscription)
-- `/api/messages` - Message CRUD with polling for real-time updates
-- `/api/chaperones` - Manage chaperone (Wali/guardian) access
-- `/api/auth/user` - Authentication status endpoint
-- `/api/create-subscription` - Create Stripe subscription
-- `/api/subscription-status` - Check subscription status
-- `/api/cancel-subscription` - Cancel subscription at period end
-
-**Authentication & Authorization:**
-- Replit's OpenID Connect (OIDC) integration for user authentication
-- Session-based authentication using secure, HTTP-only cookies
-- `isAuthenticated` middleware protects all API routes
-- User sessions stored in PostgreSQL for persistence across server restarts
-
-**Database Schema:**
-The application uses PostgreSQL with the following core entities:
-- **users** - Basic user information from Replit Auth
-- **profiles** - Extended profile data (demographics, religious preferences, photos, bio)
-- **swipes** - Track user swipe actions (right/left)
-- **matches** - Store mutual matches when both users swipe right
-- **messages** - Chat messages between matched users
-- **chaperones** - Guardian/Wali access to conversations
-- **sessions** - Express session storage
-
-**Business Logic:**
-- **Matching Algorithm**: When a user swipes right, check if the other user has already swiped right. If yes AND at least one user has an active subscription, create a match and return `isMatch: true`. Free users cannot create matches.
-- **Discovery**: Filter out already-swiped profiles and return profiles matching user preferences (gender, age range, location, religious preferences).
-- **Privacy Controls**: Profile visibility settings, photo blur options, and chaperone-enabled conversations.
-- **Subscription Requirements**: 
-  - Free tier: Signup, profile creation, browsing, swiping
-  - Premium tier (£9.99/month): View matches, send messages, chaperone support
-
-### Data Storage
-
-**Database: PostgreSQL (via Neon)**
-- Serverless PostgreSQL connection using `@neondatabase/serverless`
-- WebSocket-based connection pooling for efficient resource usage
-- Drizzle ORM for type-safe queries and migrations
-
-**Schema Design Principles:**
-- UUID primary keys for all entities
-- Foreign key constraints with CASCADE delete for data integrity
-- Timestamps (createdAt, updatedAt) on all major tables
-- JSONB fields for flexible data (photos array, preferences)
-- Indexed fields for query performance (user lookups, match queries)
-
-**Migration Strategy:**
-- Schema defined in `shared/schema.ts` using Drizzle Kit
-- Migrations stored in `migrations/` directory
-- `drizzle-kit push` command deploys schema changes
-
-### External Dependencies
-
-**Authentication Service:**
-- **Replit Auth (OpenID Connect)** - Primary authentication provider
-- Environment variables: `ISSUER_URL`, `REPL_ID`, `SESSION_SECRET`
-- OIDC discovery endpoint dynamically fetched and cached
-
-**Database Service:**
-- **Neon Serverless PostgreSQL** - Database hosting
-- Environment variable: `DATABASE_URL`
-- WebSocket support required for serverless connections
-
-**Session Storage:**
-- **connect-pg-simple** - PostgreSQL session store for Express
-- Sessions persisted to database for reliability
-- 7-day session TTL with HTTP-only, secure cookies
-
-**UI Component Library:**
-- **Radix UI** - Headless, accessible component primitives
-- **shadcn/ui** - Pre-styled Radix components with Tailwind
-- **Lucide React** - Icon library
-
-**Development Tools:**
-- **Vite plugins**: Runtime error overlay, cartographer (Replit integration), dev banner
-- **TypeScript** for full-stack type safety
-- **ESBuild** for production bundling
-
-**Third-party Utilities:**
-- **date-fns** - Date formatting and manipulation
-- **memoizee** - Function memoization for OIDC config caching
-- **nanoid** - Unique ID generation
-- **Zod** - Runtime schema validation
-- **drizzle-zod** - Generate Zod schemas from Drizzle tables
-
-**Development Environment:**
-The application is optimized for Replit deployment with specific environment variables and configuration for the Replit hosting platform.
+*   **OpenAI Vision API (GPT-4o):** For advanced facial recognition and identity verification.
+*   **Stripe:** For handling premium subscriptions and payments.
+*   **PostgreSQL (Neon Serverless):** The primary database for all application data.
+*   **Passport.js:** For authentication (local strategy).
+*   **Connect-pg-simple:** For PostgreSQL-based Express session storage.
+*   **React 18:** Frontend library.
+*   **Wouter:** Lightweight client-side router.
+*   **TanStack Query:** Server state management.
+*   **Vite:** Build tool.
+*   **shadcn/ui & Radix UI:** UI component libraries.
+*   **Tailwind CSS:** Styling framework.
+*   **Lucide React:** Icon library.
+*   **Node.js & Express.js:** Backend runtime and framework.
+*   **Drizzle ORM:** Database queries and schema management.
+*   **bcrypt:** Password hashing.
+*   **date-fns:** Date utility library.
+*   **nanoid:** Unique ID generation.
+*   **Zod & drizzle-zod:** Schema validation.
