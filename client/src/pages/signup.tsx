@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
-import logoImage from "@assets/NEW LOGO_1761581763564.png";
+import logoImage from "@assets/NEW logo 2_1761587557587.png";
 
 export default function Signup() {
   const [, setLocation] = useLocation();
