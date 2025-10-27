@@ -14,6 +14,7 @@ import {
   matches, 
   messages, 
   chaperones,
+  videoCalls,
   passwordResetTokens,
   insertProfileSchema,
   insertMessageSchema,
@@ -24,6 +25,7 @@ import {
   type Match,
   type Message,
   type Chaperone,
+  type VideoCall,
   type ProfileWithUser,
   type MatchWithProfiles,
   type MessageWithSender,
@@ -1037,6 +1039,186 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     res.json({ success: true });
+  });
+
+  // Video Call endpoints
+  app.post("/api/video-call/initiate", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+    const { matchId, receiverId } = req.body;
+
+    try {
+      // Verify match exists and user is part of it
+      const [match] = await db
+        .select()
+        .from(matches)
+        .where(
+          and(
+            eq(matches.id, matchId),
+            or(eq(matches.user1Id, userId), eq(matches.user2Id, userId))
+          )
+        )
+        .limit(1);
+
+      if (!match) {
+        return res.status(403).json({ message: "Not authorized to initiate call for this match" });
+      }
+
+      // Generate unique channel name
+      const channelName = `call_${matchId}_${Date.now()}`;
+
+      // Create video call record
+      const [videoCall] = await db
+        .insert(videoCalls)
+        .values({
+          matchId,
+          callerId: userId,
+          receiverId,
+          channelName,
+          status: 'initiated',
+        })
+        .returning();
+
+      res.json(videoCall);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/video-call/token/:callId", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+    const { callId } = req.params;
+
+    try {
+      // Get call details
+      const [call] = await db
+        .select()
+        .from(videoCalls)
+        .where(eq(videoCalls.id, callId))
+        .limit(1);
+
+      if (!call) {
+        return res.status(404).json({ message: "Call not found" });
+      }
+
+      // Verify user is part of this call
+      if (call.callerId !== userId && call.receiverId !== userId) {
+        return res.status(403).json({ message: "Not authorized to access this call" });
+      }
+
+      // Import Agora token builder
+      const { RtcTokenBuilder, RtcRole } = require('agora-token');
+      
+      const appId = process.env.VITE_AGORA_APP_ID;
+      const appCertificate = process.env.AGORA_APP_CERTIFICATE;
+      const channelName = call.channelName;
+      const uid = 0; // Use 0 for wildcard UID
+      const role = RtcRole.PUBLISHER; // Both users can publish
+      
+      // Token expires in 1 hour
+      const expirationTimeInSeconds = 3600;
+      const currentTimestamp = Math.floor(Date.now() / 1000);
+      const privilegeExpireTime = currentTimestamp + expirationTimeInSeconds;
+
+      // Generate token
+      const token = RtcTokenBuilder.buildTokenWithUid(
+        appId,
+        appCertificate,
+        channelName,
+        uid,
+        role,
+        privilegeExpireTime
+      );
+
+      res.json({
+        token,
+        channelName,
+        appId,
+        uid,
+        expiresAt: privilegeExpireTime,
+      });
+    } catch (error: any) {
+      console.error('Token generation error:', error);
+      res.status(500).json({ message: "Failed to generate token" });
+    }
+  });
+
+  app.patch("/api/video-call/:callId/status", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+    const { callId } = req.params;
+    const { status } = req.body;
+
+    try {
+      // Get call details
+      const [call] = await db
+        .select()
+        .from(videoCalls)
+        .where(eq(videoCalls.id, callId))
+        .limit(1);
+
+      if (!call) {
+        return res.status(404).json({ message: "Call not found" });
+      }
+
+      // Verify user is part of this call
+      if (call.callerId !== userId && call.receiverId !== userId) {
+        return res.status(403).json({ message: "Not authorized to update this call" });
+      }
+
+      const updateData: any = { status };
+
+      // Update timestamps based on status
+      if (status === 'active' && !call.startedAt) {
+        updateData.startedAt = new Date();
+      } else if (status === 'ended' && call.startedAt) {
+        updateData.endedAt = new Date();
+        // Calculate duration in seconds
+        const duration = Math.floor((new Date().getTime() - new Date(call.startedAt).getTime()) / 1000);
+        updateData.duration = duration;
+      }
+
+      const [updatedCall] = await db
+        .update(videoCalls)
+        .set(updateData)
+        .where(eq(videoCalls.id, callId))
+        .returning();
+
+      res.json(updatedCall);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.get("/api/video-call/history/:matchId", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+    const { matchId } = req.params;
+
+    try {
+      // Verify user is part of this match
+      const [match] = await db
+        .select()
+        .from(matches)
+        .where(
+          and(
+            eq(matches.id, matchId),
+            or(eq(matches.user1Id, userId), eq(matches.user2Id, userId))
+          )
+        )
+        .limit(1);
+
+      if (!match) {
+        return res.status(403).json({ message: "Not authorized to view call history for this match" });
+      }
+
+      const callHistory = await db
+        .select()
+        .from(videoCalls)
+        .where(eq(videoCalls.matchId, matchId))
+        .orderBy(desc(videoCalls.createdAt));
+
+      res.json(callHistory);
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
   });
 
   const httpServer = createServer(app);
