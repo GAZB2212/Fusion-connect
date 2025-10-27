@@ -12,6 +12,30 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (October 2025)
 
+### AI Face Verification (October 27, 2025)
+- **OpenAI Vision API Integration for Photo Verification**
+  - Implemented using Replit AI Integrations (no API key required, billed to Replit credits)
+  - Automatically verifies first uploaded photo is front-facing
+  - Checks for face presence and orientation before accepting photo
+  
+- **Verification Requirements**
+  - First photo MUST be front-facing for profile verification
+  - Face must be clearly visible looking directly at camera
+  - Both eyes must be visible
+  - No extreme angles, side views, or tilted heads allowed
+  
+- **New Backend Services**
+  - `server/faceVerification.ts`: Face detection and pose verification service
+  - POST `/api/verify-face`: API endpoint for real-time photo verification
+  
+- **User Experience**
+  - Real-time verification when uploading first photo
+  - Clear error messages if photo is not front-facing or no face detected
+  - Success confirmation when photo passes verification
+  - Prevents users from uploading invalid profile photos
+
+## Recent Changes (October 2025)
+
 ### Authentication System Overhaul
 - **Replaced Replit OAuth with custom email/password authentication**
   - Implemented Passport Local Strategy for native login experience

@@ -167,7 +167,7 @@ export default function ProfileSetup() {
               try {
                 const verificationResponse = await apiRequest("POST", "/api/verify-face", {
                   imageUrl: result
-                });
+                }) as unknown as { hasFace: boolean; isFrontFacing: boolean; message: string };
 
                 if (!verificationResponse.hasFace) {
                   toast({
