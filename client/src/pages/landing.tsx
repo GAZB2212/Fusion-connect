@@ -89,7 +89,7 @@ export default function Landing() {
       </nav>
       
       {/* Hero Section - Dark Navy Background */}
-      <section className="relative overflow-hidden min-h-screen flex items-center justify-center bg-background">
+      <section className="relative overflow-hidden min-h-screen flex items-center justify-center">
         {/* Hero content */}
         <div className="container relative z-10 px-4 pt-16 md:pt-24 pb-20">
             <div className="mx-auto max-w-4xl text-center">
@@ -142,8 +142,7 @@ export default function Landing() {
       </section>
 
       {/* Features Section - Elevated Blue Cards */}
-      <section id="features" className="py-24 bg-gradient-to-b from-background via-background to-card relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-20" />
+      <section id="features" className="py-24 relative">
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
@@ -172,8 +171,7 @@ export default function Landing() {
       </section>
 
       {/* How It Works */}
-      <section className="py-24 bg-gradient-to-b from-card via-background to-background relative">
-        <div className="absolute inset-0 bg-gradient-to-tl from-primary/5 via-transparent to-transparent opacity-20" />
+      <section className="py-24 relative">
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
@@ -204,8 +202,7 @@ export default function Landing() {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-24 bg-gradient-to-b from-card via-background to-card relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-20" />
+      <section className="py-24 relative">
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
@@ -293,8 +290,7 @@ export default function Landing() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-24 bg-gradient-to-b from-background via-card to-background relative">
-        <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-transparent opacity-20" />
+      <section className="py-24 relative">
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
@@ -335,8 +331,7 @@ export default function Landing() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-24 bg-gradient-to-b from-background via-card to-background relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/5 opacity-30" />
+      <section className="py-24 relative overflow-hidden">
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
@@ -361,7 +356,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 bg-background border-t border-foreground/10">
+      <footer className="py-12 border-t border-foreground/10">
         <div className="container px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
