@@ -42,7 +42,7 @@
   /* Gold Primary */
   --sidebar-primary: 45 62% 53%;
 
-  --sidebar-primary-foreground: 219 39% 6%;
+  --sidebar-primary-foreground: 220 30% 12%;
 
   --sidebar-accent: 45 25% 92%;
 
@@ -59,8 +59,8 @@
   /* Gold Primary */
   --primary: 45 62% 53%;
 
-  /* Navy on Gold */
-  --primary-foreground: 219 39% 6%;
+  /* Blue on Gold */
+  --primary-foreground: 220 30% 12%;
 
   /* Emerald Secondary */
   --secondary: 151 70% 19%;
@@ -129,7 +129,7 @@
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
 }
 
-/* DARK MODE - DEEP NAVY LUXURY (PRIMARY MODE) */
+/* DARK MODE - DEEP BLUE LUXURY (PRIMARY MODE) */
 .dark {
   --button-outline: rgba(255,255,255, .10);
   --badge-outline: rgba(255,255,255, .05);
@@ -140,35 +140,35 @@
   --elevate-1: rgba(212,175,55, .05);
   --elevate-2: rgba(212,175,55, .12);
 
-  /* Deep Navy Background */
-  --background: 219 39% 6%;
+  /* Deep Blue Background - matching Nikkah aesthetic */
+  --background: 220 30% 12%;
 
   /* Ivory Text */
   --foreground: 45 38% 94%;
 
-  /* Subtle Navy Border */
-  --border: 219 25% 15%;
+  /* Subtle Blue Border */
+  --border: 220 25% 20%;
 
-  /* Elevated Navy Cards */
-  --card: 219 30% 9%;
+  /* Elevated Blue Cards */
+  --card: 220 28% 15%;
 
   /* Ivory Card Text */
   --card-foreground: 45 38% 94%;
 
   /* Card Border */
-  --card-border: 219 25% 12%;
+  --card-border: 220 25% 18%;
 
-  /* Sidebar Navy */
-  --sidebar: 219 35% 8%;
+  /* Sidebar Blue */
+  --sidebar: 220 30% 13%;
 
   --sidebar-foreground: 45 38% 94%;
 
-  --sidebar-border: 219 25% 12%;
+  --sidebar-border: 220 25% 18%;
 
   /* Gold Primary */
   --sidebar-primary: 45 62% 53%;
 
-  --sidebar-primary-foreground: 219 39% 6%;
+  --sidebar-primary-foreground: 220 30% 12%;
 
   /* Elevated Sidebar */
   --sidebar-accent: 219 30% 12%;
@@ -177,18 +177,18 @@
 
   --sidebar-ring: 45 62% 53%;
 
-  /* Popover Navy */
-  --popover: 219 30% 10%;
+  /* Popover Blue */
+  --popover: 220 28% 14%;
 
   --popover-foreground: 45 38% 94%;
 
-  --popover-border: 219 25% 15%;
+  --popover-border: 220 25% 20%;
 
   /* Gold Primary */
   --primary: 45 62% 53%;
 
-  /* Navy on Gold */
-  --primary-foreground: 219 39% 6%;
+  /* Blue on Gold */
+  --primary-foreground: 220 30% 12%;
 
   /* Emerald Secondary */
   --secondary: 151 70% 19%;
@@ -196,8 +196,8 @@
   /* Ivory on Emerald */
   --secondary-foreground: 45 38% 94%;
 
-  /* Muted Navy */
-  --muted: 219 25% 14%;
+  /* Muted Blue */
+  --muted: 220 25% 18%;
 
   /* Muted Ivory Text */
   --muted-foreground: 45 20% 75%;
@@ -205,7 +205,7 @@
   /* Gold Accent */
   --accent: 45 62% 53%;
 
-  --accent-foreground: 219 39% 6%;
+  --accent-foreground: 220 30% 12%;
 
   /* Maroon Destructive */
   --destructive: 355 68% 40%;

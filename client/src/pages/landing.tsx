@@ -98,12 +98,12 @@ export default function Landing() {
               </div>
               <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-6 py-2 backdrop-blur-sm">
                 <Star className="h-4 w-4 text-primary fill-primary" />
-                <span className="text-[#F8F4E3] text-sm font-medium">Trusted by Muslims worldwide</span>
+                <span className="text-foreground text-sm font-medium">Trusted by Muslims worldwide</span>
               </div>
-              <h1 className="mb-6 text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl font-serif text-[#F8F4E3]">
+              <h1 className="mb-6 text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl font-serif text-foreground">
                 Where Muslims Meet
               </h1>
-              <p className="mb-10 text-lg md:text-xl max-w-2xl mx-auto text-[#F8F4E3]/80 leading-relaxed">
+              <p className="mb-10 text-lg md:text-xl max-w-2xl mx-auto text-foreground/80 leading-relaxed">
                 Join thousands of Muslim singles finding meaningful connections through halal interactions. 
                 Verified profiles, chaperone support, and complete privacy.
               </p>
@@ -119,7 +119,7 @@ export default function Landing() {
                 <Button 
                   size="lg" 
                   variant="outline" 
-                  className="text-base border-[#F8F4E3]/30 text-[#F8F4E3] hover:bg-[#F8F4E3]/10 backdrop-blur-sm" 
+                  className="text-base border-foreground/30 text-foreground hover:bg-foreground/10 backdrop-blur-sm" 
                   asChild
                 >
                   <a href="#features">Learn More</a>
@@ -133,7 +133,7 @@ export default function Landing() {
                     <div className="text-3xl md:text-5xl font-bold text-primary font-serif">
                       <CountUpNumber end={stat.number} suffix={stat.suffix} />
                     </div>
-                    <div className="text-sm md:text-base text-[#F8F4E3]/70 mt-2">{stat.label}</div>
+                    <div className="text-sm md:text-base text-foreground/70 mt-2">{stat.label}</div>
                   </div>
                 ))}
               </div>
@@ -141,15 +141,15 @@ export default function Landing() {
           </div>
       </section>
 
-      {/* Features Section - Elevated Navy Cards */}
-      <section id="features" className="py-24 bg-gradient-to-b from-background via-[#0A0E17] to-card relative golden-shimmer">
+      {/* Features Section - Elevated Blue Cards */}
+      <section id="features" className="py-24 bg-gradient-to-b from-background via-background to-card relative golden-shimmer">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-20" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-[#F8F4E3]">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
               Built for Halal Relationships
             </h2>
-            <p className="text-lg md:text-xl text-[#F8F4E3]/70">
+            <p className="text-lg md:text-xl text-foreground/70">
               Every feature designed to respect Islamic values while making it easy to find your perfect match.
             </p>
           </div>
@@ -163,8 +163,8 @@ export default function Landing() {
                 <div className="h-14 w-14 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center mb-6">
                   <feature.icon className="h-7 w-7 text-primary" />
                 </div>
-                <h3 className="text-xl md:text-2xl font-semibold mb-3 text-[#F8F4E3] font-serif">{feature.title}</h3>
-                <p className="text-[#F8F4E3]/70 leading-relaxed">{feature.description}</p>
+                <h3 className="text-xl md:text-2xl font-semibold mb-3 text-foreground font-serif">{feature.title}</h3>
+                <p className="text-foreground/70 leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -176,10 +176,10 @@ export default function Landing() {
         <div className="absolute inset-0 bg-gradient-to-tl from-primary/5 via-transparent to-transparent opacity-20" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-[#F8F4E3]">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
               How It Works
             </h2>
-            <p className="text-lg text-[#F8F4E3]/70">
+            <p className="text-lg text-foreground/70">
               Simple, respectful, and designed for serious marriage seekers
             </p>
           </div>
@@ -195,8 +195,8 @@ export default function Landing() {
                 <div className="mb-4 mx-auto h-16 w-16 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center">
                   <span className="text-2xl font-bold text-primary font-serif">{item.step}</span>
                 </div>
-                <h3 className="text-lg font-semibold mb-2 text-[#F8F4E3]">{item.title}</h3>
-                <p className="text-sm text-[#F8F4E3]/60">{item.desc}</p>
+                <h3 className="text-lg font-semibold mb-2 text-foreground">{item.title}</h3>
+                <p className="text-sm text-foreground/60">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -208,10 +208,10 @@ export default function Landing() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-20" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-[#F8F4E3]">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
               Simple, Transparent Pricing
             </h2>
-            <p className="text-lg text-[#F8F4E3]/70">
+            <p className="text-lg text-foreground/70">
               Sign up for free, upgrade to connect with your matches
             </p>
           </div>
@@ -219,25 +219,25 @@ export default function Landing() {
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Free Tier */}
             <div className="bg-gradient-to-br from-card to-background rounded-xl border border-foreground/10 p-8">
-              <h3 className="text-2xl font-bold mb-2 text-[#F8F4E3] font-serif">Free</h3>
-              <div className="text-4xl font-bold text-[#F8F4E3] mb-6 font-serif">£0</div>
+              <h3 className="text-2xl font-bold mb-2 text-foreground font-serif">Free</h3>
+              <div className="text-4xl font-bold text-foreground mb-6 font-serif">£0</div>
               <ul className="space-y-4 mb-8">
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-[#F8F4E3]/70">Create your profile</span>
+                  <span className="text-foreground/70">Create your profile</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-[#F8F4E3]/70">Browse profiles</span>
+                  <span className="text-foreground/70">Browse profiles</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-[#F8F4E3]/70">Swipe right and left</span>
+                  <span className="text-foreground/70">Swipe right and left</span>
                 </li>
               </ul>
               <Button 
                 variant="outline" 
-                className="w-full border-[#F8F4E3]/30 text-[#F8F4E3] hover:bg-[#F8F4E3]/10"
+                className="w-full border-[#F8F4E3]/30 text-foreground hover:bg-[#F8F4E3]/10"
                 asChild
                 data-testid="button-get-started-free"
               >
@@ -252,31 +252,31 @@ export default function Landing() {
                   MOST POPULAR
                 </div>
               </div>
-              <h3 className="text-2xl font-bold mb-2 text-[#F8F4E3] font-serif">Premium</h3>
+              <h3 className="text-2xl font-bold mb-2 text-foreground font-serif">Premium</h3>
               <div className="mb-6">
                 <span className="text-5xl font-bold text-primary font-serif">£9.99</span>
-                <span className="text-[#F8F4E3]/70 ml-2">/month</span>
+                <span className="text-foreground/70 ml-2">/month</span>
               </div>
               <ul className="space-y-4 mb-8">
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-[#F8F4E3]">Everything in Free, plus:</span>
+                  <span className="text-foreground">Everything in Free, plus:</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-[#F8F4E3]">View all your matches</span>
+                  <span className="text-foreground">View all your matches</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-[#F8F4E3]">Unlimited messaging</span>
+                  <span className="text-foreground">Unlimited messaging</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-[#F8F4E3]">Chaperone support</span>
+                  <span className="text-foreground">Chaperone support</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-[#F8F4E3]">Full privacy controls</span>
+                  <span className="text-foreground">Full privacy controls</span>
                 </li>
               </ul>
               <Button 
@@ -286,7 +286,7 @@ export default function Landing() {
               >
                 <a href="/signup">Upgrade to Premium</a>
               </Button>
-              <p className="text-xs text-[#F8F4E3]/50 text-center mt-4">Cancel anytime</p>
+              <p className="text-xs text-foreground/50 text-center mt-4">Cancel anytime</p>
             </div>
           </div>
         </div>
@@ -297,10 +297,10 @@ export default function Landing() {
         <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-transparent opacity-20" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-[#F8F4E3]">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
               Real Love Stories
             </h2>
-            <p className="text-lg text-[#F8F4E3]/70">
+            <p className="text-lg text-foreground/70">
               Thousands of Muslim couples have found their perfect match
             </p>
           </div>
@@ -316,16 +316,16 @@ export default function Landing() {
                     <Star key={star} className="h-5 w-5 text-primary fill-primary" />
                   ))}
                 </div>
-                <p className="text-[#F8F4E3]/90 mb-6 text-lg leading-relaxed italic">
+                <p className="text-foreground/90 mb-6 text-lg leading-relaxed italic">
                   "{testimonial.quote}"
                 </p>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-semibold text-[#F8F4E3]">{testimonial.author}</p>
+                    <p className="font-semibold text-foreground">{testimonial.author}</p>
                   </div>
                   <div className="inline-flex items-center gap-2 rounded-full bg-secondary/20 border border-secondary/40 px-3 py-1">
                     <CheckCircle2 className="h-4 w-4 text-secondary" />
-                    <span className="text-xs text-[#F8F4E3]/80 font-medium">{testimonial.badge}</span>
+                    <span className="text-xs text-foreground/80 font-medium">{testimonial.badge}</span>
                   </div>
                 </div>
               </div>
@@ -339,10 +339,10 @@ export default function Landing() {
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-secondary/5 opacity-30" />
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-[#F8F4E3]">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
               Begin Your Journey Today
             </h2>
-            <p className="text-lg mb-10 text-[#F8F4E3]/70 max-w-2xl mx-auto">
+            <p className="text-lg mb-10 text-foreground/70 max-w-2xl mx-auto">
               Join thousands of Muslim singles who are finding meaningful connections while respecting their faith and values.
             </p>
             <Button 
@@ -353,7 +353,7 @@ export default function Landing() {
             >
               <a href="/signup">Join Now - It's Free</a>
             </Button>
-            <p className="mt-6 text-sm text-[#F8F4E3]/50">
+            <p className="mt-6 text-sm text-foreground/50">
               No credit card required • 100% halal • Verified profiles
             </p>
           </div>
@@ -367,7 +367,7 @@ export default function Landing() {
             <div className="flex items-center gap-3">
               <img src={logoImage} alt="Fusion" className="h-10 w-auto" />
             </div>
-            <p className="text-sm text-[#F8F4E3]/50">
+            <p className="text-sm text-foreground/50">
               © 2025 Fusion. All rights reserved.
             </p>
           </div>
