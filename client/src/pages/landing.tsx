@@ -28,11 +28,23 @@ function CountUpNumber({ end, suffix = "", duration = 2000 }: { end: number; suf
 }
 
 export default function Landing() {
-  const [showLoading, setShowLoading] = useState(true);
+  // Check if animation has already been shown this session
+  const [showLoading, setShowLoading] = useState(() => {
+    const hasSeenAnimation = sessionStorage.getItem('fusionAnimationShown');
+    return !hasSeenAnimation;
+  });
   const [fadeOut, setFadeOut] = useState(false);
-  const [contentVisible, setContentVisible] = useState(false);
+  const [contentVisible, setContentVisible] = useState(!showLoading);
 
   useEffect(() => {
+    if (!showLoading) {
+      // Animation already shown, skip it
+      return;
+    }
+
+    // Mark animation as shown for this session
+    sessionStorage.setItem('fusionAnimationShown', 'true');
+
     // Video plays for ~7 seconds, hold for 1 second, then fade
     const fadeTimer = setTimeout(() => {
       setFadeOut(true);
@@ -53,7 +65,7 @@ export default function Landing() {
       clearTimeout(removeTimer);
       clearTimeout(contentTimer);
     };
-  }, []);
+  }, [showLoading]);
 
   if (showLoading) {
     return (
