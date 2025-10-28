@@ -16,7 +16,13 @@ The platform features a luxury aesthetic with a primary deep navy color, gold ac
 **Backend:** Developed with Node.js, Express.js, and TypeScript. It uses Drizzle ORM for PostgreSQL interactions and Passport.js with a custom local strategy for authentication.
 **Authentication:** Custom email/password authentication via Passport Local Strategy with bcrypt for password hashing and PostgreSQL for session storage. A comprehensive AI Face Verification system, using OpenAI Vision API (GPT-4o), ensures identity verification by comparing uploaded profile photos with live selfies.
 **Profile System:** Features a detailed 5-step profile setup including basic info, Islamic values (sects, practice levels), profession, interests (100+ categorized), and a bio. Profiles include a comprehensive badge system for premium status, activity, profession, and photo verification.
-**Subscription System:** Implements a premium subscription model (£9.99/month) via Stripe. Free users can browse and swipe, but viewing matches and sending messages requires a subscription. Matches are only created if at least one user has an active subscription.
+**Subscription System:** Implements a modern premium subscription model (£9.99/month) via Stripe Checkout Sessions API with custom UI mode. Uses fixed Price ID for consistent billing. Features include:
+  - Automatic customer creation and management
+  - Custom embedded payment form using Stripe Payment Element
+  - Webhook handlers for subscription lifecycle (created, updated, deleted, payment failures)
+  - Dev mode bypass for testing without real payments
+  - Free users can browse and swipe, but viewing matches and sending messages requires a subscription
+  - Matches are only created if at least one user has an active subscription
 **Matching Algorithm:** A match is created if both users swipe right AND at least one user has an active subscription.
 **Video Calling:** Real-time video calling powered by Agora RTC SDK. Matched users can initiate video calls from the messages page with full camera/mic controls, call duration tracking, and secure token-based authentication. Call history is stored in the database.
 
