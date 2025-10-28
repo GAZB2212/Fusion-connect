@@ -143,7 +143,8 @@ function VideoCallContent({
     }
   }, [remoteUsers.length, toast]);
 
-  const toggleMic = async () => {
+  const toggleMic = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (isLoadingMic) return;
     
     if (!localMicrophoneTrack) {
@@ -169,7 +170,8 @@ function VideoCallContent({
     }
   };
 
-  const toggleVideo = async () => {
+  const toggleVideo = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (isLoadingCam) return;
     
     if (!localCameraTrack) {
@@ -193,6 +195,11 @@ function VideoCallContent({
         variant: "destructive",
       });
     }
+  };
+
+  const handleEndCall = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEndCall();
   };
 
   const formatDuration = (seconds: number) => {
@@ -299,7 +306,7 @@ function VideoCallContent({
         {/* End Call - Red Circle */}
         <Button
           size="icon"
-          onClick={onEndCall}
+          onClick={handleEndCall}
           className="h-16 w-16 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-2xl transition-all hover:scale-110"
           data-testid="button-end-call"
         >
