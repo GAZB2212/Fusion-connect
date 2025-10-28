@@ -26,6 +26,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useVideoCall } from "@/contexts/VideoCallContext";
+import fusionLogo from "@assets/NEW logo 2_1761675667388.png";
 
 interface VideoCallProps {
   callId: string;
@@ -247,6 +248,16 @@ function VideoCallContent({
             </p>
           </div>
         )}
+      </div>
+
+      {/* Fusion Logo - Top Left (Faint Watermark) */}
+      <div className="absolute top-6 left-6 z-10">
+        <img 
+          src={fusionLogo} 
+          alt="Fusion" 
+          className="h-8 opacity-20"
+          data-testid="img-fusion-logo"
+        />
       </div>
 
       {/* Call Duration - Top Center */}
