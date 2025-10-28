@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import type { Profile } from "@shared/schema";
 import { initializePushNotifications } from "@/lib/pushNotifications";
+import { VideoCallProvider } from "@/contexts/VideoCallContext";
 import Landing from "@/pages/landing";
 import Login from "@/pages/login";
 import Signup from "@/pages/signup";
@@ -173,8 +174,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <AppContent />
+        <VideoCallProvider>
+          <Toaster />
+          <AppContent />
+        </VideoCallProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

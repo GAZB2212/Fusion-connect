@@ -1,9 +1,12 @@
 import { Heart, Users, MessageSquare, Settings as SettingsIcon } from "lucide-react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import { useVideoCall } from "@/contexts/VideoCallContext";
+import { cn } from "@/lib/utils";
 
 export function BottomNav() {
   const [location, setLocation] = useLocation();
+  const { isCallActive } = useVideoCall();
 
   const navItems = [
     { icon: Heart, label: "Discover", path: "/", testId: "nav-discover" },
@@ -13,7 +16,14 @@ export function BottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t">
+    <nav 
+      className={cn(
+        "fixed bottom-0 left-0 right-0 z-40 bg-background border-t",
+        "transition-transform duration-300 ease-in-out",
+        isCallActive ? "translate-y-full" : "translate-y-0"
+      )}
+      data-testid="bottom-nav"
+    >
       <div className="container max-w-3xl mx-auto px-4">
         <div className="flex items-center justify-around h-16">
           {navItems.map((item) => {

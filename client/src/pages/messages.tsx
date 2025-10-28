@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 import VideoCallComponent from "@/components/VideoCall";
+import { useVideoCall } from "@/contexts/VideoCallContext";
 
 export default function Messages() {
   const { user } = useAuth();
@@ -24,7 +25,7 @@ export default function Messages() {
 
   const [messageText, setMessageText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [isCallActive, setIsCallActive] = useState(false);
+  const { isCallActive, setIsCallActive } = useVideoCall();
   const [activeCall, setActiveCall] = useState<VideoCall | null>(null);
   const [callToken, setCallToken] = useState<string>("");
   const [joinedCallId, setJoinedCallId] = useState<string | null>(null);
