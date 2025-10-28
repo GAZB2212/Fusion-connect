@@ -1,4 +1,4 @@
-import * as webpush from 'web-push';
+import webpush from 'web-push';
 import { db } from './db';
 import { pushSubscriptions, users, profiles } from '@shared/schema';
 import { eq } from 'drizzle-orm';
