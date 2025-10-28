@@ -77,16 +77,15 @@ function VideoCallContent({
     token: token || null,
   }, true); // Enable automatic subscription
 
-  // Play remote audio tracks automatically
+  // Log remote audio status (RemoteUser component handles playback automatically)
   useEffect(() => {
     if (audioTracks.length > 0) {
-      console.log('Playing remote audio tracks:', audioTracks.length);
-      audioTracks.forEach((track) => {
-        try {
-          track.play();
-        } catch (err) {
-          console.error('Failed to play audio track:', err);
-        }
+      console.log('Remote audio tracks available:', audioTracks.length);
+      audioTracks.forEach((track, index) => {
+        console.log(`Audio track ${index}:`, {
+          volume: track.getVolumeLevel(),
+          isPlaying: track.isPlaying
+        });
       });
     }
   }, [audioTracks]);
@@ -105,6 +104,17 @@ function VideoCallContent({
   // Show toast when remote user joins
   useEffect(() => {
     if (remoteUsers.length > 0) {
+      console.log('Remote users in call:', remoteUsers.length);
+      remoteUsers.forEach((user, index) => {
+        console.log(`Remote user ${index}:`, {
+          uid: user.uid,
+          hasAudio: user.hasAudio,
+          hasVideo: user.hasVideo,
+          audioTrack: user.audioTrack ? 'present' : 'missing',
+          videoTrack: user.videoTrack ? 'present' : 'missing'
+        });
+      });
+      
       toast({
         title: "User joined",
         description: "Your match has joined the call",
