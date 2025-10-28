@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Send, ArrowLeft, Shield, CheckCircle2, Video } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import type { MessageWithSender, MatchWithProfiles, Chaperone, VideoCall } from "@shared/schema";
@@ -105,7 +104,7 @@ export default function Messages() {
       
       // Check if the call was created very recently (within last 30 seconds)
       // This prevents auto-joining old "stuck" active calls
-      const callAge = Date.now() - new Date(incomingCall.createdAt).getTime();
+      const callAge = Date.now() - new Date(incomingCall.createdAt || Date.now()).getTime();
       if (callAge > 30000) {
         console.log('Call too old:', callAge);
         return;
@@ -406,20 +405,16 @@ export default function Messages() {
         </div>
       </div>
 
-      {/* Video Call Dialog */}
-      <Dialog open={isCallActive} onOpenChange={setIsCallActive}>
-        <DialogContent className="max-w-6xl h-[90vh] p-0">
-          {activeCall && callToken && (
-            <VideoCallComponent
-              callId={activeCall.id}
-              channelName={activeCall.channelName}
-              token={callToken}
-              onEndCall={handleEndCall}
-              isInitiator={activeCall.callerId === user?.id}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Video Call - Full Screen */}
+      {isCallActive && activeCall && callToken && (
+        <VideoCallComponent
+          callId={activeCall.id}
+          channelName={activeCall.channelName}
+          token={callToken}
+          onEndCall={handleEndCall}
+          isInitiator={activeCall.callerId === user?.id}
+        />
+      )}
     </div>
   );
 }

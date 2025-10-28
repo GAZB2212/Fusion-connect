@@ -14,7 +14,6 @@ import {
   RemoteUser,
 } from "agora-rtc-react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { 
   Video, 
   VideoOff, 
@@ -42,8 +41,8 @@ function VideoCallContent({
   isInitiator 
 }: Omit<VideoCallProps, 'callId'>) {
   const client = useRTCClient(AgoraRTC.createClient({ mode: "rtc", codec: "vp8" }));
-  const { isLoading: isLoadingMic, localMicrophoneTrack } = useLocalMicrophoneTrack(true); // Start with mic enabled
-  const { isLoading: isLoadingCam, localCameraTrack } = useLocalCameraTrack(true); // Start with camera enabled
+  const { isLoading: isLoadingMic, localMicrophoneTrack } = useLocalMicrophoneTrack(true);
+  const { isLoading: isLoadingCam, localCameraTrack } = useLocalCameraTrack(true);
   const remoteUsers = useRemoteUsers();
   const { audioTracks } = useRemoteAudioTracks(remoteUsers);
   const isConnected = useIsConnected();
@@ -52,6 +51,18 @@ function VideoCallContent({
   const [micEnabled, setMicEnabled] = useState(true);
   const [videoEnabled, setVideoEnabled] = useState(true);
   const [callDuration, setCallDuration] = useState(0);
+  const [showControls, setShowControls] = useState(true);
+
+  // Auto-hide controls after 3 seconds of inactivity
+  useEffect(() => {
+    if (!showControls) return;
+    
+    const timeout = setTimeout(() => {
+      setShowControls(false);
+    }, 3000);
+
+    return () => clearTimeout(timeout);
+  }, [showControls]);
 
   // Log when tracks become available
   useEffect(() => {
@@ -75,9 +86,9 @@ function VideoCallContent({
     appid: import.meta.env.VITE_AGORA_APP_ID!,
     channel: channelName,
     token: token || null,
-  }, true); // Enable automatic subscription
+  }, true);
 
-  // Log remote audio status (RemoteUser component handles playback automatically)
+  // Log remote audio status
   useEffect(() => {
     if (audioTracks.length > 0) {
       console.log('Remote audio tracks available:', audioTracks.length);
@@ -116,21 +127,16 @@ function VideoCallContent({
       });
       
       toast({
-        title: "User joined",
+        title: "Connected",
         description: "Your match has joined the call",
       });
     }
   }, [remoteUsers.length, toast]);
 
   const toggleMic = async () => {
-    // Don't show error if still loading
-    if (isLoadingMic) {
-      console.log('Microphone is still loading, please wait');
-      return;
-    }
+    if (isLoadingMic) return;
     
     if (!localMicrophoneTrack) {
-      console.error('No microphone track available');
       toast({
         title: "Error",
         description: "Microphone not available. Please check browser permissions.",
@@ -141,10 +147,8 @@ function VideoCallContent({
     
     try {
       const newState = !micEnabled;
-      console.log('Toggling mic:', { from: micEnabled, to: newState });
       await localMicrophoneTrack.setEnabled(newState);
       setMicEnabled(newState);
-      console.log('Mic toggled successfully to:', newState);
     } catch (error) {
       console.error('Failed to toggle microphone:', error);
       toast({
@@ -156,14 +160,9 @@ function VideoCallContent({
   };
 
   const toggleVideo = async () => {
-    // Don't show error if still loading
-    if (isLoadingCam) {
-      console.log('Camera is still loading, please wait');
-      return;
-    }
+    if (isLoadingCam) return;
     
     if (!localCameraTrack) {
-      console.error('No camera track available');
       toast({
         title: "Error",
         description: "Camera not available. Please check browser permissions.",
@@ -174,10 +173,8 @@ function VideoCallContent({
     
     try {
       const newState = !videoEnabled;
-      console.log('Toggling video:', { from: videoEnabled, to: newState });
       await localCameraTrack.setEnabled(newState);
       setVideoEnabled(newState);
-      console.log('Video toggled successfully to:', newState);
     } catch (error) {
       console.error('Failed to toggle camera:', error);
       toast({
@@ -196,121 +193,123 @@ function VideoCallContent({
 
   if (isLoadingMic || isLoadingCam) {
     return (
-      <div className="flex items-center justify-center h-full bg-[hsl(220,30%,12%)]">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 mx-auto mb-4 text-[hsl(38,92%,50%)] animate-spin" data-testid="loading-call" />
-          <p className="text-white text-lg">Setting up your camera and microphone...</p>
+          <Loader2 className="w-12 h-12 mx-auto mb-4 text-white animate-spin" data-testid="loading-call" />
+          <p className="text-white text-lg">Connecting...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="relative h-full w-full bg-[hsl(220,30%,12%)] flex flex-col">
-      {/* Header with call duration */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
-        <div className="bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full">
-          <p className="text-white font-medium" data-testid="text-call-duration">
+    <div 
+      className="fixed inset-0 z-50 bg-black"
+      onClick={() => setShowControls(true)}
+      data-testid="video-call-container"
+    >
+      {/* Remote Video - Full Screen */}
+      <div className="absolute inset-0">
+        {remoteUsers.length > 0 ? (
+          remoteUsers.map((user) => (
+            <div key={user.uid} className="w-full h-full">
+              <RemoteUser 
+                user={user}
+                playAudio={true}
+                playVideo={true}
+                className="w-full h-full object-cover"
+                data-testid="video-remote"
+              />
+            </div>
+          ))
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center bg-[hsl(220,30%,12%)]">
+            <Phone className="w-20 h-20 text-white/40 mb-6 animate-pulse" />
+            <p className="text-white/80 text-xl" data-testid="text-waiting">
+              {isInitiator ? "Calling..." : "Connecting..."}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Call Duration - Top Center */}
+      <div 
+        className={cn(
+          "absolute top-6 left-1/2 -translate-x-1/2 z-10 transition-opacity duration-300",
+          showControls ? "opacity-100" : "opacity-0"
+        )}
+      >
+        <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-full">
+          <p className="text-white font-medium text-sm" data-testid="text-call-duration">
             {isConnected ? formatDuration(callDuration) : "Connecting..."}
           </p>
         </div>
       </div>
 
-      {/* Video Grid */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-        {/* Local Video */}
-        <Card className="relative overflow-hidden bg-black border-[hsl(38,92%,50%)]">
-          <div className="aspect-video w-full h-full">
-            {localCameraTrack && videoEnabled ? (
-              <LocalVideoTrack 
-                track={localCameraTrack} 
-                play={true}
-                className="w-full h-full object-cover"
-                data-testid="video-local"
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full bg-[hsl(220,30%,8%)]">
-                <VideoOff className="w-16 h-16 text-gray-400" />
-              </div>
-            )}
-          </div>
-          <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full">
-            <p className="text-white text-sm" data-testid="text-you-label">You</p>
-          </div>
-        </Card>
-
-        {/* Remote Video */}
-        {remoteUsers.length > 0 ? (
-          remoteUsers.map((user) => (
-            <Card key={user.uid} className="relative overflow-hidden bg-black border-[hsl(38,92%,50%)]">
-              <div className="aspect-video w-full h-full">
-                <RemoteUser 
-                  user={user}
-                  playAudio={true}
-                  playVideo={true}
-                  className="w-full h-full object-cover"
-                  data-testid="video-remote"
-                />
-              </div>
-              <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full">
-                <p className="text-white text-sm" data-testid="text-match-label">Your Match</p>
-              </div>
-            </Card>
-          ))
+      {/* Local Video - Picture in Picture (Bottom Right) */}
+      <div className="absolute bottom-32 right-4 z-20 w-28 h-40 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl">
+        {localCameraTrack && videoEnabled ? (
+          <LocalVideoTrack 
+            track={localCameraTrack} 
+            play={true}
+            className="w-full h-full object-cover"
+            data-testid="video-local"
+          />
         ) : (
-          <Card className="relative overflow-hidden bg-black border-gray-600">
-            <div className="aspect-video w-full h-full flex flex-col items-center justify-center bg-[hsl(220,30%,8%)]">
-              <Phone className="w-16 h-16 text-gray-400 mb-4 animate-pulse" />
-              <p className="text-gray-300 text-lg" data-testid="text-waiting">
-                {isInitiator ? "Waiting for your match to join..." : "Connecting..."}
-              </p>
-            </div>
-          </Card>
+          <div className="flex items-center justify-center h-full bg-[hsl(220,30%,8%)]">
+            <VideoOff className="w-8 h-8 text-gray-400" />
+          </div>
         )}
       </div>
 
-      {/* Controls */}
-      <div className="p-6 flex justify-center items-center gap-4 bg-black/40 backdrop-blur-sm">
+      {/* Controls - Bottom Center */}
+      <div 
+        className={cn(
+          "absolute bottom-0 left-0 right-0 pb-8 pt-6 flex justify-center items-center gap-6 transition-opacity duration-300",
+          "bg-gradient-to-t from-black/80 via-black/50 to-transparent",
+          showControls ? "opacity-100" : "opacity-0 pointer-events-none"
+        )}
+      >
+        {/* Mic Toggle */}
         <Button
           size="icon"
-          variant={micEnabled ? "default" : "destructive"}
           onClick={toggleMic}
           disabled={!localMicrophoneTrack}
           className={cn(
-            "h-14 w-14 rounded-full",
+            "h-14 w-14 rounded-full shadow-xl transition-all",
             micEnabled 
-              ? "bg-white/20 hover:bg-white/30 text-white" 
-              : "bg-red-500 hover:bg-red-600"
+              ? "bg-white/20 hover:bg-white/30 text-white backdrop-blur-md" 
+              : "bg-red-500 hover:bg-red-600 text-white"
           )}
           data-testid="button-toggle-mic"
         >
-          {micEnabled ? <Mic className="h-6 w-6" /> : <MicOff className="h-6 w-6" />}
+          {micEnabled ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
         </Button>
 
+        {/* End Call - Red Circle */}
         <Button
           size="icon"
-          variant={videoEnabled ? "default" : "destructive"}
+          onClick={onEndCall}
+          className="h-16 w-16 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-2xl transition-all hover:scale-110"
+          data-testid="button-end-call"
+        >
+          <PhoneOff className="h-7 w-7" />
+        </Button>
+
+        {/* Video Toggle */}
+        <Button
+          size="icon"
           onClick={toggleVideo}
           disabled={!localCameraTrack}
           className={cn(
-            "h-14 w-14 rounded-full",
+            "h-14 w-14 rounded-full shadow-xl transition-all",
             videoEnabled 
-              ? "bg-white/20 hover:bg-white/30 text-white" 
-              : "bg-red-500 hover:bg-red-600"
+              ? "bg-white/20 hover:bg-white/30 text-white backdrop-blur-md" 
+              : "bg-red-500 hover:bg-red-600 text-white"
           )}
           data-testid="button-toggle-video"
         >
-          {videoEnabled ? <Video className="h-6 w-6" /> : <VideoOff className="h-6 w-6" />}
-        </Button>
-
-        <Button
-          size="icon"
-          variant="destructive"
-          onClick={onEndCall}
-          className="h-14 w-14 rounded-full bg-red-500 hover:bg-red-600"
-          data-testid="button-end-call"
-        >
-          <PhoneOff className="h-6 w-6" />
+          {videoEnabled ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
         </Button>
       </div>
     </div>
