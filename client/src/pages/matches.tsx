@@ -6,9 +6,11 @@ import { MessageSquare, MapPin, CheckCircle2, Heart, Crown, Lock } from "lucide-
 import type { MatchWithProfiles } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Matches() {
   const [, setLocation] = useLocation();
+  const { user } = useAuth();
   
   const { data: matches = [], isLoading, error } = useQuery<MatchWithProfiles[]>({
     queryKey: ["/api/matches"],
@@ -139,7 +141,7 @@ export default function Matches() {
           <div className="grid md:grid-cols-2 gap-6">
             {matches.map((match) => {
               // Determine which profile is the other user
-              const otherProfile = match.user1Profile.userId === match.user1Id 
+              const otherProfile = user?.id === match.user1Id 
                 ? match.user2Profile 
                 : match.user1Profile;
               
