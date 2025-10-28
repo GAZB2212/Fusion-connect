@@ -338,6 +338,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create Checkout Session with custom UI mode
+      // Get the correct domain for return URL
+      const getDomain = () => {
+        if (process.env.REPLIT_DOMAINS) {
+          const domains = process.env.REPLIT_DOMAINS.split(',');
+          return `https://${domains[0]}`;
+        }
+        if (process.env.REPLIT_DEV_DOMAIN) {
+          return process.env.REPLIT_DEV_DOMAIN.startsWith('http') 
+            ? process.env.REPLIT_DEV_DOMAIN 
+            : `https://${process.env.REPLIT_DEV_DOMAIN}`;
+        }
+        return 'http://localhost:5000';
+      };
+
       const session = await stripe.checkout.sessions.create({
         ui_mode: 'custom',
         customer: customerId,
@@ -346,7 +360,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           quantity: 1,
         }],
         mode: 'subscription',
-        return_url: `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/matches?session_id={CHECKOUT_SESSION_ID}`,
+        return_url: `${getDomain()}/matches?session_id={CHECKOUT_SESSION_ID}`,
       });
 
       res.json({
