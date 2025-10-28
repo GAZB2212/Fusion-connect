@@ -253,17 +253,18 @@ function VideoCallContent({
       {/* Top Bar with Logo and Duration */}
       <div className="absolute top-0 left-0 right-0 z-10">
         {/* Dark gradient background */}
-        <div className="bg-gradient-to-b from-black/80 via-black/50 to-transparent pt-6 pb-10">
-          <div className="flex items-center justify-between px-6">
-            {/* Fusion Logo - Top Left (50% bigger) */}
+        <div className="bg-gradient-to-b from-black/80 via-black/50 to-transparent pt-8 pb-12">
+          <div className="flex flex-col items-center gap-3">
+            {/* Fusion Logo - Centered (50% bigger again) */}
             <img 
               src={fusionLogo} 
               alt="Fusion" 
-              className="h-12 opacity-80"
+              className="h-18 opacity-90"
+              style={{ height: '4.5rem' }}
               data-testid="img-fusion-logo"
             />
             
-            {/* Call Duration - Top Center/Right */}
+            {/* Call Duration - Below Logo */}
             <div 
               className={cn(
                 "transition-opacity duration-300",
