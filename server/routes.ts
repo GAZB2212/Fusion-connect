@@ -1087,6 +1087,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/video-call/incoming/:matchId", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+    const { matchId } = req.params;
+
+    try {
+      // Check for active or initiated calls where user is the receiver
+      const [call] = await db
+        .select()
+        .from(videoCalls)
+        .where(
+          and(
+            eq(videoCalls.matchId, matchId),
+            eq(videoCalls.receiverId, userId),
+            or(
+              eq(videoCalls.status, 'initiated'),
+              eq(videoCalls.status, 'active')
+            )
+          )
+        )
+        .orderBy(desc(videoCalls.createdAt))
+        .limit(1);
+
+      if (!call) {
+        return res.json(null);
+      }
+
+      res.json(call);
+    } catch (error: any) {
+      console.error('Error checking for incoming call:', error);
+      res.status(500).json({ message: "Failed to check for incoming call" });
+    }
+  });
+
   app.get("/api/video-call/token/:callId", isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;
     const { callId } = req.params;

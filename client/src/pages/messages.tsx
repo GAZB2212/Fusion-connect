@@ -47,6 +47,66 @@ export default function Messages() {
     queryKey: ["/api/chaperones"],
   });
 
+  // Poll for incoming calls
+  const { data: incomingCall } = useQuery<VideoCall | null>({
+    queryKey: ["/api/video-call/incoming", matchId],
+    queryFn: async () => {
+      if (!matchId) return null;
+      try {
+        const res = await fetch(`/api/video-call/incoming/${matchId}`, {
+          credentials: "include",
+        });
+        if (!res.ok) return null;
+        return res.json();
+      } catch {
+        return null;
+      }
+    },
+    enabled: !!matchId && !isCallActive,
+    refetchInterval: 2000, // Poll every 2 seconds for incoming calls
+  });
+
+  // Auto-answer incoming call
+  useEffect(() => {
+    const handleIncomingCall = async () => {
+      if (!incomingCall || isCallActive || !user) return;
+      
+      // Check if this user is the receiver
+      if (incomingCall.receiverId !== user.id) return;
+      
+      // Only auto-join if call is in "active" or "initiated" status
+      if (incomingCall.status !== 'active' && incomingCall.status !== 'initiated') return;
+
+      try {
+        // Get token for the call
+        const tokenRes = await apiRequest("GET", `/api/video-call/token/${incomingCall.id}`);
+        const tokenData = await tokenRes.json() as { token: string; channelName: string };
+        
+        setActiveCall(incomingCall);
+        setCallToken(tokenData.token);
+        setIsCallActive(true);
+        
+        // Update call status to active
+        await apiRequest("PATCH", `/api/video-call/${incomingCall.id}/status`, {
+          status: "active",
+        });
+        
+        toast({
+          title: "Incoming call",
+          description: "Connecting...",
+        });
+      } catch (error: any) {
+        toast({
+          title: "Failed to join call",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    };
+
+    handleIncomingCall();
+  }, [incomingCall, isCallActive, user]);
+
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
