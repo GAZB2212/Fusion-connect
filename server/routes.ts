@@ -1109,6 +1109,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .orderBy(desc(videoCalls.createdAt))
         .limit(1);
 
+      console.log('Incoming call check:', {
+        userId,
+        matchId,
+        foundCall: call ? {
+          id: call.id,
+          callerId: call.callerId,
+          receiverId: call.receiverId,
+          status: call.status,
+        } : null
+      });
+
       if (!call) {
         return res.json(null);
       }

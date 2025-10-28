@@ -69,13 +69,32 @@ export default function Messages() {
   // Auto-answer incoming call
   useEffect(() => {
     const handleIncomingCall = async () => {
-      if (!incomingCall || isCallActive || !user) return;
+      console.log('Checking for incoming call:', { 
+        incomingCall, 
+        isCallActive, 
+        userId: user?.id,
+        receiverId: incomingCall?.receiverId,
+        status: incomingCall?.status
+      });
+      
+      if (!incomingCall || isCallActive || !user) {
+        console.log('Early return:', { hasCall: !!incomingCall, isCallActive, hasUser: !!user });
+        return;
+      }
       
       // Check if this user is the receiver
-      if (incomingCall.receiverId !== user.id) return;
+      if (incomingCall.receiverId !== user.id) {
+        console.log('User is not receiver:', { receiverId: incomingCall.receiverId, userId: user.id });
+        return;
+      }
       
       // Only auto-join if call is in "active" or "initiated" status
-      if (incomingCall.status !== 'active' && incomingCall.status !== 'initiated') return;
+      if (incomingCall.status !== 'active' && incomingCall.status !== 'initiated') {
+        console.log('Call not in correct status:', incomingCall.status);
+        return;
+      }
+
+      console.log('Auto-joining incoming call:', incomingCall.id);
 
       try {
         // Get token for the call
@@ -96,6 +115,7 @@ export default function Messages() {
           description: "Connecting...",
         });
       } catch (error: any) {
+        console.error('Error joining call:', error);
         toast({
           title: "Failed to join call",
           description: error.message,
@@ -105,7 +125,7 @@ export default function Messages() {
     };
 
     handleIncomingCall();
-  }, [incomingCall, isCallActive, user]);
+  }, [incomingCall, isCallActive, user, toast]);
 
   // Send message mutation
   const sendMessageMutation = useMutation({
