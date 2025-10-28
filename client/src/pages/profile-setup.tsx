@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import type { Profile } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -46,6 +47,11 @@ import { Slider } from "@/components/ui/slider";
 export default function ProfileSetup() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  
+  // Check if this is a restart (coming from failed verification)
+  const searchParams = new URLSearchParams(window.location.search);
+  const isRestart = searchParams.get('restart') === 'true';
+  
   const [step, setStep] = useState(1);
   const [photos, setPhotos] = useState<string[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
@@ -55,6 +61,12 @@ export default function ProfileSetup() {
   const [partnerEthnicities, setPartnerEthnicities] = useState<string[]>([]);
   const [ageRange, setAgeRange] = useState<[number, number]>([18, 45]);
   const [professionSearch, setProfessionSearch] = useState("");
+
+  // Fetch existing profile if restarting
+  const { data: existingProfile } = useQuery<Profile>({
+    queryKey: ["/api/profile"],
+    enabled: isRestart,
+  });
 
   const form = useForm<InsertProfile>({
     resolver: zodResolver(insertProfileSchema),
@@ -93,6 +105,71 @@ export default function ProfileSetup() {
       useNickname: false,
     },
   });
+
+  // Load existing profile data when restarting
+  useEffect(() => {
+    if (isRestart && existingProfile) {
+      // Pre-fill form with existing data
+      form.reset({
+        displayName: existingProfile.displayName,
+        age: existingProfile.age,
+        gender: existingProfile.gender as "male" | "female",
+        location: existingProfile.location,
+        bio: existingProfile.bio || "",
+        height: existingProfile.height || undefined,
+        heightUnit: existingProfile.heightUnit || "cm",
+        photos: existingProfile.photos,
+        mainPhotoIndex: existingProfile.mainPhotoIndex || 0,
+        lookingFor: existingProfile.lookingFor as "Marriage" | "Friendship" | "Networking",
+        bornMuslim: existingProfile.bornMuslim || undefined,
+        sect: existingProfile.sect || "",
+        prayerFrequency: existingProfile.prayerFrequency || "",
+        halalImportance: existingProfile.halalImportance || "",
+        religiosity: existingProfile.religiosity || "",
+        religiousPractice: existingProfile.religiousPractice || "",
+        maritalStatus: existingProfile.maritalStatus || "",
+        hasChildren: existingProfile.hasChildren || false,
+        wantsChildren: existingProfile.wantsChildren || "",
+        education: existingProfile.education || "",
+        occupation: existingProfile.occupation || "",
+        profession: existingProfile.profession || "",
+        languages: existingProfile.languages || [],
+        interests: existingProfile.interests || [],
+        personalityTraits: existingProfile.personalityTraits || [],
+        ethnicities: existingProfile.ethnicities || [],
+        partnerPreferences: existingProfile.partnerPreferences || undefined,
+        photoVisibility: existingProfile.photoVisibility || "visible",
+        photoVerified: false, // Reset verification
+        phoneVerified: existingProfile.phoneVerified || false,
+        faceVerified: false, // Reset face verification
+        useNickname: existingProfile.useNickname || false,
+      });
+
+      // Set state variables
+      setPhotos(existingProfile.photos);
+      setSelectedInterests(existingProfile.interests || []);
+      setSelectedTraits(existingProfile.personalityTraits || []);
+      setSelectedEthnicities(existingProfile.ethnicities || []);
+      
+      if (existingProfile.partnerPreferences && typeof existingProfile.partnerPreferences === 'object') {
+        const prefs = existingProfile.partnerPreferences as any;
+        setPartnerSects(prefs.sects || []);
+        setPartnerEthnicities(prefs.ethnicities || []);
+        setAgeRange([
+          prefs.minAge || 18,
+          prefs.maxAge || 45
+        ]);
+      }
+      
+      // Jump to photo step (step 3) since that's what they need to update
+      setStep(3);
+      
+      toast({
+        title: "Update Your Photos",
+        description: "Upload new photos to retry verification.",
+      });
+    }
+  }, [isRestart, existingProfile, form, toast]);
 
   const createProfileMutation = useMutation({
     mutationFn: async (data: InsertProfile) => {

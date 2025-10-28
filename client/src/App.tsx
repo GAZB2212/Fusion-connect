@@ -29,6 +29,10 @@ function Router() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [location, setLocation] = useLocation();
 
+  // Check for restart parameter
+  const searchParams = new URLSearchParams(window.location.search);
+  const isRestart = searchParams.get('restart') === 'true';
+
   // Fetch user profile if authenticated
   const { data: profile, isLoading: profileLoading } = useQuery<Profile>({
     queryKey: ["/api/profile"],
@@ -87,10 +91,26 @@ function Router() {
   }
 
   // Authenticated with complete profile but not verified - show verification
-  if (profile?.isComplete && !profile?.faceVerified) {
+  // UNLESS restart=true, then allow profile setup to update photos
+  if (profile?.isComplete && !profile?.faceVerified && !isRestart) {
     return (
       <Switch>
         <Route path="/" component={Verification} />
+        <Route path="/:rest*">
+          {() => {
+            setLocation("/");
+            return null;
+          }}
+        </Route>
+      </Switch>
+    );
+  }
+
+  // If restart=true and profile is complete, show profile setup to update photos
+  if (isRestart && profile?.isComplete) {
+    return (
+      <Switch>
+        <Route path="/" component={ProfileSetup} />
         <Route path="/:rest*">
           {() => {
             setLocation("/");
