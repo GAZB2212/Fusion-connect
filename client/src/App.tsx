@@ -134,17 +134,27 @@ function AppContent() {
         return;
       }
 
-      // Register service worker first
-      await initializePushNotifications(vapidKey);
+      // Check if browser supports notifications
+      if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+        console.log('Push notifications not supported in this browser');
+        return;
+      }
 
-      // Request permission if not already granted or denied
-      if (Notification.permission === 'default') {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          // Subscribe to push notifications
-          const { enablePushNotifications } = await import('@/lib/pushNotifications');
-          await enablePushNotifications(vapidKey);
+      try {
+        // Register service worker first
+        await initializePushNotifications(vapidKey);
+
+        // Request permission if not already granted or denied
+        if (Notification.permission === 'default') {
+          const permission = await Notification.requestPermission();
+          if (permission === 'granted') {
+            // Subscribe to push notifications
+            const { enablePushNotifications } = await import('@/lib/pushNotifications');
+            await enablePushNotifications(vapidKey);
+          }
         }
+      } catch (error) {
+        console.error('Failed to setup push notifications:', error);
       }
     };
 
