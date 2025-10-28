@@ -53,6 +53,23 @@ function VideoCallContent({
   const [videoEnabled, setVideoEnabled] = useState(true);
   const [callDuration, setCallDuration] = useState(0);
 
+  // Log when tracks become available
+  useEffect(() => {
+    console.log('Track status:', {
+      micLoading: isLoadingMic,
+      micAvailable: !!localMicrophoneTrack,
+      camLoading: isLoadingCam,
+      camAvailable: !!localCameraTrack
+    });
+    
+    if (localMicrophoneTrack) {
+      console.log('Microphone track ready:', localMicrophoneTrack.enabled);
+    }
+    if (localCameraTrack) {
+      console.log('Camera track ready:', localCameraTrack.enabled);
+    }
+  }, [isLoadingMic, isLoadingCam, localMicrophoneTrack, localCameraTrack]);
+
   usePublish([localMicrophoneTrack, localCameraTrack]);
   useJoin({
     appid: import.meta.env.VITE_AGORA_APP_ID!,
@@ -96,11 +113,17 @@ function VideoCallContent({
   }, [remoteUsers.length, toast]);
 
   const toggleMic = async () => {
+    // Don't show error if still loading
+    if (isLoadingMic) {
+      console.log('Microphone is still loading, please wait');
+      return;
+    }
+    
     if (!localMicrophoneTrack) {
       console.error('No microphone track available');
       toast({
         title: "Error",
-        description: "Microphone not available",
+        description: "Microphone not available. Please check browser permissions.",
         variant: "destructive",
       });
       return;
@@ -111,7 +134,7 @@ function VideoCallContent({
       console.log('Toggling mic:', { from: micEnabled, to: newState });
       await localMicrophoneTrack.setEnabled(newState);
       setMicEnabled(newState);
-      console.log('Mic toggled successfully');
+      console.log('Mic toggled successfully to:', newState);
     } catch (error) {
       console.error('Failed to toggle microphone:', error);
       toast({
@@ -123,11 +146,17 @@ function VideoCallContent({
   };
 
   const toggleVideo = async () => {
+    // Don't show error if still loading
+    if (isLoadingCam) {
+      console.log('Camera is still loading, please wait');
+      return;
+    }
+    
     if (!localCameraTrack) {
       console.error('No camera track available');
       toast({
         title: "Error",
-        description: "Camera not available",
+        description: "Camera not available. Please check browser permissions.",
         variant: "destructive",
       });
       return;
@@ -138,7 +167,7 @@ function VideoCallContent({
       console.log('Toggling video:', { from: videoEnabled, to: newState });
       await localCameraTrack.setEnabled(newState);
       setVideoEnabled(newState);
-      console.log('Video toggled successfully');
+      console.log('Video toggled successfully to:', newState);
     } catch (error) {
       console.error('Failed to toggle camera:', error);
       toast({
@@ -236,6 +265,7 @@ function VideoCallContent({
           size="icon"
           variant={micEnabled ? "default" : "destructive"}
           onClick={toggleMic}
+          disabled={!localMicrophoneTrack}
           className={cn(
             "h-14 w-14 rounded-full",
             micEnabled 
@@ -251,6 +281,7 @@ function VideoCallContent({
           size="icon"
           variant={videoEnabled ? "default" : "destructive"}
           onClick={toggleVideo}
+          disabled={!localCameraTrack}
           className={cn(
             "h-14 w-14 rounded-full",
             videoEnabled 
