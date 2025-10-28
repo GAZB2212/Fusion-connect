@@ -253,13 +253,13 @@ function VideoCallContent({
       {/* Top Bar with Logo and Duration */}
       <div className="absolute top-0 left-0 right-0 z-10">
         {/* Dark gradient background */}
-        <div className="bg-gradient-to-b from-black/80 via-black/50 to-transparent pt-4 pb-8">
+        <div className="bg-gradient-to-b from-black/80 via-black/50 to-transparent pt-6 pb-10">
           <div className="flex items-center justify-between px-6">
-            {/* Fusion Logo - Top Left */}
+            {/* Fusion Logo - Top Left (50% bigger) */}
             <img 
               src={fusionLogo} 
               alt="Fusion" 
-              className="h-8 opacity-70"
+              className="h-12 opacity-80"
               data-testid="img-fusion-logo"
             />
             
