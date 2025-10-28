@@ -32,7 +32,7 @@ interface VideoCallProps {
   callId: string;
   channelName: string;
   token: string;
-  onEndCall: () => void;
+  onEndCall: (duration: number) => void;
   isInitiator: boolean;
 }
 
@@ -200,7 +200,7 @@ function VideoCallContent({
 
   const handleEndCall = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onEndCall();
+    onEndCall(callDuration);
   };
 
   const formatDuration = (seconds: number) => {

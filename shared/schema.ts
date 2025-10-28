@@ -136,6 +136,8 @@ export const messages = pgTable("messages", {
   senderId: varchar("sender_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   receiverId: varchar("receiver_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
   content: text("content").notNull(),
+  messageType: varchar("message_type", { length: 20 }).default('text'), // text, call_record
+  callDuration: integer("call_duration"), // Duration in seconds for call records
   isRead: boolean("is_read").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [

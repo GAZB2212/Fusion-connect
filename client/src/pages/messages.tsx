@@ -209,12 +209,22 @@ export default function Messages() {
     },
   });
 
-  const handleEndCall = async () => {
-    if (!activeCall) return;
+  const handleEndCall = async (duration: number) => {
+    if (!activeCall || !matchId || !user) return;
     
     try {
       await apiRequest("PATCH", `/api/video-call/${activeCall.id}/status`, {
         status: "ended",
+      });
+      
+      // Create a call record message
+      const otherUserId = activeCall.callerId === user.id ? activeCall.receiverId : activeCall.callerId;
+      await apiRequest("POST", "/api/messages", {
+        matchId,
+        receiverId: otherUserId,
+        content: `Video call`,
+        messageType: 'call_record',
+        callDuration: duration,
       });
       
       setIsCallActive(false);
@@ -222,9 +232,12 @@ export default function Messages() {
       setCallToken("");
       setJoinedCallId(null); // Reset so new calls can be joined
       
+      queryClient.invalidateQueries({ queryKey: ["/api/messages", matchId] });
+      
+      const formattedDuration = `${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')}`;
       toast({
         title: "Call ended",
-        description: "The video call has been ended",
+        description: duration > 0 ? `Duration: ${formattedDuration}` : "The video call has been ended",
       });
     } catch (error: any) {
       toast({
@@ -341,6 +354,32 @@ export default function Messages() {
           ) : (
             messages.map((message) => {
               const isMe = message.senderId === user?.id;
+              
+              // Render call records differently
+              if (message.messageType === 'call_record') {
+                const formatDuration = (seconds: number) => {
+                  const mins = Math.floor(seconds / 60);
+                  const secs = seconds % 60;
+                  return `${mins}:${secs.toString().padStart(2, '0')}`;
+                };
+                
+                return (
+                  <div
+                    key={message.id}
+                    className="flex justify-center"
+                    data-testid={`message-${message.id}`}
+                  >
+                    <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-muted/50 border text-muted-foreground">
+                      <Video className="h-4 w-4" />
+                      <span className="text-sm">
+                        {message.content} • {message.callDuration ? formatDuration(message.callDuration) : '0:00'}
+                      </span>
+                    </div>
+                  </div>
+                );
+              }
+              
+              // Regular text messages
               return (
                 <div
                   key={message.id}
