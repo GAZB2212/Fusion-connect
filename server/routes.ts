@@ -1110,7 +1110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const appCertificate = process.env.AGORA_APP_CERTIFICATE;
       const channelName = call.channelName;
       const uid = 0; // Use 0 for wildcard UID
-      const role = agoraToken.RtcRole.PUBLISHER; // Both users can publish
+      const role = 1; // PUBLISHER role (both users can publish)
       
       // Token expires in 1 hour
       const expirationTimeInSeconds = 3600;

@@ -284,7 +284,7 @@ export default function Messages() {
       )}
 
       {/* Input */}
-      <div className="border-t bg-background">
+      <div className="border-t bg-background pb-20">
         <div className="container max-w-3xl mx-auto p-4">
           <form onSubmit={handleSend} className="flex gap-2">
             <Input
