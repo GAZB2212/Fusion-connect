@@ -19,9 +19,11 @@ import {
   chaperones,
   videoCalls,
   passwordResetTokens,
+  pushSubscriptions,
   insertProfileSchema,
   insertMessageSchema,
   insertChaperoneSchema,
+  insertPushSubscriptionSchema,
   registerUserSchema,
   loginSchema,
   type Profile,
@@ -34,6 +36,7 @@ import {
   type MessageWithSender,
 } from "@shared/schema";
 import { eq, and, or, ne, notInArray, desc, sql, lt } from "drizzle-orm";
+import { sendVideoCallNotification } from "./pushNotifications";
 
 // Initialize Stripe
 if (!process.env.STRIPE_SECRET_KEY) {
@@ -1081,6 +1084,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .returning();
 
+      // Send push notification to receiver
+      sendVideoCallNotification(receiverId, userId, matchId, videoCall.id).catch(error => {
+        console.error('Failed to send video call push notification:', error);
+      });
+
       res.json(videoCall);
     } catch (error: any) {
       res.status(400).json({ message: error.message });
@@ -1263,6 +1271,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(callHistory);
     } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Push notification endpoints
+  app.post("/api/push/subscribe", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+
+    try {
+      const validatedData = insertPushSubscriptionSchema.parse({
+        userId,
+        ...req.body
+      });
+
+      // Check if subscription already exists
+      const [existing] = await db
+        .select()
+        .from(pushSubscriptions)
+        .where(
+          and(
+            eq(pushSubscriptions.userId, userId),
+            eq(pushSubscriptions.endpoint, validatedData.endpoint)
+          )
+        )
+        .limit(1);
+
+      if (existing) {
+        return res.json({ message: "Subscription already exists", subscription: existing });
+      }
+
+      // Create new subscription
+      const [subscription] = await db
+        .insert(pushSubscriptions)
+        .values(validatedData)
+        .returning();
+
+      res.json({ message: "Push subscription created", subscription });
+    } catch (error: any) {
+      console.error('Error saving push subscription:', error);
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/push/unsubscribe", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+
+    try {
+      // Delete all subscriptions for this user
+      await db
+        .delete(pushSubscriptions)
+        .where(eq(pushSubscriptions.userId, userId));
+
+      res.json({ message: "Push subscriptions removed" });
+    } catch (error: any) {
+      console.error('Error removing push subscription:', error);
       res.status(400).json({ message: error.message });
     }
   });

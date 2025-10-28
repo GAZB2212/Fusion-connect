@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import type { Profile } from "@shared/schema";
+import { initializePushNotifications } from "@/lib/pushNotifications";
 import Landing from "@/pages/landing";
 import Login from "@/pages/login";
 import Signup from "@/pages/signup";
@@ -114,6 +115,13 @@ function Router() {
 
 function AppContent() {
   const { isAuthenticated } = useAuth();
+
+  // Initialize push notifications when user is authenticated
+  useEffect(() => {
+    if (isAuthenticated && import.meta.env.VITE_VAPID_PUBLIC_KEY) {
+      initializePushNotifications(import.meta.env.VITE_VAPID_PUBLIC_KEY);
+    }
+  }, [isAuthenticated]);
 
   return (
     <>
