@@ -7,6 +7,7 @@ import bcrypt from "bcrypt";
 import Stripe from "stripe";
 import { randomBytes } from "crypto";
 import { sendPasswordResetEmail } from "./email";
+import * as agoraToken from "agora-token";
 import { 
   users, 
   profiles, 
@@ -1105,27 +1106,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Not authorized to access this call" });
       }
 
-      // Import Agora token builder
-      const { RtcTokenBuilder, RtcRole } = require('agora-token');
-      
       const appId = process.env.VITE_AGORA_APP_ID;
       const appCertificate = process.env.AGORA_APP_CERTIFICATE;
       const channelName = call.channelName;
       const uid = 0; // Use 0 for wildcard UID
-      const role = RtcRole.PUBLISHER; // Both users can publish
+      const role = agoraToken.RtcRole.PUBLISHER; // Both users can publish
       
       // Token expires in 1 hour
       const expirationTimeInSeconds = 3600;
       const currentTimestamp = Math.floor(Date.now() / 1000);
+      const tokenExpireTime = currentTimestamp + expirationTimeInSeconds;
       const privilegeExpireTime = currentTimestamp + expirationTimeInSeconds;
 
       // Generate token
-      const token = RtcTokenBuilder.buildTokenWithUid(
+      const token = agoraToken.RtcTokenBuilder.buildTokenWithUid(
         appId,
         appCertificate,
         channelName,
         uid,
         role,
+        tokenExpireTime,
         privilegeExpireTime
       );
 
