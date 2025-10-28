@@ -298,11 +298,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Subscription endpoints - from blueprint:javascript_stripe
-  app.post('/api/create-subscription', isAuthenticated, async (req: any, res: Response) => {
+  // Subscription endpoints - Using Checkout Sessions API (modern approach)
+  app.post('/api/create-checkout-session', isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;
 
     try {
+      // Get or create the fixed price ID
+      const { getOrCreatePriceId } = await import('./stripeSetup');
+      const priceId = await getOrCreatePriceId();
+
       // Get current user
       const [user] = await db
         .select()
@@ -314,35 +318,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "User not found" });
       }
 
-      // If user already has active subscription, return existing
-      if (user.stripeSubscriptionId && user.subscriptionStatus === 'active') {
-        const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId, {
-          expand: ['latest_invoice.payment_intent'],
-        });
-        
-        const latestInvoice = subscription.latest_invoice;
-        if (typeof latestInvoice === 'string') {
-          return res.status(400).json({ message: "Invalid invoice" });
-        }
-        
-        const paymentIntent = (latestInvoice as any)?.payment_intent;
-        if (!paymentIntent || typeof paymentIntent === 'string') {
-          return res.status(400).json({ message: "Invalid payment intent" });
-        }
-
-        return res.json({
-          subscriptionId: subscription.id,
-          clientSecret: paymentIntent.client_secret,
-          status: subscription.status,
-        });
-      }
-
       // Create or get Stripe customer
       let customerId = user.stripeCustomerId;
       if (!customerId) {
         const customer = await stripe.customers.create({
           email: user.email,
           name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || undefined,
+          metadata: {
+            userId: user.id,
+          },
         });
         customerId = customer.id;
 
@@ -353,53 +337,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .where(eq(users.id, userId));
       }
 
-      // Create subscription with £9.99/month price
-      // Using GBP instead of USD as per requirement
-      const price = await stripe.prices.create({
-        currency: 'gbp',
-        unit_amount: 999, // £9.99 in pence
-        recurring: { interval: 'month' },
-        product_data: {
-          name: 'Fusion Premium',
-        },
-      });
-
-      const subscription = await stripe.subscriptions.create({
+      // Create Checkout Session with custom UI mode
+      const session = await stripe.checkout.sessions.create({
+        ui_mode: 'custom',
         customer: customerId,
-        items: [{ price: price.id }],
-        payment_behavior: 'default_incomplete',
-        payment_settings: {
-          save_default_payment_method: 'on_subscription',
-        },
-        expand: ['latest_invoice.payment_intent'],
+        line_items: [{
+          price: priceId,
+          quantity: 1,
+        }],
+        mode: 'subscription',
+        return_url: `${process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000'}/matches?session_id={CHECKOUT_SESSION_ID}`,
       });
-
-      // Save subscription ID
-      await db
-        .update(users)
-        .set({
-          stripeSubscriptionId: subscription.id,
-          subscriptionStatus: subscription.status,
-        })
-        .where(eq(users.id, userId));
-
-      const latestInvoice = subscription.latest_invoice;
-      if (typeof latestInvoice === 'string') {
-        return res.status(400).json({ message: "Invalid invoice" });
-      }
-      
-      const paymentIntent = (latestInvoice as any)?.payment_intent;
-      if (!paymentIntent || typeof paymentIntent === 'string') {
-        return res.status(400).json({ message: "Invalid payment intent" });
-      }
 
       res.json({
-        subscriptionId: subscription.id,
-        clientSecret: paymentIntent.client_secret,
-        status: subscription.status,
+        clientSecret: session.client_secret,
+        sessionId: session.id,
       });
     } catch (error: any) {
-      console.error('Subscription creation error:', error);
+      console.error('Checkout session creation error:', error);
       return res.status(400).json({ message: error.message });
     }
   });
@@ -504,6 +459,155 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Subscription cancellation error:', error);
       return res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Stripe Webhook Handler - Handles subscription lifecycle events
+  app.post('/api/webhook', async (req: Request, res: Response) => {
+    const sig = req.headers['stripe-signature'];
+    
+    if (!sig) {
+      return res.status(400).send('Missing stripe signature');
+    }
+
+    let event;
+
+    try {
+      // For development, we may not have a webhook secret
+      const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+      
+      if (webhookSecret) {
+        event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+      } else {
+        // In development without webhook secret, just parse the body
+        event = JSON.parse(req.body);
+        console.warn('⚠️  Webhook verification skipped (no STRIPE_WEBHOOK_SECRET)');
+      }
+    } catch (err: any) {
+      console.error('Webhook signature verification failed:', err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    // Handle the event
+    try {
+      switch (event.type) {
+        case 'checkout.session.completed': {
+          const session = event.data.object;
+          const customerId = session.customer as string;
+          const subscriptionId = session.subscription as string;
+
+          // Find user by Stripe customer ID
+          const [user] = await db
+            .select()
+            .from(users)
+            .where(eq(users.stripeCustomerId, customerId))
+            .limit(1);
+
+          if (user) {
+            // Update user with subscription info
+            await db
+              .update(users)
+              .set({
+                stripeSubscriptionId: subscriptionId,
+                subscriptionStatus: 'active',
+              })
+              .where(eq(users.id, user.id));
+
+            console.log('✅ Subscription activated for user:', user.email);
+          }
+          break;
+        }
+
+        case 'customer.subscription.created':
+        case 'customer.subscription.updated': {
+          const subscription = event.data.object;
+          const customerId = subscription.customer as string;
+
+          // Find user by Stripe customer ID
+          const [user] = await db
+            .select()
+            .from(users)
+            .where(eq(users.stripeCustomerId, customerId))
+            .limit(1);
+
+          if (user) {
+            // Update subscription status and end date
+            await db
+              .update(users)
+              .set({
+                stripeSubscriptionId: subscription.id,
+                subscriptionStatus: subscription.status,
+                subscriptionEndsAt: subscription.current_period_end 
+                  ? new Date(subscription.current_period_end * 1000) 
+                  : null,
+              })
+              .where(eq(users.id, user.id));
+
+            console.log('✅ Subscription updated for user:', user.email, 'Status:', subscription.status);
+          }
+          break;
+        }
+
+        case 'customer.subscription.deleted': {
+          const subscription = event.data.object;
+          const customerId = subscription.customer as string;
+
+          // Find user by Stripe customer ID
+          const [user] = await db
+            .select()
+            .from(users)
+            .where(eq(users.stripeCustomerId, customerId))
+            .limit(1);
+
+          if (user) {
+            // Mark subscription as canceled
+            await db
+              .update(users)
+              .set({
+                subscriptionStatus: 'canceled',
+                subscriptionEndsAt: new Date(),
+              })
+              .where(eq(users.id, user.id));
+
+            console.log('✅ Subscription canceled for user:', user.email);
+          }
+          break;
+        }
+
+        case 'invoice.payment_failed': {
+          const invoice = event.data.object;
+          const customerId = invoice.customer as string;
+
+          // Find user by Stripe customer ID
+          const [user] = await db
+            .select()
+            .from(users)
+            .where(eq(users.stripeCustomerId, customerId))
+            .limit(1);
+
+          if (user) {
+            // Mark subscription as past_due
+            await db
+              .update(users)
+              .set({
+                subscriptionStatus: 'past_due',
+              })
+              .where(eq(users.id, user.id));
+
+            console.log('⚠️  Payment failed for user:', user.email);
+            // TODO: Send email notification to user
+          }
+          break;
+        }
+
+        default:
+          console.log(`Unhandled event type ${event.type}`);
+      }
+
+      res.json({ received: true });
+    } catch (error: any) {
+      console.error('Webhook processing error:', error);
+      return res.status(500).json({ error: error.message });
     }
   });
 

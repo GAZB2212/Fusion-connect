@@ -1,4 +1,3 @@
-import { useStripe, Elements, PaymentElement, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useEffect, useState } from 'react';
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -13,73 +12,16 @@ if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
 }
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
-function SubscribeForm() {
-  const stripe = useStripe();
-  const elements = useElements();
-  const { toast } = useToast();
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!stripe || !elements) {
-      return;
-    }
-
-    setIsProcessing(true);
-
-    const { error } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/matches`,
-      },
-    });
-
-    setIsProcessing(false);
-
-    if (error) {
-      toast({
-        title: "Payment Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Subscription Successful",
-        description: "Welcome to Fusion Premium! You can now view your matches.",
-      });
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <PaymentElement />
-      <Button 
-        type="submit" 
-        disabled={!stripe || isProcessing} 
-        className="w-full"
-        size="lg"
-        data-testid="button-subscribe"
-      >
-        {isProcessing ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Processing...
-          </>
-        ) : (
-          'Subscribe for £9.99/month'
-        )}
-      </Button>
-    </form>
-  );
-}
-
 export default function Subscribe() {
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [activatingDev, setActivatingDev] = useState(false);
+  const [checkout, setCheckout] = useState<any>(null);
+  const [paymentElement, setPaymentElement] = useState<any>(null);
+  const [session, setSession] = useState<any>(null);
 
   useEffect(() => {
     // Check subscription status first
@@ -96,8 +38,8 @@ export default function Subscribe() {
           return;
         }
         
-        // Otherwise, create Stripe subscription
-        return apiRequest("POST", "/api/create-subscription")
+        // Otherwise, create Checkout Session
+        return apiRequest("POST", "/api/create-checkout-session")
           .then((res) => res.json())
           .then((data) => {
             setClientSecret(data.clientSecret);
@@ -105,10 +47,81 @@ export default function Subscribe() {
           });
       })
       .catch((error) => {
-        console.error("Failed to create subscription:", error);
+        console.error("Failed to create checkout session:", error);
         setIsLoading(false);
       });
   }, []);
+
+  useEffect(() => {
+    if (!clientSecret) return;
+
+    const initializeCheckout = async () => {
+      const stripe = await stripePromise;
+      if (!stripe) return;
+
+      // Initialize Checkout with custom UI mode
+      const checkoutInstance = await stripe.initCheckout({
+        clientSecret,
+      });
+
+      setCheckout(checkoutInstance);
+
+      // Load the checkout actions
+      const loadActionsResult = await checkoutInstance.loadActions();
+      
+      if (loadActionsResult.type === 'success') {
+        const { actions } = loadActionsResult;
+        const sessionData = actions.getSession();
+        setSession(sessionData);
+
+        // Create and mount Payment Element
+        const paymentElementInstance = checkoutInstance.createPaymentElement();
+        paymentElementInstance.mount('#payment-element');
+        setPaymentElement(paymentElementInstance);
+      }
+    };
+
+    initializeCheckout();
+  }, [clientSecret]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!checkout) {
+      return;
+    }
+
+    setIsProcessing(true);
+
+    const loadActionsResult = await checkout.loadActions();
+    if (loadActionsResult.type === 'success') {
+      const { actions } = loadActionsResult;
+      const result = await actions.confirm();
+
+      if (result.type === 'error') {
+        toast({
+          title: "Payment Failed",
+          description: result.error.message,
+          variant: "destructive",
+        });
+        setIsProcessing(false);
+      } else {
+        // Payment successful - webhook will handle activation
+        toast({
+          title: "Payment Processing",
+          description: "Your subscription is being activated...",
+        });
+        
+        // Wait a moment for webhook to process, then redirect
+        setTimeout(() => {
+          queryClient.invalidateQueries({ queryKey: ["/api/subscription-status"] });
+          setLocation("/matches");
+        }, 2000);
+      }
+    } else {
+      setIsProcessing(false);
+    }
+  };
 
   const activateDevPremium = async () => {
     setActivatingDev(true);
@@ -218,15 +231,15 @@ export default function Subscribe() {
             <div className="flex items-start gap-3">
               <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-[#F8F4E3] font-medium">Chaperone Support</p>
-                <p className="text-[#F8F4E3]/60 text-sm">Add your Wali or guardian to conversations</p>
+                <p className="text-[#F8F4E3] font-medium">Video Calling</p>
+                <p className="text-[#F8F4E3]/60 text-sm">Connect face-to-face with your matches</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-[#F8F4E3] font-medium">Privacy Controls</p>
-                <p className="text-[#F8F4E3]/60 text-sm">Control who sees your photos and profile</p>
+                <p className="text-[#F8F4E3] font-medium">Chaperone Support</p>
+                <p className="text-[#F8F4E3]/60 text-sm">Add your Wali or guardian to conversations</p>
               </div>
             </div>
           </div>
@@ -241,9 +254,26 @@ export default function Subscribe() {
           </div>
 
           {/* Payment Form */}
-          <Elements stripe={stripePromise} options={{ clientSecret }}>
-            <SubscribeForm />
-          </Elements>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div id="payment-element" data-testid="payment-element"></div>
+            
+            <Button 
+              type="submit" 
+              disabled={!checkout || isProcessing} 
+              className="w-full"
+              size="lg"
+              data-testid="button-subscribe"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                'Subscribe for £9.99/month'
+              )}
+            </Button>
+          </form>
         </CardContent>
 
         <CardFooter className="flex-col gap-2">
@@ -257,7 +287,7 @@ export default function Subscribe() {
             disabled={activatingDev}
             variant="outline"
             className="w-full border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
-            data-testid="button-dev-activate"
+            data-testid="button-dev-activate-footer"
           >
             {activatingDev ? (
               <>

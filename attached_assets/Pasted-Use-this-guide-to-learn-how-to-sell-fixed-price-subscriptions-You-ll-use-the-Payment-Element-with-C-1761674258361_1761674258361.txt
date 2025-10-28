@@ -1,0 +1,351 @@
+Use this guide to learn how to sell fixed-price subscriptions. You’ll use the Payment Element with Checkout Sessions API to create a custom payment form that you embed in your application.
+If you don’t want to build a custom payment form, you can integrate with hosted checkout. For an immersive version of that end-to-end integration guide, see the Billing quickstart.
+If you aren’t ready to code an integration, you can set up basic subscriptions manually in the Dashboard. You can also use Payment Links to set up subscriptions without writing any code. Learn more about designing an integration to understand the decisions you need to make and the resources you need.
+What you’ll build
+This guide shows you how to:
+Model your business by building a product catalogue.
+Build a registration process that creates a customer.
+Create subscriptions and collect payment information.
+Test and monitor payment and subscription status.
+Let customers change their plan or cancel the subscription.
+API object definitions
+Set up Stripe
+Install the Stripe client of your choice:
+Command Line
+Select a language
+Select a language
+Ruby
+
+
+
+# Available as a gem
+sudo gem install stripe
+Gemfile
+Select a language
+Select a language
+Ruby
+
+
+
+# If you use bundler, you can add this line to your Gemfile
+gem 'stripe'
+And then install the Stripe CLI. The CLI provides webhook testing and you can run it to make API calls to Stripe. This guide shows how to use the CLI to set up a pricing model in a later section.
+Command Line
+Select a language
+Select a language
+homebrew
+
+
+
+# Install Homebrew to run this command: https://brew.sh/
+brew install stripe/stripe-cli/stripe
+
+# Connect the CLI to your dashboard
+stripe login
+For additional install options, see Get started with the Stripe CLI.
+Create the pricing model
+Stripe CLI or Dashboard
+Build the pricing model with Products and Prices. Read the docs to learn more about pricing models.
+
+Select a test product or create a new one
+
+Create the Customer
+Client and Server
+Stripe needs a Customer for each subscription. In your application front end, collect any necessary information from your users and pass it to the back end.
+If you need to collect address details, the Address Element enables you to collect a shipping or billing address for your customers. For more information on the Address Element, see the Address Element page.
+register.html
+
+
+
+<form id="signup-form">
+  <label>
+    Email
+    <input id="email" type="email" placeholder="Email address" value="test@example.com" required />
+  </label>
+
+  <button type="submit">
+    Register
+  </button>
+</form>
+register.js
+
+
+
+const emailInput = document.querySelector('#email');
+
+fetch('/create-customer', {
+  method: 'post',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    email: emailInput.value,
+  }),
+}).then(r => r.json());
+On the server, create the Stripe Customer object.
+Note
+Make sure you store the Customer ID to use in the Checkout Session
+Command Line
+Select a language
+Select a language
+cURL
+
+
+
+
+curl https://api.stripe.com/v1/customers \
+  -u "sk_test_51SNH1W2NyrPj94ub2C1j18DgfbdWT5SR26dkmjpR3AqsoyC3r2DZkYEKy7Ns72kAmKZOVkUdmaaOEYUx8hNNLomY00bNp1N4ZDsk_test_51SNH1W2NyrPj94ub2C1...Ux8hNNLomY00bNp1N4ZD:" \
+  -d email={{CUSTOMER_EMAIL}} \
+  -d name={{CUSTOMER_NAME}} \
+  -d "shipping[address][city]"=Brothers \
+  -d "shipping[address][country]"=US \
+  -d "shipping[address][line1]"="27 Fredrick Ave" \
+  -d "shipping[address][postal_code]"=97712 \
+  -d "shipping[address][state]"=CA \
+  -d "shipping[name]"={{CUSTOMER_NAME}} \
+  -d "address[city]"=Brothers \
+  -d "address[country]"=US \
+  -d "address[line1]"="27 Fredrick Ave" \
+  -d "address[postal_code]"=97712 \
+  -d "address[state]"=CA
+Create a Checkout Session
+Server
+On the back end of your application, define an endpoint that creates the session for your front end to call. You’ll need the price ID of the subscription the customer is signing up for – your front end passes this value.
+If you created a one-off price in step 2, pass that price ID also. After creating a Checkout Session, make sure you pass the client secret back to the client in the response.
+Note
+You can use lookup_keys to fetch prices rather than Price IDs. See the sample application for an example.
+Select a language
+Select a language
+Ruby
+
+
+
+require 'stripe'
+require 'sinatra'
+
+# This is your test secret API key.
+Stripe.api_key = 'sk_test_51SNH1W2NyrPj94ub2C1j18DgfbdWT5SR26dkmjpR3AqsoyC3r2DZkYEKy7Ns72kAmKZOVkUdmaaOEYUx8hNNLomY00bNp1N4ZD''sk_test_51SNH1W2NyrPj94ub2C...x8hNNLomY00bNp1N4ZD'
+Stripe.api_version = '2025-09-30.clover'
+
+set :static, true
+set :port, 4242
+
+YOUR_DOMAIN = 'http://localhost:3000'
+
+post '/create-checkout-session' do
+  content_type 'application/json'
+
+  session = Stripe::Checkout::Session.create({
+    ui_mode: 'custom',
+    # Provide the customer ID of the customer you previously created
+    customer: '{{CUSTOMER_ID}}',
+    line_items: [{
+      # Provide the exact Price ID (for example, price_1234) of the product you want to sell
+      price: '{{PRICE_ID}}',
+      quantity: 1,
+    }],
+    mode: 'subscription',
+    return_url: YOUR_DOMAIN + '/return?session_id={CHECKOUT_SESSION_ID}',
+  })
+
+  { clientSecret: session.client_secret }.to_json
+end
+From your Dashboard, enable the payment methods you want to accept from your customers. Checkout supports several payment methods.
+Initialise Checkout
+Client
+
+HTML + JS
+
+React
+Create either a clientSecret promise that resolves with the client secret or set it as the secret directly. Call initCheckout, passing in clientSecret. initCheckout returns a promise that resolves to a Checkout instance.
+The checkout object acts as the foundation of your checkout page and contains data from the Checkout Session and methods to update the Session.
+The object returned by actions.getSession() contains your pricing information. We recommend reading and displaying the total and lineItems from the session in your UI.
+This lets you turn on new features with minimal code changes. For example, adding manual currency prices requires no UI changes if you display the total.
+checkout.js
+
+
+
+const clientSecret = fetch('/create-checkout-session', {method: 'POST'})
+  .then((response) => response.json())
+  .then((json) => json.checkoutSessionClientSecret);
+const checkout = stripe.initCheckout({clientSecret});
+const loadActionsResult = await checkout.loadActions();
+if (loadActionsResult.type === 'success') {
+  const session = loadActionsResult.actions.getSession();
+  const checkoutContainer = document.getElementById('checkout-container');
+  checkoutContainer.append(JSON.stringify(session.lineItems, null, 2));
+  checkoutContainer.append(document.createElement('br'));
+  checkoutContainer.append(`Total: ${session.total.total.amount}`);
+}
+index.html
+
+
+
+<div id="checkout-container"></div>
+Collect payment information
+Client
+Collect payment details on the client with the Payment Element. The Payment Element is a pre-built UI component that simplifies collecting payment details for a variety of payment methods.
+
+HTML + JS
+
+React
+First, create a container DOM element to mount the Payment Element. Then create an instance of the Payment Element using checkout.createPaymentElement and mount it by calling element.mount, providing either a CSS selector or the container DOM element.
+index.html
+
+
+
+<div id="payment-element"></div>
+checkout.js
+
+
+
+const paymentElement = checkout.createPaymentElement();
+paymentElement.mount('#payment-element');
+See the Stripe.js docs to view the supported options.
+You can customise the appearance of all Elements by passing elementsOptions.appearance when initialising Checkout on the front end.
+Submit the payment
+Client-side
+
+HTML + JS
+
+React
+Render a Pay button that calls confirm from the checkout instance to submit the payment.
+index.html
+
+
+
+<button id="pay-button">Pay</button>
+<div id="confirm-errors"></div>
+checkout.js
+
+
+
+const checkout = stripe.initCheckout({clientSecret});
+const loadActionsResult = await checkout.loadActions();
+
+if (loadActionsResult.type === 'success') {
+  const {actions} = loadActionsResult;
+  const button = document.getElementById('pay-button');
+  const errors = document.getElementById('confirm-errors');
+  button.addEventListener('click', () => {
+    // Clear any validation errors
+    errors.textContent = '';
+
+    actions.confirm().then((result) => {
+      if (result.type === 'error') {
+        errors.textContent = result.error.message;
+      }
+    });
+  });
+}
+Listen for webhooks
+Server
+To complete the integration, you need to process webhooks sent by Stripe. These events are triggered whenever the status in Stripe changes, such as subscriptions creating new invoices. In your application, set up an HTTP handler to accept a POST request containing the webhook event and verify the signature of the event:
+server.rb
+Select a language
+Select a language
+Ruby
+
+
+
+# Set your secret key. Remember to switch to your live secret key in production.
+# See your keys here: https://dashboard.stripe.com/apikeys
+Stripe.api_key = 'sk_test_51SNH1W2NyrPj94ub2C1j18DgfbdWT5SR26dkmjpR3AqsoyC3r2DZkYEKy7Ns72kAmKZOVkUdmaaOEYUx8hNNLomY00bNp1N4ZD''sk_test_51SNH1W2NyrPj94ub2C...x8hNNLomY00bNp1N4ZD'
+
+post '/webhook' do
+  # You can use webhooks to receive information about asynchronous payment events.
+  # For more about our webhook events check out https://stripe.com/docs/webhooks.
+  webhook_secret = ENV['STRIPE_WEBHOOK_SECRET']
+  payload = request.body.read
+  if !webhook_secret.empty?
+See all 62 lines
+During development, use the Stripe CLI to observe webhooks and forward them to your application. Run the following in a new terminal while your development app is running:
+Command Line
+
+
+
+stripe listen --forward-to localhost:4242/webhook
+For production, set up a webhook endpoint URL in the Dashboard or use the Webhook Endpoints API.
+You need to listen to a few events to complete the remaining steps in this guide. See Subscription events for more details about subscription-specific webhooks.
+Provision access to your service
+Client and Server
+Now that the subscription is active, give your user access to your service. To do this, listen to the customer.subscription.created, customer.subscription.updated and customer.subscription.deleted events. These events pass a subscription object that contains a status field indicating whether the subscription is active, past due or cancelled. See the subscription lifecycle for a complete list of statuses.
+In your webhook handler:
+Verify the subscription status. If it’s active then your user has paid for your product.
+Check the product the customer subscribed to and grant access to your service. Checking the product instead of the price gives you more flexibility if you need to change the pricing or billing period.
+Store the product.id, subscription.id and subscription.status in your database along with the customer.id you already saved. Check this record when determining which features to enable for the user in your application.
+The status of a subscription might change at any point during its lifetime, even if your application doesn’t directly make any calls to Stripe. For example, a renewal might fail because of an expired credit card, which puts the subscription into a past due status. Or, if you implement the customer portal, a user might cancel their subscription without directly visiting your application. Implementing your handler correctly keeps your application status in sync with Stripe.
+Cancel the subscription
+Client and Server
+It’s common to allow customers to cancel their subscriptions. This example adds a cancellation option to the account settings page.
+Sample subscription cancellation interface.
+Account settings with the ability to cancel the subscription
+script.js
+
+
+
+function cancelSubscription(subscriptionId) {
+  return fetch('/cancel-subscription', {
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      subscriptionId: subscriptionId,
+    }),
+  })
+    .then(response => {
+      return response.json();
+    })
+    .then(cancelSubscriptionResponse => {
+      // Display to the user that the subscription has been canceled.
+    });
+}
+On the back end, define the endpoint for your front end to call.
+server.rb
+Select a language
+Select a language
+Ruby
+
+
+
+# Set your secret key. Remember to switch to your live secret key in production.
+# See your keys here: https://dashboard.stripe.com/apikeys
+Stripe.api_key = 'sk_test_51SNH1W2NyrPj94ub2C1j18DgfbdWT5SR26dkmjpR3AqsoyC3r2DZkYEKy7Ns72kAmKZOVkUdmaaOEYUx8hNNLomY00bNp1N4ZD''sk_test_51SNH1W2NyrPj94ub2C...x8hNNLomY00bNp1N4ZD'
+
+post '/cancel-subscription' do
+  content_type 'application/json'
+  data = JSON.parse request.body.read
+
+  deleted_subscription = Stripe::Subscription.cancel(data['subscriptionId'])
+
+  deleted_subscription.to_json
+end
+Your application receives a customer.subscription.deleted event.
+After the subscription is cancelled, update your database to remove the Stripe subscription ID you previously stored and limit access to your service.
+When a subscription cancels, you can’t reactivate it. Instead, collect updated billing information from your customer, update their default payment method and create a new subscription with their existing customer record.
+Test your integration
+Test payment methods
+Use the following table to test different payment methods and scenarios.
+PAYMENT METHOD	SCENARIO	HOW TO TEST
+BECS Direct Debit	Your customer successfully pays with BECS Direct Debit.	Fill out the form using the account number 900123456 and BSB 000000. The confirmed PaymentIntent initially transitions to processing, then transitions to the succeeded status three minutes later.
+BECS Direct Debit	Your customer’s payment fails with an account_closed error code.	Fill out the form using the account number 111111113 and BSB 000000.
+Credit card	The card payment succeeds and doesn’t require authentication.	Fill out the credit card form using the credit card number 4242 4242 4242 4242 with any expiration, CVC, and postal code.
+Credit card	The card payment requires authentication.	Fill out the credit card form using the credit card number 4000 0025 0000 3155 with any expiration, CVC, and postal code.
+Credit card	The card is declined with a decline code like insufficient_funds.	Fill out the credit card form using the credit card number 4000 0000 0000 9995 with any expiration, CVC, and postal code.
+SEPA Direct Debit	Your customer successfully pays with SEPA Direct Debit.	Fill out the form using the account number AT321904300235473204. The confirmed PaymentIntent initially transitions to processing, then transitions to the succeeded status three minutes later.
+SEPA Direct Debit	Your customer’s PaymentIntent status transitions from processing to requires_payment_method.	Fill out the form using the account number AT861904300235473202.
+Monitor events
+Set up webhooks to listen to subscription change events, such as upgrades and cancellations. Learn more about subscription webhooks. You can view events in the Dashboard or with the Stripe CLI.
+For more details, see testing your Billing integration.
+Optional
+Let customers change their plans
+Client and Server
+Optional
+Preview a price change
+Client and Server
+Optional
+Display the customer payment method
+Client and Server
+Disclose Stripe to your customers
+Stripe collects information on customer interactions with Elements to provide services to you, prevent fraud, and improve its services. This includes using cookies and IP addresses to identify which Elements a customer saw during a single checkout session. You’re responsible for disclosing and obtaining all rights and consents necessary for Stripe to use data in these ways. For more information, visit our privacy center.
