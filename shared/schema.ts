@@ -306,7 +306,7 @@ export const insertProfileSchema = createInsertSchema(profiles, {
 
 export const insertMessageSchema = createInsertSchema(messages, {
   content: z.string().min(1, "Message cannot be empty").max(1000, "Message too long"),
-}).omit({ id: true, createdAt: true, isRead: true });
+}).omit({ id: true, createdAt: true, isRead: true, senderId: true });
 
 export const insertChaperoneSchema = createInsertSchema(chaperones, {
   chaperoneName: z.string().min(2, "Name is required"),

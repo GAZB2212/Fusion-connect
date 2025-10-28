@@ -7,7 +7,9 @@ import bcrypt from "bcrypt";
 import Stripe from "stripe";
 import { randomBytes } from "crypto";
 import { sendPasswordResetEmail } from "./email";
-import * as agoraToken from "agora-token";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const { RtcTokenBuilder, RtcRole } = require("agora-token");
 import { 
   users, 
   profiles, 
@@ -1110,7 +1112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const appCertificate = process.env.AGORA_APP_CERTIFICATE;
       const channelName = call.channelName;
       const uid = 0; // Use 0 for wildcard UID
-      const role = 1; // PUBLISHER role (both users can publish)
+      const role = RtcRole.PUBLISHER; // Both users can publish
       
       // Token expires in 1 hour
       const expirationTimeInSeconds = 3600;
@@ -1119,7 +1121,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const privilegeExpireTime = currentTimestamp + expirationTimeInSeconds;
 
       // Generate token
-      const token = agoraToken.RtcTokenBuilder.buildTokenWithUid(
+      const token = RtcTokenBuilder.buildTokenWithUid(
         appId,
         appCertificate,
         channelName,
