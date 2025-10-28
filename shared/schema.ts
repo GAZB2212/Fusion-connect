@@ -201,6 +201,33 @@ export const pushSubscriptions = pgTable("push_subscriptions", {
   index("user_push_idx").on(table.userId),
 ]);
 
+// Blocked Users - Track user blocks (App Store requirement)
+export const blockedUsers = pgTable("blocked_users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  blockerId: varchar("blocker_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  blockedId: varchar("blocked_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  reason: text("reason"), // Optional reason for blocking
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("blocker_idx").on(table.blockerId),
+  index("blocked_idx").on(table.blockedId),
+]);
+
+// User Reports - Track reported users (App Store requirement)
+export const userReports = pgTable("user_reports", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  reporterId: varchar("reporter_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  reportedId: varchar("reported_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  reason: varchar("reason", { length: 50 }).notNull(), // harassment, inappropriate_content, fake_profile, spam, other
+  details: text("details"), // Additional details from reporter
+  status: varchar("status", { length: 20 }).default('pending'), // pending, reviewed, action_taken, dismissed
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("reporter_idx").on(table.reporterId),
+  index("reported_idx").on(table.reportedId),
+  index("status_idx").on(table.status),
+]);
+
 // Relations
 export const usersRelations = relations(users, ({ one, many }) => ({
   profile: one(profiles, {
@@ -217,6 +244,10 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   initiatedCalls: many(videoCalls, { relationName: "caller" }),
   receivedCalls: many(videoCalls, { relationName: "receiver" }),
   pushSubscriptions: many(pushSubscriptions),
+  blocksInitiated: many(blockedUsers, { relationName: "blocker" }),
+  blocksReceived: many(blockedUsers, { relationName: "blocked" }),
+  reportsInitiated: many(userReports, { relationName: "reporter" }),
+  reportsReceived: many(userReports, { relationName: "reported" }),
 }));
 
 export const profilesRelations = relations(profiles, ({ one }) => ({
@@ -302,6 +333,32 @@ export const pushSubscriptionsRelations = relations(pushSubscriptions, ({ one })
   }),
 }));
 
+export const blockedUsersRelations = relations(blockedUsers, ({ one }) => ({
+  blocker: one(users, {
+    fields: [blockedUsers.blockerId],
+    references: [users.id],
+    relationName: "blocker",
+  }),
+  blocked: one(users, {
+    fields: [blockedUsers.blockedId],
+    references: [users.id],
+    relationName: "blocked",
+  }),
+}));
+
+export const userReportsRelations = relations(userReports, ({ one }) => ({
+  reporter: one(users, {
+    fields: [userReports.reporterId],
+    references: [users.id],
+    relationName: "reporter",
+  }),
+  reported: one(users, {
+    fields: [userReports.reportedId],
+    references: [users.id],
+    relationName: "reported",
+  }),
+}));
+
 // Zod Schemas for validation
 export const insertProfileSchema = createInsertSchema(profiles, {
   displayName: z.string().min(2, "Name must be at least 2 characters").max(100),
@@ -347,6 +404,15 @@ export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions
   p256dh: z.string().min(1, "P256dh key is required"),
 }).omit({ id: true, createdAt: true });
 
+export const insertBlockedUserSchema = createInsertSchema(blockedUsers, {
+  reason: z.string().optional(),
+}).omit({ id: true, createdAt: true, blockerId: true });
+
+export const insertUserReportSchema = createInsertSchema(userReports, {
+  reason: z.enum(["harassment", "inappropriate_content", "fake_profile", "spam", "other"]),
+  details: z.string().max(500, "Details too long").optional(),
+}).omit({ id: true, createdAt: true, reporterId: true, status: true });
+
 export const registerUserSchema = z.object({
   email: z.string().email("Valid email is required"),
   password: z.string().min(8, "Password must be at least 8 characters"),
@@ -376,6 +442,10 @@ export type VideoCall = typeof videoCalls.$inferSelect;
 export type InsertVideoCall = z.infer<typeof insertVideoCallSchema>;
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
 export type InsertPushSubscription = z.infer<typeof insertPushSubscriptionSchema>;
+export type BlockedUser = typeof blockedUsers.$inferSelect;
+export type InsertBlockedUser = z.infer<typeof insertBlockedUserSchema>;
+export type UserReport = typeof userReports.$inferSelect;
+export type InsertUserReport = z.infer<typeof insertUserReportSchema>;
 
 // Extended types for API responses
 export type ProfileWithUser = Profile & {

@@ -3,6 +3,8 @@
 ## Overview
 Fusion is a premium Muslim matchmaking platform designed to help Muslim singles find meaningful connections in a halal, respectful way. It emphasizes Islamic values, privacy, and safety, while offering modern features like profile discovery, matching, messaging, and chaperone support. The platform aims to provide a luxury experience for users seeking serious relationships.
 
+**App Store Preparation:** The platform is currently being prepared for iOS App Store submission via web app wrapping (Capacitor/Cordova). All App Store compliance features including user reporting, blocking, privacy policy, terms of service, and age verification are being implemented to meet Apple's guidelines for dating applications.
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
@@ -29,11 +31,18 @@ The platform features a luxury aesthetic with a primary deep navy color, gold ac
 ### Feature Specifications
 - **Profile Management:** Detailed user profiles, photo uploads, and comprehensive demographic and religious information.
 - **Discovery & Swiping:** Users can discover potential matches and perform swipe actions.
-- **Messaging:** Secure messaging between matched users.
-- **Video Calling:** Real-time video calls with camera/mic controls, duration tracking, and call history.
+- **Messaging:** Secure messaging between matched users with call records for video calls.
+- **Video Calling:** Real-time video calls with camera/mic controls, call duration tracking, call history, and branded Fusion logo overlay.
 - **Chaperone Support:** Optional guardian access to conversations for traditional courtship.
 - **Face Verification:** AI-driven identity verification to prevent fake profiles.
 - **Subscription Tiers:** Free and premium tiers with distinct feature sets.
+- **App Store Compliance Features:**
+  - User reporting system with multiple reason categories
+  - User blocking functionality
+  - Privacy Policy and Terms of Service pages
+  - Age verification (18+) during registration
+  - Delete account functionality
+  - Manage subscription options
 
 ### System Design Choices
 - **Full-stack TypeScript:** Ensures type safety across the entire application.
