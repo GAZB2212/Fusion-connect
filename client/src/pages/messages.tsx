@@ -28,6 +28,7 @@ export default function Messages() {
   const [isCallActive, setIsCallActive] = useState(false);
   const [activeCall, setActiveCall] = useState<VideoCall | null>(null);
   const [callToken, setCallToken] = useState<string>("");
+  const [joinedCallId, setJoinedCallId] = useState<string | null>(null);
 
   // Fetch match details
   const { data: match } = useQuery<MatchWithProfiles>({
@@ -74,11 +75,18 @@ export default function Messages() {
         isCallActive, 
         userId: user?.id,
         receiverId: incomingCall?.receiverId,
-        status: incomingCall?.status
+        status: incomingCall?.status,
+        joinedCallId
       });
       
       if (!incomingCall || isCallActive || !user) {
         console.log('Early return:', { hasCall: !!incomingCall, isCallActive, hasUser: !!user });
+        return;
+      }
+
+      // Don't rejoin a call we've already joined
+      if (joinedCallId === incomingCall.id) {
+        console.log('Already joined this call:', incomingCall.id);
         return;
       }
       
@@ -88,15 +96,18 @@ export default function Messages() {
         return;
       }
       
-      // Only auto-join if call is in "active" or "initiated" status
-      if (incomingCall.status !== 'active' && incomingCall.status !== 'initiated') {
-        console.log('Call not in correct status:', incomingCall.status);
+      // Only auto-join if call is in "initiated" status (not "active" - that means both users are already in)
+      if (incomingCall.status !== 'initiated') {
+        console.log('Call not in initiated status:', incomingCall.status);
         return;
       }
 
       console.log('Auto-joining incoming call:', incomingCall.id);
 
       try {
+        // Mark that we're joining this call
+        setJoinedCallId(incomingCall.id);
+        
         // Get token for the call
         const tokenRes = await apiRequest("GET", `/api/video-call/token/${incomingCall.id}`);
         const tokenData = await tokenRes.json() as { token: string; channelName: string };
@@ -116,6 +127,7 @@ export default function Messages() {
         });
       } catch (error: any) {
         console.error('Error joining call:', error);
+        setJoinedCallId(null); // Reset on error so we can retry
         toast({
           title: "Failed to join call",
           description: error.message,
@@ -125,7 +137,7 @@ export default function Messages() {
     };
 
     handleIncomingCall();
-  }, [incomingCall, isCallActive, user, toast]);
+  }, [incomingCall, isCallActive, user, joinedCallId, toast]);
 
   // Send message mutation
   const sendMessageMutation = useMutation({
@@ -201,6 +213,7 @@ export default function Messages() {
       setIsCallActive(false);
       setActiveCall(null);
       setCallToken("");
+      setJoinedCallId(null); // Reset so new calls can be joined
       
       toast({
         title: "Call ended",
