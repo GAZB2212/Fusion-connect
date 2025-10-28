@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useVideoCall } from "@/contexts/VideoCallContext";
 
 interface VideoCallProps {
   callId: string;
@@ -47,11 +48,20 @@ function VideoCallContent({
   const { audioTracks } = useRemoteAudioTracks(remoteUsers);
   const isConnected = useIsConnected();
   const { toast } = useToast();
+  const { setIsCallActive } = useVideoCall();
 
   const [micEnabled, setMicEnabled] = useState(true);
   const [videoEnabled, setVideoEnabled] = useState(true);
   const [callDuration, setCallDuration] = useState(0);
   const [showControls, setShowControls] = useState(true);
+
+  // Notify context that call is active
+  useEffect(() => {
+    setIsCallActive(true);
+    return () => {
+      setIsCallActive(false);
+    };
+  }, [setIsCallActive]);
 
   // Auto-hide controls after 3 seconds of inactivity
   useEffect(() => {
