@@ -42,8 +42,8 @@ function VideoCallContent({
   isInitiator 
 }: Omit<VideoCallProps, 'callId'>) {
   const client = useRTCClient(AgoraRTC.createClient({ mode: "rtc", codec: "vp8" }));
-  const { isLoading: isLoadingMic, localMicrophoneTrack } = useLocalMicrophoneTrack();
-  const { isLoading: isLoadingCam, localCameraTrack } = useLocalCameraTrack();
+  const { isLoading: isLoadingMic, localMicrophoneTrack } = useLocalMicrophoneTrack(true); // Start with mic enabled
+  const { isLoading: isLoadingCam, localCameraTrack } = useLocalCameraTrack(true); // Start with camera enabled
   const remoteUsers = useRemoteUsers();
   const { audioTracks } = useRemoteAudioTracks(remoteUsers);
   const isConnected = useIsConnected();
@@ -58,11 +58,20 @@ function VideoCallContent({
     appid: import.meta.env.VITE_AGORA_APP_ID!,
     channel: channelName,
     token: token || null,
-  });
+  }, true); // Enable automatic subscription
 
-  // Play remote audio tracks
+  // Play remote audio tracks automatically
   useEffect(() => {
-    audioTracks.forEach((track) => track.play());
+    if (audioTracks.length > 0) {
+      console.log('Playing remote audio tracks:', audioTracks.length);
+      audioTracks.forEach((track) => {
+        try {
+          track.play();
+        } catch (err) {
+          console.error('Failed to play audio track:', err);
+        }
+      });
+    }
   }, [audioTracks]);
 
   // Track call duration
@@ -87,16 +96,56 @@ function VideoCallContent({
   }, [remoteUsers.length, toast]);
 
   const toggleMic = async () => {
-    if (localMicrophoneTrack) {
-      await localMicrophoneTrack.setEnabled(!micEnabled);
-      setMicEnabled(!micEnabled);
+    if (!localMicrophoneTrack) {
+      console.error('No microphone track available');
+      toast({
+        title: "Error",
+        description: "Microphone not available",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      const newState = !micEnabled;
+      console.log('Toggling mic:', { from: micEnabled, to: newState });
+      await localMicrophoneTrack.setEnabled(newState);
+      setMicEnabled(newState);
+      console.log('Mic toggled successfully');
+    } catch (error) {
+      console.error('Failed to toggle microphone:', error);
+      toast({
+        title: "Error",
+        description: "Failed to toggle microphone",
+        variant: "destructive",
+      });
     }
   };
 
   const toggleVideo = async () => {
-    if (localCameraTrack) {
-      await localCameraTrack.setEnabled(!videoEnabled);
-      setVideoEnabled(!videoEnabled);
+    if (!localCameraTrack) {
+      console.error('No camera track available');
+      toast({
+        title: "Error",
+        description: "Camera not available",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      const newState = !videoEnabled;
+      console.log('Toggling video:', { from: videoEnabled, to: newState });
+      await localCameraTrack.setEnabled(newState);
+      setVideoEnabled(newState);
+      console.log('Video toggled successfully');
+    } catch (error) {
+      console.error('Failed to toggle camera:', error);
+      toast({
+        title: "Error",
+        description: "Failed to toggle camera",
+        variant: "destructive",
+      });
     }
   };
 
@@ -158,6 +207,8 @@ function VideoCallContent({
               <div className="aspect-video w-full h-full">
                 <RemoteUser 
                   user={user}
+                  playAudio={true}
+                  playVideo={true}
                   className="w-full h-full object-cover"
                   data-testid="video-remote"
                 />
