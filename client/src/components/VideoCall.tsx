@@ -282,10 +282,11 @@ function VideoCallContent({
       {/* Controls - Bottom Center */}
       <div 
         className={cn(
-          "absolute bottom-0 left-0 right-0 pb-8 pt-6 flex justify-center items-center gap-6 transition-opacity duration-300",
+          "absolute bottom-0 left-0 right-0 pb-8 pt-6 flex justify-center items-center gap-6 z-30 transition-opacity duration-300",
           "bg-gradient-to-t from-black/80 via-black/50 to-transparent",
-          showControls ? "opacity-100" : "opacity-0 pointer-events-none"
+          showControls ? "opacity-100" : "opacity-0"
         )}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Mic Toggle */}
         <Button
