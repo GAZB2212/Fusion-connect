@@ -115,13 +115,41 @@ function Router() {
 
 function AppContent() {
   const { isAuthenticated } = useAuth();
+  const { data: profile } = useQuery<Profile>({
+    queryKey: ["/api/profile"],
+    enabled: isAuthenticated,
+    retry: false,
+  });
 
-  // Initialize push notifications when user is authenticated
+  // Initialize push notifications when user is authenticated with complete profile
   useEffect(() => {
-    if (isAuthenticated && import.meta.env.VITE_VAPID_PUBLIC_KEY) {
-      initializePushNotifications(import.meta.env.VITE_VAPID_PUBLIC_KEY);
-    }
-  }, [isAuthenticated]);
+    const setupPushNotifications = async () => {
+      if (!isAuthenticated || !profile?.isComplete || !profile?.faceVerified) {
+        return;
+      }
+
+      const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+      if (!vapidKey) {
+        console.log('VAPID key not configured');
+        return;
+      }
+
+      // Register service worker first
+      await initializePushNotifications(vapidKey);
+
+      // Request permission if not already granted or denied
+      if (Notification.permission === 'default') {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          // Subscribe to push notifications
+          const { enablePushNotifications } = await import('@/lib/pushNotifications');
+          await enablePushNotifications(vapidKey);
+        }
+      }
+    };
+
+    setupPushNotifications();
+  }, [isAuthenticated, profile?.isComplete, profile?.faceVerified]);
 
   return (
     <>
