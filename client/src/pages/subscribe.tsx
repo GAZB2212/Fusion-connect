@@ -276,10 +276,30 @@ export default function Subscribe() {
           </form>
         </CardContent>
 
-        <CardFooter className="flex-col gap-2">
-          <p className="text-xs text-[#F8F4E3]/50 text-center">
-            Your subscription will automatically renew each month. You can cancel at any time from your settings.
-          </p>
+        <CardFooter className="flex-col gap-3">
+          <div className="space-y-2 text-center">
+            <p className="text-xs text-[#F8F4E3]/50">
+              Your subscription will automatically renew each month at £9.99. You can cancel anytime from Settings → Manage Subscription. No refunds for partial months.
+            </p>
+            <p className="text-xs text-[#F8F4E3]/40">
+              By subscribing, you agree to our{" "}
+              <button
+                type="button"
+                onClick={() => window.open("/terms-of-service", "_blank")}
+                className="text-primary hover:underline"
+              >
+                Terms of Service
+              </button>{" "}
+              and{" "}
+              <button
+                type="button"
+                onClick={() => window.open("/privacy-policy", "_blank")}
+                className="text-primary hover:underline"
+              >
+                Privacy Policy
+              </button>
+            </p>
+          </div>
           <div className="w-full border-t border-white/10 my-2"></div>
           <p className="text-xs text-[#F8F4E3]/40 text-center mb-2">Development Mode</p>
           <Button 

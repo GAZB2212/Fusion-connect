@@ -1,13 +1,26 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Shield, Eye, EyeOff, UserPlus, LogOut, KeyRound } from "lucide-react";
+import { 
+  Shield, 
+  Eye, 
+  EyeOff, 
+  UserPlus, 
+  LogOut, 
+  KeyRound, 
+  CreditCard, 
+  UserX, 
+  Trash2, 
+  FileText,
+  ExternalLink
+} from "lucide-react";
 import type { Profile, Chaperone } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -19,14 +32,26 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function Settings() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [chaperoneName, setChaperoneName] = useState("");
   const [chaperoneEmail, setChaperoneEmail] = useState("");
   const [relationshipType, setRelationshipType] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
   
   // Password change state
   const [currentPassword, setCurrentPassword] = useState("");
@@ -160,6 +185,45 @@ export default function Settings() {
       });
     },
   });
+
+  // Delete account mutation
+  const deleteAccountMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("DELETE", "/api/account", {});
+    },
+    onSuccess: () => {
+      toast({
+        title: "Account Deleted",
+        description: "Your account and all data have been permanently deleted.",
+      });
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1500);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete account",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Manage subscription - Opens Stripe Customer Portal
+  const manageSubscription = async () => {
+    try {
+      const response = await apiRequest("POST", "/api/create-portal-session", {});
+      if (response.url) {
+        window.open(response.url, "_blank");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to open subscription management",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (!profile) {
     return null;
@@ -438,20 +502,127 @@ export default function Settings() {
           </Dialog>
         </Card>
 
+        {/* Subscription Management */}
+        {profile.isPremium && (
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              Subscription
+            </h2>
+            <p className="text-sm text-muted-foreground mb-4">
+              Manage your subscription, payment method, and billing history
+            </p>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={manageSubscription}
+              data-testid="button-manage-subscription"
+            >
+              <CreditCard className="h-4 w-4 mr-2" />
+              Manage Subscription
+              <ExternalLink className="h-4 w-4 ml-2" />
+            </Button>
+          </Card>
+        )}
+
+        {/* Legal & Support */}
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Legal & Support
+          </h2>
+          <div className="space-y-3">
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={() => setLocation("/privacy-policy")}
+              data-testid="button-privacy-policy"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Privacy Policy
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={() => setLocation("/terms-of-service")}
+              data-testid="button-terms-of-service"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Terms of Service
+            </Button>
+          </div>
+        </Card>
+
         {/* Account */}
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Account</h2>
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => logoutMutation.mutate()}
-            disabled={logoutMutation.isPending}
-            data-testid="button-logout"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            {logoutMutation.isPending ? "Logging out..." : "Log Out"}
-          </Button>
+          <div className="space-y-3">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => logoutMutation.mutate()}
+              disabled={logoutMutation.isPending}
+              data-testid="button-logout"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              {logoutMutation.isPending ? "Logging out..." : "Log Out"}
+            </Button>
+
+            <Button
+              variant="destructive"
+              className="w-full"
+              onClick={() => setDeleteAccountDialogOpen(true)}
+              data-testid="button-open-delete-account"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Account
+            </Button>
+          </div>
         </Card>
+
+        {/* Delete Account Confirmation */}
+        <AlertDialog open={deleteAccountDialogOpen} onOpenChange={setDeleteAccountDialogOpen}>
+          <AlertDialogContent data-testid="dialog-delete-account">
+            <AlertDialogHeader>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="h-12 w-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                  <Trash2 className="h-6 w-6 text-destructive" />
+                </div>
+                <div>
+                  <AlertDialogTitle className="text-xl">Delete Account?</AlertDialogTitle>
+                </div>
+              </div>
+              <AlertDialogDescription className="pt-2 space-y-3">
+                <p className="font-medium">This action cannot be undone. This will permanently delete:</p>
+                <ul className="list-disc list-inside space-y-1 ml-2 text-sm">
+                  <li>Your profile and all photos</li>
+                  <li>All matches and conversations</li>
+                  <li>Your subscription (you won't be charged again)</li>
+                  <li>All account data and settings</li>
+                </ul>
+                <p className="pt-2 text-sm">
+                  Are you absolutely sure you want to delete your account? Type <strong>"DELETE"</strong> below to confirm.
+                </p>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel 
+                disabled={deleteAccountMutation.isPending}
+                data-testid="button-cancel-delete"
+              >
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => deleteAccountMutation.mutate()}
+                disabled={deleteAccountMutation.isPending}
+                className="bg-destructive hover:bg-destructive/90"
+                data-testid="button-confirm-delete"
+              >
+                {deleteAccountMutation.isPending ? "Deleting..." : "Delete My Account"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
