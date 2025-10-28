@@ -72,6 +72,14 @@ export default function Settings() {
     queryKey: ["/api/chaperones"],
   });
 
+  // Fetch subscription status
+  const { data: subscriptionStatus } = useQuery<{
+    hasActiveSubscription: boolean;
+    status?: string;
+  }>({
+    queryKey: ["/api/subscription-status"],
+  });
+
   // Update privacy settings
   const updatePrivacyMutation = useMutation({
     mutationFn: async (settings: Partial<Profile>) => {
@@ -503,7 +511,7 @@ export default function Settings() {
         </Card>
 
         {/* Subscription Management */}
-        {profile.isPremium && (
+        {subscriptionStatus?.hasActiveSubscription && (
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <CreditCard className="h-5 w-5" />
