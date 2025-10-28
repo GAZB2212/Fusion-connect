@@ -96,9 +96,18 @@ export default function Messages() {
         return;
       }
       
-      // Only auto-join if call is in "initiated" status (not "active" - that means both users are already in)
-      if (incomingCall.status !== 'initiated') {
-        console.log('Call not in initiated status:', incomingCall.status);
+      // Only auto-join if call is in "initiated" status
+      // Note: The caller might have already set it to "active" before we polled, so check both
+      if (incomingCall.status !== 'initiated' && incomingCall.status !== 'active') {
+        console.log('Call not in correct status:', incomingCall.status);
+        return;
+      }
+      
+      // Check if the call was created very recently (within last 30 seconds)
+      // This prevents auto-joining old "stuck" active calls
+      const callAge = Date.now() - new Date(incomingCall.createdAt).getTime();
+      if (callAge > 30000) {
+        console.log('Call too old:', callAge);
         return;
       }
 
@@ -188,10 +197,8 @@ export default function Messages() {
       setCallToken(tokenData.token);
       setIsCallActive(true);
       
-      // Update call status to active
-      await apiRequest("PATCH", `/api/video-call/${call.id}/status`, {
-        status: "active",
-      });
+      // Don't set to "active" yet - let the receiver set it when they join
+      // This keeps the status as "initiated" so the receiver can detect it
     },
     onError: (error) => {
       toast({
