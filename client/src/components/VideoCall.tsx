@@ -250,27 +250,33 @@ function VideoCallContent({
         )}
       </div>
 
-      {/* Fusion Logo - Top Left (Faint Watermark) */}
-      <div className="absolute top-6 left-6 z-10">
-        <img 
-          src={fusionLogo} 
-          alt="Fusion" 
-          className="h-8 opacity-20"
-          data-testid="img-fusion-logo"
-        />
-      </div>
-
-      {/* Call Duration - Top Center */}
-      <div 
-        className={cn(
-          "absolute top-6 left-1/2 -translate-x-1/2 z-10 transition-opacity duration-300",
-          showControls ? "opacity-100" : "opacity-0"
-        )}
-      >
-        <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-full">
-          <p className="text-white font-medium text-sm" data-testid="text-call-duration">
-            {isConnected ? formatDuration(callDuration) : "Connecting..."}
-          </p>
+      {/* Top Bar with Logo and Duration */}
+      <div className="absolute top-0 left-0 right-0 z-10">
+        {/* Dark gradient background */}
+        <div className="bg-gradient-to-b from-black/80 via-black/50 to-transparent pt-4 pb-8">
+          <div className="flex items-center justify-between px-6">
+            {/* Fusion Logo - Top Left */}
+            <img 
+              src={fusionLogo} 
+              alt="Fusion" 
+              className="h-8 opacity-70"
+              data-testid="img-fusion-logo"
+            />
+            
+            {/* Call Duration - Top Center/Right */}
+            <div 
+              className={cn(
+                "transition-opacity duration-300",
+                showControls ? "opacity-100" : "opacity-0"
+              )}
+            >
+              <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-full">
+                <p className="text-white font-medium text-sm" data-testid="text-call-duration">
+                  {isConnected ? formatDuration(callDuration) : "Connecting..."}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
