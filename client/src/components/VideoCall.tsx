@@ -281,54 +281,61 @@ function VideoCallContent({
 
       {/* Controls - Bottom Center */}
       <div 
-        className={cn(
-          "absolute bottom-0 left-0 right-0 pb-8 pt-6 flex justify-center items-center gap-6 z-30 transition-opacity duration-300",
-          "bg-gradient-to-t from-black/80 via-black/50 to-transparent",
-          showControls ? "opacity-100" : "opacity-0"
-        )}
+        className="absolute bottom-0 left-0 right-0 pb-8 pt-6 z-30"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Mic Toggle */}
-        <Button
-          size="icon"
-          onClick={toggleMic}
-          disabled={!localMicrophoneTrack}
+        {/* Background gradient - fades in/out */}
+        <div 
           className={cn(
-            "h-14 w-14 rounded-full shadow-xl transition-all",
-            micEnabled 
-              ? "bg-white/20 hover:bg-white/30 text-white backdrop-blur-md" 
-              : "bg-red-500 hover:bg-red-600 text-white"
+            "absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent transition-opacity duration-300",
+            showControls ? "opacity-100" : "opacity-0"
           )}
-          data-testid="button-toggle-mic"
-        >
-          {micEnabled ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
-        </Button>
+        />
+        
+        {/* Buttons - always visible */}
+        <div className="relative flex justify-center items-center gap-6">
+          {/* Mic Toggle */}
+          <Button
+            size="icon"
+            onClick={toggleMic}
+            disabled={!localMicrophoneTrack}
+            className={cn(
+              "h-14 w-14 rounded-full shadow-xl transition-all",
+              micEnabled 
+                ? "bg-white/20 hover:bg-white/30 text-white backdrop-blur-md" 
+                : "bg-red-500 hover:bg-red-600 text-white"
+            )}
+            data-testid="button-toggle-mic"
+          >
+            {micEnabled ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
+          </Button>
 
-        {/* End Call - Red Circle */}
-        <Button
-          size="icon"
-          onClick={handleEndCall}
-          className="h-16 w-16 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-2xl transition-all hover:scale-110"
-          data-testid="button-end-call"
-        >
-          <PhoneOff className="h-7 w-7" />
-        </Button>
+          {/* End Call - Red Circle */}
+          <Button
+            size="icon"
+            onClick={handleEndCall}
+            className="h-16 w-16 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-2xl transition-all hover:scale-110"
+            data-testid="button-end-call"
+          >
+            <PhoneOff className="h-7 w-7" />
+          </Button>
 
-        {/* Video Toggle */}
-        <Button
-          size="icon"
-          onClick={toggleVideo}
-          disabled={!localCameraTrack}
-          className={cn(
-            "h-14 w-14 rounded-full shadow-xl transition-all",
-            videoEnabled 
-              ? "bg-white/20 hover:bg-white/30 text-white backdrop-blur-md" 
-              : "bg-red-500 hover:bg-red-600 text-white"
-          )}
-          data-testid="button-toggle-video"
-        >
-          {videoEnabled ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
-        </Button>
+          {/* Video Toggle */}
+          <Button
+            size="icon"
+            onClick={toggleVideo}
+            disabled={!localCameraTrack}
+            className={cn(
+              "h-14 w-14 rounded-full shadow-xl transition-all",
+              videoEnabled 
+                ? "bg-white/20 hover:bg-white/30 text-white backdrop-blur-md" 
+                : "bg-red-500 hover:bg-red-600 text-white"
+            )}
+            data-testid="button-toggle-video"
+          >
+            {videoEnabled ? <Video className="h-5 w-5" /> : <VideoOff className="h-5 w-5" />}
+          </Button>
+        </div>
       </div>
     </div>
   );
