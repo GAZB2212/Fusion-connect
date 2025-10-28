@@ -21,6 +21,8 @@ import Matches from "@/pages/matches";
 import Messages from "@/pages/messages";
 import Settings from "@/pages/settings";
 import Subscribe from "@/pages/subscribe";
+import PrivacyPolicy from "@/pages/privacy-policy";
+import TermsOfService from "@/pages/terms-of-service";
 import NotFound from "@/pages/not-found";
 import { BottomNav } from "@/components/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -70,6 +72,8 @@ function Router() {
         <Route path="/signup" component={Signup} />
         <Route path="/forgot-password" component={ForgotPassword} />
         <Route path="/reset-password" component={ResetPassword} />
+        <Route path="/privacy-policy" component={PrivacyPolicy} />
+        <Route path="/terms-of-service" component={TermsOfService} />
         <Route component={NotFound} />
       </Switch>
     );
@@ -129,6 +133,8 @@ function Router() {
       <Route path="/messages/:matchId?" component={Messages} />
       <Route path="/settings" component={Settings} />
       <Route path="/subscribe" component={Subscribe} />
+      <Route path="/privacy-policy" component={PrivacyPolicy} />
+      <Route path="/terms-of-service" component={TermsOfService} />
       <Route component={NotFound} />
     </Switch>
   );
