@@ -187,6 +187,18 @@ export const videoCalls = pgTable("video_calls", {
   index("receiver_call_idx").on(table.receiverId),
 ]);
 
+// Push Subscriptions - Store web push notification subscriptions
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  endpoint: text("endpoint").notNull(),
+  auth: text("auth").notNull(),
+  p256dh: text("p256dh").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("user_push_idx").on(table.userId),
+]);
+
 // Relations
 export const usersRelations = relations(users, ({ one, many }) => ({
   profile: one(profiles, {
@@ -202,6 +214,7 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   chaperones: many(chaperones),
   initiatedCalls: many(videoCalls, { relationName: "caller" }),
   receivedCalls: many(videoCalls, { relationName: "receiver" }),
+  pushSubscriptions: many(pushSubscriptions),
 }));
 
 export const profilesRelations = relations(profiles, ({ one }) => ({
@@ -280,6 +293,13 @@ export const videoCallsRelations = relations(videoCalls, ({ one }) => ({
   }),
 }));
 
+export const pushSubscriptionsRelations = relations(pushSubscriptions, ({ one }) => ({
+  user: one(users, {
+    fields: [pushSubscriptions.userId],
+    references: [users.id],
+  }),
+}));
+
 // Zod Schemas for validation
 export const insertProfileSchema = createInsertSchema(profiles, {
   displayName: z.string().min(2, "Name must be at least 2 characters").max(100),
@@ -319,6 +339,12 @@ export const insertVideoCallSchema = createInsertSchema(videoCalls, {
   status: z.enum(["initiated", "ringing", "active", "ended", "missed", "declined"]),
 }).omit({ id: true, createdAt: true, startedAt: true, endedAt: true, duration: true });
 
+export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions, {
+  endpoint: z.string().url("Valid endpoint URL is required"),
+  auth: z.string().min(1, "Auth key is required"),
+  p256dh: z.string().min(1, "P256dh key is required"),
+}).omit({ id: true, createdAt: true });
+
 export const registerUserSchema = z.object({
   email: z.string().email("Valid email is required"),
   password: z.string().min(8, "Password must be at least 8 characters"),
@@ -346,6 +372,8 @@ export type Chaperone = typeof chaperones.$inferSelect;
 export type InsertChaperone = z.infer<typeof insertChaperoneSchema>;
 export type VideoCall = typeof videoCalls.$inferSelect;
 export type InsertVideoCall = z.infer<typeof insertVideoCallSchema>;
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+export type InsertPushSubscription = z.infer<typeof insertPushSubscriptionSchema>;
 
 // Extended types for API responses
 export type ProfileWithUser = Profile & {
