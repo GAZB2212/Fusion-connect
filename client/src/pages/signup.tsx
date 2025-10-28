@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import logoImage from "@assets/NEW logo 2_1761587557587.png";
@@ -17,12 +18,32 @@ export default function Signup() {
     firstName: "",
     lastName: "",
   });
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!ageConfirmed) {
+      toast({
+        title: "Age verification required",
+        description: "You must be 18 or older to use Fusion.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!termsAccepted) {
+      toast({
+        title: "Terms acceptance required",
+        description: "Please accept our Terms of Service and Privacy Policy.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
       toast({
@@ -206,10 +227,61 @@ export default function Signup() {
               </div>
             </div>
 
+            <div className="space-y-4 pt-2">
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="age-confirmation"
+                  checked={ageConfirmed}
+                  onCheckedChange={(checked) => setAgeConfirmed(checked as boolean)}
+                  className="mt-0.5 border-[#F8F4E3]/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                  data-testid="checkbox-age-confirmation"
+                />
+                <label
+                  htmlFor="age-confirmation"
+                  className="text-sm text-[#F8F4E3]/80 leading-snug cursor-pointer"
+                >
+                  I confirm that I am <strong className="text-[#F8F4E3]">18 years of age or older</strong>
+                </label>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="terms-acceptance"
+                  checked={termsAccepted}
+                  onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
+                  className="mt-0.5 border-[#F8F4E3]/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                  data-testid="checkbox-terms-acceptance"
+                />
+                <label
+                  htmlFor="terms-acceptance"
+                  className="text-sm text-[#F8F4E3]/80 leading-snug cursor-pointer"
+                >
+                  I agree to the{" "}
+                  <button
+                    type="button"
+                    onClick={() => window.open("/terms-of-service", "_blank")}
+                    className="text-primary hover:underline font-medium"
+                    data-testid="link-terms"
+                  >
+                    Terms of Service
+                  </button>{" "}
+                  and{" "}
+                  <button
+                    type="button"
+                    onClick={() => window.open("/privacy-policy", "_blank")}
+                    className="text-primary hover:underline font-medium"
+                    data-testid="link-privacy"
+                  >
+                    Privacy Policy
+                  </button>
+                </label>
+              </div>
+            </div>
+
             <Button
               type="submit"
               className="w-full shadow-lg shadow-primary/20"
-              disabled={isLoading}
+              disabled={isLoading || !ageConfirmed || !termsAccepted}
               data-testid="button-signup"
             >
               {isLoading ? "Creating account..." : "Create Account"}
@@ -229,10 +301,6 @@ export default function Signup() {
             </p>
           </div>
         </Card>
-
-        <p className="text-center text-xs text-[#F8F4E3]/50 mt-6">
-          By signing up, you agree to our Terms of Service and Privacy Policy
-        </p>
       </div>
     </div>
   );
