@@ -74,7 +74,7 @@ export default function Launch() {
     signupMutation.mutate();
   };
 
-  const spotsRemaining = (countData as any)?.remaining ?? 1000;
+  const spotsRemaining = (countData as any)?.remaining ?? 999;
   const totalSignups = (countData as any)?.total ?? 0;
 
   if (showSuccess) {
@@ -146,7 +146,7 @@ export default function Launch() {
           </p>
 
           <div className="inline-flex items-center justify-center bg-primary/10 border border-primary/30 rounded-full px-6 py-3 mb-8">
-            <span className="text-[#F8F4E3] font-semibold">🔥 Limited Early Access - Join 1,000 Founding Members</span>
+            <span className="text-[#F8F4E3] font-semibold">🔥 Limited Early Access - Join 1,500 Founding Members</span>
           </div>
 
           <div className="max-w-md mx-auto mb-8">
@@ -154,7 +154,7 @@ export default function Launch() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <Clock className="h-5 w-5 text-primary" />
-                  <p className="text-[#F8F4E3]/70 text-sm font-medium">First 1,000 Users Get</p>
+                  <p className="text-[#F8F4E3]/70 text-sm font-medium">First 1,500 Users Get</p>
                 </div>
                 <div className="text-5xl font-bold text-primary mb-2 font-serif">
                   2 Months Free
@@ -168,7 +168,7 @@ export default function Launch() {
                 <div className="w-full bg-[#0E1220] rounded-full h-3 overflow-hidden">
                   <div 
                     className="bg-gradient-to-r from-primary via-amber-400 to-emerald-400 h-3 rounded-full transition-all duration-500 animate-pulse"
-                    style={{ width: `${Math.max((totalSignups / 1000) * 100, 5)}%` }}
+                    style={{ width: `${Math.max((totalSignups / 1500) * 100, 5)}%` }}
                   ></div>
                 </div>
                 <p className="text-xs text-[#F8F4E3]/50 mt-3">

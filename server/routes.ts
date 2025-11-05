@@ -1639,7 +1639,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const currentCount = Number(signupCount[0].count);
       
-      if (currentCount >= 1000) {
+      if (currentCount >= 1500) {
         return res.status(400).json({ message: "Early access is full" });
       }
 
@@ -1693,7 +1693,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .from(earlySignups);
       
       const total = Number(signupCount[0].count);
-      const remaining = Math.max(0, 1000 - total);
+      const remaining = Math.max(0, 1500 - total);
 
       res.json({ total, remaining });
     } catch (error: any) {
