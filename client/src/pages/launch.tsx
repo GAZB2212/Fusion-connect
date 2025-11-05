@@ -154,13 +154,13 @@ export default function Launch() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <Clock className="h-5 w-5 text-primary" />
-                  <p className="text-[#F8F4E3]/70 text-sm font-medium">First 1,500 Users Get</p>
+                  <p className="text-[#F8F4E3]/70 text-sm font-medium">Members Already Signed Up</p>
                 </div>
-                <div className="text-5xl font-bold text-primary mb-2 font-serif">
-                  2 Months Free
+                <div className="text-5xl font-bold text-primary mb-2 font-serif" data-testid="text-member-count">
+                  {totalSignups.toLocaleString()}
                 </div>
                 <div className="text-[#F8F4E3]/60 text-sm mb-3">
-                  Premium access worth £19.98
+                  Get 2 months free premium (worth £19.98)
                 </div>
                 <div className="text-2xl text-emerald-400 font-bold mb-4" data-testid="text-spots-remaining">
                   {spotsRemaining} spots left
@@ -172,7 +172,7 @@ export default function Launch() {
                   ></div>
                 </div>
                 <p className="text-xs text-[#F8F4E3]/50 mt-3">
-                  {totalSignups} members have already joined
+                  Join the founding members
                 </p>
               </CardContent>
             </Card>
