@@ -154,13 +154,13 @@ export default function Launch() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-center gap-2 mb-3">
                   <Clock className="h-5 w-5 text-primary" />
-                  <p className="text-[#F8F4E3]/70 text-sm font-medium">Members Already Signed Up</p>
+                  <p className="text-[#F8F4E3]/70 text-sm font-medium">First 1,500 Users Get</p>
                 </div>
-                <div className="text-5xl font-bold text-primary mb-2 font-serif" data-testid="text-member-count">
-                  {totalSignups.toLocaleString()}
+                <div className="text-5xl font-bold text-primary mb-2 font-serif">
+                  2 Months Free
                 </div>
                 <div className="text-[#F8F4E3]/60 text-sm mb-3">
-                  Get 2 months free premium (worth £19.98)
+                  Premium access worth £19.98
                 </div>
                 <div className="text-2xl text-emerald-400 font-bold mb-4" data-testid="text-spots-remaining">
                   {spotsRemaining} spots left
@@ -171,8 +171,8 @@ export default function Launch() {
                     style={{ width: `${Math.max((totalSignups / 1500) * 100, 5)}%` }}
                   ></div>
                 </div>
-                <p className="text-xs text-[#F8F4E3]/50 mt-3">
-                  Join the founding members
+                <p className="text-xs text-[#F8F4E3]/50 mt-3" data-testid="text-member-count">
+                  {totalSignups.toLocaleString()} members have already signed up
                 </p>
               </CardContent>
             </Card>
