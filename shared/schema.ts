@@ -24,17 +24,6 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// Early signup / waitlist table
-export const earlySignups = pgTable("early_signups", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  email: varchar("email").notNull().unique(),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  promoCode: varchar("promo_code"), // Unique code for 2 months free
-  redeemed: boolean("redeemed").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
 // User storage table
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -424,12 +413,6 @@ export const insertUserReportSchema = createInsertSchema(userReports, {
   details: z.string().max(500, "Details too long").optional(),
 }).omit({ id: true, createdAt: true, reporterId: true, status: true });
 
-export const insertEarlySignupSchema = createInsertSchema(earlySignups, {
-  email: z.string().email("Valid email is required"),
-  firstName: z.string().min(2, "First name is required").optional(),
-  lastName: z.string().optional(),
-}).omit({ id: true, createdAt: true, promoCode: true, redeemed: true });
-
 export const registerUserSchema = z.object({
   email: z.string().email("Valid email is required"),
   password: z.string().min(8, "Password must be at least 8 characters"),
@@ -463,8 +446,6 @@ export type BlockedUser = typeof blockedUsers.$inferSelect;
 export type InsertBlockedUser = z.infer<typeof insertBlockedUserSchema>;
 export type UserReport = typeof userReports.$inferSelect;
 export type InsertUserReport = z.infer<typeof insertUserReportSchema>;
-export type EarlySignup = typeof earlySignups.$inferSelect;
-export type InsertEarlySignup = z.infer<typeof insertEarlySignupSchema>;
 
 // Extended types for API responses
 export type ProfileWithUser = Profile & {

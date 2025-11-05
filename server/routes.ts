@@ -22,14 +22,12 @@ import {
   pushSubscriptions,
   blockedUsers,
   userReports,
-  earlySignups,
   insertProfileSchema,
   insertMessageSchema,
   insertChaperoneSchema,
   insertPushSubscriptionSchema,
   insertBlockedUserSchema,
   insertUserReportSchema,
-  insertEarlySignupSchema,
   registerUserSchema,
   loginSchema,
   type Profile,
@@ -40,7 +38,6 @@ import {
   type ProfileWithUser,
   type MatchWithProfiles,
   type MessageWithSender,
-  type EarlySignup,
 } from "@shared/schema";
 import { eq, and, or, ne, notInArray, desc, sql, lt } from "drizzle-orm";
 import { sendVideoCallNotification } from "./pushNotifications";
@@ -56,78 +53,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication
   await setupAuth(app);
-
-  // Early Signup / Waitlist endpoints (Public)
-  app.post("/api/early-signup", async (req: Request, res: Response) => {
-    try {
-      const validatedData = insertEarlySignupSchema.parse(req.body);
-
-      // Check if email already signed up
-      const [existing] = await db
-        .select()
-        .from(earlySignups)
-        .where(eq(earlySignups.email, validatedData.email.toLowerCase()))
-        .limit(1);
-
-      if (existing) {
-        return res.status(400).json({ message: "Email already registered for early access" });
-      }
-
-      // Check if we've reached the 1000 limit
-      const [{ count }] = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(earlySignups);
-
-      if (count >= 1000) {
-        return res.status(400).json({ message: "Early access spots are full. Join our regular waitlist!" });
-      }
-
-      // Generate unique promo code
-      const promoCode = `FUSION2MO${randomBytes(4).toString('hex').toUpperCase()}`;
-
-      const [signup] = await db
-        .insert(earlySignups)
-        .values({
-          email: validatedData.email.toLowerCase(),
-          firstName: validatedData.firstName,
-          lastName: validatedData.lastName,
-          promoCode,
-        })
-        .returning();
-
-      res.json({
-        message: "Successfully joined early access!",
-        signup: {
-          email: signup.email,
-          promoCode: signup.promoCode,
-          position: count + 1,
-        }
-      });
-    } catch (error: any) {
-      console.error('Error creating early signup:', error);
-      if (error.name === 'ZodError') {
-        return res.status(400).json({ message: error.errors[0].message });
-      }
-      res.status(400).json({ message: error.message });
-    }
-  });
-
-  app.get("/api/early-signup/count", async (_req: Request, res: Response) => {
-    try {
-      const [{ count }] = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(earlySignups);
-
-      res.json({
-        total: count,
-        remaining: Math.max(0, 1000 - count),
-        limit: 1000,
-      });
-    } catch (error: any) {
-      console.error('Error fetching early signup count:', error);
-      res.status(500).json({ message: "Failed to fetch signup count" });
-    }
-  });
 
   // Register new user
   app.post("/api/register", async (req: Request, res: Response) => {

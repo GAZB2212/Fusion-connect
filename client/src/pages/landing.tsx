@@ -1,286 +1,433 @@
-import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { 
-  Heart, 
-  Shield, 
-  Users, 
-  Video, 
-  Check, 
-  Sparkles,
-  Gift,
-  Clock
-} from "lucide-react";
+import { Shield, Users, MessageSquare, CheckCircle2, Star, Sparkles } from "lucide-react";
+import logoImage from "@assets/NEW logo 2_1761587557587.png";
+import loadingVideo from "@assets/Lets_animate_this_202510271804_z56n5_1761588281340.mp4";
+
+function CountUpNumber({ end, suffix = "", duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let startTime: number | null = null;
+    const animate = (currentTime: number) => {
+      if (!startTime) startTime = currentTime;
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+      
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      setCount(Math.floor(easeOutQuart * end));
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  }, [end, duration]);
+
+  return <>{count}{suffix}</>;
+}
 
 export default function Landing() {
-  const { toast } = useToast();
-  const [email, setEmail] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [promoCode, setPromoCode] = useState("");
-  const [position, setPosition] = useState(0);
-
-  // Fetch count of signups
-  const { data: countData } = useQuery({
-    queryKey: ["/api/early-signup/count"],
-    refetchInterval: 10000, // Refresh every 10 seconds
+  // Check if animation has already been shown this session
+  const [showLoading, setShowLoading] = useState(() => {
+    const hasSeenAnimation = sessionStorage.getItem('fusionAnimationShown');
+    return !hasSeenAnimation;
   });
+  const [fadeOut, setFadeOut] = useState(false);
+  const [contentVisible, setContentVisible] = useState(!showLoading);
 
-  const signupMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch("/api/early-signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, firstName }),
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Signup failed");
-      }
-      return response.json();
-    },
-    onSuccess: (data: any) => {
-      setPromoCode(data.signup.promoCode);
-      setPosition(data.signup.position);
-      setShowSuccess(true);
-      toast({
-        title: "Welcome to Fusion! 🎉",
-        description: "Check your email for your exclusive promo code",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Sign up failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) {
-      toast({
-        title: "Email required",
-        description: "Please enter your email address",
-        variant: "destructive",
-      });
+  useEffect(() => {
+    if (!showLoading) {
+      // Animation already shown, skip it
       return;
     }
-    signupMutation.mutate();
-  };
 
-  const spotsRemaining = (countData as any)?.remaining ?? 1000;
-  const totalSignups = (countData as any)?.total ?? 0;
+    // Mark animation as shown for this session
+    sessionStorage.setItem('fusionAnimationShown', 'true');
 
-  if (showSuccess) {
+    // Video plays for ~7 seconds, hold for 1 second, then fade
+    const fadeTimer = setTimeout(() => {
+      setFadeOut(true);
+    }, 8000);
+
+    // Remove splash screen after fade completes
+    const removeTimer = setTimeout(() => {
+      setShowLoading(false);
+    }, 9000);
+
+    // Start fading in content shortly after splash starts fading out
+    const contentTimer = setTimeout(() => {
+      setContentVisible(true);
+    }, 8500);
+
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(removeTimer);
+      clearTimeout(contentTimer);
+    };
+  }, [showLoading]);
+
+  if (showLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] golden-shimmer">
-        <Card className="w-full max-w-2xl bg-[#0A0E17] border-white/10 text-center">
-          <CardContent className="p-8 md:p-12">
-            <div className="mb-6">
-              <div className="w-20 h-20 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                <Gift className="h-10 w-10 text-primary" />
-              </div>
-              <h1 className="text-3xl md:text-4xl font-bold text-[#F8F4E3] font-serif mb-4">
-                You're In! 🎉
-              </h1>
-              <p className="text-[#F8F4E3]/70 text-lg mb-6">
-                You're one of the first {position} people to join Fusion
-              </p>
-            </div>
-
-            <div className="bg-black/30 border border-primary/30 rounded-lg p-6 mb-6">
-              <p className="text-sm text-[#F8F4E3]/60 mb-2">Your Exclusive Promo Code</p>
-              <div className="text-2xl font-bold text-primary font-mono mb-3">
-                {promoCode}
-              </div>
-              <p className="text-sm text-[#F8F4E3]/50">
-                Save this code! Use it when we launch to get <span className="text-primary font-semibold">2 months free premium</span>
-              </p>
-            </div>
-
-            <div className="space-y-3 text-sm text-[#F8F4E3]/60">
-              <div className="flex items-start gap-2">
-                <Check className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                <p className="text-left">We'll email you this code and keep you updated on our launch</p>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                <p className="text-left">Be first to access when we go live</p>
-              </div>
-              <div className="flex items-start gap-2">
-                <Check className="h-5 w-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                <p className="text-left">Get exclusive beta features and priority support</p>
-              </div>
-            </div>
-
-            <div className="mt-8 pt-6 border-t border-white/10">
-              <p className="text-xs text-[#F8F4E3]/40">
-                Share Fusion with friends who are also looking for meaningful connections
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+      <div 
+        className={`fixed inset-0 bg-background flex items-center justify-center z-50 transition-opacity duration-1000 ${
+          fadeOut ? 'opacity-0' : 'opacity-100'
+        }`}
+      >
+        <video
+          autoPlay
+          muted
+          playsInline
+          className="w-full h-full object-cover"
+          data-testid="video-loading"
+        >
+          <source src={loadingVideo} type="video/mp4" />
+        </video>
       </div>
     );
   }
 
+  const features = [
+    {
+      icon: Shield,
+      title: "Privacy & Safety First",
+      description: "Verified profiles, photo blur options, and complete control over your visibility. Your privacy is our priority."
+    },
+    {
+      icon: Sparkles,
+      title: "Faith-Based Matching",
+      description: "Find someone who shares your values. Filter by sect, prayer habits, halal lifestyle, and marriage intentions."
+    },
+    {
+      icon: Users,
+      title: "Chaperone Feature",
+      description: "Include your Wali or guardian in conversations for traditional courtship with modern convenience."
+    },
+    {
+      icon: MessageSquare,
+      title: "Safe Communication",
+      description: "Message only after mutual matches. No unsolicited messages, no pressure, just meaningful connections."
+    }
+  ];
+
+  const stats = [
+    { number: 15, suffix: "M+", label: "Muslim Singles" },
+    { number: 600, suffix: "K+", label: "Success Stories" },
+    { number: 500, suffix: "+", label: "Daily Matches" }
+  ];
+
+  const testimonials = [
+    {
+      quote: "A beautiful halal way to meet my spouse. The chaperone feature gave my family peace of mind.",
+      author: "Fatima & Ahmed",
+      badge: "Married 2024"
+    },
+    {
+      quote: "Finally, an app that respects our values and traditions while being modern and easy to use.",
+      author: "Aisha & Omar",
+      badge: "Married 2023"
+    }
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] golden-shimmer">
-      <div className="container max-w-6xl mx-auto px-4 py-12 md:py-20">
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/50 rounded-full flex items-center justify-center">
-              <Heart className="h-8 w-8 text-[#0A0E17]" fill="currentColor" />
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-[#F8F4E3] font-serif">
-              Fusion
-            </h1>
+    <div className={`min-h-screen transition-opacity duration-1000 ${contentVisible ? 'opacity-100' : 'opacity-0'}`}>
+      {/* Navigation - Fixed to top */}
+      <nav className="fixed top-0 left-0 right-0 z-50 w-full border-b border-white/10 bg-background/20 backdrop-blur-md">
+        <div className="w-full max-w-7xl mx-auto flex flex-row h-16 md:h-20 items-center justify-between px-4 md:px-8">
+          <div className="flex items-center gap-3">
+            <img src={logoImage} alt="Fusion Logo" className="hidden md:block h-12 md:h-[5.25rem] w-auto" />
           </div>
-
-          <h2 className="text-3xl md:text-5xl font-bold text-[#F8F4E3] mb-4 font-serif">
-            Where Faith Meets Love
-          </h2>
-          <p className="text-xl md:text-2xl text-[#F8F4E3]/70 mb-8 max-w-3xl mx-auto">
-            The luxury Muslim matchmaking platform designed for meaningful connections
-          </p>
-
-          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/30 rounded-full px-6 py-3 mb-8">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <span className="text-[#F8F4E3] font-semibold">Limited Early Access</span>
-          </div>
-
-          <div className="max-w-md mx-auto mb-8">
-            <div className="bg-black/30 border border-white/10 rounded-lg p-6">
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <Clock className="h-5 w-5 text-primary" />
-                <p className="text-[#F8F4E3]/70 text-sm">First 1,000 Users Get</p>
+          <Button 
+            variant="outline" 
+            className="border-primary text-primary hover:bg-primary/10 text-sm md:text-base"
+            asChild 
+            data-testid="button-login"
+          >
+            <a href="/login">Sign In</a>
+          </Button>
+        </div>
+      </nav>
+      
+      {/* Hero Section - Dark Navy Background */}
+      <section className="relative overflow-hidden min-h-screen flex items-center justify-center">
+        {/* Hero content */}
+        <div className="container relative z-10 px-4 pt-16 md:pt-24 pb-20">
+            <div className="mx-auto max-w-4xl text-center">
+              <div className="mb-8 flex justify-center">
+                <img src={logoImage} alt="Fusion Logo" className="w-full max-w-2xl h-auto" data-testid="img-hero-logo" />
               </div>
-              <div className="text-4xl font-bold text-primary mb-2 font-serif">
-                2 Months Free
+              <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-6 py-2 backdrop-blur-sm">
+                <Star className="h-4 w-4 text-primary fill-primary" />
+                <span className="text-foreground text-sm font-medium">Trusted by Muslims worldwide</span>
               </div>
-              <div className="text-lg text-emerald-400 font-semibold mb-3">
-                {spotsRemaining} spots remaining
-              </div>
-              <div className="w-full bg-black/50 rounded-full h-2">
-                <div 
-                  className="bg-gradient-to-r from-primary to-emerald-500 h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${(totalSignups / 1000) * 100}%` }}
-                ></div>
-              </div>
-            </div>
-          </div>
-
-          <Card className="max-w-md mx-auto bg-[#0A0E17] border-white/10">
-            <CardContent className="p-6">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Input
-                    type="text"
-                    placeholder="First name (optional)"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    className="bg-black/30 border-white/10 text-[#F8F4E3] placeholder:text-[#F8F4E3]/40"
-                    data-testid="input-first-name"
-                  />
-                </div>
-                <div>
-                  <Input
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="bg-black/30 border-white/10 text-[#F8F4E3] placeholder:text-[#F8F4E3]/40"
-                    data-testid="input-email"
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  disabled={signupMutation.isPending || spotsRemaining === 0}
-                  className="w-full"
-                  size="lg"
-                  data-testid="button-join-waitlist"
+              <h1 className="mb-6 text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl font-serif text-foreground">
+                Where Muslims Meet
+              </h1>
+              <p className="mb-10 text-lg md:text-xl max-w-2xl mx-auto text-foreground/80 leading-relaxed">
+                Join thousands of Muslim singles finding meaningful connections through halal interactions. 
+                Verified profiles, chaperone support, and complete privacy.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  size="lg" 
+                  className="text-base font-semibold shadow-lg shadow-primary/20" 
+                  asChild 
+                  data-testid="button-get-started"
                 >
-                  {signupMutation.isPending ? "Joining..." : spotsRemaining === 0 ? "Early Access Full" : "Claim My Spot"}
+                  <a href="/signup">Get Started Free</a>
                 </Button>
-              </form>
-              <p className="text-xs text-[#F8F4E3]/40 text-center mt-4">
-                We'll send you your exclusive promo code via email
-              </p>
-            </CardContent>
-          </Card>
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="text-base border-foreground/30 text-foreground hover:bg-foreground/10 backdrop-blur-sm" 
+                  asChild
+                >
+                  <a href="#features">Learn More</a>
+                </Button>
+              </div>
+              
+              {/* Stats */}
+              <div className="mt-20 grid grid-cols-3 gap-6 md:gap-12">
+                {stats.map((stat, i) => (
+                  <div key={i} className="text-center">
+                    <div className="text-3xl md:text-5xl font-bold text-primary font-serif">
+                      <CountUpNumber end={stat.number} suffix={stat.suffix} />
+                    </div>
+                    <div className="text-sm md:text-base text-foreground/70 mt-2">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+      </section>
+
+      {/* Features Section - Elevated Blue Cards */}
+      <section id="features" className="py-24 relative">
+        <div className="container px-4 relative">
+          <div className="mx-auto max-w-3xl text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
+              Built for Halal Relationships
+            </h2>
+            <p className="text-lg md:text-xl text-foreground/70">
+              Every feature designed to respect Islamic values while making it easy to find your perfect match.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+            {features.map((feature, i) => (
+              <div 
+                key={i} 
+                className="bg-gradient-to-br from-card to-background rounded-xl border border-foreground/10 p-8 hover-elevate transition-all duration-300"
+              >
+                <div className="h-14 w-14 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center mb-6">
+                  <feature.icon className="h-7 w-7 text-primary" />
+                </div>
+                <h3 className="text-xl md:text-2xl font-semibold mb-3 text-foreground font-serif">{feature.title}</h3>
+                <p className="text-foreground/70 leading-relaxed">{feature.description}</p>
+              </div>
+            ))}
+          </div>
         </div>
+      </section>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-16">
-          <Card className="bg-[#0A0E17] border-white/10 text-center">
-            <CardContent className="p-6">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold text-[#F8F4E3] mb-2">
-                Safe & Verified
-              </h3>
-              <p className="text-sm text-[#F8F4E3]/60">
-                AI-powered photo verification and strict profile screening
-              </p>
-            </CardContent>
-          </Card>
+      {/* How It Works */}
+      <section className="py-24 relative">
+        <div className="container px-4 relative">
+          <div className="mx-auto max-w-3xl text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
+              How It Works
+            </h2>
+            <p className="text-lg text-foreground/70">
+              Simple, respectful, and designed for serious marriage seekers
+            </p>
+          </div>
 
-          <Card className="bg-[#0A0E17] border-white/10 text-center">
-            <CardContent className="p-6">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Heart className="h-6 w-6 text-primary" />
+          <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">
+            {[
+              { step: "1", title: "Create Profile", desc: "Share your faith journey and what you're looking for" },
+              { step: "2", title: "Get Verified", desc: "Build trust with selfie verification and profile review" },
+              { step: "3", title: "Match & Connect", desc: "Swipe based on values, lifestyle, and compatibility" },
+              { step: "4", title: "Meet Halal", desc: "Chat with chaperone support and video calls" }
+            ].map((item, i) => (
+              <div key={i} className="text-center">
+                <div className="mb-4 mx-auto h-16 w-16 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center">
+                  <span className="text-2xl font-bold text-primary font-serif">{item.step}</span>
+                </div>
+                <h3 className="text-lg font-semibold mb-2 text-foreground">{item.title}</h3>
+                <p className="text-sm text-foreground/60">{item.desc}</p>
               </div>
-              <h3 className="text-lg font-semibold text-[#F8F4E3] mb-2">
-                Islamic Values
-              </h3>
-              <p className="text-sm text-[#F8F4E3]/60">
-                Built with halal principles and respect for your faith
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-[#0A0E17] border-white/10 text-center">
-            <CardContent className="p-6">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold text-[#F8F4E3] mb-2">
-                Chaperone Support
-              </h3>
-              <p className="text-sm text-[#F8F4E3]/60">
-                Involve your Wali or family in conversations if you choose
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-[#0A0E17] border-white/10 text-center">
-            <CardContent className="p-6">
-              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Video className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold text-[#F8F4E3] mb-2">
-                Video Calls
-              </h3>
-              <p className="text-sm text-[#F8F4E3]/60">
-                Connect face-to-face with your matches in a respectful way
-              </p>
-            </CardContent>
-          </Card>
+            ))}
+          </div>
         </div>
+      </section>
 
-        <div className="text-center mt-16 pt-8 border-t border-white/10">
-          <p className="text-sm text-[#F8F4E3]/40">
-            © 2025 Fusion. Building the future of Muslim matchmaking.
-          </p>
+      {/* Pricing Section */}
+      <section className="py-24 relative">
+        <div className="container px-4 relative">
+          <div className="mx-auto max-w-3xl text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
+              Simple, Transparent Pricing
+            </h2>
+            <p className="text-lg text-foreground/70">
+              Sign up for free, upgrade to connect with your matches
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Free Tier */}
+            <div className="bg-gradient-to-br from-card to-background rounded-xl border border-foreground/10 p-8">
+              <h3 className="text-2xl font-bold mb-2 text-foreground font-serif">Free</h3>
+              <div className="text-4xl font-bold text-foreground mb-6 font-serif">£0</div>
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-foreground/70">Create your profile</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-foreground/70">Browse profiles</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-foreground/70">Swipe right and left</span>
+                </li>
+              </ul>
+              <Button 
+                variant="outline" 
+                className="w-full border-[#F8F4E3]/30 text-foreground hover:bg-[#F8F4E3]/10"
+                asChild
+                data-testid="button-get-started-free"
+              >
+                <a href="/signup">Get Started Free</a>
+              </Button>
+            </div>
+
+            {/* Premium Tier */}
+            <div className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl border-2 border-primary p-8 relative">
+              <div className="absolute top-0 right-8 -translate-y-1/2">
+                <div className="bg-primary text-black px-4 py-1 rounded-full text-sm font-semibold">
+                  MOST POPULAR
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold mb-2 text-foreground font-serif">Premium</h3>
+              <div className="mb-6">
+                <span className="text-5xl font-bold text-primary font-serif">£9.99</span>
+                <span className="text-foreground/70 ml-2">/month</span>
+              </div>
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-foreground">Everything in Free, plus:</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-foreground">View all your matches</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-foreground">Unlimited messaging</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-foreground">Chaperone support</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                  <span className="text-foreground">Full privacy controls</span>
+                </li>
+              </ul>
+              <Button 
+                className="w-full shadow-lg shadow-primary/20"
+                asChild
+                data-testid="button-upgrade-premium"
+              >
+                <a href="/signup">Upgrade to Premium</a>
+              </Button>
+              <p className="text-xs text-foreground/50 text-center mt-4">Cancel anytime</p>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-24 relative">
+        <div className="container px-4 relative">
+          <div className="mx-auto max-w-3xl text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
+              Real Love Stories
+            </h2>
+            <p className="text-lg text-foreground/70">
+              Thousands of Muslim couples have found their perfect match
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {testimonials.map((testimonial, i) => (
+              <div 
+                key={i} 
+                className="bg-gradient-to-br from-background to-card rounded-xl border border-foreground/10 p-8 hover-elevate"
+              >
+                <div className="flex gap-1 mb-4">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star key={star} className="h-5 w-5 text-primary fill-primary" />
+                  ))}
+                </div>
+                <p className="text-foreground/90 mb-6 text-lg leading-relaxed italic">
+                  "{testimonial.quote}"
+                </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-foreground">{testimonial.author}</p>
+                  </div>
+                  <div className="inline-flex items-center gap-2 rounded-full bg-secondary/20 border border-secondary/40 px-3 py-1">
+                    <CheckCircle2 className="h-4 w-4 text-secondary" />
+                    <span className="text-xs text-foreground/80 font-medium">{testimonial.badge}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-24 relative overflow-hidden">
+        <div className="container px-4 relative">
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
+              Begin Your Journey Today
+            </h2>
+            <p className="text-lg mb-10 text-foreground/70 max-w-2xl mx-auto">
+              Join thousands of Muslim singles who are finding meaningful connections while respecting their faith and values.
+            </p>
+            <Button 
+              size="lg" 
+              className="text-lg px-10 py-6 h-auto font-semibold shadow-xl shadow-primary/30" 
+              asChild 
+              data-testid="button-join-now"
+            >
+              <a href="/signup">Join Now - It's Free</a>
+            </Button>
+            <p className="mt-6 text-sm text-foreground/50">
+              No credit card required • 100% halal • Verified profiles
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 border-t border-foreground/10">
+        <div className="container px-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <img src={logoImage} alt="Fusion" className="h-10 w-auto" />
+            </div>
+            <p className="text-sm text-foreground/50">
+              © 2025 Fusion. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
