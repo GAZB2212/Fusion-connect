@@ -208,6 +208,9 @@ export const earlySignups = pgTable("early_signups", {
   firstName: varchar("first_name"),
   promoCode: varchar("promo_code").notNull().unique(),
   position: integer("position").notNull(),
+  used: boolean("used").default(false),
+  usedBy: varchar("used_by").references(() => users.id, { onDelete: 'set null' }),
+  usedAt: timestamp("used_at"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
