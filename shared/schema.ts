@@ -201,6 +201,16 @@ export const pushSubscriptions = pgTable("push_subscriptions", {
   index("user_push_idx").on(table.userId),
 ]);
 
+// Early signups - waitlist for pre-launch
+export const earlySignups = pgTable("early_signups", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email").notNull().unique(),
+  firstName: varchar("first_name"),
+  promoCode: varchar("promo_code").notNull().unique(),
+  position: integer("position").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Blocked Users - Track user blocks (App Store requirement)
 export const blockedUsers = pgTable("blocked_users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -446,6 +456,16 @@ export type BlockedUser = typeof blockedUsers.$inferSelect;
 export type InsertBlockedUser = z.infer<typeof insertBlockedUserSchema>;
 export type UserReport = typeof userReports.$inferSelect;
 export type InsertUserReport = z.infer<typeof insertUserReportSchema>;
+
+// Early Signup schemas
+export const insertEarlySignupSchema = createInsertSchema(earlySignups).omit({ 
+  id: true, 
+  promoCode: true, 
+  position: true, 
+  createdAt: true 
+});
+export type EarlySignup = typeof earlySignups.$inferSelect;
+export type InsertEarlySignup = z.infer<typeof insertEarlySignupSchema>;
 
 // Extended types for API responses
 export type ProfileWithUser = Profile & {
