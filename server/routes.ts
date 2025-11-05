@@ -22,6 +22,7 @@ import {
   pushSubscriptions,
   blockedUsers,
   userReports,
+  earlySignups,
   insertProfileSchema,
   insertMessageSchema,
   insertChaperoneSchema,
@@ -38,6 +39,7 @@ import {
   type ProfileWithUser,
   type MatchWithProfiles,
   type MessageWithSender,
+  type EarlySignup,
 } from "@shared/schema";
 import { eq, and, or, ne, notInArray, desc, sql, lt } from "drizzle-orm";
 import { sendVideoCallNotification } from "./pushNotifications";
@@ -1607,6 +1609,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Error deleting account:', error);
       res.status(500).json({ message: "Failed to delete account" });
+    }
+  });
+
+  // Early Signup - Waitlist (Public route)
+  app.post("/api/early-signup", async (req: Request, res: Response) => {
+    try {
+      const { email, firstName } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      // Check if email already signed up
+      const [existing] = await db
+        .select()
+        .from(earlySignups)
+        .where(eq(earlySignups.email, email.toLowerCase()))
+        .limit(1);
+
+      if (existing) {
+        return res.status(400).json({ message: "Email already registered for early access" });
+      }
+
+      // Check if we've hit the limit
+      const signupCount = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(earlySignups);
+      
+      const currentCount = Number(signupCount[0].count);
+      
+      if (currentCount >= 1000) {
+        return res.status(400).json({ message: "Early access is full" });
+      }
+
+      // Generate unique promo code
+      const generatePromoCode = () => {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = 'FUSION-';
+        for (let i = 0; i < 5; i++) {
+          code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+      };
+
+      let promoCode = generatePromoCode();
+      
+      // Ensure promo code is unique
+      while (true) {
+        const [existingPromo] = await db
+          .select()
+          .from(earlySignups)
+          .where(eq(earlySignups.promoCode, promoCode))
+          .limit(1);
+        
+        if (!existingPromo) break;
+        promoCode = generatePromoCode();
+      }
+
+      // Create signup
+      const [signup] = await db
+        .insert(earlySignups)
+        .values({
+          email: email.toLowerCase(),
+          firstName: firstName || null,
+          promoCode,
+          position: currentCount + 1,
+        })
+        .returning();
+
+      res.json({ signup, message: "Successfully joined the waitlist!" });
+    } catch (error: any) {
+      console.error('Error creating early signup:', error);
+      res.status(500).json({ message: "Failed to join waitlist" });
+    }
+  });
+
+  // Get early signup count (Public route)
+  app.get("/api/early-signup/count", async (req: Request, res: Response) => {
+    try {
+      const signupCount = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(earlySignups);
+      
+      const total = Number(signupCount[0].count);
+      const remaining = Math.max(0, 1000 - total);
+
+      res.json({ total, remaining });
+    } catch (error: any) {
+      console.error('Error getting signup count:', error);
+      res.status(500).json({ message: "Failed to get signup count" });
     }
   });
 
