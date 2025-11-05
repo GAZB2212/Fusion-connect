@@ -400,7 +400,15 @@ export default function Subscribe() {
         <CardFooter className="flex-col gap-3">
           <div className="space-y-2 text-center">
             <p className="text-xs text-[#F8F4E3]/50">
-              Your subscription will automatically renew each month at £9.99. You can cancel anytime from Settings → Manage Subscription. No refunds for partial months.
+              {trialDays > 0 ? (
+                <>
+                  After your {trialDays}-day free trial, your subscription will automatically renew each month at £9.99. You can cancel anytime from Settings → Manage Subscription. No refunds for partial months.
+                </>
+              ) : (
+                <>
+                  Your subscription will automatically renew each month at £9.99. You can cancel anytime from Settings → Manage Subscription. No refunds for partial months.
+                </>
+              )}
             </p>
             <p className="text-xs text-[#F8F4E3]/40">
               By subscribing, you agree to our{" "}
