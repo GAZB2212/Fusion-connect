@@ -4,7 +4,8 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { CheckCircle2, Loader2, Zap } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { CheckCircle2, Loader2, Zap, Tag } from "lucide-react";
 import { useLocation } from "wouter";
 
 if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
@@ -22,6 +23,10 @@ export default function Subscribe() {
   const [checkout, setCheckout] = useState<any>(null);
   const [paymentElement, setPaymentElement] = useState<any>(null);
   const [session, setSession] = useState<any>(null);
+  const [promoCode, setPromoCode] = useState("");
+  const [promoCodeApplied, setPromoCodeApplied] = useState(false);
+  const [validatingPromo, setValidatingPromo] = useState(false);
+  const [trialDays, setTrialDays] = useState(0);
 
   useEffect(() => {
     // Check subscription status first
@@ -38,19 +43,77 @@ export default function Subscribe() {
           return;
         }
         
-        // Otherwise, create Checkout Session
-        return apiRequest("POST", "/api/create-checkout-session")
-          .then((res) => res.json())
-          .then((data) => {
-            setClientSecret(data.clientSecret);
-            setIsLoading(false);
-          });
+        setIsLoading(false);
       })
       .catch((error) => {
-        console.error("Failed to create checkout session:", error);
+        console.error("Failed to check subscription status:", error);
         setIsLoading(false);
       });
   }, []);
+
+  const applyPromoCode = async () => {
+    if (!promoCode.trim()) {
+      toast({
+        title: "Promo Code Required",
+        description: "Please enter a promo code",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setValidatingPromo(true);
+
+    try {
+      const response = await apiRequest("POST", "/api/validate-promo-code", {
+        promoCode: promoCode.trim(),
+      });
+      const data = await response.json();
+
+      if (data.valid) {
+        toast({
+          title: "Promo Code Applied!",
+          description: data.message,
+        });
+        setPromoCodeApplied(true);
+        
+        // Create checkout session with promo code
+        const sessionResponse = await apiRequest("POST", "/api/create-checkout-session", {
+          promoCode: promoCode.trim(),
+        });
+        const sessionData = await sessionResponse.json();
+        setClientSecret(sessionData.clientSecret);
+        setTrialDays(sessionData.trialDays || 0);
+      } else {
+        toast({
+          title: "Invalid Promo Code",
+          description: data.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to validate promo code",
+        variant: "destructive",
+      });
+    } finally {
+      setValidatingPromo(false);
+    }
+  };
+
+  const continueWithoutPromo = async () => {
+    try {
+      const sessionResponse = await apiRequest("POST", "/api/create-checkout-session");
+      const sessionData = await sessionResponse.json();
+      setClientSecret(sessionData.clientSecret);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to create checkout session",
+        variant: "destructive",
+      });
+    }
+  };
 
   useEffect(() => {
     if (!clientSecret) return;
@@ -157,23 +220,69 @@ export default function Subscribe() {
 
   if (!clientSecret) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] golden-shimmer">
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] golden-shimmer">
         <Card className="w-full max-w-md bg-[#0A0E17] border-white/10">
-          <CardHeader>
-            <CardTitle className="text-[#F8F4E3]">Subscription Error</CardTitle>
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold text-[#F8F4E3] font-serif mb-2">
+              Subscribe to Fusion Premium
+            </CardTitle>
             <CardDescription className="text-[#F8F4E3]/70">
-              Unable to create subscription. Please try again later.
+              Have an early access promo code? Enter it below to get 2 months free!
             </CardDescription>
           </CardHeader>
-          <CardFooter className="flex-col gap-2">
-            <Button 
-              onClick={() => window.location.reload()} 
-              variant="outline"
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm text-[#F8F4E3]/70 flex items-center gap-2">
+                <Tag className="h-4 w-4" />
+                Promo Code (Optional)
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  type="text"
+                  placeholder="FUSION-XXXXX"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                  className="bg-[#0E1220] border-white/10 text-[#F8F4E3] placeholder:text-[#F8F4E3]/40"
+                  data-testid="input-promo-code"
+                  disabled={validatingPromo}
+                />
+                <Button
+                  onClick={applyPromoCode}
+                  disabled={validatingPromo || !promoCode.trim()}
+                  variant="outline"
+                  data-testid="button-apply-promo"
+                >
+                  {validatingPromo ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Apply"
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-[#F8F4E3]/50">
+                Early access members get 2 months free with their promo code
+              </p>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-white/10" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-[#0A0E17] px-2 text-[#F8F4E3]/50">or</span>
+              </div>
+            </div>
+
+            <Button
+              onClick={continueWithoutPromo}
               className="w-full"
-              data-testid="button-retry"
+              size="lg"
+              data-testid="button-continue-without-promo"
             >
-              Retry
+              Continue Without Promo Code
             </Button>
+          </CardContent>
+          <CardFooter className="flex-col gap-2">
             <div className="w-full border-t border-white/10 my-2"></div>
             <Button 
               onClick={activateDevPremium}
@@ -247,6 +356,16 @@ export default function Subscribe() {
           {/* Pricing */}
           <div className="text-center py-4">
             <div className="inline-block">
+              {trialDays > 0 && (
+                <div className="bg-primary/10 border border-primary/30 rounded-lg px-4 py-2 mb-4">
+                  <p className="text-primary font-semibold">
+                    🎉 Promo Code Applied!
+                  </p>
+                  <p className="text-[#F8F4E3]/70 text-sm">
+                    {trialDays} days free, then £9.99/month
+                  </p>
+                </div>
+              )}
               <div className="text-5xl font-bold text-primary mb-2 font-serif">£9.99</div>
               <div className="text-[#F8F4E3]/70">per month</div>
               <div className="text-[#F8F4E3]/50 text-sm mt-1">Cancel anytime</div>
@@ -269,6 +388,8 @@ export default function Subscribe() {
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Processing...
                 </>
+              ) : trialDays > 0 ? (
+                `Start ${trialDays}-Day Free Trial`
               ) : (
                 'Subscribe for £9.99/month'
               )}
