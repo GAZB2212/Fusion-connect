@@ -145,8 +145,7 @@ export default function Launch() {
             The luxury Muslim matchmaking platform designed for meaningful, halal connections leading to marriage
           </p>
 
-          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/30 rounded-full px-6 py-3 mb-8">
-            <Sparkles className="h-5 w-5 text-primary" />
+          <div className="inline-flex items-center justify-center bg-primary/10 border border-primary/30 rounded-full px-6 py-3 mb-8">
             <span className="text-[#F8F4E3] font-semibold">🔥 Limited Early Access - Join 1,000 Founding Members</span>
           </div>
 
