@@ -1703,6 +1703,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Validate promo code (Authenticated route)
+  app.post("/api/validate-promo-code", isAuthenticated, async (req: Request, res: Response) => {
+    try {
+      const { promoCode } = req.body;
+
+      if (!promoCode) {
+        return res.status(400).json({ valid: false, message: "Promo code is required" });
+      }
+
+      // Find the promo code
+      const [signup] = await db
+        .select()
+        .from(earlySignups)
+        .where(eq(earlySignups.promoCode, promoCode.toUpperCase()))
+        .limit(1);
+
+      if (!signup) {
+        return res.json({ valid: false, message: "Invalid promo code" });
+      }
+
+      if (signup.used) {
+        return res.json({ valid: false, message: "This promo code has already been used" });
+      }
+
+      res.json({ 
+        valid: true, 
+        message: "Valid promo code! You'll get 2 months free premium access.",
+        benefit: "2 months free"
+      });
+    } catch (error: any) {
+      console.error('Error validating promo code:', error);
+      res.status(500).json({ valid: false, message: "Failed to validate promo code" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
