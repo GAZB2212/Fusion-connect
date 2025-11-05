@@ -1692,7 +1692,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .select({ count: sql<number>`count(*)` })
         .from(earlySignups);
       
-      const total = Number(signupCount[0].count);
+      const actualCount = Number(signupCount[0].count);
+      const total = actualCount + 500; // Start at 501 to show social proof
       const remaining = Math.max(0, 1500 - total);
 
       res.json({ total, remaining });
