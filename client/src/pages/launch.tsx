@@ -248,7 +248,7 @@ export default function Launch() {
                   Safe & Verified Profiles
                 </h3>
                 <p className="text-sm text-[#F8F4E3]/70">
-                  AI-powered face verification ensures every profile is authentic. We screen all members and verify photos to keep you safe from fake accounts and catfishing.
+                  Face verification ensures every profile is authentic. We screen all members and verify photos to keep you safe from fake accounts and catfishing.
                 </p>
               </CardContent>
             </Card>
