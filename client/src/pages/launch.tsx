@@ -75,7 +75,7 @@ export default function Launch() {
   };
 
   const spotsRemaining = (countData as any)?.remaining ?? 999;
-  const totalSignups = (countData as any)?.total ?? 0;
+  const totalSignups = (countData as any)?.total ?? 501;
 
   if (showSuccess) {
     return (
