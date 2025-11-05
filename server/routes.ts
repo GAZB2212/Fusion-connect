@@ -307,6 +307,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Subscription endpoints - Using Checkout Sessions API (modern approach)
   app.post('/api/create-checkout-session', isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;
+    const { promoCode } = req.body;
 
     try {
       // Get or create the fixed price ID
@@ -322,6 +323,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
+      }
+
+      // Validate promo code if provided
+      let trialDays = 0;
+      let promoCodeRecord = null;
+      
+      if (promoCode) {
+        const [signup] = await db
+          .select()
+          .from(earlySignups)
+          .where(eq(earlySignups.promoCode, promoCode.toUpperCase()))
+          .limit(1);
+
+        if (!signup) {
+          return res.status(400).json({ message: "Invalid promo code" });
+        }
+
+        if (signup.used) {
+          return res.status(400).json({ message: "This promo code has already been used" });
+        }
+
+        // Valid unused promo code - apply 2 months (60 days) trial
+        trialDays = 60;
+        promoCodeRecord = signup;
       }
 
       // Create or get Stripe customer
@@ -358,7 +383,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return 'http://localhost:5000';
       };
 
-      const session = await stripe.checkout.sessions.create({
+      const sessionConfig: any = {
         ui_mode: 'custom',
         customer: customerId,
         line_items: [{
@@ -367,11 +392,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }],
         mode: 'subscription',
         return_url: `${getDomain()}/matches?session_id={CHECKOUT_SESSION_ID}`,
-      });
+      };
+
+      // Apply trial period if promo code is valid
+      if (trialDays > 0) {
+        sessionConfig.subscription_data = {
+          trial_period_days: trialDays,
+          metadata: {
+            promoCode: promoCode.toUpperCase(),
+          },
+        };
+      }
+
+      const session = await stripe.checkout.sessions.create(sessionConfig);
+
+      // Mark promo code as used if provided and valid
+      if (promoCodeRecord) {
+        await db
+          .update(earlySignups)
+          .set({ 
+            used: true, 
+            usedBy: userId,
+            usedAt: new Date(),
+          })
+          .where(eq(earlySignups.id, promoCodeRecord.id));
+      }
 
       res.json({
         clientSecret: session.client_secret,
         sessionId: session.id,
+        trialDays: trialDays,
       });
     } catch (error: any) {
       console.error('Checkout session creation error:', error);
