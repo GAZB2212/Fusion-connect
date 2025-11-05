@@ -222,7 +222,7 @@ export default function Launch() {
                 ✨ We'll send you your exclusive promo code via email
               </p>
               <p className="text-xs text-[#F8F4E3]/40 text-center mt-2">
-                No credit card required • 18+ only
+                18+ only
               </p>
             </CardContent>
           </Card>

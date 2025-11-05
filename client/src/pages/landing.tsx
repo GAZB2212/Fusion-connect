@@ -409,7 +409,7 @@ export default function Landing() {
               <a href="/signup">Join Now - It's Free</a>
             </Button>
             <p className="mt-6 text-sm text-foreground/50">
-              No credit card required • 100% halal • Verified profiles
+              100% halal • Verified profiles
             </p>
           </div>
         </div>
