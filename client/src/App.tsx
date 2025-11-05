@@ -22,6 +22,7 @@ import Matches from "@/pages/matches";
 import Messages from "@/pages/messages";
 import Settings from "@/pages/settings";
 import Subscribe from "@/pages/subscribe";
+import Suggestions from "@/pages/suggestions";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
 import NotFound from "@/pages/not-found";
@@ -132,6 +133,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/launch" component={Launch} />
+      <Route path="/suggestions" component={Suggestions} />
       <Route path="/matches" component={Matches} />
       <Route path="/messages/:matchId?" component={Messages} />
       <Route path="/settings" component={Settings} />
