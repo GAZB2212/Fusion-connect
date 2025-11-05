@@ -10,6 +10,7 @@ import type { Profile } from "@shared/schema";
 import { initializePushNotifications } from "@/lib/pushNotifications";
 import { VideoCallProvider } from "@/contexts/VideoCallContext";
 import Landing from "@/pages/landing";
+import Launch from "@/pages/launch";
 import Login from "@/pages/login";
 import Signup from "@/pages/signup";
 import ForgotPassword from "@/pages/forgot-password";
@@ -68,6 +69,7 @@ function Router() {
     return (
       <Switch>
         <Route path="/" component={Landing} />
+        <Route path="/launch" component={Launch} />
         <Route path="/login" component={Login} />
         <Route path="/signup" component={Signup} />
         <Route path="/forgot-password" component={ForgotPassword} />
@@ -129,6 +131,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/launch" component={Launch} />
       <Route path="/matches" component={Matches} />
       <Route path="/messages/:matchId?" component={Messages} />
       <Route path="/settings" component={Settings} />
