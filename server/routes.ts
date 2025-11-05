@@ -888,6 +888,180 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(result);
   });
 
+  // AI-Powered Suggestions endpoint - get compatible profiles with compatibility scores
+  app.get("/api/suggestions", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+
+    try {
+      // Get user's profile
+      const [userProfile] = await db
+        .select()
+        .from(profiles)
+        .where(eq(profiles.userId, userId))
+        .limit(1);
+
+      if (!userProfile) {
+        return res.status(400).json({ message: "Please complete your profile first" });
+      }
+
+      // Get IDs of already swiped profiles
+      const alreadySwiped = await db
+        .select({ swipedId: swipes.swipedId })
+        .from(swipes)
+        .where(eq(swipes.swiperId, userId));
+
+      const swipedIds = alreadySwiped.map((s) => s.swipedId);
+
+      // Get IDs of blocked users
+      const blockedByMe = await db
+        .select({ blockedUserId: blockedUsers.blockedUserId })
+        .from(blockedUsers)
+        .where(eq(blockedUsers.userId, userId));
+
+      const blockedByMeIds = blockedByMe.map((b) => b.blockedUserId);
+
+      // Get all potential matches (opposite gender, not self, not swiped, not blocked, active profiles)
+      const potentialMatches = await db
+        .select({
+          profile: profiles,
+          user: users,
+        })
+        .from(profiles)
+        .innerJoin(users, eq(profiles.userId, users.id))
+        .where(
+          and(
+            ne(profiles.userId, userId),
+            eq(profiles.isActive, true),
+            eq(profiles.isComplete, true),
+            ne(profiles.gender, userProfile.gender),
+            swipedIds.length > 0 ? notInArray(profiles.userId, swipedIds) : undefined,
+            blockedByMeIds.length > 0 ? notInArray(profiles.userId, blockedByMeIds) : undefined
+          )
+        )
+        .limit(50);
+
+      // Calculate compatibility score for each profile
+      const profilesWithScores = potentialMatches.map(({ profile, user }) => {
+        let totalScore = 0;
+        let maxScore = 0;
+        const matchReasons: string[] = [];
+
+        // 1. Islamic Values Compatibility (30 points max)
+        maxScore += 30;
+        if (userProfile.sect && profile.sect) {
+          if (userProfile.sect === profile.sect) {
+            totalScore += 15;
+            matchReasons.push(`Same Islamic sect: ${profile.sect}`);
+          } else if (userProfile.sect.includes('Sunni') && profile.sect.includes('Sunni')) {
+            totalScore += 10;
+            matchReasons.push('Both follow Sunni tradition');
+          } else if (userProfile.sect.includes('Shia') && profile.sect.includes('Shia')) {
+            totalScore += 10;
+            matchReasons.push('Both follow Shia tradition');
+          }
+        }
+
+        if (userProfile.religiosity && profile.religiosity) {
+          if (userProfile.religiosity === profile.religiosity) {
+            totalScore += 10;
+            matchReasons.push(`Similar religious outlook: ${profile.religiosity}`);
+          } else if (
+            (userProfile.religiosity.includes('Very') && profile.religiosity.includes('Moderately')) ||
+            (userProfile.religiosity.includes('Moderately') && profile.religiosity.includes('Very'))
+          ) {
+            totalScore += 5;
+          }
+        }
+
+        if (userProfile.religiousPractice && profile.religiousPractice) {
+          if (userProfile.religiousPractice === profile.religiousPractice) {
+            totalScore += 5;
+            matchReasons.push(`Similar practice level`);
+          }
+        }
+
+        // 2. Shared Interests (25 points max)
+        maxScore += 25;
+        const userInterests = userProfile.interests || [];
+        const profileInterests = profile.interests || [];
+        const sharedInterests = userInterests.filter(i => profileInterests.includes(i));
+        
+        if (sharedInterests.length > 0) {
+          const interestScore = Math.min(25, sharedInterests.length * 5);
+          totalScore += interestScore;
+          if (sharedInterests.length >= 5) {
+            matchReasons.push(`${sharedInterests.length} shared interests including ${sharedInterests.slice(0, 3).join(', ')}`);
+          } else if (sharedInterests.length >= 2) {
+            matchReasons.push(`Shared interests: ${sharedInterests.join(', ')}`);
+          }
+        }
+
+        // 3. Age Preferences Match (20 points max)
+        maxScore += 20;
+        const partnerPrefs = userProfile.partnerPreferences as any;
+        if (partnerPrefs && partnerPrefs.ageMin && partnerPrefs.ageMax && profile.age) {
+          if (profile.age >= partnerPrefs.ageMin && profile.age <= partnerPrefs.ageMax) {
+            totalScore += 20;
+            matchReasons.push('Age matches your preferences');
+          } else if (
+            (profile.age >= partnerPrefs.ageMin - 2 && profile.age <= partnerPrefs.ageMax + 2)
+          ) {
+            totalScore += 10;
+          }
+        } else {
+          // Default score if no preferences set
+          totalScore += 10;
+        }
+
+        // 4. Education & Profession Alignment (15 points max)
+        maxScore += 15;
+        if (userProfile.education && profile.education) {
+          if (userProfile.education === profile.education) {
+            totalScore += 10;
+            matchReasons.push(`Similar education level`);
+          }
+        }
+
+        if (userProfile.profession && profile.profession) {
+          if (userProfile.profession === profile.profession) {
+            totalScore += 5;
+            matchReasons.push(`Works in similar field`);
+          }
+        }
+
+        // 5. Life Goals & Values (10 points max)
+        maxScore += 10;
+        if (userProfile.wantsChildren && profile.wantsChildren) {
+          if (userProfile.wantsChildren === profile.wantsChildren) {
+            totalScore += 10;
+            if (userProfile.wantsChildren === 'Yes') {
+              matchReasons.push('Both want children');
+            }
+          }
+        }
+
+        // Calculate final percentage score
+        const compatibilityScore = Math.round((totalScore / maxScore) * 100);
+
+        return {
+          profile: { ...profile, user },
+          compatibilityScore,
+          matchReasons: matchReasons.slice(0, 3), // Top 3 reasons
+        };
+      });
+
+      // Sort by compatibility score (highest first) and take top 10
+      const topSuggestions = profilesWithScores
+        .sort((a, b) => b.compatibilityScore - a.compatibilityScore)
+        .slice(0, 10);
+
+      res.json(topSuggestions);
+    } catch (error: any) {
+      console.error('Error fetching suggestions:', error);
+      res.status(500).json({ message: "Failed to fetch suggestions" });
+    }
+  });
+
   // Swipe endpoint
   app.post("/api/swipe", isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;

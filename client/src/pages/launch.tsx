@@ -306,8 +306,11 @@ export default function Launch() {
               <div className="text-5xl font-bold text-primary mb-2 font-serif">
                 £9.99/mo
               </div>
-              <p className="text-[#F8F4E3]/70 mb-6">
+              <p className="text-[#F8F4E3]/70 mb-2">
                 Cancel anytime • Free to browse • Premium to connect
+              </p>
+              <p className="text-[#F8F4E3]/50 text-sm mb-6">
+                Pricing applies after your 2-month free trial period
               </p>
               <div className="grid md:grid-cols-2 gap-3 text-sm text-[#F8F4E3]/80 text-left">
                 <div className="flex items-start gap-2">
