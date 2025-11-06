@@ -33,14 +33,14 @@ export default function Launch() {
     setFadeOut(true);
     setTimeout(() => {
       setShowAnimation(false);
-    }, 800); // Match fade-out duration
+    }, 1500); // Longer fade-out duration for smoothness
   };
 
-  // Fallback: Hide animation after 5 seconds if video doesn't end
+  // Fallback: Hide animation after 12 seconds if video doesn't end
   useEffect(() => {
     const fallbackTimer = setTimeout(() => {
       handleVideoEnd();
-    }, 5000);
+    }, 12000);
     return () => clearTimeout(fallbackTimer);
   }, []);
 
@@ -100,7 +100,7 @@ export default function Launch() {
   // Show loading animation
   if (showAnimation) {
     return (
-      <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black transition-opacity duration-800 ${fadeOut ? 'opacity-0' : 'opacity-100'}`}>
+      <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black transition-opacity ${fadeOut ? 'opacity-0' : 'opacity-100'}`} style={{ transitionDuration: '1500ms' }}>
         <style>{`
           @keyframes fadeInFromBlack {
             0% {
@@ -184,7 +184,7 @@ export default function Launch() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0E17] geometric-pattern animate-in fade-in duration-1000">
+    <div className="min-h-screen bg-[#0A0E17] geometric-pattern animate-in fade-in">
       <style>{`
         @keyframes fadeInContent {
           from {
@@ -195,7 +195,7 @@ export default function Launch() {
           }
         }
         .animate-in {
-          animation: fadeInContent 1s ease-out forwards;
+          animation: fadeInContent 1.8s ease-out forwards;
         }
       `}</style>
       <div className="container max-w-6xl mx-auto px-4 py-12 md:py-20">
