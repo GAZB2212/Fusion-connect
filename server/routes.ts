@@ -1367,9 +1367,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Rate limiting check
-      const accountAge = Math.floor(
-        (Date.now() - new Date(userProfile.user.createdAt).getTime()) / (1000 * 60 * 60 * 24)
-      );
+      const accountAge = userProfile.user.createdAt 
+        ? Math.floor((Date.now() - new Date(userProfile.user.createdAt).getTime()) / (1000 * 60 * 60 * 24))
+        : 0;
       
       // Count messages sent today
       const today = new Date();

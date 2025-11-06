@@ -24,7 +24,13 @@ The platform features a luxury aesthetic with a primary deep navy color, gold ac
 ### Technical Implementations
 **Frontend:** Built with React 18, TypeScript, Wouter for routing, TanStack Query for data fetching, Vite as a build tool, shadcn/ui for components, and Tailwind CSS for styling.
 **Backend:** Developed with Node.js, Express.js, and TypeScript. It uses Drizzle ORM for PostgreSQL interactions and Passport.js with a custom local strategy for authentication.
-**Authentication:** Custom email/password authentication via Passport Local Strategy with bcrypt for password hashing and PostgreSQL for session storage. A comprehensive AI Face Verification system, using OpenAI Vision API (GPT-4o), ensures identity verification by comparing uploaded profile photos with live selfies.
+**Authentication:** Custom email/password authentication via Passport Local Strategy with bcrypt for password hashing and PostgreSQL for session storage. A comprehensive AI Face Verification system, using OpenAI Vision API (GPT-4o), ensures identity verification by comparing uploaded profile photos with live selfies. Advanced photo analysis detects and rejects stock photos, watermarks, screenshots, and professional modeling shots.
+**Content Moderation:** Multi-layered protection system:
+  - OpenAI Moderation API for detecting sexual content, harassment, violence, and hate speech
+  - Custom scam pattern detection for financial requests, external platform redirects, and suspicious URLs
+  - Explicit content filtering using regex patterns for sexual solicitation and inappropriate language
+  - Bot behavior detection through repetitive message analysis
+  - Tiered rate limiting: New accounts (5 msgs/day), unverified accounts (20-50 msgs/day), verified users (100 msgs/day)
 **Profile System:** Features a detailed 5-step profile setup including basic info, Islamic values (sects, practice levels), profession, interests (100+ categorized), and a bio. Profiles include a comprehensive badge system for premium status, activity, profession, and photo verification.
 **Subscription System:** Implements a modern premium subscription model (£9.99/month) via Stripe Checkout Sessions API with custom UI mode. Uses fixed Price ID for consistent billing. Features include:
   - Automatic customer creation and management
@@ -42,7 +48,13 @@ The platform features a luxury aesthetic with a primary deep navy color, gold ac
 - **Messaging:** Secure messaging between matched users with call records for video calls.
 - **Video Calling:** Real-time video calls with camera/mic controls, call duration tracking, call history, and branded Fusion logo overlay.
 - **Chaperone Support:** Optional guardian access to conversations for traditional courtship.
-- **Face Verification:** AI-driven identity verification to prevent fake profiles.
+- **Face Verification & Anti-Fraud System:** Comprehensive AI-driven protection against fake profiles, bots, and scammers:
+  - **Enhanced Photo Verification:** AI detects stock photos, watermarks, screenshots, and professional modeling shots
+  - **Mandatory Verification:** Face verification required before users can swipe or match
+  - **Message Content Moderation:** Real-time filtering of explicit sexual content and scam patterns using OpenAI Moderation API
+  - **Bot Detection:** Pattern recognition for mass messaging, copy-paste behavior, and suspicious activities
+  - **Rate Limiting:** Tiered message limits based on account age and verification status (5-100 msgs/day)
+  - **Scam Pattern Detection:** Blocks requests for money transfers, external platform redirects, and financial schemes
 - **Subscription Tiers:** Free and premium tiers with distinct feature sets.
 - **App Store Compliance Features:**
   - User reporting system with multiple reason categories
