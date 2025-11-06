@@ -34,7 +34,7 @@ export default function Landing() {
     return !hasSeenAnimation;
   });
   const [fadeOut, setFadeOut] = useState(false);
-  const [contentVisible, setContentVisible] = useState(!showLoading);
+  const [contentVisible, setContentVisible] = useState(true); // Changed to always show content for debugging
 
   useEffect(() => {
     if (!showLoading) {
@@ -67,25 +67,26 @@ export default function Landing() {
     };
   }, [showLoading]);
 
-  if (showLoading) {
-    return (
-      <div 
-        className={`fixed inset-0 bg-background flex items-center justify-center z-50 transition-opacity duration-1000 ${
-          fadeOut ? 'opacity-0' : 'opacity-100'
-        }`}
-      >
-        <video
-          autoPlay
-          muted
-          playsInline
-          className="w-full h-full object-cover"
-          data-testid="video-loading"
-        >
-          <source src={loadingVideo} type="video/mp4" />
-        </video>
-      </div>
-    );
-  }
+  // Temporarily skip loading animation for debugging
+  // if (showLoading) {
+  //   return (
+  //     <div 
+  //       className={`fixed inset-0 bg-background flex items-center justify-center z-50 transition-opacity duration-1000 ${
+  //         fadeOut ? 'opacity-0' : 'opacity-100'
+  //       }`}
+  //     >
+  //       <video
+  //         autoPlay
+  //         muted
+  //         playsInline
+  //         className="w-full h-full object-cover"
+  //         data-testid="video-loading"
+  //       >
+  //         <source src={loadingVideo} type="video/mp4" />
+  //       </video>
+  //     </div>
+  //   );
+  // }
 
   const features = [
     {
