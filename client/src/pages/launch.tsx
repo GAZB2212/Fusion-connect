@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import logoImage from "@assets/NEW logo 2_1761587557587.png";
+import animatedLogo from "@assets/Lets_animate_this_202510271804_z56n5_1761588281340.mp4";
 import { 
   Shield, 
   Users, 
@@ -25,12 +26,12 @@ export default function Launch() {
   const [position, setPosition] = useState(0);
   const [showAnimation, setShowAnimation] = useState(true);
 
-  // Hide animation after 3 seconds
+  // Fallback: Hide animation after 5 seconds if video doesn't end
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const fallbackTimer = setTimeout(() => {
       setShowAnimation(false);
-    }, 3000);
-    return () => clearTimeout(timer);
+    }, 5000);
+    return () => clearTimeout(fallbackTimer);
   }, []);
 
   // Fetch count of signups
@@ -90,56 +91,15 @@ export default function Launch() {
   if (showAnimation) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A0E17]">
-        <style>{`
-          @keyframes fusionGlow {
-            0%, 100% {
-              filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.3));
-              transform: scale(1);
-            }
-            50% {
-              filter: drop-shadow(0 0 40px rgba(212, 175, 55, 0.6));
-              transform: scale(1.05);
-            }
-          }
-          @keyframes fusionFadeIn {
-            0% {
-              opacity: 0;
-              transform: scale(0.9);
-            }
-            100% {
-              opacity: 1;
-              transform: scale(1);
-            }
-          }
-          @keyframes fusionPulse {
-            0%, 100% {
-              opacity: 0.3;
-            }
-            50% {
-              opacity: 0.6;
-            }
-          }
-          .fusion-logo-animate {
-            animation: fusionFadeIn 0.8s ease-out, fusionGlow 2s ease-in-out infinite;
-          }
-          .fusion-bg-pulse {
-            animation: fusionPulse 3s ease-in-out infinite;
-          }
-        `}</style>
-        
-        <div className="relative">
-          {/* Animated background circles */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-96 h-96 rounded-full bg-primary/5 fusion-bg-pulse" />
-          </div>
-          
-          {/* Logo */}
-          <img 
-            src={logoImage} 
-            alt="Fusion Logo" 
-            className="w-64 h-64 object-contain fusion-logo-animate relative z-10"
-          />
-        </div>
+        <video 
+          autoPlay 
+          muted 
+          playsInline
+          className="w-full max-w-2xl h-auto"
+          onEnded={() => setShowAnimation(false)}
+        >
+          <source src={animatedLogo} type="video/mp4" />
+        </video>
       </div>
     );
   }
