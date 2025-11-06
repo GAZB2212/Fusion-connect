@@ -36,11 +36,11 @@ export default function Launch() {
     }, 1500); // Longer fade-out duration for smoothness
   };
 
-  // Fallback: Hide animation after 12 seconds if video doesn't end
+  // Fallback: Hide animation after 10 seconds if video doesn't end (video is 8 seconds)
   useEffect(() => {
     const fallbackTimer = setTimeout(() => {
       handleVideoEnd();
-    }, 12000);
+    }, 10000);
     return () => clearTimeout(fallbackTimer);
   }, []);
 
