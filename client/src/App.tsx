@@ -11,6 +11,7 @@ import { initializePushNotifications } from "@/lib/pushNotifications";
 import { VideoCallProvider } from "@/contexts/VideoCallContext";
 import Landing from "@/pages/landing";
 import Launch from "@/pages/launch";
+import AdminQR from "@/pages/admin-qr";
 import Login from "@/pages/login";
 import Signup from "@/pages/signup";
 import ForgotPassword from "@/pages/forgot-password";
@@ -71,6 +72,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Landing} />
         <Route path="/launch" component={Launch} />
+        <Route path="/admin/qr-code" component={AdminQR} />
         <Route path="/login" component={Login} />
         <Route path="/signup" component={Signup} />
         <Route path="/forgot-password" component={ForgotPassword} />
@@ -133,6 +135,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/launch" component={Launch} />
+      <Route path="/admin/qr-code" component={AdminQR} />
       <Route path="/suggestions" component={Suggestions} />
       <Route path="/matches" component={Matches} />
       <Route path="/messages/:matchId?" component={Messages} />

@@ -13,9 +13,7 @@ import {
   Sparkles,
   Gift,
   Clock,
-  Heart,
-  Download,
-  QrCode
+  Heart
 } from "lucide-react";
 
 export default function Launch() {
@@ -332,49 +330,6 @@ export default function Launch() {
                   <span>Add chaperone support</span>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* QR Code Section */}
-        <div className="mt-16 max-w-xl mx-auto">
-          <Card className="bg-[#0A0E17] border-primary/30">
-            <CardContent className="p-8 text-center">
-              <div className="mb-4">
-                <div className="w-16 h-16 mx-auto bg-primary/10 rounded-full flex items-center justify-center mb-3">
-                  <QrCode className="h-8 w-8 text-primary" />
-                </div>
-                <h3 className="text-xl font-serif font-bold text-[#F8F4E3] mb-2">
-                  Scan to Join
-                </h3>
-                <p className="text-sm text-[#F8F4E3]/70">
-                  Share this QR code to invite others to the waitlist
-                </p>
-              </div>
-
-              <div className="bg-white p-4 rounded-lg inline-block mb-4">
-                <img 
-                  src="/api/generate-qr-code" 
-                  alt="Fusion Launch QR Code" 
-                  className="w-64 h-64"
-                  data-testid="img-qr-code"
-                />
-              </div>
-
-              <Button
-                variant="outline"
-                className="w-full border-primary/30 text-primary hover-elevate"
-                onClick={() => {
-                  const link = document.createElement('a');
-                  link.href = '/api/generate-qr-code';
-                  link.download = 'fusion-launch-qr.png';
-                  link.click();
-                }}
-                data-testid="button-download-qr"
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Download QR Code
-              </Button>
             </CardContent>
           </Card>
         </div>
