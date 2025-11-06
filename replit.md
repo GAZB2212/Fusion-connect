@@ -24,7 +24,7 @@ The platform features a luxury aesthetic with a primary deep navy color, gold ac
 ### Technical Implementations
 **Frontend:** Built with React 18, TypeScript, Wouter for routing, TanStack Query for data fetching, Vite as a build tool, shadcn/ui for components, and Tailwind CSS for styling.
 **Backend:** Developed with Node.js, Express.js, and TypeScript. It uses Drizzle ORM for PostgreSQL interactions and Passport.js with a custom local strategy for authentication.
-**Authentication:** Custom email/password authentication via Passport Local Strategy with bcrypt for password hashing and PostgreSQL for session storage. A comprehensive AI Face Verification system, using OpenAI Vision API (GPT-4o), ensures identity verification by comparing uploaded profile photos with live selfies. Advanced photo analysis detects and rejects stock photos, watermarks, screenshots, and professional modeling shots.
+**Authentication:** Custom email/password authentication via Passport Local Strategy with bcrypt for password hashing and PostgreSQL for session storage. A comprehensive AI Face Verification system, using OpenAI Vision API (GPT-4o), ensures identity verification by comparing uploaded profile photos with live selfies. The system uses lenient AI prompts to accept normal selfies while detecting obvious stock photos, watermarks, and screenshots. Detailed logging tracks all verification attempts.
 **Content Moderation:** Multi-layered protection system:
   - OpenAI Moderation API for detecting sexual content, harassment, violence, and hate speech
   - Custom scam pattern detection for financial requests, external platform redirects, and suspicious URLs
