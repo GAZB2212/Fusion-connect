@@ -8,6 +8,8 @@ import Stripe from "stripe";
 import { randomBytes } from "crypto";
 import { sendPasswordResetEmail } from "./email";
 import { createRequire } from "module";
+import QRCode from "qrcode";
+import { createCanvas, loadImage } from "canvas";
 const require = createRequire(import.meta.url);
 const { RtcTokenBuilder, RtcRole } = require("agora-token");
 import { 
@@ -1959,6 +1961,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Error validating promo code:', error);
       res.status(500).json({ valid: false, message: "Failed to validate promo code" });
+    }
+  });
+
+  // Generate QR code for launch page (Public route)
+  app.get("/api/generate-qr-code", async (req: Request, res: Response) => {
+    try {
+      const url = "https://www.fusioncouples.com/launch";
+      const goldColor = "#D4AF37";
+      const backgroundColor = "#111422";
+
+      // Generate QR code as buffer
+      const qrBuffer = await QRCode.toBuffer(url, {
+        width: 600,
+        margin: 2,
+        color: {
+          dark: goldColor,
+          light: backgroundColor,
+        },
+        errorCorrectionLevel: 'H' // High error correction to allow logo overlay
+      });
+
+      // Create canvas to add logo
+      const canvas = createCanvas(600, 600);
+      const ctx = canvas.getContext('2d');
+
+      // Draw QR code
+      const qrImage = await loadImage(qrBuffer);
+      ctx.drawImage(qrImage, 0, 0, 600, 600);
+
+      // Try to load and add logo in center
+      try {
+        const logo = await loadImage('./attached_assets/NEW logo 2_1761675667388.png');
+        
+        // Calculate logo size (about 20% of QR code)
+        const logoSize = 120;
+        const logoX = (600 - logoSize) / 2;
+        const logoY = (600 - logoSize) / 2;
+
+        // Draw white background circle for logo
+        ctx.fillStyle = backgroundColor;
+        ctx.beginPath();
+        ctx.arc(300, 300, logoSize / 2 + 10, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Draw logo
+        ctx.drawImage(logo, logoX, logoY, logoSize, logoSize);
+      } catch (logoError) {
+        console.log('Could not load logo, QR code generated without logo overlay');
+      }
+
+      // Convert to buffer
+      const finalBuffer = canvas.toBuffer('image/png');
+
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Content-Disposition', 'inline; filename="fusion-launch-qr.png"');
+      res.send(finalBuffer);
+    } catch (error: any) {
+      console.error('Error generating QR code:', error);
+      res.status(500).json({ message: "Failed to generate QR code" });
     }
   });
 
