@@ -33,33 +33,35 @@ export async function verifyFrontFacingPhoto(imageUrl: string): Promise<FaceVeri
               text: `Analyze this image for profile verification purposes. You must:
 
 1. Determine if there is a clear human face visible in the image
-2. Check if the face is directly facing the camera (front-facing, not tilted, turned, or at an angle)
+2. Check if the face is reasonably facing the camera (front or slightly angled is OK)
 3. Assess the image quality and visibility
-4. CRITICAL: Detect if this is a stock photo, professional model photo, or has visible watermarks
-5. CRITICAL: Check for signs of a screenshot, low quality, or digitally altered image
+4. Check for obvious watermarks or company logos (NOT personal text/captions)
+5. Detect obvious screenshots with visible UI elements
 
 For a face to be considered "front-facing":
-- The person should be looking directly at the camera
-- Both eyes should be clearly visible
-- The face should not be turned to the left or right (profile view)
-- The head should not be tilted up or down significantly
-- No extreme angles or side views
+- The person should be generally looking toward the camera (slight angles are ACCEPTABLE)
+- At least one eye should be clearly visible
+- The face should not be a full side profile (some angle is fine)
+- Moderate head tilts are ACCEPTABLE
+- Natural selfie angles are PERFECTLY FINE
 
-REJECT the photo if:
-- Any visible watermarks, logos, or text overlays are present
-- The photo appears to be a stock photo or professional modeling shot
-- The image looks like a screenshot or has been downloaded from the internet
-- The photo quality is suspiciously perfect (professional studio lighting, heavy editing)
-- Multiple people are visible in the photo
-- The person is wearing sunglasses or face coverings
+ONLY REJECT the photo if:
+- Obvious watermarks from stock photo companies (Shutterstock, Getty Images, etc.)
+- Clear evidence of being a celebrity or model photo from a magazine/advertisement
+- Screenshot with visible UI elements (status bars, app interfaces)
+- The person is wearing full sunglasses covering both eyes
+- No face is visible at all
+- Multiple people are in the photo making it unclear who the profile belongs to
+
+BE LENIENT - Normal selfies, even with good lighting or filters, are ACCEPTABLE. Only flag obvious fake/stock photos.
 
 Respond in JSON format with:
 {
   "hasFace": boolean (true if a human face is detected),
-  "isFrontFacing": boolean (true only if the face is directly facing forward),
-  "isStockPhoto": boolean (true if this appears to be a stock photo or professional modeling shot),
-  "hasWatermark": boolean (true if any watermarks, logos, or text overlays are visible),
-  "isScreenshot": boolean (true if this appears to be a screenshot or downloaded image),
+  "isFrontFacing": boolean (true if face is visible and generally forward-facing),
+  "isStockPhoto": boolean (true ONLY if clearly a stock photo with watermarks or professional modeling shot),
+  "hasWatermark": boolean (true ONLY if obvious stock photo watermarks visible),
+  "isScreenshot": boolean (true ONLY if clear screenshot with UI elements),
   "confidence": number (0-100, your confidence in this assessment),
   "details": string (brief explanation of why it is or isn't acceptable)
 }`
@@ -85,6 +87,17 @@ Respond in JSON format with:
 
     const result = JSON.parse(content);
 
+    // Log the full result for debugging
+    console.log("Front-facing photo verification result:", {
+      hasFace: result.hasFace,
+      isFrontFacing: result.isFrontFacing,
+      isStockPhoto: result.isStockPhoto,
+      hasWatermark: result.hasWatermark,
+      isScreenshot: result.isScreenshot,
+      confidence: result.confidence,
+      details: result.details
+    });
+
     // Construct user-friendly message
     let message = "";
     let isAcceptable = true;
@@ -92,20 +105,26 @@ Respond in JSON format with:
     if (!result.hasFace) {
       message = "No face detected in the image. Please upload a clear photo showing your face.";
       isAcceptable = false;
+      console.log("Verification FAILED: No face detected");
     } else if (result.hasWatermark) {
-      message = "This photo contains watermarks or text overlays. Please upload an original photo without watermarks.";
+      message = "This photo contains watermarks. Please upload an original photo without watermarks.";
       isAcceptable = false;
+      console.log("Verification FAILED: Watermark detected");
     } else if (result.isStockPhoto) {
-      message = "This appears to be a stock photo or professional modeling shot. Please upload a genuine personal photo.";
+      message = "This appears to be a stock photo. Please upload a genuine personal photo.";
       isAcceptable = false;
+      console.log("Verification FAILED: Stock photo detected");
     } else if (result.isScreenshot) {
-      message = "This appears to be a screenshot or downloaded image. Please upload an original photo taken with your camera.";
+      message = "This appears to be a screenshot. Please upload an original photo taken with your camera.";
       isAcceptable = false;
+      console.log("Verification FAILED: Screenshot detected");
     } else if (!result.isFrontFacing) {
-      message = "Your face must be directly facing the camera. Please upload a front-facing photo for verification.";
+      message = "Please try a photo where your face is more visible and facing the camera.";
       isAcceptable = false;
+      console.log("Verification FAILED: Not front-facing");
     } else {
-      message = "Photo verified! Your face is clearly visible and front-facing.";
+      message = "Photo verified! Your face is clearly visible.";
+      console.log("Verification PASSED");
     }
 
     return {
@@ -175,19 +194,23 @@ Your task:
 3. Account for different lighting, angles, and expressions
 4. Determine if this is the SAME PERSON in both photos
 
-Important considerations:
-- Different lighting conditions are VERY NORMAL and expected
-- Slight to moderate angle differences are ACCEPTABLE
-- Different expressions (smiling vs neutral) are COMPLETELY NORMAL
-- Different camera quality between photos is expected
-- Focus on permanent facial features, not temporary ones (makeup, glasses, hair can vary)
+BE VERY LENIENT - Important considerations:
+- Different lighting conditions are EXTREMELY NORMAL and expected (can dramatically change appearance)
+- Slight to moderate angle differences are COMPLETELY ACCEPTABLE
+- Different expressions (smiling vs neutral) are PERFECTLY NORMAL
+- Different camera quality, resolution, and distance from camera is expected
+- Focus on permanent facial features, not temporary ones (makeup, glasses, hair, facial hair can ALL vary significantly)
 - Mirror/flip differences are normal (selfies are often mirrored)
-- Be REASONABLE - if the core facial features match, it's likely the same person
-- Only reject if you see CLEAR evidence of different people (different bone structure, completely different features)
+- Clothing, background, and photo quality DO NOT matter at all
+- Time between photos can cause weight/appearance changes - this is NORMAL
+- Be GENEROUS - if the general facial structure and key features seem similar, approve it
+- Only reject if you see OBVIOUS evidence of completely different people (drastically different bone structure, totally different facial proportions)
+
+Your default should be to APPROVE unless there's clear evidence these are different people.
 
 Respond in JSON format with:
 {
-  "isMatch": boolean (true if the core facial features match reasonably well),
+  "isMatch": boolean (true if the core facial features match reasonably well - BE LENIENT),
   "confidence": number (0-100, your confidence in this assessment),
   "details": string (brief explanation of key similarities or differences you noticed)
 }`

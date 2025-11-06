@@ -687,17 +687,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/verify-face", isAuthenticated, async (req: any, res: Response) => {
     try {
       const { imageUrl } = req.body;
+      const userId = req.user.id;
+
+      console.log(`[Verify Face] Starting verification for user ${userId}`);
 
       if (!imageUrl) {
+        console.log(`[Verify Face] FAILED: No image URL provided`);
         return res.status(400).json({ message: "Image URL is required" });
       }
 
       const { verifyFrontFacingPhoto } = await import("./faceVerification");
       const result = await verifyFrontFacingPhoto(imageUrl);
 
+      console.log(`[Verify Face] Result for user ${userId}:`, {
+        passed: result.isFrontFacing,
+        confidence: result.confidence,
+        message: result.message
+      });
+
       res.json(result);
     } catch (error: any) {
-      console.error("Face verification error:", error);
+      console.error("[Verify Face] ERROR:", error);
       res.status(500).json({ 
         message: "Face verification failed", 
         error: error.message 
@@ -709,17 +719,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/compare-faces", isAuthenticated, async (req: any, res: Response) => {
     try {
       const { uploadedPhoto, liveSelfie } = req.body;
+      const userId = req.user.id;
+
+      console.log(`[Compare Faces] Starting face comparison for user ${userId}`);
 
       if (!uploadedPhoto || !liveSelfie) {
+        console.log(`[Compare Faces] FAILED: Missing photos`);
         return res.status(400).json({ message: "Both uploaded photo and live selfie are required" });
       }
 
       const { compareFaces } = await import("./faceVerification");
       const result = await compareFaces(uploadedPhoto, liveSelfie);
 
+      console.log(`[Compare Faces] Result for user ${userId}:`, {
+        isMatch: result.isMatch,
+        confidence: result.confidence,
+        message: result.message,
+        details: result.details
+      });
+
       // If verification successful, update profile
       if (result.isMatch) {
-        const userId = req.user.id;
         await db
           .update(profiles)
           .set({
@@ -728,11 +748,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             updatedAt: new Date(),
           })
           .where(eq(profiles.userId, userId));
+        
+        console.log(`[Compare Faces] SUCCESS: User ${userId} verified and profile updated`);
+      } else {
+        console.log(`[Compare Faces] FAILED: Faces do not match for user ${userId}`);
       }
 
       res.json(result);
     } catch (error: any) {
-      console.error("Face comparison error:", error);
+      console.error("[Compare Faces] ERROR:", error);
       res.status(500).json({ 
         message: "Face comparison failed", 
         error: error.message 
