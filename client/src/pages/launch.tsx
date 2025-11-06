@@ -26,11 +26,20 @@ export default function Launch() {
   const [promoCode, setPromoCode] = useState("");
   const [position, setPosition] = useState(0);
   const [showAnimation, setShowAnimation] = useState(true);
+  const [fadeOut, setFadeOut] = useState(false);
+
+  // Handle video end with fade out transition
+  const handleVideoEnd = () => {
+    setFadeOut(true);
+    setTimeout(() => {
+      setShowAnimation(false);
+    }, 800); // Match fade-out duration
+  };
 
   // Fallback: Hide animation after 5 seconds if video doesn't end
   useEffect(() => {
     const fallbackTimer = setTimeout(() => {
-      setShowAnimation(false);
+      handleVideoEnd();
     }, 5000);
     return () => clearTimeout(fallbackTimer);
   }, []);
@@ -91,7 +100,7 @@ export default function Launch() {
   // Show loading animation
   if (showAnimation) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
+      <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black transition-opacity duration-800 ${fadeOut ? 'opacity-0' : 'opacity-100'}`}>
         <style>{`
           @keyframes fadeInFromBlack {
             0% {
@@ -113,7 +122,7 @@ export default function Launch() {
           muted 
           playsInline
           className="w-full max-w-2xl h-auto video-fade-in"
-          onEnded={() => setShowAnimation(false)}
+          onEnded={handleVideoEnd}
         >
           <source src={animatedLogo} type="video/mp4" />
         </video>
@@ -175,7 +184,20 @@ export default function Launch() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0E17] geometric-pattern">
+    <div className="min-h-screen bg-[#0A0E17] geometric-pattern animate-in fade-in duration-1000">
+      <style>{`
+        @keyframes fadeInContent {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+        .animate-in {
+          animation: fadeInContent 1s ease-out forwards;
+        }
+      `}</style>
       <div className="container max-w-6xl mx-auto px-4 py-12 md:py-20">
         <div className="text-center mb-12">
           <div className="flex items-center justify-center mb-8">
