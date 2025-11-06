@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import logoImage from "@assets/NEW logo 2_1761587557587.png";
 import animatedLogo from "@assets/Lets_animate_this_202510271804_z56n5_1761588281340.mp4";
+import gajoLogo from "@assets/LOGO_1762434272542.png";
 import { 
   Shield, 
   Users, 
@@ -361,10 +362,27 @@ export default function Launch() {
           </Card>
         </div>
 
-        <div className="text-center mt-16 pt-8 border-t border-white/10">
+        <div className="text-center mt-16 pt-8 border-t border-white/10 space-y-4">
           <p className="text-sm text-[#F8F4E3]/50">
             © 2025 Fusion. Building the future of Muslim matchmaking with respect, authenticity, and faith.
           </p>
+          
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-xs text-[#F8F4E3]/40">Created by</span>
+            <a 
+              href="https://www.gajocreative.co.uk" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover-elevate transition-all"
+              data-testid="link-gajo-creative"
+            >
+              <img 
+                src={gajoLogo} 
+                alt="Gajo Creative" 
+                className="h-8"
+              />
+            </a>
+          </div>
         </div>
       </div>
     </div>
