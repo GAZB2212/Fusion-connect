@@ -91,12 +91,28 @@ export default function Launch() {
   // Show loading animation
   if (showAnimation) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A0E17]">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
+        <style>{`
+          @keyframes fadeInFromBlack {
+            0% {
+              opacity: 0;
+            }
+            20% {
+              opacity: 1;
+            }
+            100% {
+              opacity: 1;
+            }
+          }
+          .video-fade-in {
+            animation: fadeInFromBlack 1.5s ease-in forwards;
+          }
+        `}</style>
         <video 
           autoPlay 
           muted 
           playsInline
-          className="w-full max-w-2xl h-auto"
+          className="w-full max-w-2xl h-auto video-fade-in"
           onEnded={() => setShowAnimation(false)}
         >
           <source src={animatedLogo} type="video/mp4" />
