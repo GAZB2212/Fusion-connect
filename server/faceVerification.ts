@@ -35,6 +35,8 @@ export async function verifyFrontFacingPhoto(imageUrl: string): Promise<FaceVeri
 1. Determine if there is a clear human face visible in the image
 2. Check if the face is directly facing the camera (front-facing, not tilted, turned, or at an angle)
 3. Assess the image quality and visibility
+4. CRITICAL: Detect if this is a stock photo, professional model photo, or has visible watermarks
+5. CRITICAL: Check for signs of a screenshot, low quality, or digitally altered image
 
 For a face to be considered "front-facing":
 - The person should be looking directly at the camera
@@ -43,12 +45,23 @@ For a face to be considered "front-facing":
 - The head should not be tilted up or down significantly
 - No extreme angles or side views
 
+REJECT the photo if:
+- Any visible watermarks, logos, or text overlays are present
+- The photo appears to be a stock photo or professional modeling shot
+- The image looks like a screenshot or has been downloaded from the internet
+- The photo quality is suspiciously perfect (professional studio lighting, heavy editing)
+- Multiple people are visible in the photo
+- The person is wearing sunglasses or face coverings
+
 Respond in JSON format with:
 {
   "hasFace": boolean (true if a human face is detected),
   "isFrontFacing": boolean (true only if the face is directly facing forward),
+  "isStockPhoto": boolean (true if this appears to be a stock photo or professional modeling shot),
+  "hasWatermark": boolean (true if any watermarks, logos, or text overlays are visible),
+  "isScreenshot": boolean (true if this appears to be a screenshot or downloaded image),
   "confidence": number (0-100, your confidence in this assessment),
-  "details": string (brief explanation of why it is or isn't front-facing)
+  "details": string (brief explanation of why it is or isn't acceptable)
 }`
             },
             {
@@ -74,17 +87,30 @@ Respond in JSON format with:
 
     // Construct user-friendly message
     let message = "";
+    let isAcceptable = true;
+    
     if (!result.hasFace) {
       message = "No face detected in the image. Please upload a clear photo showing your face.";
+      isAcceptable = false;
+    } else if (result.hasWatermark) {
+      message = "This photo contains watermarks or text overlays. Please upload an original photo without watermarks.";
+      isAcceptable = false;
+    } else if (result.isStockPhoto) {
+      message = "This appears to be a stock photo or professional modeling shot. Please upload a genuine personal photo.";
+      isAcceptable = false;
+    } else if (result.isScreenshot) {
+      message = "This appears to be a screenshot or downloaded image. Please upload an original photo taken with your camera.";
+      isAcceptable = false;
     } else if (!result.isFrontFacing) {
       message = "Your face must be directly facing the camera. Please upload a front-facing photo for verification.";
+      isAcceptable = false;
     } else {
       message = "Photo verified! Your face is clearly visible and front-facing.";
     }
 
     return {
       hasFace: result.hasFace,
-      isFrontFacing: result.isFrontFacing,
+      isFrontFacing: result.isFrontFacing && isAcceptable,
       confidence: result.confidence || 0,
       message,
       details: result.details

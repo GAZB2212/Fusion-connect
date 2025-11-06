@@ -1073,6 +1073,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(400).json({ message: "Missing swipedId or direction" });
     }
 
+    // MANDATORY: Check if user has completed face verification
+    const [userProfile] = await db
+      .select()
+      .from(profiles)
+      .where(eq(profiles.userId, userId))
+      .limit(1);
+
+    if (!userProfile || !userProfile.faceVerified) {
+      return res.status(403).json({ 
+        message: "Face verification required",
+        requiresVerification: true,
+        details: "Please complete face verification before you can start swiping. This helps us ensure everyone on Fusion is genuine."
+      });
+    }
+
     // Record the swipe
     await db.insert(swipes).values({
       swiperId: userId,
@@ -1318,6 +1333,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertMessageSchema.parse(req.body);
 
+      // Get user profile for verification and rate limiting checks
+      const [userProfile] = await db
+        .select({
+          profile: profiles,
+          user: users,
+        })
+        .from(profiles)
+        .innerJoin(users, eq(profiles.userId, users.id))
+        .where(eq(profiles.userId, userId))
+        .limit(1);
+
+      if (!userProfile) {
+        return res.status(404).json({ message: "Profile not found" });
+      }
+
+      // Content moderation check
+      const { moderateMessage, shouldRateLimit } = await import("./contentModeration");
+      const moderationResult = await moderateMessage(validatedData.content);
+
+      if (moderationResult.flagged) {
+        // Log the flagged message for review
+        console.warn(`Message flagged for user ${userId}:`, {
+          category: moderationResult.category,
+          score: moderationResult.score,
+          content: validatedData.content.substring(0, 100)
+        });
+
+        return res.status(400).json({ 
+          message: moderationResult.message,
+          category: moderationResult.category 
+        });
+      }
+
+      // Rate limiting check
+      const accountAge = Math.floor(
+        (Date.now() - new Date(userProfile.user.createdAt).getTime()) / (1000 * 60 * 60 * 24)
+      );
+      
+      // Count messages sent today
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const messagesToday = await db
+        .select()
+        .from(messages)
+        .where(
+          and(
+            eq(messages.senderId, userId),
+            sql`${messages.createdAt} >= ${today}`
+          )
+        );
+
+      const rateLimitResult = shouldRateLimit(
+        messagesToday.length,
+        accountAge,
+        userProfile.profile.faceVerified || false
+      );
+
+      if (rateLimitResult.limited) {
+        return res.status(429).json({ message: rateLimitResult.reason });
+      }
+
       // Verify match exists and user is part of it
       const [match] = await db
         .select()
@@ -1344,6 +1421,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(message);
     } catch (error: any) {
+      console.error("Error sending message:", error);
       res.status(400).json({ message: error.message });
     }
   });
