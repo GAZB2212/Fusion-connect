@@ -916,11 +916,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get IDs of blocked users
       const blockedByMe = await db
-        .select({ blockedUserId: blockedUsers.blockedUserId })
+        .select({ blockedId: blockedUsers.blockedId })
         .from(blockedUsers)
-        .where(eq(blockedUsers.userId, userId));
+        .where(eq(blockedUsers.blockerId, userId));
 
-      const blockedByMeIds = blockedByMe.map((b) => b.blockedUserId);
+      const blockedByMeIds = blockedByMe.map((b) => b.blockedId);
 
       // Get all potential matches (opposite gender, not self, not swiped, not blocked, active profiles)
       const potentialMatches = await db
