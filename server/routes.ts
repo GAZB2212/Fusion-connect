@@ -1114,8 +1114,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const currentUserHasSubscription = currentUser?.subscriptionStatus === 'active' || currentUser?.subscriptionStatus === 'trialing';
         const otherUserHasSubscription = otherUser?.subscriptionStatus === 'active' || otherUser?.subscriptionStatus === 'trialing';
 
-        // Only create match if at least one user has an active subscription
-        if (currentUserHasSubscription || otherUserHasSubscription) {
+        // For testing: Allow all matches regardless of subscription
+        // In production, only create match if at least one user has an active subscription
+        const allowAllMatches = true; // Set to false in production
+        if (allowAllMatches || currentUserHasSubscription || otherUserHasSubscription) {
           await db.insert(matches).values({
             user1Id: userId,
             user2Id: swipedId,
@@ -1141,7 +1143,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     const hasActiveSubscription = user?.subscriptionStatus === 'active' || user?.subscriptionStatus === 'trialing';
 
-    if (!hasActiveSubscription) {
+    // For testing: Allow viewing matches regardless of subscription
+    const allowAllAccess = true; // Set to false in production
+    if (!allowAllAccess && !hasActiveSubscription) {
       return res.status(403).json({ 
         message: "Subscription required to view matches",
         requiresSubscription: true,
