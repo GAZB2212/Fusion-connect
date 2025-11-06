@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,15 @@ export default function Launch() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [position, setPosition] = useState(0);
+  const [showAnimation, setShowAnimation] = useState(true);
+
+  // Hide animation after 3 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowAnimation(false);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Fetch count of signups
   const { data: countData } = useQuery({
@@ -76,6 +85,64 @@ export default function Launch() {
 
   const spotsRemaining = (countData as any)?.remaining ?? 999;
   const totalSignups = (countData as any)?.total ?? 501;
+
+  // Show loading animation
+  if (showAnimation) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A0E17]">
+        <style>{`
+          @keyframes fusionGlow {
+            0%, 100% {
+              filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.3));
+              transform: scale(1);
+            }
+            50% {
+              filter: drop-shadow(0 0 40px rgba(212, 175, 55, 0.6));
+              transform: scale(1.05);
+            }
+          }
+          @keyframes fusionFadeIn {
+            0% {
+              opacity: 0;
+              transform: scale(0.9);
+            }
+            100% {
+              opacity: 1;
+              transform: scale(1);
+            }
+          }
+          @keyframes fusionPulse {
+            0%, 100% {
+              opacity: 0.3;
+            }
+            50% {
+              opacity: 0.6;
+            }
+          }
+          .fusion-logo-animate {
+            animation: fusionFadeIn 0.8s ease-out, fusionGlow 2s ease-in-out infinite;
+          }
+          .fusion-bg-pulse {
+            animation: fusionPulse 3s ease-in-out infinite;
+          }
+        `}</style>
+        
+        <div className="relative">
+          {/* Animated background circles */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-96 h-96 rounded-full bg-primary/5 fusion-bg-pulse" />
+          </div>
+          
+          {/* Logo */}
+          <img 
+            src={logoImage} 
+            alt="Fusion Logo" 
+            className="w-64 h-64 object-contain fusion-logo-animate relative z-10"
+          />
+        </div>
+      </div>
+    );
+  }
 
   if (showSuccess) {
     return (
