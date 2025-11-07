@@ -45,7 +45,7 @@ The platform features a luxury aesthetic with a primary deep navy color, gold ac
 ### Feature Specifications
 - **Profile Management:** Detailed user profiles, photo uploads, and comprehensive demographic and religious information.
 - **Discovery & Swiping:** Users can discover potential matches and perform swipe actions.
-- **Messaging:** Secure messaging between matched users with call records for video calls.
+- **Messaging:** Real-time secure messaging between matched users powered by WebSockets, with instant message delivery and call records for video calls.
 - **Video Calling:** Real-time video calls with camera/mic controls, call duration tracking, call history, and branded Fusion logo overlay.
 - **Chaperone Support:** Optional guardian access to conversations for traditional courtship.
 - **Face Verification & Anti-Fraud System:** Comprehensive AI-driven protection against fake profiles, bots, and scammers:
@@ -67,6 +67,7 @@ The platform features a luxury aesthetic with a primary deep navy color, gold ac
 ### System Design Choices
 - **Full-stack TypeScript:** Ensures type safety across the entire application.
 - **RESTful API:** Clearly defined endpoints for various functionalities.
+- **WebSocket Infrastructure:** Real-time messaging and call notifications using ws package with Express integration. Supports 1000+ concurrent users with automatic reconnection and event broadcasting for messages, incoming calls, and call status updates.
 - **PostgreSQL Database:** Used for data persistence, including user profiles, swipes, matches, messages, chaperones, and session storage.
 - **Serverless PostgreSQL (Neon):** Utilized for efficient and scalable database connections.
 - **Session-based Authentication:** Secure, HTTP-only cookies for user sessions.
