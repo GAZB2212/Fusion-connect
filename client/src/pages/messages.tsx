@@ -95,6 +95,52 @@ export default function Messages() {
     refetchInterval: 2000, // Poll every 2 seconds for incoming calls
   });
 
+  // Poll for active call status (to detect if other party ended the call)
+  const { data: activeCallStatus } = useQuery<VideoCall | null>({
+    queryKey: ["/api/video-call/status", activeCall?.id],
+    queryFn: async () => {
+      if (!activeCall?.id) return null;
+      try {
+        const res = await fetch(`/api/video-call/${activeCall.id}`, {
+          credentials: "include",
+        });
+        if (!res.ok) return null;
+        return res.json();
+      } catch {
+        return null;
+      }
+    },
+    enabled: !!activeCall && isCallActive,
+    refetchInterval: 2000, // Poll every 2 seconds to detect if other party ended
+  });
+
+  // Detect if other party ended the call
+  useEffect(() => {
+    if (!activeCallStatus || !isCallActive || !activeCall) return;
+    
+    // If the call status is "ended" but we're still in the call, end it on our side
+    if (activeCallStatus.status === 'ended' && activeCallStatus.id === activeCall.id) {
+      console.log('Other party ended the call, closing on our side');
+      
+      // Calculate duration
+      const duration = activeCallStatus.duration || 0;
+      
+      // Close the call on our side
+      setIsCallActive(false);
+      setActiveCall(null);
+      setCallToken("");
+      setJoinedCallId(null);
+      
+      queryClient.invalidateQueries({ queryKey: ["/api/messages", matchId] });
+      
+      const formattedDuration = `${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')}`;
+      toast({
+        title: "Call ended",
+        description: duration > 0 ? `Duration: ${formattedDuration}` : "The other party ended the call",
+      });
+    }
+  }, [activeCallStatus, isCallActive, activeCall, matchId, toast]);
+
   // Auto-answer incoming call
   useEffect(() => {
     const handleIncomingCall = async () => {

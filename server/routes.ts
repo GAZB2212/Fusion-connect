@@ -1727,6 +1727,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/video-call/:callId", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+    const { callId } = req.params;
+
+    try {
+      // Get call details
+      const [call] = await db
+        .select()
+        .from(videoCalls)
+        .where(eq(videoCalls.id, callId))
+        .limit(1);
+
+      if (!call) {
+        return res.status(404).json({ message: "Call not found" });
+      }
+
+      // Verify user is part of this call
+      if (call.callerId !== userId && call.receiverId !== userId) {
+        return res.status(403).json({ message: "Not authorized to access this call" });
+      }
+
+      res.json(call);
+    } catch (error: any) {
+      console.error('Error fetching call:', error);
+      res.status(500).json({ message: "Failed to fetch call" });
+    }
+  });
+
   app.get("/api/video-call/token/:callId", isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;
     const { callId } = req.params;
