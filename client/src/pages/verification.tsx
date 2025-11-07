@@ -326,59 +326,73 @@ export default function Verification() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3">
-            {!cameraActive && !capturedImage && (
-              <Button 
-                onClick={startCamera} 
-                className="flex-1"
-                data-testid="button-start-camera"
-              >
-                <Camera className="h-5 w-5 mr-2" />
-                Start Camera
-              </Button>
-            )}
-
-            {cameraActive && !capturedImage && (
-              <>
+          <div className="space-y-3">
+            <div className="flex gap-3">
+              {!cameraActive && !capturedImage && (
                 <Button 
-                  onClick={stopCamera} 
-                  variant="outline" 
+                  onClick={startCamera} 
                   className="flex-1"
-                  data-testid="button-cancel"
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={capturePhoto} 
-                  className="flex-1"
-                  data-testid="button-capture"
+                  data-testid="button-start-camera"
                 >
                   <Camera className="h-5 w-5 mr-2" />
-                  Capture Photo
+                  Start Camera
                 </Button>
-              </>
-            )}
+              )}
 
-            {capturedImage && !isVerifying && (
-              <>
-                <Button 
-                  onClick={retakePhoto} 
-                  variant="outline" 
-                  className="flex-1"
-                  data-testid="button-retake"
-                >
-                  Retake
-                </Button>
-                <Button 
-                  onClick={verifyIdentity} 
-                  className="flex-1"
-                  data-testid="button-verify"
-                >
-                  <CheckCircle2 className="h-5 w-5 mr-2" />
-                  Verify Identity
-                </Button>
-              </>
-            )}
+              {cameraActive && !capturedImage && (
+                <>
+                  <Button 
+                    onClick={stopCamera} 
+                    variant="outline" 
+                    className="flex-1"
+                    data-testid="button-cancel"
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={capturePhoto} 
+                    className="flex-1"
+                    data-testid="button-capture"
+                  >
+                    <Camera className="h-5 w-5 mr-2" />
+                    Capture Photo
+                  </Button>
+                </>
+              )}
+
+              {capturedImage && !isVerifying && (
+                <>
+                  <Button 
+                    onClick={retakePhoto} 
+                    variant="outline" 
+                    className="flex-1"
+                    data-testid="button-retake"
+                  >
+                    Retake
+                  </Button>
+                  <Button 
+                    onClick={verifyIdentity} 
+                    className="flex-1"
+                    data-testid="button-verify"
+                  >
+                    <CheckCircle2 className="h-5 w-5 mr-2" />
+                    Verify Identity
+                  </Button>
+                </>
+              )}
+            </div>
+
+            {/* Dev Mode Bypass */}
+            <Button 
+              onClick={devBypass} 
+              variant="ghost" 
+              size="sm"
+              className="w-full text-xs text-muted-foreground hover:text-foreground"
+              disabled={isVerifying}
+              data-testid="button-dev-bypass"
+            >
+              Skip Verification (Testing Only)
+            </Button>
           </div>
         </div>
       </Card>

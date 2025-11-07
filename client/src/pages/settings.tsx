@@ -217,6 +217,27 @@ export default function Settings() {
     },
   });
 
+  // Reset matches mutation (testing only)
+  const resetMatchesMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/dev/reset-matches", {});
+    },
+    onSuccess: () => {
+      toast({
+        title: "Matches Reset",
+        description: "All matches and swipes have been cleared.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to reset matches",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Manage subscription - Opens Stripe Customer Portal
   const manageSubscription = async () => {
     try {
@@ -557,6 +578,24 @@ export default function Settings() {
             >
               <FileText className="h-4 w-4 mr-2" />
               Terms of Service
+            </Button>
+          </div>
+        </Card>
+
+        {/* Testing Tools (Development) */}
+        <Card className="p-6 mb-6 border-primary/20">
+          <h2 className="text-xl font-semibold mb-2 text-primary">Testing Tools</h2>
+          <p className="text-sm text-muted-foreground mb-4">Development and testing utilities</p>
+          <div className="space-y-3">
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={() => resetMatchesMutation.mutate()}
+              disabled={resetMatchesMutation.isPending}
+              data-testid="button-reset-matches"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {resetMatchesMutation.isPending ? "Resetting..." : "Reset All Matches"}
             </Button>
           </div>
         </Card>

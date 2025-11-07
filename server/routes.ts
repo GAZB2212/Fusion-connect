@@ -276,13 +276,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // DEV MODE: Activate premium without payment
+  // DEVELOPMENT: Activate premium without payment (always available for testing)
   app.post('/api/dev/activate-premium', isAuthenticated, async (req: any, res: Response) => {
-    // Only allow in development mode
-    if (process.env.NODE_ENV !== 'development') {
-      return res.status(403).json({ message: "Only available in development mode" });
-    }
-
     const userId = req.user.id;
 
     try {
@@ -764,7 +759,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // DEVELOPMENT ONLY: Manual verification bypass
+  // DEVELOPMENT: Manual verification bypass (always available for testing)
   app.post("/api/dev-verify", isAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user.id;
@@ -790,6 +785,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("[DEV VERIFY] ERROR:", error);
       res.status(500).json({ 
         message: "Manual verification failed", 
+        error: error.message 
+      });
+    }
+  });
+
+  // DEVELOPMENT: Reset all matches
+  app.post("/api/dev/reset-matches", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      console.log(`[DEV] Resetting all matches`);
+      
+      // Delete all matches
+      await db.delete(matches);
+      
+      // Reset swipes for fresh matching
+      await db.delete(swipes);
+      
+      console.log(`[DEV] All matches and swipes deleted successfully`);
+      
+      res.json({ 
+        success: true, 
+        message: "All matches and swipes have been reset" 
+      });
+    } catch (error: any) {
+      console.error("[DEV] Reset matches error:", error);
+      res.status(500).json({ 
+        message: "Failed to reset matches", 
         error: error.message 
       });
     }
