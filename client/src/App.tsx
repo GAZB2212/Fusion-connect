@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import type { Profile } from "@shared/schema";
 import { initializePushNotifications } from "@/lib/pushNotifications";
 import { VideoCallProvider } from "@/contexts/VideoCallContext";
+import { WebSocketProvider } from "@/contexts/WebSocketContext";
 import Landing from "@/pages/landing";
 import Launch from "@/pages/launch";
 import AdminQR from "@/pages/admin-qr";
@@ -208,10 +209,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <VideoCallProvider>
-          <Toaster />
-          <AppContent />
-        </VideoCallProvider>
+        <WebSocketProvider>
+          <VideoCallProvider>
+            <Toaster />
+            <AppContent />
+          </VideoCallProvider>
+        </WebSocketProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
