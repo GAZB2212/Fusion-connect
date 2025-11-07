@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Send, ArrowLeft, Shield, CheckCircle2, Video } from "lucide-react";
+import { Send, ArrowLeft, Shield, CheckCircle2, Video, MessageCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import type { MessageWithSender, MatchWithProfiles, Chaperone, VideoCall } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -15,6 +15,26 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 import VideoCallComponent from "@/components/VideoCall";
 import { useVideoCall } from "@/contexts/VideoCallContext";
+
+interface Conversation {
+  matchId: string;
+  otherUser: {
+    displayName: string;
+    age: number;
+    photos: string[];
+    location: string;
+    isVerified: boolean;
+    useNickname: boolean;
+  };
+  latestMessage: {
+    content: string;
+    createdAt: Date | null;
+    senderId: string;
+    messageType?: string;
+  } | null;
+  unreadCount: number;
+  matchCreatedAt: Date | null;
+}
 
 export default function Messages() {
   const { user } = useAuth();
@@ -29,6 +49,13 @@ export default function Messages() {
   const [activeCall, setActiveCall] = useState<VideoCall | null>(null);
   const [callToken, setCallToken] = useState<string>("");
   const [joinedCallId, setJoinedCallId] = useState<string | null>(null);
+
+  // Fetch conversations list (for when no matchId is provided)
+  const { data: conversations = [], isLoading: conversationsLoading } = useQuery<Conversation[]>({
+    queryKey: ["/api/conversations"],
+    enabled: !matchId,
+    refetchInterval: 5000, // Poll every 5 seconds for new messages
+  });
 
   // Fetch match details
   const { data: match } = useQuery<MatchWithProfiles>({
@@ -263,10 +290,129 @@ export default function Messages() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Show conversations list when no matchId is provided
   if (!matchId) {
-    return null;
+    if (conversationsLoading) {
+      return (
+        <div className="min-h-screen bg-background pb-20">
+          <div className="container max-w-3xl mx-auto p-4">
+            <div className="mb-6">
+              <Skeleton className="h-8 w-32 mb-2" />
+              <Skeleton className="h-4 w-48" />
+            </div>
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="mb-3">
+                <Skeleton className="h-20 w-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <div className="container max-w-3xl mx-auto p-4">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold mb-2">Messages</h1>
+            <p className="text-muted-foreground">
+              {conversations.length === 0 
+                ? "No conversations yet" 
+                : `${conversations.length} ${conversations.length === 1 ? 'conversation' : 'conversations'}`
+              }
+            </p>
+          </div>
+
+          {conversations.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+                <MessageCircle className="h-10 w-10 text-muted-foreground" />
+              </div>
+              <h3 className="font-semibold mb-2 text-lg">No Messages Yet</h3>
+              <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
+                Start swiping to find matches and begin conversations
+              </p>
+              <Button 
+                onClick={() => setLocation("/discover")}
+                data-testid="button-start-discovering"
+              >
+                Start Discovering
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {conversations.map((conversation) => {
+                const displayName = conversation.otherUser.useNickname
+                  ? conversation.otherUser.displayName.split(' ')[0]
+                  : conversation.otherUser.displayName;
+
+                const isCallRecord = conversation.latestMessage?.messageType === 'call_record';
+                const latestMessagePreview = conversation.latestMessage 
+                  ? isCallRecord
+                    ? `📹 ${conversation.latestMessage.content}`
+                    : conversation.latestMessage.content
+                  : "Start a conversation";
+
+                const isMyMessage = conversation.latestMessage?.senderId === user?.id;
+
+                return (
+                  <Card
+                    key={conversation.matchId}
+                    className="p-4 hover-elevate active-elevate-2 cursor-pointer transition-all"
+                    onClick={() => setLocation(`/messages/${conversation.matchId}`)}
+                    data-testid={`conversation-${conversation.matchId}`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <Avatar className="h-14 w-14 flex-shrink-0">
+                        <AvatarImage src={conversation.otherUser.photos?.[0]} />
+                        <AvatarFallback>{displayName.charAt(0)}</AvatarFallback>
+                      </Avatar>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-semibold truncate">
+                            {displayName}, {conversation.otherUser.age}
+                          </h3>
+                          {conversation.otherUser.isVerified && (
+                            <CheckCircle2 className="h-4 w-4 text-primary fill-primary flex-shrink-0" />
+                          )}
+                        </div>
+                        <p className={`text-sm truncate ${conversation.unreadCount > 0 && !isMyMessage ? 'font-semibold text-foreground' : 'text-muted-foreground'}`}>
+                          {isMyMessage && conversation.latestMessage && !isCallRecord && "You: "}
+                          {latestMessagePreview}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                        {conversation.latestMessage?.createdAt && (
+                          <span className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(conversation.latestMessage.createdAt), { 
+                              addSuffix: false 
+                            })}
+                          </span>
+                        )}
+                        {conversation.unreadCount > 0 && !isMyMessage && (
+                          <Badge 
+                            variant="default" 
+                            className="h-5 min-w-5 rounded-full px-1.5 text-xs"
+                            data-testid={`unread-badge-${conversation.matchId}`}
+                          >
+                            {conversation.unreadCount}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
   }
 
+  // Show conversation detail when matchId is provided
   if (isLoading || !match) {
     return (
       <div className="min-h-screen bg-background">
@@ -295,7 +441,7 @@ export default function Messages() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setLocation("/matches")}
+              onClick={() => setLocation("/messages")}
               data-testid="button-back"
             >
               <ArrowLeft className="h-5 w-5" />

@@ -1418,8 +1418,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Sort by latest message time (most recent first)
       conversations.sort((a, b) => {
-        const aTime = a.latestMessage?.createdAt || a.matchCreatedAt;
-        const bTime = b.latestMessage?.createdAt || b.matchCreatedAt;
+        const aTime = a.latestMessage?.createdAt || a.matchCreatedAt || new Date();
+        const bTime = b.latestMessage?.createdAt || b.matchCreatedAt || new Date();
         return new Date(bTime).getTime() - new Date(aTime).getTime();
       });
 
