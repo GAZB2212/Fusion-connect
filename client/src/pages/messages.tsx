@@ -498,7 +498,7 @@ export default function Messages() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto">
         <div className="container max-w-3xl mx-auto p-4 space-y-4">
-          {messages.length === 0 ? (
+          {messages.length === 0 && !pendingMessage ? (
             <div className="text-center py-12">
               <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
                 <Send className="h-8 w-8 text-muted-foreground" />
@@ -509,7 +509,8 @@ export default function Messages() {
               </p>
             </div>
           ) : (
-            messages.map((message) => {
+            <>
+              {messages.map((message) => {
               const isMe = message.senderId === user?.id;
               
               // Render call records differently
@@ -564,24 +565,25 @@ export default function Messages() {
                   </div>
                 </div>
               );
-            })
-          )}
-          
-          {/* Pending message (sending...) */}
-          {pendingMessage && (
-            <div
-              className="flex justify-end"
-              data-testid="message-sending"
-            >
-              <div className="max-w-[70%]">
-                <Card className="p-3 bg-primary text-primary-foreground opacity-70">
-                  <p className="text-sm leading-relaxed break-words">{pendingMessage}</p>
-                </Card>
-                <div className="flex items-center gap-1.5 mt-1 justify-end">
-                  <p className="text-xs text-muted-foreground italic">Sending...</p>
+              })}
+              
+              {/* Pending message (sending...) */}
+              {pendingMessage && (
+                <div
+                  className="flex justify-end"
+                  data-testid="message-sending"
+                >
+                  <div className="max-w-[70%]">
+                    <Card className="p-3 bg-primary text-primary-foreground opacity-70">
+                      <p className="text-sm leading-relaxed break-words">{pendingMessage}</p>
+                    </Card>
+                    <div className="flex items-center gap-1.5 mt-1 justify-end">
+                      <p className="text-xs text-muted-foreground italic">Sending...</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              )}
+            </>
           )}
           
           <div ref={messagesEndRef} />
