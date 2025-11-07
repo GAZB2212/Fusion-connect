@@ -1350,6 +1350,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Messages endpoints
+  // Get all conversations with latest message
+  app.get("/api/conversations", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+
+    try {
+      // Get all matches for this user
+      const userMatches = await db
+        .select()
+        .from(matches)
+        .where(
+          or(eq(matches.user1Id, userId), eq(matches.user2Id, userId))
+        )
+        .orderBy(desc(matches.createdAt));
+
+      // For each match, get the latest message and other user's profile
+      const conversations = [];
+      
+      for (const match of userMatches) {
+        // Determine the other user's ID
+        const otherUserId = match.user1Id === userId ? match.user2Id : match.user1Id;
+        
+        // Get other user's profile
+        const [otherUserProfile] = await db
+          .select({
+            profile: profiles,
+            user: users,
+          })
+          .from(profiles)
+          .innerJoin(users, eq(profiles.userId, users.id))
+          .where(eq(profiles.userId, otherUserId))
+          .limit(1);
+
+        if (!otherUserProfile) continue;
+
+        // Get latest message for this match
+        const [latestMessage] = await db
+          .select()
+          .from(messages)
+          .where(eq(messages.matchId, match.id))
+          .orderBy(desc(messages.createdAt))
+          .limit(1);
+
+        // Count unread messages for this match
+        const unreadCount = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(messages)
+          .where(
+            and(
+              eq(messages.matchId, match.id),
+              eq(messages.receiverId, userId),
+              eq(messages.isRead, false)
+            )
+          );
+
+        conversations.push({
+          matchId: match.id,
+          otherUser: {
+            ...otherUserProfile.profile,
+            user: otherUserProfile.user,
+          },
+          latestMessage: latestMessage || null,
+          unreadCount: Number(unreadCount[0]?.count || 0),
+          matchCreatedAt: match.createdAt,
+        });
+      }
+
+      // Sort by latest message time (most recent first)
+      conversations.sort((a, b) => {
+        const aTime = a.latestMessage?.createdAt || a.matchCreatedAt;
+        const bTime = b.latestMessage?.createdAt || b.matchCreatedAt;
+        return new Date(bTime).getTime() - new Date(aTime).getTime();
+      });
+
+      res.json(conversations);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      res.status(500).json({ message: "Failed to fetch conversations" });
+    }
+  });
+
   app.get("/api/messages/:matchId", isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;
     const { matchId } = req.params;
