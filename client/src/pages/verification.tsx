@@ -152,6 +152,30 @@ export default function Verification() {
     setLocation("/?restart=true");
   };
 
+  const devBypass = async () => {
+    try {
+      setIsVerifying(true);
+      await apiRequest("POST", "/api/dev-verify", {});
+      
+      // Invalidate profile cache
+      await queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
+      
+      toast({
+        title: "Verification Bypassed",
+        description: "You're now verified (development mode)",
+      });
+      
+      setLocation("/");
+    } catch (error: any) {
+      toast({
+        title: "Bypass Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      setIsVerifying(false);
+    }
+  };
+
   // Verifying screen
   if (verificationStatus === 'verifying') {
     return (

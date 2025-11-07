@@ -764,6 +764,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // DEVELOPMENT ONLY: Manual verification bypass
+  app.post("/api/dev-verify", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.user.id;
+      
+      console.log(`[DEV VERIFY] Manually verifying user ${userId}`);
+      
+      await db
+        .update(profiles)
+        .set({
+          faceVerified: true,
+          photoVerified: true,
+          updatedAt: new Date(),
+        })
+        .where(eq(profiles.userId, userId));
+      
+      console.log(`[DEV VERIFY] User ${userId} manually verified successfully`);
+      
+      res.json({ 
+        success: true, 
+        message: "Verification bypassed for development" 
+      });
+    } catch (error: any) {
+      console.error("[DEV VERIFY] ERROR:", error);
+      res.status(500).json({ 
+        message: "Manual verification failed", 
+        error: error.message 
+      });
+    }
+  });
+
   // Profile endpoints
   app.get("/api/profile", isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;
