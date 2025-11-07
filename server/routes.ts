@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth, isAuthenticated } from "./auth";
+import { broadcastToUser } from "./websocket";
 import { db } from "./db";
 import passport from "passport";
 import bcrypt from "bcrypt";
@@ -1575,6 +1576,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .returning();
 
+      // Broadcast new message to receiver via WebSocket
+      broadcastToUser(validatedData.receiverId, {
+        type: 'new_message',
+        data: message,
+      });
+
       res.json(message);
     } catch (error: any) {
       console.error("Error sending message:", error);
@@ -1675,6 +1682,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send push notification to receiver
       sendVideoCallNotification(receiverId, userId, matchId, videoCall.id).catch(error => {
         console.error('Failed to send video call push notification:', error);
+      });
+
+      // Broadcast incoming call to receiver via WebSocket
+      broadcastToUser(receiverId, {
+        type: 'incoming_call',
+        data: videoCall,
       });
 
       res.json(videoCall);
@@ -1851,6 +1864,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .set(updateData)
         .where(eq(videoCalls.id, callId))
         .returning();
+
+      // Broadcast call status update to both parties via WebSocket
+      const otherUserId = call.callerId === userId ? call.receiverId : call.callerId;
+      broadcastToUser(otherUserId, {
+        type: 'call_status_update',
+        data: updatedCall,
+      });
 
       res.json(updatedCall);
     } catch (error: any) {
