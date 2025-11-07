@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
 import VideoCallComponent from "@/components/VideoCall";
 import { useVideoCall } from "@/contexts/VideoCallContext";
+import { useWebSocketEvent } from "@/contexts/WebSocketContext";
 
 interface Conversation {
   matchId: string;
@@ -60,7 +61,6 @@ export default function Messages() {
   const { data: conversations = [], isLoading: conversationsLoading } = useQuery<Conversation[]>({
     queryKey: ["/api/conversations"],
     enabled: !matchId,
-    refetchInterval: 10000, // Poll every 10 seconds for new messages (reduced from 5s)
   });
 
   // Fetch match details
@@ -73,7 +73,6 @@ export default function Messages() {
   const { data: messages = [], isLoading } = useQuery<MessageWithSender[]>({
     queryKey: ["/api/messages", matchId],
     enabled: !!matchId,
-    refetchInterval: 5000, // Poll every 5 seconds for new messages (reduced from 3s)
   });
 
   // Fetch chaperones
@@ -97,7 +96,6 @@ export default function Messages() {
       }
     },
     enabled: !!matchId && !isCallActive,
-    refetchInterval: 3000, // Poll every 3 seconds for incoming calls (reduced from 2s)
   });
 
   // Poll for active call status (to detect if other party ended the call)
@@ -116,7 +114,37 @@ export default function Messages() {
       }
     },
     enabled: !!activeCall && isCallActive,
-    refetchInterval: 3000, // Poll every 3 seconds to detect if other party ended (reduced from 2s)
+  });
+
+  // WebSocket: Listen for new messages
+  useWebSocketEvent('new_message', (message: MessageWithSender) => {
+    console.log('WebSocket: New message received', message);
+    // Invalidate conversations list to update latest message
+    queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+    // If we're viewing the conversation, invalidate messages
+    if (matchId && message.matchId === matchId) {
+      queryClient.invalidateQueries({ queryKey: ["/api/messages", matchId] });
+    }
+  });
+
+  // WebSocket: Listen for incoming calls
+  useWebSocketEvent('incoming_call', (call: VideoCall) => {
+    console.log('WebSocket: Incoming call received', call);
+    if (matchId && call.matchId === matchId) {
+      queryClient.invalidateQueries({ queryKey: ["/api/video-call/incoming", matchId] });
+    }
+  });
+
+  // WebSocket: Listen for call status updates
+  useWebSocketEvent('call_status_update', (call: VideoCall) => {
+    console.log('WebSocket: Call status update received', call);
+    if (activeCall && call.id === activeCall.id) {
+      queryClient.invalidateQueries({ queryKey: ["/api/video-call/status", call.id] });
+    }
+    // Also invalidate messages to show call record
+    if (matchId && call.matchId === matchId) {
+      queryClient.invalidateQueries({ queryKey: ["/api/messages", matchId] });
+    }
   });
 
   // Detect if other party ended the call
