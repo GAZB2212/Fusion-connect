@@ -44,6 +44,7 @@ export default function Messages() {
   const matchId = params?.matchId;
 
   const [messageText, setMessageText] = useState("");
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isCallActive, setIsCallActive } = useVideoCall();
   const [activeCall, setActiveCall] = useState<VideoCall | null>(null);
@@ -179,6 +180,7 @@ export default function Messages() {
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
       if (!match) return;
+      setPendingMessage(content); // Show "sending..." state
       const receiverId = match.user1Id === user?.id ? match.user2Id : match.user1Id;
       return apiRequest("POST", "/api/messages", {
         matchId: matchId!,
@@ -188,9 +190,11 @@ export default function Messages() {
     },
     onSuccess: () => {
       setMessageText("");
+      setPendingMessage(null); // Clear pending state
       queryClient.invalidateQueries({ queryKey: ["/api/messages", matchId] });
     },
     onError: (error) => {
+      setPendingMessage(null); // Clear pending state on error
       toast({
         title: "Error",
         description: error.message,
@@ -203,6 +207,13 @@ export default function Messages() {
   const startCallMutation = useMutation({
     mutationFn: async () => {
       if (!match) return;
+      
+      // Show connecting toast
+      toast({
+        title: "Connecting...",
+        description: "Starting video call",
+      });
+      
       const receiverId = match.user1Id === user?.id ? match.user2Id : match.user1Id;
       const res = await apiRequest("POST", "/api/video-call/initiate", {
         matchId: matchId!,
@@ -542,14 +553,37 @@ export default function Messages() {
                     >
                       <p className="text-sm leading-relaxed break-words">{message.content}</p>
                     </Card>
-                    <p className={`text-xs text-muted-foreground mt-1 ${isMe ? 'text-right' : 'text-left'}`}>
-                      {message.createdAt && formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
-                    </p>
+                    <div className={`flex items-center gap-1.5 mt-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
+                      <p className="text-xs text-muted-foreground">
+                        {message.createdAt && formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
+                      </p>
+                      {isMe && (
+                        <CheckCircle2 className="h-3 w-3 text-muted-foreground" data-testid="message-sent-indicator" />
+                      )}
+                    </div>
                   </div>
                 </div>
               );
             })
           )}
+          
+          {/* Pending message (sending...) */}
+          {pendingMessage && (
+            <div
+              className="flex justify-end"
+              data-testid="message-sending"
+            >
+              <div className="max-w-[70%]">
+                <Card className="p-3 bg-primary text-primary-foreground opacity-70">
+                  <p className="text-sm leading-relaxed break-words">{pendingMessage}</p>
+                </Card>
+                <div className="flex items-center gap-1.5 mt-1 justify-end">
+                  <p className="text-xs text-muted-foreground italic">Sending...</p>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <div ref={messagesEndRef} />
         </div>
       </div>
