@@ -43,6 +43,11 @@ export default function Messages() {
   const [, setLocation] = useLocation();
   const matchId = params?.matchId;
 
+  // Debug logging
+  useEffect(() => {
+    console.log('Messages page loaded:', { matchId, params });
+  }, [matchId, params]);
+
   const [messageText, setMessageText] = useState("");
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -55,7 +60,7 @@ export default function Messages() {
   const { data: conversations = [], isLoading: conversationsLoading } = useQuery<Conversation[]>({
     queryKey: ["/api/conversations"],
     enabled: !matchId,
-    refetchInterval: 5000, // Poll every 5 seconds for new messages
+    refetchInterval: 10000, // Poll every 10 seconds for new messages (reduced from 5s)
   });
 
   // Fetch match details
@@ -68,7 +73,7 @@ export default function Messages() {
   const { data: messages = [], isLoading } = useQuery<MessageWithSender[]>({
     queryKey: ["/api/messages", matchId],
     enabled: !!matchId,
-    refetchInterval: 3000, // Poll every 3 seconds for new messages
+    refetchInterval: 5000, // Poll every 5 seconds for new messages (reduced from 3s)
   });
 
   // Fetch chaperones
@@ -92,7 +97,7 @@ export default function Messages() {
       }
     },
     enabled: !!matchId && !isCallActive,
-    refetchInterval: 2000, // Poll every 2 seconds for incoming calls
+    refetchInterval: 3000, // Poll every 3 seconds for incoming calls (reduced from 2s)
   });
 
   // Poll for active call status (to detect if other party ended the call)
@@ -111,7 +116,7 @@ export default function Messages() {
       }
     },
     enabled: !!activeCall && isCallActive,
-    refetchInterval: 2000, // Poll every 2 seconds to detect if other party ended
+    refetchInterval: 3000, // Poll every 3 seconds to detect if other party ended (reduced from 2s)
   });
 
   // Detect if other party ended the call
@@ -416,7 +421,10 @@ export default function Messages() {
                   <Card
                     key={conversation.matchId}
                     className="p-4 hover-elevate active-elevate-2 cursor-pointer transition-all"
-                    onClick={() => setLocation(`/messages/${conversation.matchId}`)}
+                    onClick={() => {
+                      console.log('Navigating to:', `/messages/${conversation.matchId}`);
+                      setLocation(`/messages/${conversation.matchId}`);
+                    }}
                     data-testid={`conversation-${conversation.matchId}`}
                   >
                     <div className="flex items-center gap-4">
