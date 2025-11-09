@@ -11,6 +11,8 @@ import { sendPasswordResetEmail } from "./email";
 import { createRequire } from "module";
 import QRCode from "qrcode";
 import { createCanvas, loadImage } from "canvas";
+import multer from "multer";
+import { uploadPhotoToR2, base64ToBuffer, detectContentType } from "./r2";
 const require = createRequire(import.meta.url);
 const { RtcTokenBuilder, RtcRole } = require("agora-token");
 import { 
@@ -53,6 +55,22 @@ if (!process.env.STRIPE_SECRET_KEY) {
 }
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2025-09-30.clover",
+});
+
+// Configure multer for photo uploads (memory storage)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Only accept image files
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  },
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -895,6 +913,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     res.json(profile);
+  });
+
+  // Upload profile photos to R2
+  app.post("/api/photos/upload", isAuthenticated, upload.array('photos', 6), async (req: any, res: Response) => {
+    const userId = req.user.id;
+    const files = req.files as Express.Multer.File[];
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({ message: "No files uploaded" });
+    }
+
+    try {
+      // Upload all photos to R2 in parallel
+      const uploadPromises = files.map((file) =>
+        uploadPhotoToR2(file.buffer, file.mimetype, userId, 'profile')
+      );
+
+      const photoUrls = await Promise.all(uploadPromises);
+
+      console.log(`[Photo Upload] Successfully uploaded ${photoUrls.length} photos for user ${userId}`);
+
+      res.json({ 
+        success: true, 
+        photoUrls,
+        message: `${photoUrls.length} photo(s) uploaded successfully`
+      });
+    } catch (error: any) {
+      console.error("[Photo Upload] Error:", error);
+      res.status(500).json({ 
+        message: "Failed to upload photos", 
+        error: error.message 
+      });
+    }
+  });
+
+  // Upload a single photo (base64) - for face verification compatibility
+  app.post("/api/photos/upload-base64", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+    const { photo, photoType = 'profile' } = req.body;
+
+    if (!photo) {
+      return res.status(400).json({ message: "No photo data provided" });
+    }
+
+    try {
+      const buffer = base64ToBuffer(photo);
+      const contentType = detectContentType(photo);
+      
+      const photoUrl = await uploadPhotoToR2(buffer, contentType, userId, photoType);
+
+      console.log(`[Photo Upload Base64] Successfully uploaded ${photoType} photo for user ${userId}`);
+
+      res.json({ 
+        success: true, 
+        photoUrl,
+        message: "Photo uploaded successfully"
+      });
+    } catch (error: any) {
+      console.error("[Photo Upload Base64] Error:", error);
+      res.status(500).json({ 
+        message: "Failed to upload photo", 
+        error: error.message 
+      });
+    }
   });
 
   // Discover endpoint - get profiles to swipe on
