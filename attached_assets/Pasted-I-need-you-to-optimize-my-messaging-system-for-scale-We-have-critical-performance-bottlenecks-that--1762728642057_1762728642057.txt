@@ -1,0 +1,68 @@
+I need you to optimize my messaging system for scale. We have critical performance bottlenecks that need fixing. Make these changes in priority order:
+1. FIX N+1 QUERY PROBLEM IN CONVERSATIONS ENDPOINT (CRITICAL)
+Problem: The /api/conversations endpoint queries the database separately for each match (user profile, last message, unread count). This creates 1.5 million queries at scale.
+Task: Rewrite the conversations endpoint to use a SINGLE SQL query with JOINs and subqueries. The query should fetch:
+
+All matches for the current user
+The other user's profile data (name, avatar, etc.)
+The latest message for each conversation
+Unread message count per conversation
+
+Use Drizzle ORM's query builder or raw SQL with proper LEFT JOINs and LATERAL subqueries. Return all data in one database round-trip.
+2. MAKE OPENAI MODERATION ASYNCHRONOUS (CRITICAL - COST SAVINGS)
+Problem: Every message waits for OpenAI moderation before being sent, adding 200-500ms latency and costing $200/day at scale.
+Task:
+
+Send messages to recipients IMMEDIATELY via WebSocket
+Save message to database immediately
+Run OpenAI moderation in the BACKGROUND (don't await it)
+If moderation flags content, delete the message from DB and emit a message_removed event to both users
+Add client-side pre-filtering for common banned words/patterns BEFORE calling OpenAI to reduce API costs by 90%
+
+3. ADD IN-MEMORY CACHING FOR RATE LIMITS
+Problem: Every message queries the database to count today's messages for rate limiting.
+Task:
+
+Create an in-memory Map or object to track message counts per user per day
+Key format: user:${userId}:${dateString}
+Increment counter in memory instead of querying DB
+Reset counters at midnight
+Only query DB if in-memory cache misses (first message of the day)
+
+4. CONFIGURE DATABASE CONNECTION POOLING
+Problem: No connection pool configuration for Neon PostgreSQL.
+Task:
+
+Add proper connection pooling config to the Drizzle/Neon setup
+Set max connections to 10-20
+Set idle timeout to 30 seconds
+Enable connection caching with fetchConnectionCache: true
+Use WebSocket pooling if available
+
+5. ADD CLIENT-SIDE MESSAGE VALIDATION
+Task:
+
+Before sending ANY message to the server, validate on the client:
+
+Check message length (max 1000 chars)
+Check for basic profanity/spam patterns with regex
+Check for repeated characters (e.g., "aaaaaaa")
+Reject immediately if validation fails
+
+
+This prevents unnecessary server load and API costs
+
+TESTING REQUIREMENTS
+After implementing:
+
+Test that conversations load in under 500ms with 50+ matches
+Verify messages send instantly (< 100ms to recipient)
+Confirm moderation still catches inappropriate content but doesn't block sending
+Check that rate limits still work with in-memory caching
+
+CODE QUALITY
+
+Add comments explaining the optimizations
+Use TypeScript types properly
+Handle all error cases gracefully
+Log performance metrics (query times, moderation delays)

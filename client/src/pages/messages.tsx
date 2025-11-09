@@ -127,6 +127,24 @@ export default function Messages() {
     }
   });
 
+  // WebSocket: Listen for message removal (background moderation)
+  useWebSocketEvent('message_removed', (data: { messageId: string; reason: string; category?: string }) => {
+    console.log('WebSocket: Message removed by moderation', data);
+    
+    // Show toast notification
+    toast({
+      title: "Message Removed",
+      description: data.reason,
+      variant: "destructive",
+    });
+    
+    // Refresh messages to remove from UI
+    if (matchId) {
+      queryClient.invalidateQueries({ queryKey: ["/api/messages", matchId] });
+    }
+    queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+  });
+
   // WebSocket: Listen for incoming calls
   useWebSocketEvent('incoming_call', (call: VideoCall) => {
     console.log('WebSocket: Incoming call received', call);
@@ -255,16 +273,26 @@ export default function Messages() {
     handleIncomingCall();
   }, [incomingCall, isCallActive, user, joinedCallId, toast]);
 
-  // Send message mutation
+  // Send message mutation with client-side validation
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
       if (!match) return;
-      setPendingMessage(content); // Show "sending..." state
+      
+      // OPTIMIZATION: Client-side validation before sending to server
+      const { validateMessage, sanitizeMessage } = await import("@/lib/messageValidation");
+      const sanitized = sanitizeMessage(content);
+      const validation = validateMessage(sanitized);
+      
+      if (!validation.valid) {
+        throw new Error(validation.error || "Invalid message");
+      }
+      
+      setPendingMessage(sanitized); // Show "sending..." state
       const receiverId = match.user1Id === user?.id ? match.user2Id : match.user1Id;
       return apiRequest("POST", "/api/messages", {
         matchId: matchId!,
         receiverId,
-        content,
+        content: sanitized,
       });
     },
     onSuccess: () => {
