@@ -13,23 +13,23 @@ const PgSession = connectPgSimple(session);
 // Store for active WebSocket connections mapped by user ID
 const activeConnections = new Map<string, Set<WebSocket>>();
 
-// Session store configuration (same as in routes.ts)
+// Session store configuration (must match auth.ts)
 const sessionStore = new PgSession({
-  pool: db as any,
-  tableName: 'session',
-  createTableIfMissing: true,
+  conString: process.env.DATABASE_URL,
+  tableName: 'sessions',  // Must match auth.ts
+  createTableIfMissing: false,
+  ttl: 7 * 24 * 60 * 60 * 1000, // 1 week - match auth.ts
 });
 
 const sessionMiddleware = session({
-  secret: process.env.SESSION_SECRET || 'fusion-secret-key-2024',
+  secret: process.env.SESSION_SECRET!,
+  store: sessionStore,
   resave: false,
   saveUninitialized: false,
-  store: sessionStore,
   cookie: {
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week - match auth.ts
   },
 });
 
@@ -44,19 +44,62 @@ export function setupWebSocket(server: Server) {
     const { pathname } = parse(request.url || '');
     
     if (pathname === '/ws') {
-      // Authenticate using session
-      sessionMiddleware(request as any, {} as any, () => {
-        passport.initialize()(request as any, {} as any, () => {
-          passport.session()(request as any, {} as any, () => {
-            const req = request as any;
-            
-            if (!req.user || !req.user.id) {
-              console.log('WebSocket authentication failed');
+      // Parse cookies from the upgrade request
+      const cookies = request.headers.cookie;
+      
+      if (!cookies) {
+        console.log('WebSocket: No cookies found');
+        socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+        socket.destroy();
+        return;
+      }
+
+      // Create proper request/response objects for session middleware
+      const req = request as any;
+      
+      // Create a minimal response object that session middleware needs
+      const res: any = {
+        getHeader: () => {},
+        setHeader: () => {},
+        end: () => {},
+        writeHead: () => {},
+      };
+      
+      // Process session
+      sessionMiddleware(req, res, (err: any) => {
+        if (err) {
+          console.log('WebSocket: Session middleware error:', err);
+          socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+          socket.destroy();
+          return;
+        }
+
+        // Initialize passport
+        passport.initialize()(req, res, (err: any) => {
+          if (err) {
+            console.log('WebSocket: Passport init error:', err);
+            socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+            socket.destroy();
+            return;
+          }
+
+          // Load user from session
+          passport.session()(req, res, (err: any) => {
+            if (err) {
+              console.log('WebSocket: Passport session error:', err);
               socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
               socket.destroy();
               return;
             }
 
+            if (!req.user || !req.user.id) {
+              console.log('WebSocket: No authenticated user found');
+              socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+              socket.destroy();
+              return;
+            }
+
+            console.log(`WebSocket upgrade authenticated: user ${req.user.id}`);
             wss.handleUpgrade(request, socket, head, (ws) => {
               wss.emit('connection', ws, request);
             });
