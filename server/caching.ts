@@ -40,6 +40,13 @@ export function setCached(key: string, value: any, ttlSeconds: number): void {
 }
 
 /**
+ * Delete cached value by key
+ */
+export function deleteCached(key: string): void {
+  cache.delete(key);
+}
+
+/**
  * Get message count for a user today (cached in-memory)
  * @returns Current message count for the day
  */
