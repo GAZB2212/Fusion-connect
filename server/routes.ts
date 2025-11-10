@@ -1470,12 +1470,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ELSE p1.user_id
           END as other_user_id,
           CASE 
-            WHEN m.user1_id = ${userId} THEN p2.full_name
-            ELSE p1.full_name
+            WHEN m.user1_id = ${userId} THEN p2.display_name
+            ELSE p1.display_name
           END as other_full_name,
           CASE 
-            WHEN m.user1_id = ${userId} THEN p2.date_of_birth
-            ELSE p1.date_of_birth
+            WHEN m.user1_id = ${userId} THEN p2.age
+            ELSE p1.age
           END as other_dob,
           CASE 
             WHEN m.user1_id = ${userId} THEN p2.gender
@@ -1498,16 +1498,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ELSE p1.profession
           END as other_profession,
           CASE 
-            WHEN m.user1_id = ${userId} THEN p2.face_verified
-            ELSE p1.face_verified
+            WHEN m.user1_id = ${userId} THEN p2.photo_verified
+            ELSE p1.photo_verified
           END as other_face_verified,
           CASE 
             WHEN m.user1_id = ${userId} THEN u2.email
             ELSE u1.email
           END as other_email,
           CASE 
-            WHEN m.user1_id = ${userId} THEN u2.is_premium
-            ELSE u1.is_premium
+            WHEN m.user1_id = ${userId} THEN (u2.subscription_status = 'active')
+            ELSE (u1.subscription_status = 'active')
           END as other_is_premium,
           -- Latest message
           lm.id as latest_message_id,
