@@ -224,23 +224,58 @@ export default function ProfileSetup() {
     });
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    const newPhotos = [...photos];
-    Array.from(files).forEach((file) => {
-      if (newPhotos.length < 6) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const result = reader.result as string;
-          const updatedPhotos = [...newPhotos, result];
-          setPhotos(updatedPhotos);
-          form.setValue("photos", updatedPhotos);
-        };
-        reader.readAsDataURL(file);
+    const filesToUpload = Array.from(files).slice(0, 6 - photos.length);
+    if (filesToUpload.length === 0) return;
+
+    try {
+      // Show loading toast
+      toast({
+        title: "Uploading photos...",
+        description: `Uploading ${filesToUpload.length} photo(s) to cloud storage`,
+      });
+
+      // Create FormData
+      const formData = new FormData();
+      filesToUpload.forEach((file) => {
+        formData.append('photos', file);
+      });
+
+      // Upload to R2 using fetch (FormData requires multipart/form-data)
+      const response = await fetch('/api/photos/upload', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Upload failed');
       }
-    });
+
+      const data = await response.json();
+
+      if (data.photoUrls) {
+        const updatedPhotos = [...photos, ...data.photoUrls];
+        setPhotos(updatedPhotos);
+        form.setValue("photos", updatedPhotos);
+
+        toast({
+          title: "Upload successful",
+          description: `${data.photoUrls.length} photo(s) uploaded successfully`,
+        });
+      }
+    } catch (error: any) {
+      console.error('Photo upload error:', error);
+      toast({
+        title: "Upload failed",
+        description: error.message || "Failed to upload photos. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const removePhoto = (index: number) => {
