@@ -47,9 +47,8 @@ export async function uploadPhotoToR2(
 
     await upload.done();
 
-    // Return public URL using R2.dev subdomain
-    // Format: https://pub-<account_id>.r2.dev/<bucket_name>/<file_path>
-    const publicUrl = `https://pub-${process.env.R2_ACCOUNT_ID}.r2.dev/${BUCKET_NAME}/${fileName}`;
+    // Return public URL using custom domain
+    const publicUrl = `https://www.fusioncouples.com/${fileName}`;
     
     console.log(`[R2 Upload] Successfully uploaded ${fileName}`);
     return publicUrl;
