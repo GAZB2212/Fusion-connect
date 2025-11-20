@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { setupAuth, isAuthenticated } from "./auth";
 import { broadcastToUser } from "./websocket";
 import { db } from "./db";
+import { SendbirdService } from "./sendbird";
 import passport from "passport";
 import bcrypt from "bcrypt";
 import Stripe from "stripe";
@@ -107,6 +108,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lastName: validatedData.lastName || null,
         })
         .returning();
+
+      // Create Sendbird user
+      try {
+        await SendbirdService.createOrUpdateUser({
+          userId: newUser.id,
+          nickname: `${newUser.firstName}${newUser.lastName ? ' ' + newUser.lastName : ''}`,
+        });
+        console.log(`Created Sendbird user for ${newUser.id}`);
+      } catch (error) {
+        console.error('Failed to create Sendbird user:', error);
+      }
 
       // Log the user in automatically
       req.login({ id: newUser.id, email: newUser.email, firstName: newUser.firstName, lastName: newUser.lastName }, (err) => {
