@@ -848,6 +848,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Sendbird session token endpoint
+  app.get("/api/sendbird/token", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+    
+    try {
+      // Ensure user exists in Sendbird first
+      await SendbirdService.createOrUpdateUser({
+        userId: userId,
+        nickname: `${req.user.firstName}${req.user.lastName ? ' ' + req.user.lastName : ''}`,
+      });
+      
+      // Generate session token
+      const token = await SendbirdService.generateSessionToken(userId);
+      res.json({ token, userId });
+    } catch (error: any) {
+      console.error('[Sendbird] Error generating token:', error);
+      res.status(500).json({ message: "Failed to generate Sendbird token" });
+    }
+  });
+
   // Profile endpoints
   app.get("/api/profile", isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;
@@ -1318,11 +1338,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // In production, only create match if at least one user has an active subscription
         const allowAllMatches = true; // Set to false in production
         if (allowAllMatches || currentUserHasSubscription || otherUserHasSubscription) {
-          await db.insert(matches).values({
+          const [newMatch] = await db.insert(matches).values({
             user1Id: userId,
             user2Id: swipedId,
-          });
+          }).returning();
           isMatch = true;
+          
+          // Create Sendbird channel for the match
+          try {
+            await SendbirdService.createChannel([userId, swipedId], newMatch.id);
+            console.log(`[Sendbird] Created channel for match ${newMatch.id}`);
+          } catch (error) {
+            console.error('[Sendbird] Failed to create channel:', error);
+          }
         }
       }
     }
