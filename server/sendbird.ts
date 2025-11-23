@@ -35,32 +35,24 @@ export class SendbirdService {
     }
     
     try {
-      const opts = {
+      const data = await userApi.createUser({
         apiToken,
-        createAUserRequest: {
-          userId: params.userId,
-          nickname: params.nickname,
-          profileUrl: params.profileUrl || ''
-        }
-      };
-
-      const data = await userApi.createAUser(opts);
+        userId: params.userId,
+        nickname: params.nickname,
+        profileUrl: params.profileUrl || ''
+      });
       console.log(`[Sendbird] Created user: ${params.userId}`);
       return data;
     } catch (error: any) {
       // User already exists - try updating
       if (error.status === 400 && error.body?.code === 400202) {
         try {
-          const updateOpts = {
+          const data = await userApi.updateUserById({
             apiToken,
             userId: params.userId,
-            updateAUserRequest: {
-              nickname: params.nickname,
-              profileUrl: params.profileUrl || ''
-            }
-          };
-          
-          const data = await userApi.updateAUser(updateOpts);
+            nickname: params.nickname,
+            profileUrl: params.profileUrl || ''
+          });
           console.log(`[Sendbird] Updated user: ${params.userId}`);
           return data;
         } catch (updateError) {
@@ -80,13 +72,10 @@ export class SendbirdService {
     }
     
     try {
-      const opts = {
+      const response = await userApi.createUserToken({
         apiToken,
-        userId,
-        createAUserTokenRequest: {}
-      };
-      
-      const response = await userApi.createAUserToken(opts);
+        userId
+      });
       console.log('[Sendbird] Token response:', JSON.stringify(response));
       
       // The response might be the token directly or have a token property
@@ -115,30 +104,24 @@ export class SendbirdService {
     }
     
     try {
-      const opts = {
+      const data = await groupChannelApi.gcCreateChannel({
         apiToken,
-        createAGroupChannelRequest: {
-          userIds: userIds,
-          isDistinct: true,
-          customType: 'fusion_match',
-          channelUrl: channelUrl
-        }
-      };
-
-      const data = await groupChannelApi.createAGroupChannel(opts);
+        userIds: userIds,
+        isDistinct: true,
+        customType: 'fusion_match',
+        channelUrl: channelUrl
+      });
       console.log(`[Sendbird] Created channel for users: ${userIds.join(', ')}`);
       return data;
     } catch (error: any) {
       // Channel might already exist
       if (error.status === 400 && error.body?.code === 400201) {
         try {
-          const listOpts = {
+          const data = await groupChannelApi.gcListChannels({
             apiToken,
             userIds: userIds.join(','),
             customTypes: 'fusion_match'
-          };
-          
-          const data = await groupChannelApi.listGroupChannels(listOpts);
+          });
           if (data.channels && data.channels.length > 0) {
             console.log(`[Sendbird] Found existing channel`);
             return data.channels[0];
@@ -158,12 +141,10 @@ export class SendbirdService {
     }
     
     try {
-      const opts = {
+      const data = await groupChannelApi.gcViewChannelByUrl({
         apiToken,
         channelUrl
-      };
-      
-      const data = await groupChannelApi.getAGroupChannel(opts);
+      });
       return data;
     } catch (error) {
       console.error('[Sendbird] Error getting channel:', error);
@@ -177,12 +158,10 @@ export class SendbirdService {
     }
     
     try {
-      const opts = {
+      await userApi.deleteUserById({
         apiToken,
         userId
-      };
-      
-      await userApi.deleteAUser(opts);
+      });
       console.log(`[Sendbird] Deleted user: ${userId}`);
     } catch (error) {
       console.error('[Sendbird] Error deleting user:', error);
