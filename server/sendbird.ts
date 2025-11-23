@@ -16,6 +16,16 @@ if (isConfigured) {
   userApi.apiClient.basePath = `https://api-${appId}.sendbird.com`;
   groupChannelApi.apiClient.basePath = `https://api-${appId}.sendbird.com`;
   
+  // Set API token in default headers
+  userApi.apiClient.defaultHeaders = {
+    ...userApi.apiClient.defaultHeaders,
+    'Api-Token': apiToken
+  };
+  groupChannelApi.apiClient.defaultHeaders = {
+    ...groupChannelApi.apiClient.defaultHeaders,
+    'Api-Token': apiToken
+  };
+  
   console.log('[Sendbird] Successfully configured');
 } else {
   console.warn('[Sendbird] Not configured - SENDBIRD_APP_ID and SENDBIRD_API_TOKEN not set');
@@ -36,7 +46,6 @@ export class SendbirdService {
     
     try {
       const data = await userApi.createUser({
-        apiToken,
         userId: params.userId,
         nickname: params.nickname,
         profileUrl: params.profileUrl || ''
@@ -48,7 +57,6 @@ export class SendbirdService {
       if (error.status === 400 && error.body?.code === 400202) {
         try {
           const data = await userApi.updateUserById({
-            apiToken,
             userId: params.userId,
             nickname: params.nickname,
             profileUrl: params.profileUrl || ''
@@ -73,7 +81,6 @@ export class SendbirdService {
     
     try {
       const response = await userApi.createUserToken({
-        apiToken,
         userId
       });
       console.log('[Sendbird] Token response:', JSON.stringify(response));
@@ -105,7 +112,6 @@ export class SendbirdService {
     
     try {
       const data = await groupChannelApi.gcCreateChannel({
-        apiToken,
         userIds: userIds,
         isDistinct: true,
         customType: 'fusion_match',
@@ -118,7 +124,6 @@ export class SendbirdService {
       if (error.status === 400 && error.body?.code === 400201) {
         try {
           const data = await groupChannelApi.gcListChannels({
-            apiToken,
             userIds: userIds.join(','),
             customTypes: 'fusion_match'
           });
@@ -142,7 +147,6 @@ export class SendbirdService {
     
     try {
       const data = await groupChannelApi.gcViewChannelByUrl({
-        apiToken,
         channelUrl
       });
       return data;
@@ -159,7 +163,6 @@ export class SendbirdService {
     
     try {
       await userApi.deleteUserById({
-        apiToken,
         userId
       });
       console.log(`[Sendbird] Deleted user: ${userId}`);
