@@ -853,18 +853,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const userId = req.user.id;
     
     try {
+      console.log(`[Sendbird] Token request for user ${userId}`);
+      
       // Ensure user exists in Sendbird first
       await SendbirdService.createOrUpdateUser({
         userId: userId,
         nickname: `${req.user.firstName}${req.user.lastName ? ' ' + req.user.lastName : ''}`,
       });
       
+      console.log(`[Sendbird] User created/updated, generating token...`);
+      
       // Generate session token
       const token = await SendbirdService.generateSessionToken(userId);
+      
+      console.log(`[Sendbird] Token generated successfully for user ${userId}`);
       res.json({ token, userId });
     } catch (error: any) {
-      console.error('[Sendbird] Error generating token:', error);
-      res.status(500).json({ message: "Failed to generate Sendbird token" });
+      console.error('[Sendbird] Error in token endpoint:', error);
+      console.error('[Sendbird] Error stack:', error.stack);
+      res.status(500).json({ 
+        message: "Failed to generate Sendbird token",
+        error: error.message 
+      });
     }
   });
 

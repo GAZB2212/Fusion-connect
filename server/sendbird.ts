@@ -87,10 +87,24 @@ export class SendbirdService {
         createAUserTokenRequest: new SendbirdPlatformSdk.CreateAUserTokenRequest()
       };
       
-      const data = await userApi.createAUserToken(opts);
-      return data.token;
-    } catch (error) {
+      const response = await userApi.createAUserToken(opts);
+      console.log('[Sendbird] Token response:', JSON.stringify(response));
+      
+      // The response might be the token directly or have a token property
+      const token = typeof response === 'string' ? response : response.token || response.data?.token;
+      
+      if (!token) {
+        throw new Error('No token in response');
+      }
+      
+      return token;
+    } catch (error: any) {
       console.error('[Sendbird] Error generating session token:', error);
+      console.error('[Sendbird] Error details:', {
+        status: error.status,
+        body: error.body,
+        message: error.message
+      });
       throw error;
     }
   }
