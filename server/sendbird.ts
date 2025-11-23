@@ -37,11 +37,11 @@ export class SendbirdService {
     try {
       const opts = {
         apiToken,
-        createAUserRequest: new SendbirdPlatformSdk.CreateAUserRequest(
-          params.userId,
-          params.nickname,
-          params.profileUrl || ''
-        )
+        createAUserRequest: {
+          userId: params.userId,
+          nickname: params.nickname,
+          profileUrl: params.profileUrl || ''
+        }
       };
 
       const data = await userApi.createAUser(opts);
@@ -54,12 +54,11 @@ export class SendbirdService {
           const updateOpts = {
             apiToken,
             userId: params.userId,
-            updateAUserRequest: new SendbirdPlatformSdk.UpdateAUserRequest()
+            updateAUserRequest: {
+              nickname: params.nickname,
+              profileUrl: params.profileUrl || ''
+            }
           };
-          updateOpts.updateAUserRequest.nickname = params.nickname;
-          if (params.profileUrl) {
-            updateOpts.updateAUserRequest.profileUrl = params.profileUrl;
-          }
           
           const data = await userApi.updateAUser(updateOpts);
           console.log(`[Sendbird] Updated user: ${params.userId}`);
@@ -84,7 +83,7 @@ export class SendbirdService {
       const opts = {
         apiToken,
         userId,
-        createAUserTokenRequest: new SendbirdPlatformSdk.CreateAUserTokenRequest()
+        createAUserTokenRequest: {}
       };
       
       const response = await userApi.createAUserToken(opts);
@@ -118,15 +117,13 @@ export class SendbirdService {
     try {
       const opts = {
         apiToken,
-        createAGroupChannelRequest: new SendbirdPlatformSdk.CreateAGroupChannelRequest(userIds)
+        createAGroupChannelRequest: {
+          userIds: userIds,
+          isDistinct: true,
+          customType: 'fusion_match',
+          channelUrl: channelUrl
+        }
       };
-      
-      // Set channel properties
-      opts.createAGroupChannelRequest.isDistinct = true;
-      opts.createAGroupChannelRequest.customType = 'fusion_match';
-      if (channelUrl) {
-        opts.createAGroupChannelRequest.channelUrl = channelUrl;
-      }
 
       const data = await groupChannelApi.createAGroupChannel(opts);
       console.log(`[Sendbird] Created channel for users: ${userIds.join(', ')}`);
