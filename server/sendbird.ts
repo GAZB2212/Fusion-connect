@@ -35,10 +35,14 @@ export class SendbirdService {
     }
     
     try {
+      const createUserRequest = new SendbirdPlatformSdk.CreateUserData(
+        params.userId,
+        params.nickname,
+        params.profileUrl || ''
+      );
+      
       const data = await userApi.createUser(apiToken, {
-        userId: params.userId,
-        nickname: params.nickname,
-        profileUrl: params.profileUrl || ''
+        createUserData: createUserRequest
       });
       console.log(`[Sendbird] Created user: ${params.userId}`);
       return data;
@@ -46,9 +50,12 @@ export class SendbirdService {
       // User already exists - try updating
       if (error.status === 400 && error.body?.code === 400202) {
         try {
+          const updateUserRequest = new SendbirdPlatformSdk.UpdateUserByIdData();
+          updateUserRequest.nickname = params.nickname;
+          updateUserRequest.profileUrl = params.profileUrl || '';
+          
           const data = await userApi.updateUserById(apiToken, params.userId, {
-            nickname: params.nickname,
-            profileUrl: params.profileUrl || ''
+            updateUserByIdData: updateUserRequest
           });
           console.log(`[Sendbird] Updated user: ${params.userId}`);
           return data;
@@ -98,11 +105,17 @@ export class SendbirdService {
     }
     
     try {
+      const createChannelRequest = new SendbirdPlatformSdk.GcCreateChannelData(
+        userIds
+      );
+      createChannelRequest.isDistinct = true;
+      createChannelRequest.customType = 'fusion_match';
+      if (channelUrl) {
+        createChannelRequest.channelUrl = channelUrl;
+      }
+      
       const data = await groupChannelApi.gcCreateChannel(apiToken, {
-        userIds: userIds,
-        isDistinct: true,
-        customType: 'fusion_match',
-        channelUrl: channelUrl
+        gcCreateChannelData: createChannelRequest
       });
       console.log(`[Sendbird] Created channel for users: ${userIds.join(', ')}`);
       return data;
