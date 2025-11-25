@@ -1281,6 +1281,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const userId = req.user.id;
     const { swipedId, direction } = req.body;
 
+    console.log(`[SWIPE] User ${userId} swiped ${direction} on ${swipedId}`);
+
     if (!swipedId || !direction) {
       return res.status(400).json({ message: "Missing swipedId or direction" });
     }
@@ -1314,6 +1316,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     // If this is a right swipe, check for mutual match
     if (direction === "right") {
+      console.log(`[SWIPE] Checking for mutual match between ${userId} and ${swipedId}`);
+      
       const [mutualSwipe] = await db
         .select()
         .from(swipes)
@@ -1327,41 +1331,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .limit(1);
 
       if (mutualSwipe) {
-        // Check if at least one user has an active subscription
-        // Matches can only be created if at least one user is a premium subscriber
-        const [currentUser] = await db
+        console.log(`[SWIPE] Found mutual swipe! Creating match...`);
+        
+        // Check if match already exists to prevent duplicates
+        const [existingMatch] = await db
           .select()
-          .from(users)
-          .where(eq(users.id, userId))
+          .from(matches)
+          .where(
+            or(
+              and(eq(matches.user1Id, userId), eq(matches.user2Id, swipedId)),
+              and(eq(matches.user1Id, swipedId), eq(matches.user2Id, userId))
+            )
+          )
           .limit(1);
 
-        const [otherUser] = await db
-          .select()
-          .from(users)
-          .where(eq(users.id, swipedId))
-          .limit(1);
-
-        const currentUserHasSubscription = currentUser?.subscriptionStatus === 'active' || currentUser?.subscriptionStatus === 'trialing';
-        const otherUserHasSubscription = otherUser?.subscriptionStatus === 'active' || otherUser?.subscriptionStatus === 'trialing';
-
-        // For testing: Allow all matches regardless of subscription
-        // In production, only create match if at least one user has an active subscription
-        const allowAllMatches = true; // Set to false in production
-        if (allowAllMatches || currentUserHasSubscription || otherUserHasSubscription) {
-          const [newMatch] = await db.insert(matches).values({
-            user1Id: userId,
-            user2Id: swipedId,
-          }).returning();
+        if (existingMatch) {
+          console.log(`[SWIPE] Match already exists: ${existingMatch.id}`);
           isMatch = true;
-          
-          // Create Sendbird channel for the match
-          try {
-            await SendbirdService.createChannel([userId, swipedId], newMatch.id);
-            console.log(`[Sendbird] Created channel for match ${newMatch.id}`);
-          } catch (error) {
-            console.error('[Sendbird] Failed to create channel:', error);
+        } else {
+          // Check if at least one user has an active subscription
+          // Matches can only be created if at least one user is a premium subscriber
+          const [currentUser] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, userId))
+            .limit(1);
+
+          const [otherUser] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, swipedId))
+            .limit(1);
+
+          const currentUserHasSubscription = currentUser?.subscriptionStatus === 'active' || currentUser?.subscriptionStatus === 'trialing';
+          const otherUserHasSubscription = otherUser?.subscriptionStatus === 'active' || otherUser?.subscriptionStatus === 'trialing';
+
+          console.log(`[SWIPE] Subscription check - Current: ${currentUserHasSubscription}, Other: ${otherUserHasSubscription}`);
+
+          // For testing: Allow all matches regardless of subscription
+          // In production, only create match if at least one user has an active subscription
+          const allowAllMatches = true; // Set to false in production
+          if (allowAllMatches || currentUserHasSubscription || otherUserHasSubscription) {
+            try {
+              const [newMatch] = await db.insert(matches).values({
+                user1Id: userId,
+                user2Id: swipedId,
+              }).returning();
+              isMatch = true;
+              console.log(`[MATCH] ✅ Created match ${newMatch.id} between ${userId} and ${swipedId}`);
+              
+              // Create Sendbird channel for the match
+              try {
+                await SendbirdService.createChannel([userId, swipedId], newMatch.id);
+                console.log(`[Sendbird] Created channel for match ${newMatch.id}`);
+              } catch (error) {
+                console.error('[Sendbird] Failed to create channel:', error);
+              }
+            } catch (error) {
+              console.error('[MATCH] Failed to create match:', error);
+              throw error;
+            }
+          } else {
+            console.log(`[SWIPE] Match not created - subscription required`);
           }
         }
+      } else {
+        console.log(`[SWIPE] No mutual swipe found yet`);
       }
     }
 
