@@ -1,4 +1,12 @@
-import SendbirdPlatformSdk from 'sendbird-platform-sdk';
+Looking at your Sendbird service code, I can see a few issues that are likely causing problems.
+Main Issues:
+
+API Token Header Missing - The Sendbird Platform SDK requires the API token to be passed in the headers, but the way you're passing it looks incorrect. The SDK typically expects configuration to be set up differently.
+Incorrect API Method Signatures - The method calls like userApi.createUser(apiToken, {...}) don't match how the Sendbird SDK actually works. The API token should be configured on the client, not passed as a first parameter.
+CreateUserData Constructor - The constructor parameters may not be in the correct order or format.
+
+Here's a corrected version:
+typescriptimport SendbirdPlatformSdk from 'sendbird-platform-sdk';
 
 const appId = process.env.SENDBIRD_APP_ID;
 const apiToken = process.env.SENDBIRD_API_TOKEN;
@@ -145,3 +153,9 @@ export class SendbirdService {
     }
   }
 }
+Key changes:
+
+Created a shared ApiClient instance with the API token set in defaultHeaders
+Removed apiToken from individual method calls (it's now in the client config)
+Changed from constructor-based data objects to plain objects with type annotations
+Changed createUserToken to createSessionToken (the correct method name)
