@@ -1,21 +1,10 @@
-import SendbirdPlatformSdk from 'sendbird-platform-sdk';
-
 const appId = process.env.SENDBIRD_APP_ID;
 const apiToken = process.env.SENDBIRD_API_TOKEN;
 
 const isConfigured = !!(appId && apiToken);
-
-let userApi: any;
-let groupChannelApi: any;
+const baseUrl = `https://api-${appId}.sendbird.com/v3`;
 
 if (isConfigured) {
-  userApi = new SendbirdPlatformSdk.UserApi();
-  groupChannelApi = new SendbirdPlatformSdk.GroupChannelApi();
-  
-  // Set base path for API instances
-  userApi.apiClient.basePath = `https://api-${appId}.sendbird.com`;
-  groupChannelApi.apiClient.basePath = `https://api-${appId}.sendbird.com`;
-  
   console.log('[Sendbird] Successfully configured');
 } else {
   console.warn('[Sendbird] Not configured - SENDBIRD_APP_ID and SENDBIRD_API_TOKEN not set');
@@ -28,6 +17,7 @@ export interface SendbirdUserParams {
 }
 
 export class SendbirdService {
+  
   static async createOrUpdateUser(params: SendbirdUserParams): Promise<any> {
     if (!isConfigured) {
       console.warn('[Sendbird] Skipping user creation - not configured');
@@ -35,43 +25,57 @@ export class SendbirdService {
     }
     
     try {
-      const createUserData = new SendbirdPlatformSdk.CreateUserData(
-        params.userId,
-        params.nickname,
-        params.profileUrl || ''
-      );
+      const response = await fetch(`${baseUrl}/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Api-Token': apiToken!
+        },
+        body: JSON.stringify({
+          user_id: params.userId,
+          nickname: params.nickname,
+          profile_url: params.profileUrl || ''
+        })
+      });
       
-      const opts = {
-        createUserData: createUserData
-      };
+      const data = await response.json();
       
-      const data = await userApi.createUser(apiToken, opts);
+      if (!response.ok) {
+        // User already exists (400202) - try updating
+        if (data.code === 400202) {
+          return await this.updateUser(params);
+        }
+        throw new Error(data.message || 'Failed to create user');
+      }
+      
       console.log(`[Sendbird] Created user: ${params.userId}`);
       return data;
-    } catch (error: any) {
-      // User already exists - try updating
-      if (error.status === 400 && error.body?.code === 400202) {
-        try {
-          const updateUserData = new SendbirdPlatformSdk.UpdateUserByIdData();
-          updateUserData.nickname = params.nickname;
-          updateUserData.profileUrl = params.profileUrl || '';
-          
-          const opts = {
-            updateUserByIdData: updateUserData
-          };
-          
-          const data = await userApi.updateUserById(apiToken, params.userId, opts);
-          console.log(`[Sendbird] Updated user: ${params.userId}`);
-          return data;
-        } catch (updateError) {
-          console.error('[Sendbird] Error updating user:', updateError);
-          throw updateError;
-        }
-      } else {
-        console.error('[Sendbird] Error creating user:', error);
-        throw error;
-      }
+    } catch (error) {
+      console.error('[Sendbird] Error creating user:', error);
+      throw error;
     }
+  }
+
+  static async updateUser(params: SendbirdUserParams): Promise<any> {
+    const response = await fetch(`${baseUrl}/users/${encodeURIComponent(params.userId)}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Api-Token': apiToken!
+      },
+      body: JSON.stringify({
+        nickname: params.nickname,
+        profile_url: params.profileUrl || ''
+      })
+    });
+    
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || 'Failed to update user');
+    }
+    
+    console.log(`[Sendbird] Updated user: ${params.userId}`);
+    return await response.json();
   }
 
   static async generateSessionToken(userId: string): Promise<string> {
@@ -80,25 +84,26 @@ export class SendbirdService {
     }
     
     try {
-      const opts = {};
-      const response = await userApi.createUserToken(apiToken, userId, opts);
-      console.log('[Sendbird] Token response:', JSON.stringify(response));
+      const response = await fetch(`${baseUrl}/users/${encodeURIComponent(userId)}/token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Api-Token': apiToken!
+        },
+        body: JSON.stringify({})
+      });
       
-      // The response might be the token directly or have a token property
-      const token = typeof response === 'string' ? response : response.token || response.data?.token;
+      const data = await response.json();
       
-      if (!token) {
-        throw new Error('No token in response');
+      if (!response.ok) {
+        console.error('[Sendbird] Token API error:', data);
+        throw new Error(data.message || 'Failed to generate token');
       }
       
-      return token;
+      console.log('[Sendbird] Generated session token for:', userId);
+      return data.token;
     } catch (error: any) {
       console.error('[Sendbird] Error generating session token:', error);
-      console.error('[Sendbird] Error details:', {
-        status: error.status,
-        body: error.body,
-        message: error.message
-      });
       throw error;
     }
   }
@@ -110,37 +115,34 @@ export class SendbirdService {
     }
     
     try {
-      const createChannelData = new SendbirdPlatformSdk.GcCreateChannelData(userIds);
-      createChannelData.isDistinct = true;
-      createChannelData.customType = 'fusion_match';
-      if (channelUrl) {
-        createChannelData.channelUrl = channelUrl;
-      }
-      
-      const opts = {
-        gcCreateChannelData: createChannelData
+      const body: any = {
+        user_ids: userIds,
+        is_distinct: true,
+        custom_type: 'fusion_match'
       };
       
-      const data = await groupChannelApi.gcCreateChannel(apiToken, opts);
+      if (channelUrl) {
+        body.channel_url = channelUrl;
+      }
+      
+      const response = await fetch(`${baseUrl}/group_channels`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Api-Token': apiToken!
+        },
+        body: JSON.stringify(body)
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create channel');
+      }
+      
       console.log(`[Sendbird] Created channel for users: ${userIds.join(', ')}`);
       return data;
-    } catch (error: any) {
-      // Channel might already exist
-      if (error.status === 400 && error.body?.code === 400201) {
-        try {
-          const opts = {
-            userIds: userIds.join(','),
-            customTypes: 'fusion_match'
-          };
-          const data = await groupChannelApi.gcListChannels(apiToken, opts);
-          if (data.channels && data.channels.length > 0) {
-            console.log(`[Sendbird] Found existing channel`);
-            return data.channels[0];
-          }
-        } catch (listError) {
-          console.error('[Sendbird] Error finding existing channel:', listError);
-        }
-      }
+    } catch (error) {
       console.error('[Sendbird] Error creating channel:', error);
       throw error;
     }
@@ -151,13 +153,19 @@ export class SendbirdService {
       throw new Error('Sendbird not configured');
     }
     
-    try {
-      const data = await groupChannelApi.gcViewChannelByUrl(apiToken, channelUrl);
-      return data;
-    } catch (error) {
-      console.error('[Sendbird] Error getting channel:', error);
-      throw error;
+    const response = await fetch(`${baseUrl}/group_channels/${encodeURIComponent(channelUrl)}`, {
+      method: 'GET',
+      headers: {
+        'Api-Token': apiToken!
+      }
+    });
+    
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || 'Failed to get channel');
     }
+    
+    return await response.json();
   }
 
   static async deleteUser(userId: string): Promise<void> {
@@ -165,12 +173,18 @@ export class SendbirdService {
       throw new Error('Sendbird not configured');
     }
     
-    try {
-      await userApi.deleteUserById(apiToken, userId);
-      console.log(`[Sendbird] Deleted user: ${userId}`);
-    } catch (error) {
-      console.error('[Sendbird] Error deleting user:', error);
-      throw error;
+    const response = await fetch(`${baseUrl}/users/${encodeURIComponent(userId)}`, {
+      method: 'DELETE',
+      headers: {
+        'Api-Token': apiToken!
+      }
+    });
+    
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || 'Failed to delete user');
     }
+    
+    console.log(`[Sendbird] Deleted user: ${userId}`);
   }
 }
