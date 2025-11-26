@@ -2569,6 +2569,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // DEVELOPMENT: Backfill Sendbird channels for existing matches
+  app.post('/api/dev/backfill-channels', isAuthenticated, async (req: any, res: Response) => {
+    try {
+      console.log('[BACKFILL] Starting channel backfill for existing matches');
+      
+      // Get all matches
+      const allMatches = await db
+        .select()
+        .from(matches);
+
+      console.log(`[BACKFILL] Found ${allMatches.length} total matches`);
+
+      const results = {
+        total: allMatches.length,
+        created: 0,
+        errors: 0,
+        skipped: 0
+      };
+
+      for (const match of allMatches) {
+        try {
+          console.log(`[BACKFILL] Processing match ${match.id}`);
+          await SendbirdService.createChannel([match.user1Id, match.user2Id], match.id);
+          results.created++;
+          console.log(`[BACKFILL] ✅ Created channel for match ${match.id}`);
+        } catch (error: any) {
+          // Channel might already exist
+          if (error.message?.includes('already exists') || error.message?.includes('400201')) {
+            results.skipped++;
+            console.log(`[BACKFILL] ⏭️  Channel already exists for match ${match.id}`);
+          } else {
+            results.errors++;
+            console.error(`[BACKFILL] ❌ Error creating channel for match ${match.id}:`, error.message);
+          }
+        }
+      }
+
+      console.log('[BACKFILL] Complete:', results);
+      res.json({ success: true, results });
+    } catch (error: any) {
+      console.error('[BACKFILL] Error:', error);
+      res.status(500).json({ message: "Failed to backfill channels" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
