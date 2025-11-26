@@ -2574,10 +2574,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log('[BACKFILL] Starting channel backfill for existing matches');
       
-      // Get all matches
+      // Get all matches with user profile data
       const allMatches = await db
-        .select()
-        .from(matches);
+        .select({
+          matchId: matches.id,
+          user1Id: matches.user1Id,
+          user2Id: matches.user2Id,
+          user1Profile: profiles,
+          user1: users,
+        })
+        .from(matches)
+        .leftJoin(profiles, eq(profiles.userId, matches.user1Id))
+        .leftJoin(users, eq(users.id, matches.user1Id));
 
       console.log(`[BACKFILL] Found ${allMatches.length} total matches`);
 
@@ -2590,18 +2598,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       for (const match of allMatches) {
         try {
-          console.log(`[BACKFILL] Processing match ${match.id}`);
-          await SendbirdService.createChannel([match.user1Id, match.user2Id], match.id);
+          console.log(`[BACKFILL] Processing match ${match.matchId}`);
+          
+          // Create/update both users in Sendbird first
+          const [profile1] = await db
+            .select()
+            .from(profiles)
+            .where(eq(profiles.userId, match.user1Id))
+            .limit(1);
+          
+          const [user1] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, match.user1Id))
+            .limit(1);
+
+          const [profile2] = await db
+            .select()
+            .from(profiles)
+            .where(eq(profiles.userId, match.user2Id))
+            .limit(1);
+          
+          const [user2] = await db
+            .select()
+            .from(users)
+            .where(eq(users.id, match.user2Id))
+            .limit(1);
+
+          // Create user1 in Sendbird
+          if (user1 && profile1) {
+            await SendbirdService.createOrUpdateUser({
+              userId: user1.id,
+              nickname: profile1.displayName || user1.firstName || user1.email,
+              profileUrl: profile1.photos?.[0] || undefined
+            });
+            console.log(`[BACKFILL] Created/updated Sendbird user: ${user1.id}`);
+          }
+
+          // Create user2 in Sendbird
+          if (user2 && profile2) {
+            await SendbirdService.createOrUpdateUser({
+              userId: user2.id,
+              nickname: profile2.displayName || user2.firstName || user2.email,
+              profileUrl: profile2.photos?.[0] || undefined
+            });
+            console.log(`[BACKFILL] Created/updated Sendbird user: ${user2.id}`);
+          }
+
+          // Now create the channel
+          await SendbirdService.createChannel([match.user1Id, match.user2Id], match.matchId);
           results.created++;
-          console.log(`[BACKFILL] ✅ Created channel for match ${match.id}`);
+          console.log(`[BACKFILL] ✅ Created channel for match ${match.matchId}`);
         } catch (error: any) {
           // Channel might already exist
           if (error.message?.includes('already exists') || error.message?.includes('400201')) {
             results.skipped++;
-            console.log(`[BACKFILL] ⏭️  Channel already exists for match ${match.id}`);
+            console.log(`[BACKFILL] ⏭️  Channel already exists for match ${match.matchId}`);
           } else {
             results.errors++;
-            console.error(`[BACKFILL] ❌ Error creating channel for match ${match.id}:`, error.message);
+            console.error(`[BACKFILL] ❌ Error creating channel for match ${match.matchId}:`, error.message);
           }
         }
       }
