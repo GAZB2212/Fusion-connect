@@ -31,6 +31,27 @@ export default function Messages() {
     enabled: !!user,
   });
 
+  // One-time backfill of channels for existing matches
+  useEffect(() => {
+    if (user) {
+      const hasBackfilled = sessionStorage.getItem('channels_backfilled');
+      if (!hasBackfilled) {
+        fetch('/api/dev/backfill-channels', { 
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        })
+          .then(r => r.json())
+          .then(result => {
+            console.log('[Messages] Channel backfill complete:', result);
+            sessionStorage.setItem('channels_backfilled', 'true');
+          })
+          .catch(err => {
+            console.error('[Messages] Channel backfill failed:', err);
+          });
+      }
+    }
+  }, [user]);
+
   useEffect(() => {
     if (tokenData?.token) {
       setSendbirdToken(tokenData.token);
