@@ -34,7 +34,7 @@ export class SendbirdService {
         body: JSON.stringify({
           user_id: params.userId,
           nickname: params.nickname,
-          profile_url: params.profileUrl || ''
+          profile_url: params.profileUrl || 'https://via.placeholder.com/150'
         })
       });
       
@@ -45,6 +45,7 @@ export class SendbirdService {
         if (data.code === 400202) {
           return await this.updateUser(params);
         }
+        console.error('[Sendbird] Create user failed:', data);
         throw new Error(data.message || 'Failed to create user');
       }
       
@@ -65,12 +66,13 @@ export class SendbirdService {
       },
       body: JSON.stringify({
         nickname: params.nickname,
-        profile_url: params.profileUrl || ''
+        profile_url: params.profileUrl || 'https://via.placeholder.com/150'
       })
     });
     
     if (!response.ok) {
       const data = await response.json();
+      console.error('[Sendbird] Update user failed:', data);
       throw new Error(data.message || 'Failed to update user');
     }
     
