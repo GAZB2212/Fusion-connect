@@ -1,0 +1,218 @@
+Now I understand. The Sendbird Platform SDK might not have a direct method for session tokens in the JavaScript SDK. You may need to make a direct HTTP request to their API instead. Let me give you a corrected version that uses the REST API directly for the token:
+typescriptimport SendbirdPlatformSdk from 'sendbird-platform-sdk';
+
+const appId = process.env.SENDBIRD_APP_ID;
+const apiToken = process.env.SENDBIRD_API_TOKEN;
+
+const isConfigured = !!(appId && apiToken);
+const baseUrl = `https://api-${appId}.sendbird.com/v3`;
+
+let userApi: any;
+let groupChannelApi: any;
+
+if (isConfigured) {
+  userApi = new SendbirdPlatformSdk.UserApi();
+  groupChannelApi = new SendbirdPlatformSdk.GroupChannelApi();
+  
+  userApi.apiClient.basePath = `https://api-${appId}.sendbird.com`;
+  groupChannelApi.apiClient.basePath = `https://api-${appId}.sendbird.com`;
+  
+  console.log('[Sendbird] Successfully configured');
+} else {
+  console.warn('[Sendbird] Not configured');
+}
+
+export interface SendbirdUserParams {
+  userId: string;
+  nickname: string;
+  profileUrl?: string;
+}
+
+export class SendbirdService {
+  
+  static async createOrUpdateUser(params: SendbirdUserParams): Promise<any> {
+    if (!isConfigured) {
+      console.warn('[Sendbird] Skipping user creation - not configured');
+      return null;
+    }
+    
+    try {
+      // Use direct REST API call for reliability
+      const response = await fetch(`${baseUrl}/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Api-Token': apiToken!
+        },
+        body: JSON.stringify({
+          user_id: params.userId,
+          nickname: params.nickname,
+          profile_url: params.profileUrl || ''
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        // User already exists (400202) - try updating
+        if (data.code === 400202) {
+          return await this.updateUser(params);
+        }
+        throw new Error(data.message || 'Failed to create user');
+      }
+      
+      console.log(`[Sendbird] Created user: ${params.userId}`);
+      return data;
+    } catch (error) {
+      console.error('[Sendbird] Error creating user:', error);
+      throw error;
+    }
+  }
+
+  static async updateUser(params: SendbirdUserParams): Promise<any> {
+    const response = await fetch(`${baseUrl}/users/${encodeURIComponent(params.userId)}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Api-Token': apiToken!
+      },
+      body: JSON.stringify({
+        nickname: params.nickname,
+        profile_url: params.profileUrl || ''
+      })
+    });
+    
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || 'Failed to update user');
+    }
+    
+    console.log(`[Sendbird] Updated user: ${params.userId}`);
+    return await response.json();
+  }
+
+  static async generateSessionToken(userId: string): Promise<string> {
+    if (!isConfigured) {
+      throw new Error('Sendbird not configured');
+    }
+    
+    try {
+      // Use the correct endpoint: POST /users/{user_id}/token
+      const response = await fetch(`${baseUrl}/users/${encodeURIComponent(userId)}/token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Api-Token': apiToken!
+        },
+        body: JSON.stringify({})  // Can include expires_at if needed
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error('[Sendbird] Token API error:', data);
+        throw new Error(data.message || 'Failed to generate token');
+      }
+      
+      console.log('[Sendbird] Generated session token for:', userId);
+      return data.token;
+    } catch (error: any) {
+      console.error('[Sendbird] Error generating session token:', error);
+      throw error;
+    }
+  }
+
+  static async createChannel(userIds: string[], channelUrl?: string): Promise<any> {
+    if (!isConfigured) {
+      console.warn('[Sendbird] Skipping channel creation - not configured');
+      return null;
+    }
+    
+    try {
+      const body: any = {
+        user_ids: userIds,
+        is_distinct: true,
+        custom_type: 'fusion_match'
+      };
+      
+      if (channelUrl) {
+        body.channel_url = channelUrl;
+      }
+      
+      const response = await fetch(`${baseUrl}/group_channels`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Api-Token': apiToken!
+        },
+        body: JSON.stringify(body)
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create channel');
+      }
+      
+      console.log(`[Sendbird] Created channel for users: ${userIds.join(', ')}`);
+      return data;
+    } catch (error) {
+      console.error('[Sendbird] Error creating channel:', error);
+      throw error;
+    }
+  }
+
+  static async getChannel(channelUrl: string): Promise<any> {
+    if (!isConfigured) {
+      throw new Error('Sendbird not configured');
+    }
+    
+    const response = await fetch(`${baseUrl}/group_channels/${encodeURIComponent(channelUrl)}`, {
+      method: 'GET',
+      headers: {
+        'Api-Token': apiToken!
+      }
+    });
+    
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || 'Failed to get channel');
+    }
+    
+    return await response.json();
+  }
+
+  static async deleteUser(userId: string): Promise<void> {
+    if (!isConfigured) {
+      throw new Error('Sendbird not configured');
+    }
+    
+    const response = await fetch(`${baseUrl}/users/${encodeURIComponent(userId)}`, {
+      method: 'DELETE',
+      headers: {
+        'Api-Token': apiToken!
+      }
+    });
+    
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || 'Failed to delete user');
+    }
+    
+    console.log(`[Sendbird] Deleted user: ${userId}`);
+  }
+}
+Key changes:
+
+Using direct REST API calls instead of the SDK for reliability - the SDK's method names and signatures can be inconsistent
+Correct token endpoint: POST /v3/users/{user_id}/token - this is the official endpoint for session tokens
+Proper headers: Api-Token header (not passed as a parameter)
+URL encoding for user IDs that might contain special characters
+
+Also check:
+
+Is your SENDBIRD_API_TOKEN environment variable set correctly in Replit?
+Is your SENDBIRD_APP_ID correct?
+Does the user exist in Sendbird before you try to generate a token? (You need to create the user first)
+
+The 500 error suggests the token generation is failing server-side - this updated code should give you better error messages to debug what's actually wrong.
