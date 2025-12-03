@@ -143,10 +143,47 @@ export class SendbirdService {
       }
       
       console.log(`[Sendbird] Created channel for users: ${userIds.join(', ')}`);
+      
+      // Send a welcome message so the channel appears in users' channel lists
+      await this.sendSystemMessage(data.channel_url, "You're now connected! Start chatting.");
+      
       return data;
     } catch (error) {
       console.error('[Sendbird] Error creating channel:', error);
       throw error;
+    }
+  }
+
+  static async sendSystemMessage(channelUrl: string, message: string): Promise<any> {
+    if (!isConfigured) {
+      return null;
+    }
+    
+    try {
+      const response = await fetch(`${baseUrl}/group_channels/${encodeURIComponent(channelUrl)}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Api-Token': apiToken!
+        },
+        body: JSON.stringify({
+          message_type: 'ADMM',
+          message: message
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error('[Sendbird] Failed to send system message:', data);
+        return null;
+      }
+      
+      console.log(`[Sendbird] Sent system message to channel: ${channelUrl}`);
+      return data;
+    } catch (error) {
+      console.error('[Sendbird] Error sending system message:', error);
+      return null;
     }
   }
 

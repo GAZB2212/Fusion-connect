@@ -4,11 +4,13 @@ import { useRoute, useLocation } from "wouter";
 import { App as SendBirdApp } from "@sendbird/uikit-react";
 import "@sendbird/uikit-react/dist/index.css";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, RefreshCw } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
 const SENDBIRD_APP_ID = import.meta.env.VITE_SENDBIRD_APP_ID || "A68E730B-8E56-4655-BCBD-A709F3162376";
+
+console.log('[Messages] Sendbird App ID:', SENDBIRD_APP_ID);
 
 interface SendbirdTokenResponse {
   token: string;
@@ -54,9 +56,11 @@ export default function Messages() {
 
   useEffect(() => {
     if (tokenData?.token) {
+      console.log('[Messages] Token received for user:', tokenData.userId);
+      console.log('[Messages] Current user.id:', user?.id);
       setSendbirdToken(tokenData.token);
     }
-  }, [tokenData]);
+  }, [tokenData, user]);
 
   useEffect(() => {
     if (matchId) {
@@ -103,15 +107,30 @@ export default function Messages() {
         <h1 className="text-xl font-semibold">Messages</h1>
       </div>
 
+      {/* Debug info */}
+      <div className="px-4 py-2 text-xs text-muted-foreground bg-muted/50 border-b">
+        User ID: {user.id} | Token: {sendbirdToken ? 'Ready' : 'Loading...'}
+      </div>
+
       {/* Sendbird Chat Interface */}
-      <div className="flex-1 overflow-hidden sendbird-fusion-theme">
+      <div className="flex-1 overflow-hidden sendbird-fusion-theme" style={{ minHeight: '400px' }}>
         <SendBirdApp
           appId={SENDBIRD_APP_ID}
           userId={user.id}
           accessToken={sendbirdToken}
           theme="dark"
           config={{
-            logLevel: "error",
+            logLevel: "all",
+          }}
+          eventHandlers={{
+            connection: {
+              onConnected: (user: any) => {
+                console.log('[Sendbird] Connected as user:', user?.userId || user);
+              },
+              onFailed: (error: Error) => {
+                console.error('[Sendbird] Connection failed:', error);
+              },
+            },
           }}
         />
       </div>
