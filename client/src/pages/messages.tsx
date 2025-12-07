@@ -219,9 +219,16 @@ export default function Messages() {
         .fusion-chat .sendbird-group-channel-list {
           width: 100% !important;
           max-width: 100% !important;
+          min-width: 100% !important;
           height: 100% !important;
           background: hsl(var(--background)) !important;
           overflow-x: hidden !important;
+        }
+
+        .fusion-chat .sendbird-channel-list__body,
+        .fusion-chat .sendbird-group-channel-list__body {
+          width: 100% !important;
+          max-width: 100% !important;
         }
 
         .fusion-chat .sendbird-channel-list__header,
@@ -232,6 +239,8 @@ export default function Messages() {
         }
 
         .fusion-chat .sendbird-channel-preview {
+          width: calc(100% - 16px) !important;
+          max-width: calc(100% - 16px) !important;
           background: transparent !important;
           border-radius: 8px !important;
           margin: 4px 8px !important;
