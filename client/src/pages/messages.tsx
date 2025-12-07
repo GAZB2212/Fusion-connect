@@ -191,17 +191,27 @@ export default function Messages() {
         .sendbird-group-channel-view {
           width: 100% !important;
           height: 100% !important;
+          display: flex !important;
+          flex-direction: column !important;
           background-color: hsl(var(--background)) !important;
         }
 
         .sendbird-conversation__messages,
         .sendbird-group-channel-view__message-list {
+          flex: 1 !important;
+          min-height: 0 !important;
+          overflow-y: auto !important;
           background-color: hsl(var(--background)) !important;
+        }
+
+        .sendbird-conversation__messages-padding {
+          height: 100% !important;
+          padding: 16px !important;
         }
 
         .sendbird-channel-header,
         .sendbird-group-channel-header {
-          display: none !important;
+          flex-shrink: 0 !important;
         }
 
         .sendbird-message-input,
