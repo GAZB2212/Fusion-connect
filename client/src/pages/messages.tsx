@@ -40,16 +40,19 @@ export default function Messages() {
     enabled: !!user,
   });
 
-  // Fetch match details when in a conversation
-  const { data: matchData } = useQuery<Match>({
-    queryKey: ["/api/matches", currentChannelUrl],
-    enabled: !!currentChannelUrl && !!user,
+  // Fetch all matches to find the current one
+  const { data: matches } = useQuery<Match[]>({
+    queryKey: ["/api/matches"],
+    enabled: !!user,
   });
+
+  // Find current match from the list
+  const currentMatch = matches?.find(m => m.id === currentChannelUrl);
 
   // Get the other user's ID from the match
   const getOtherUserId = () => {
-    if (!matchData || !user) return null;
-    return matchData.user1Id === user.id ? matchData.user2Id : matchData.user1Id;
+    if (!currentMatch || !user) return null;
+    return currentMatch.user1Id === user.id ? currentMatch.user2Id : currentMatch.user1Id;
   };
 
   // Video call mutation
@@ -156,7 +159,7 @@ export default function Messages() {
         <h1 className="text-lg font-semibold text-foreground flex-1">
           {currentChannelUrl ? "Chat" : "Messages"}
         </h1>
-        {currentChannelUrl && matchData && (
+        {currentChannelUrl && currentMatch && (
           <Button
             variant="ghost"
             size="icon"
