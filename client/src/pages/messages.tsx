@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useRoute, useLocation } from "wouter";
 import SendbirdProvider from "@sendbird/uikit-react/SendbirdProvider";
 import GroupChannelList from "@sendbird/uikit-react/GroupChannelList";
 import GroupChannel from "@sendbird/uikit-react/GroupChannel";
 import "@sendbird/uikit-react/dist/index.css";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Video } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 const SENDBIRD_APP_ID = import.meta.env.VITE_SENDBIRD_APP_ID || "A68E730B-8E56-4655-BCBD-A709F3162376";
 
@@ -16,11 +18,19 @@ interface SendbirdTokenResponse {
   userId: string;
 }
 
+interface Match {
+  id: string;
+  user1Id: string;
+  user2Id: string;
+  matchedAt: string;
+}
+
 export default function Messages() {
   const { user } = useAuth();
   const [, params] = useRoute("/messages/:matchId");
   const [, setLocation] = useLocation();
   const matchId = params?.matchId;
+  const { toast } = useToast();
 
   const [sendbirdToken, setSendbirdToken] = useState<string | null>(null);
   const [currentChannelUrl, setCurrentChannelUrl] = useState<string | null>(matchId || null);
@@ -28,6 +38,45 @@ export default function Messages() {
   const { data: tokenData, isLoading: tokenLoading } = useQuery<SendbirdTokenResponse>({
     queryKey: ["/api/sendbird/token"],
     enabled: !!user,
+  });
+
+  // Fetch match details when in a conversation
+  const { data: matchData } = useQuery<Match>({
+    queryKey: ["/api/matches", currentChannelUrl],
+    enabled: !!currentChannelUrl && !!user,
+  });
+
+  // Get the other user's ID from the match
+  const getOtherUserId = () => {
+    if (!matchData || !user) return null;
+    return matchData.user1Id === user.id ? matchData.user2Id : matchData.user1Id;
+  };
+
+  // Video call mutation
+  const startCallMutation = useMutation({
+    mutationFn: async () => {
+      const receiverId = getOtherUserId();
+      if (!receiverId || !currentChannelUrl) {
+        throw new Error("Cannot start call");
+      }
+      return apiRequest("POST", "/api/video-call/initiate", {
+        matchId: currentChannelUrl,
+        receiverId,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Calling...",
+        description: "Starting video call",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Call failed",
+        description: error.message || "Could not start video call",
+        variant: "destructive",
+      });
+    },
   });
 
   useEffect(() => {
@@ -104,9 +153,20 @@ export default function Messages() {
             <ArrowLeft className="w-5 h-5" />
           </Button>
         )}
-        <h1 className="text-lg font-semibold text-foreground">
+        <h1 className="text-lg font-semibold text-foreground flex-1">
           {currentChannelUrl ? "Chat" : "Messages"}
         </h1>
+        {currentChannelUrl && matchData && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => startCallMutation.mutate()}
+            disabled={startCallMutation.isPending}
+            data-testid="button-video-call"
+          >
+            <Video className="w-5 h-5" />
+          </Button>
+        )}
       </header>
 
       {/* Main Content Area */}
