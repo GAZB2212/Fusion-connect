@@ -205,7 +205,6 @@ export default function Messages() {
         }
 
         .sendbird-conversation__messages-padding {
-          height: 100% !important;
           padding: 16px !important;
         }
 
@@ -216,8 +215,10 @@ export default function Messages() {
 
         .sendbird-message-input,
         .sendbird-message-input-wrapper {
+          flex-shrink: 0 !important;
           background-color: hsl(var(--background)) !important;
           border-top: 1px solid hsl(var(--border)) !important;
+          padding-bottom: env(safe-area-inset-bottom, 0) !important;
         }
 
         .sendbird-message-input-text-field {
