@@ -160,9 +160,25 @@ export default function Messages() {
           --sendbird-dark-ondark-03: hsl(var(--muted-foreground) / 0.7);
         }
 
+        /* Mobile-responsive container */
+        .sendbird-fusion-theme,
+        .sendbird-fusion-theme > div,
+        .sendbird-app__wrap {
+          width: 100% !important;
+          max-width: 100% !important;
+          overflow-x: hidden !important;
+        }
+
         /* Hide default Sendbird header since we have our own */
         .sendbird-channel-header {
           display: none !important;
+        }
+
+        /* Make channel list full width on mobile */
+        .sendbird-channel-list {
+          background-color: hsl(var(--background));
+          width: 100% !important;
+          max-width: 100% !important;
         }
 
         /* Style channel list items */
@@ -181,16 +197,29 @@ export default function Messages() {
           border-radius: 1rem;
         }
 
-        /* Style input area */
+        /* Style input area - mobile responsive */
         .sendbird-message-input {
           border-top: 1px solid hsl(var(--border));
           background-color: hsl(var(--background));
+          width: 100% !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+          padding: 8px !important;
         }
 
         .sendbird-message-input-text-field {
           border: 1px solid hsl(var(--border));
           border-radius: 1.5rem;
           background-color: hsl(var(--muted));
+          width: 100% !important;
+          box-sizing: border-box !important;
+        }
+
+        /* Fix message input wrapper */
+        .sendbird-message-input-wrapper {
+          width: 100% !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
         }
 
         /* Match Fusion's luxury aesthetic */
@@ -198,8 +227,36 @@ export default function Messages() {
           font-family: inherit;
         }
 
-        .sendbird-channel-list {
-          background-color: hsl(var(--background));
+        /* Conversation panel full width on mobile */
+        .sendbird-conversation {
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+
+        /* Mobile: Show only channel list or conversation, not both */
+        @media (max-width: 768px) {
+          .sendbird-app__channellist-wrap {
+            width: 100% !important;
+            flex-shrink: 0 !important;
+          }
+          
+          .sendbird-app__conversation-wrap {
+            width: 100% !important;
+          }
+
+          /* Fix message area layout */
+          .sendbird-conversation__messages-padding {
+            padding: 8px !important;
+          }
+
+          .sendbird-message-content {
+            max-width: calc(100% - 40px) !important;
+          }
+
+          /* Ensure input doesn't overflow */
+          .sendbird-message-input__text-area {
+            width: 100% !important;
+          }
         }
       `}</style>
     </div>
