@@ -40,12 +40,9 @@ export default function Messages() {
         })
           .then(r => r.json())
           .then(result => {
-            console.log('[Messages] Channel backfill complete:', result);
             sessionStorage.setItem('channels_backfilled', 'true');
           })
-          .catch(err => {
-            console.error('[Messages] Channel backfill failed:', err);
-          });
+          .catch(() => {});
       }
     }
   }, [user]);
@@ -76,67 +73,65 @@ export default function Messages() {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center h-full bg-[#0b141a]">
-        <p className="text-gray-400">Please log in to view messages</p>
+      <div className="flex items-center justify-center h-full">
+        <p className="text-muted-foreground">Please log in to view messages</p>
       </div>
     );
   }
 
   if (tokenLoading || !sendbirdToken) {
     return (
-      <div className="flex items-center justify-center h-full bg-[#0b141a]">
+      <div className="flex items-center justify-center h-full">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-4 border-[#00a884] border-t-transparent rounded-full animate-spin" />
-          <p className="text-gray-400">Connecting...</p>
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground">Connecting...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col bg-[#0b141a] overflow-hidden whatsapp-theme">
+    <div className="h-full flex flex-col overflow-hidden">
       <SendbirdProvider
         appId={SENDBIRD_APP_ID}
         userId={user.id}
         accessToken={sendbirdToken}
         theme="dark"
       >
-        <div className="flex-1 flex overflow-hidden">
-          {/* Channel List - WhatsApp style */}
-          <div className={`w-full md:w-96 md:flex-shrink-0 md:border-r border-[#222d34] h-full ${currentChannelUrl ? 'hidden md:block' : 'block'}`}>
-            <div className="h-full flex flex-col bg-[#111b21]">
-              <div className="bg-[#202c33] px-4 py-3 flex items-center">
-                <h1 className="text-xl font-medium text-[#e9edef]">Chats</h1>
+        <div className="flex-1 flex overflow-hidden fusion-chat">
+          {/* Channel List */}
+          <div className={`w-full md:w-80 md:flex-shrink-0 md:border-r border-border h-full bg-background ${currentChannelUrl ? 'hidden md:block' : 'block'}`}>
+            <div className="h-full flex flex-col">
+              <div className="px-4 py-4 border-b border-border">
+                <h1 className="text-xl font-semibold text-foreground">Messages</h1>
               </div>
               <div className="flex-1 overflow-hidden">
                 <GroupChannelList
                   onChannelSelect={handleChannelSelect}
                   onChannelCreated={handleChannelSelect}
-                  channelListQueryParams={{
-                    includeEmpty: true,
-                  }}
+                  channelListQueryParams={{ includeEmpty: true }}
                 />
               </div>
             </div>
           </div>
 
-          {/* Conversation - WhatsApp style */}
-          <div className={`flex-1 h-full flex flex-col ${currentChannelUrl ? 'block' : 'hidden md:flex'}`}>
+          {/* Conversation */}
+          <div className={`flex-1 h-full flex flex-col bg-background ${currentChannelUrl ? 'block' : 'hidden md:flex'}`}>
             {currentChannelUrl ? (
-              <div className="h-full flex flex-col bg-[#0b141a]">
-                {/* Chat header */}
-                <div className="bg-[#202c33] px-2 py-2 flex items-center gap-3 flex-shrink-0">
+              <div className="h-full flex flex-col">
+                {/* Mobile back button */}
+                <div className="md:hidden px-2 py-2 border-b border-border flex items-center gap-2 bg-card">
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={handleBackToList}
-                    className="text-[#aebac1] hover:bg-[#374248] md:hidden"
                     data-testid="button-back"
                   >
                     <ArrowLeft className="w-5 h-5" />
                   </Button>
+                  <span className="font-medium">Back</span>
                 </div>
-                <div className="flex-1 overflow-hidden chat-container">
+                <div className="flex-1 overflow-hidden">
                   <GroupChannel
                     channelUrl={currentChannelUrl}
                     onBackClick={handleBackToList}
@@ -144,16 +139,8 @@ export default function Messages() {
                 </div>
               </div>
             ) : (
-              <div className="flex-1 flex flex-col items-center justify-center bg-[#222e35] text-center p-8">
-                <div className="w-64 h-64 mb-6 opacity-20">
-                  <svg viewBox="0 0 303 172" fill="currentColor" className="text-[#8696a0]">
-                    <path d="M229.565 160.229c32.47-25.963 53.321-65.616 53.321-110.126C282.886 22.405 260.501 0 232.803 0c-19.48 0-36.418 10.676-45.251 26.472-8.833-15.796-25.771-26.472-45.25-26.472-27.699 0-50.084 22.405-50.084 50.103 0 44.51 20.851 84.163 53.321 110.126l41.013 32.771 41.013-32.771z"/>
-                  </svg>
-                </div>
-                <h2 className="text-[#e9edef] text-3xl font-light mb-3">Fusion Match</h2>
-                <p className="text-[#8696a0] text-sm max-w-md">
-                  Select a conversation to start messaging your matches
-                </p>
+              <div className="flex-1 flex items-center justify-center text-muted-foreground">
+                <p>Select a conversation</p>
               </div>
             )}
           </div>
@@ -161,207 +148,71 @@ export default function Messages() {
       </SendbirdProvider>
 
       <style>{`
-        /* WhatsApp Dark Theme */
-        .whatsapp-theme {
-          --wa-bg-default: #0b141a;
-          --wa-bg-panel: #111b21;
-          --wa-bg-header: #202c33;
-          --wa-bg-input: #2a3942;
-          --wa-bg-outgoing: #005c4b;
-          --wa-bg-incoming: #202c33;
-          --wa-text-primary: #e9edef;
-          --wa-text-secondary: #8696a0;
-          --wa-border: #222d34;
-          --wa-green: #00a884;
-        }
-
-        /* Channel List Styling */
-        .sendbird-channel-list,
-        .sendbird-group-channel-list {
+        .fusion-chat .sendbird-channel-list,
+        .fusion-chat .sendbird-group-channel-list {
           width: 100% !important;
           height: 100% !important;
-          background-color: var(--wa-bg-panel) !important;
+          background: transparent !important;
         }
 
-        .sendbird-channel-list__header,
-        .sendbird-group-channel-list__header {
+        .fusion-chat .sendbird-channel-list__header,
+        .fusion-chat .sendbird-group-channel-list__header {
           display: none !important;
         }
 
-        .sendbird-channel-preview {
-          background-color: transparent !important;
-          border: none !important;
-          border-bottom: 1px solid var(--wa-border) !important;
-          border-radius: 0 !important;
-          margin: 0 !important;
-          padding: 10px 16px !important;
+        .fusion-chat .sendbird-channel-preview {
+          background: transparent !important;
+          border-radius: 8px !important;
+          margin: 4px 8px !important;
         }
 
-        .sendbird-channel-preview:hover {
-          background-color: var(--wa-bg-header) !important;
+        .fusion-chat .sendbird-channel-preview:hover {
+          background: hsl(var(--muted)) !important;
         }
 
-        .sendbird-channel-preview__content__upper__header__channel-name {
-          color: var(--wa-text-primary) !important;
-          font-weight: 400 !important;
-        }
-
-        .sendbird-channel-preview__content__lower__last-message {
-          color: var(--wa-text-secondary) !important;
-        }
-
-        /* Conversation Container */
-        .chat-container .sendbird-conversation,
-        .chat-container .sendbird-group-channel-view {
+        .fusion-chat .sendbird-conversation,
+        .fusion-chat .sendbird-group-channel-view {
           width: 100% !important;
           height: 100% !important;
           display: flex !important;
           flex-direction: column !important;
-          background-color: var(--wa-bg-default) !important;
-          background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23182229' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") !important;
+          background: hsl(var(--background)) !important;
         }
 
-        /* Hide default header - we have our own */
-        .sendbird-channel-header,
-        .sendbird-group-channel-header {
-          background-color: var(--wa-bg-header) !important;
-          border-bottom: none !important;
-          padding: 10px 16px !important;
-        }
-
-        .sendbird-channel-header__title {
-          color: var(--wa-text-primary) !important;
-        }
-
-        /* Message Area */
-        .sendbird-conversation__messages,
-        .sendbird-group-channel-view__message-list {
+        .fusion-chat .sendbird-conversation__messages,
+        .fusion-chat .sendbird-group-channel-view__message-list {
           flex: 1 !important;
-          min-height: 0 !important;
           overflow-y: auto !important;
-          background: transparent !important;
+          background: hsl(var(--background)) !important;
         }
 
-        .sendbird-conversation__messages-padding {
-          padding: 8px 16px 8px 60px !important;
-        }
-
-        /* Message Bubbles - WhatsApp Style */
-        .sendbird-message-content {
-          max-width: 65% !important;
-        }
-
-        .sendbird-text-message-item-body {
-          padding: 6px 12px 8px !important;
-          border-radius: 8px !important;
-          position: relative !important;
-        }
-
-        /* Outgoing messages (right side, green) */
-        .sendbird-message-content.outgoing .sendbird-text-message-item-body,
-        .sendbird-message-content--outgoing .sendbird-text-message-item-body {
-          background-color: var(--wa-bg-outgoing) !important;
-          border-top-right-radius: 0 !important;
-        }
-
-        /* Incoming messages (left side, gray) */
-        .sendbird-message-content.incoming .sendbird-text-message-item-body,
-        .sendbird-message-content--incoming .sendbird-text-message-item-body {
-          background-color: var(--wa-bg-incoming) !important;
-          border-top-left-radius: 0 !important;
-        }
-
-        .sendbird-text-message-item-body__message {
-          color: var(--wa-text-primary) !important;
-          font-size: 14.2px !important;
-          line-height: 19px !important;
-        }
-
-        /* Timestamps */
-        .sendbird-message-content__middle__body-container__created-at,
-        .sendbird-label--caption-3 {
-          color: var(--wa-text-secondary) !important;
-          font-size: 11px !important;
-        }
-
-        /* Input Area - WhatsApp Style */
-        .sendbird-message-input,
-        .sendbird-message-input-wrapper {
+        .fusion-chat .sendbird-message-input {
           flex-shrink: 0 !important;
-          background-color: var(--wa-bg-header) !important;
-          border-top: none !important;
-          padding: 10px 16px !important;
+          background: hsl(var(--card)) !important;
+          border-top: 1px solid hsl(var(--border)) !important;
+          padding: 12px !important;
         }
 
-        .sendbird-message-input-text-field {
-          background-color: var(--wa-bg-input) !important;
-          border: none !important;
-          border-radius: 8px !important;
-          color: var(--wa-text-primary) !important;
-          padding: 9px 12px !important;
-          font-size: 15px !important;
+        .fusion-chat .sendbird-message-input-text-field {
+          background: hsl(var(--muted)) !important;
+          border: 1px solid hsl(var(--border)) !important;
+          border-radius: 20px !important;
+          color: hsl(var(--foreground)) !important;
         }
 
-        .sendbird-message-input-text-field::placeholder {
-          color: var(--wa-text-secondary) !important;
+        .fusion-chat .sendbird-text-message-item-body {
+          border-radius: 16px !important;
+          padding: 8px 12px !important;
         }
 
-        /* Send button */
-        .sendbird-message-input--send {
-          background-color: var(--wa-green) !important;
-          border-radius: 50% !important;
+        .fusion-chat .sendbird-message-content--outgoing .sendbird-text-message-item-body {
+          background: hsl(var(--primary)) !important;
+          color: hsl(var(--primary-foreground)) !important;
         }
 
-        /* Avatar styling */
-        .sendbird-avatar {
-          border-radius: 50% !important;
-        }
-
-        /* Scrollbar styling */
-        .sendbird-conversation__messages::-webkit-scrollbar,
-        .sendbird-group-channel-view__message-list::-webkit-scrollbar {
-          width: 6px !important;
-        }
-
-        .sendbird-conversation__messages::-webkit-scrollbar-track,
-        .sendbird-group-channel-view__message-list::-webkit-scrollbar-track {
-          background: transparent !important;
-        }
-
-        .sendbird-conversation__messages::-webkit-scrollbar-thumb,
-        .sendbird-group-channel-view__message-list::-webkit-scrollbar-thumb {
-          background-color: rgba(134, 150, 160, 0.3) !important;
-          border-radius: 3px !important;
-        }
-
-        /* Date separators */
-        .sendbird-separator {
-          margin: 12px 0 !important;
-        }
-
-        .sendbird-separator__text {
-          background-color: #182229 !important;
-          color: var(--wa-text-secondary) !important;
-          padding: 5px 12px !important;
-          border-radius: 8px !important;
-          font-size: 12px !important;
-        }
-
-        /* Read receipts */
-        .sendbird-message-status__icon {
-          color: #53bdeb !important;
-        }
-
-        /* Admin messages */
-        .sendbird-admin-message {
-          background-color: #182229 !important;
-          color: var(--wa-text-secondary) !important;
-          padding: 5px 12px !important;
-          border-radius: 8px !important;
-          font-size: 12px !important;
-          text-align: center !important;
-          margin: 8px auto !important;
-          max-width: 80% !important;
+        .fusion-chat .sendbird-message-content--incoming .sendbird-text-message-item-body {
+          background: hsl(var(--muted)) !important;
+          color: hsl(var(--foreground)) !important;
         }
       `}</style>
     </div>
