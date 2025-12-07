@@ -232,6 +232,29 @@ export default function Messages() {
           padding: 8px 12px !important;
         }
 
+        /* Constrain images within chat boundaries */
+        .fusion-chat img,
+        .fusion-chat .sendbird-thumbnail-message-item-body img,
+        .fusion-chat .sendbird-file-message-item-body img,
+        .fusion-chat .sendbird-image-renderer img {
+          max-width: 100% !important;
+          width: auto !important;
+          height: auto !important;
+          object-fit: contain !important;
+        }
+
+        .fusion-chat .sendbird-thumbnail-message-item-body,
+        .fusion-chat .sendbird-file-message-item-body,
+        .fusion-chat .sendbird-image-renderer {
+          max-width: 250px !important;
+          overflow: hidden !important;
+        }
+
+        .fusion-chat .sendbird-message-content {
+          max-width: calc(100% - 40px) !important;
+          overflow: hidden !important;
+        }
+
         .fusion-chat .sendbird-message-content--outgoing .sendbird-text-message-item-body {
           background: hsl(var(--primary)) !important;
           color: hsl(var(--primary-foreground)) !important;
