@@ -91,7 +91,7 @@ export default function Messages() {
   }
 
   return (
-    <div className="fixed inset-0 bottom-16 flex flex-col bg-background">
+    <div className="fixed inset-0 bottom-16 flex flex-col bg-background overflow-hidden">
       {/* Fixed Header */}
       <header className="flex-shrink-0 h-14 px-4 border-b border-border bg-background flex items-center gap-3 z-10">
         {currentChannelUrl && (
@@ -147,13 +147,18 @@ export default function Messages() {
       <style>{`
         .fusion-chat {
           height: 100% !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          overflow: hidden !important;
         }
 
         .fusion-chat .sendbird-channel-list,
         .fusion-chat .sendbird-group-channel-list {
           width: 100% !important;
+          max-width: 100% !important;
           height: 100% !important;
           background: hsl(var(--background)) !important;
+          overflow-x: hidden !important;
         }
 
         .fusion-chat .sendbird-channel-list__header,
@@ -176,28 +181,45 @@ export default function Messages() {
         .fusion-chat .sendbird-conversation,
         .fusion-chat .sendbird-group-channel-view {
           width: 100% !important;
+          max-width: 100% !important;
           height: 100% !important;
           display: flex !important;
           flex-direction: column !important;
           background: hsl(var(--background)) !important;
+          overflow: hidden !important;
         }
 
         .fusion-chat .sendbird-conversation__messages,
         .fusion-chat .sendbird-group-channel-view__message-list {
           flex: 1 !important;
           min-height: 0 !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          overflow-x: hidden !important;
           overflow-y: auto !important;
           background: hsl(var(--background)) !important;
         }
 
+        .fusion-chat .sendbird-conversation__messages-padding {
+          width: 100% !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+        }
+
         .fusion-chat .sendbird-message-input {
           flex-shrink: 0 !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
           background: hsl(var(--card)) !important;
           border-top: 1px solid hsl(var(--border)) !important;
           padding: 8px 12px !important;
         }
 
         .fusion-chat .sendbird-message-input-text-field {
+          width: 100% !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
           background: hsl(var(--muted)) !important;
           border: 1px solid hsl(var(--border)) !important;
           border-radius: 20px !important;
