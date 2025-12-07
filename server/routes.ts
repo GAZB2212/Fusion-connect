@@ -1950,6 +1950,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         data: videoCall,
       });
 
+      // Send video call notification to Sendbird chat timeline
+      SendbirdService.sendSystemMessage(matchId, "📹 Video call started").catch(err => {
+        console.error('[Sendbird] Failed to send video call message:', err);
+      });
+
       res.json(videoCall);
     } catch (error: any) {
       res.status(400).json({ message: error.message });
@@ -2131,6 +2136,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type: 'call_status_update',
         data: updatedCall,
       });
+
+      // Send call end notification to Sendbird chat timeline
+      if (status === 'ended' && updateData.duration) {
+        const minutes = Math.floor(updateData.duration / 60);
+        const seconds = updateData.duration % 60;
+        const durationText = minutes > 0 
+          ? `${minutes}m ${seconds}s` 
+          : `${seconds}s`;
+        SendbirdService.sendSystemMessage(call.matchId, `📹 Video call ended (${durationText})`).catch(err => {
+          console.error('[Sendbird] Failed to send call end message:', err);
+        });
+      } else if (status === 'declined' || status === 'missed') {
+        const statusText = status === 'declined' ? 'Call declined' : 'Missed call';
+        SendbirdService.sendSystemMessage(call.matchId, `📹 ${statusText}`).catch(err => {
+          console.error('[Sendbird] Failed to send call status message:', err);
+        });
+      }
 
       res.json(updatedCall);
     } catch (error: any) {
