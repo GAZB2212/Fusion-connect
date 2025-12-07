@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRoute, useLocation } from "wouter";
-import SendbirdProvider from "@sendbird/uikit-react/SendbirdProvider";
-import ChannelList from "@sendbird/uikit-react/ChannelList";
-import Channel from "@sendbird/uikit-react/Channel";
+import { App as SendBirdApp } from "@sendbird/uikit-react";
 import "@sendbird/uikit-react/dist/index.css";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
@@ -23,7 +21,8 @@ export default function Messages() {
   const matchId = params?.matchId;
 
   const [sendbirdToken, setSendbirdToken] = useState<string | null>(null);
-  const [selectedChannelUrl, setSelectedChannelUrl] = useState<string | null>(matchId || null);
+  const [currentChannelUrl, setCurrentChannelUrl] = useState<string | null>(matchId || null);
+  const [isMobileConversationOpen, setIsMobileConversationOpen] = useState(!!matchId);
 
   const { data: tokenData, isLoading: tokenLoading } = useQuery<SendbirdTokenResponse>({
     queryKey: ["/api/sendbird/token"],
@@ -58,19 +57,14 @@ export default function Messages() {
 
   useEffect(() => {
     if (matchId) {
-      setSelectedChannelUrl(matchId);
+      setCurrentChannelUrl(matchId);
+      setIsMobileConversationOpen(true);
     }
   }, [matchId]);
 
-  const handleChannelSelect = (channel: any) => {
-    if (channel?.url) {
-      setSelectedChannelUrl(channel.url);
-      setLocation(`/messages/${channel.url}`);
-    }
-  };
-
   const handleBackToList = () => {
-    setSelectedChannelUrl(null);
+    setIsMobileConversationOpen(false);
+    setCurrentChannelUrl(null);
     setLocation("/messages");
   };
 
@@ -95,57 +89,37 @@ export default function Messages() {
 
   return (
     <div className="h-full flex flex-col bg-background overflow-hidden">
-      <SendbirdProvider
-        appId={SENDBIRD_APP_ID}
-        userId={user.id}
-        accessToken={sendbirdToken}
-        theme="dark"
-      >
-        <div className="flex-1 flex overflow-hidden sendbird-fusion-theme">
-          {/* Channel List - hidden on mobile when conversation is open */}
-          <div className={`w-full md:w-80 md:flex-shrink-0 md:border-r ${selectedChannelUrl ? 'hidden md:block' : 'block'}`}>
-            <div className="h-full flex flex-col">
-              <div className="border-b px-4 py-3">
-                <h1 className="text-xl font-semibold">Messages</h1>
-              </div>
-              <div className="flex-1 overflow-hidden">
-                <ChannelList
-                  onChannelSelect={handleChannelSelect}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Conversation - full width on mobile, shown when channel selected */}
-          <div className={`flex-1 flex flex-col ${selectedChannelUrl ? 'block' : 'hidden md:flex'}`}>
-            {selectedChannelUrl ? (
-              <>
-                <div className="border-b px-4 py-3 flex items-center gap-3 md:hidden">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleBackToList}
-                    data-testid="button-back"
-                  >
-                    <ArrowLeft className="w-5 h-5" />
-                  </Button>
-                  <span className="font-medium">Back to messages</span>
-                </div>
-                <div className="flex-1 overflow-hidden">
-                  <Channel channelUrl={selectedChannelUrl} />
-                </div>
-              </>
-            ) : (
-              <div className="flex-1 flex items-center justify-center text-muted-foreground">
-                Select a conversation to start messaging
-              </div>
-            )}
-          </div>
+      {/* Mobile back button when in conversation */}
+      {isMobileConversationOpen && (
+        <div className="md:hidden border-b px-4 py-3 flex items-center gap-3 bg-background z-10">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleBackToList}
+            data-testid="button-back"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <span className="font-medium">Back to messages</span>
         </div>
-      </SendbirdProvider>
+      )}
+
+      {/* Sendbird Chat - Full App Component */}
+      <div className={`flex-1 overflow-hidden sendbird-custom-theme ${isMobileConversationOpen ? 'mobile-conversation-open' : ''}`}>
+        <SendBirdApp
+          appId={SENDBIRD_APP_ID}
+          userId={user.id}
+          accessToken={sendbirdToken}
+          theme="dark"
+          breakpoint="768px"
+          config={{
+            logLevel: "warn",
+          }}
+        />
+      </div>
 
       <style>{`
-        .sendbird-fusion-theme {
+        .sendbird-custom-theme {
           --sendbird-dark-primary-500: hsl(var(--primary));
           --sendbird-dark-primary-400: hsl(var(--primary));
           --sendbird-dark-primary-300: hsl(var(--primary) / 0.8);
@@ -157,14 +131,21 @@ export default function Messages() {
           --sendbird-dark-ondark-03: hsl(var(--muted-foreground) / 0.7);
         }
 
-        .sendbird-channel-list {
+        .sendbird-custom-theme,
+        .sendbird-custom-theme > div,
+        .sendbird-app__wrap {
           width: 100% !important;
           height: 100% !important;
+          max-width: 100% !important;
+        }
+
+        .sendbird-channel-list {
           background-color: hsl(var(--background)) !important;
         }
 
         .sendbird-channel-list__header {
-          display: none !important;
+          background-color: hsl(var(--background)) !important;
+          border-bottom: 1px solid hsl(var(--border)) !important;
         }
 
         .sendbird-channel-preview {
@@ -178,12 +159,16 @@ export default function Messages() {
         }
 
         .sendbird-conversation {
-          width: 100% !important;
-          height: 100% !important;
+          background-color: hsl(var(--background)) !important;
         }
 
         .sendbird-conversation__messages {
           background-color: hsl(var(--background)) !important;
+        }
+
+        .sendbird-channel-header {
+          background-color: hsl(var(--background)) !important;
+          border-bottom: 1px solid hsl(var(--border)) !important;
         }
 
         .sendbird-message-input {
@@ -202,9 +187,38 @@ export default function Messages() {
           border-radius: 1rem;
         }
 
-        .sendbird-channel-header {
-          background-color: hsl(var(--background)) !important;
-          border-bottom: 1px solid hsl(var(--border)) !important;
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+          .sendbird-app__wrap {
+            flex-direction: column !important;
+          }
+
+          .sendbird-app__channellist-wrap {
+            width: 100% !important;
+            height: 100% !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            z-index: 1 !important;
+          }
+
+          .sendbird-app__conversation-wrap {
+            width: 100% !important;
+            height: 100% !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            z-index: 2 !important;
+            display: none !important;
+          }
+
+          .mobile-conversation-open .sendbird-app__channellist-wrap {
+            display: none !important;
+          }
+
+          .mobile-conversation-open .sendbird-app__conversation-wrap {
+            display: block !important;
+          }
         }
       `}</style>
     </div>
