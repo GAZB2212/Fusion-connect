@@ -73,7 +73,7 @@ export default function Messages() {
 
   if (!user) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="fixed inset-0 bottom-16 flex items-center justify-center bg-background">
         <p className="text-muted-foreground">Please log in to view messages</p>
       </div>
     );
@@ -81,7 +81,7 @@ export default function Messages() {
 
   if (tokenLoading || !sendbirdToken) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="fixed inset-0 bottom-16 flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
           <p className="text-muted-foreground">Connecting...</p>
@@ -91,9 +91,9 @@ export default function Messages() {
   }
 
   return (
-    <div className="h-full flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bottom-16 flex flex-col bg-background">
       {/* Fixed Header */}
-      <div className="flex-shrink-0 px-4 py-3 border-b border-border bg-background flex items-center gap-3">
+      <header className="flex-shrink-0 h-14 px-4 border-b border-border bg-background flex items-center gap-3 z-10">
         {currentChannelUrl && (
           <Button
             variant="ghost"
@@ -104,61 +104,60 @@ export default function Messages() {
             <ArrowLeft className="w-5 h-5" />
           </Button>
         )}
-        <h1 className="text-xl font-semibold text-foreground">
+        <h1 className="text-lg font-semibold text-foreground">
           {currentChannelUrl ? "Chat" : "Messages"}
         </h1>
-      </div>
+      </header>
 
-      {/* Main Content */}
-      <SendbirdProvider
-        appId={SENDBIRD_APP_ID}
-        userId={user.id}
-        accessToken={sendbirdToken}
-        theme="dark"
-      >
-        <div className="flex-1 flex overflow-hidden fusion-chat">
-          {/* Channel List */}
-          <div className={`w-full md:w-80 md:flex-shrink-0 md:border-r border-border h-full bg-background ${currentChannelUrl ? 'hidden md:block' : 'block'}`}>
-            <div className="h-full overflow-hidden">
+      {/* Main Content Area */}
+      <div className="flex-1 min-h-0 overflow-hidden">
+        <SendbirdProvider
+          appId={SENDBIRD_APP_ID}
+          userId={user.id}
+          accessToken={sendbirdToken}
+          theme="dark"
+        >
+          <div className="h-full flex fusion-chat">
+            {/* Channel List */}
+            <div className={`w-full md:w-80 md:flex-shrink-0 md:border-r border-border h-full bg-background ${currentChannelUrl ? 'hidden md:block' : 'block'}`}>
               <GroupChannelList
                 onChannelSelect={handleChannelSelect}
                 onChannelCreated={handleChannelSelect}
                 channelListQueryParams={{ includeEmpty: true }}
               />
             </div>
-          </div>
 
-          {/* Conversation */}
-          <div className={`flex-1 h-full flex flex-col bg-background ${currentChannelUrl ? 'block' : 'hidden md:flex'}`}>
-            {currentChannelUrl ? (
-              <div className="h-full overflow-hidden">
+            {/* Conversation */}
+            <div className={`flex-1 h-full bg-background ${currentChannelUrl ? 'block' : 'hidden md:block'}`}>
+              {currentChannelUrl ? (
                 <GroupChannel
                   channelUrl={currentChannelUrl}
                   onBackClick={handleBackToList}
                 />
-              </div>
-            ) : (
-              <div className="flex-1 flex items-center justify-center text-muted-foreground">
-                <p>Select a conversation</p>
-              </div>
-            )}
+              ) : (
+                <div className="h-full flex items-center justify-center text-muted-foreground">
+                  <p>Select a conversation</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </SendbirdProvider>
+        </SendbirdProvider>
+      </div>
 
       <style>{`
+        .fusion-chat {
+          height: 100% !important;
+        }
+
         .fusion-chat .sendbird-channel-list,
         .fusion-chat .sendbird-group-channel-list {
           width: 100% !important;
           height: 100% !important;
-          background: transparent !important;
+          background: hsl(var(--background)) !important;
         }
 
         .fusion-chat .sendbird-channel-list__header,
-        .fusion-chat .sendbird-group-channel-list__header {
-          display: none !important;
-        }
-
+        .fusion-chat .sendbird-group-channel-list__header,
         .fusion-chat .sendbird-channel-header,
         .fusion-chat .sendbird-group-channel-header {
           display: none !important;
@@ -195,8 +194,7 @@ export default function Messages() {
           flex-shrink: 0 !important;
           background: hsl(var(--card)) !important;
           border-top: 1px solid hsl(var(--border)) !important;
-          padding: 12px !important;
-          margin-bottom: 0 !important;
+          padding: 8px 12px !important;
         }
 
         .fusion-chat .sendbird-message-input-text-field {
@@ -204,6 +202,7 @@ export default function Messages() {
           border: 1px solid hsl(var(--border)) !important;
           border-radius: 20px !important;
           color: hsl(var(--foreground)) !important;
+          min-height: 40px !important;
         }
 
         .fusion-chat .sendbird-text-message-item-body {
