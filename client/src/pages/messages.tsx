@@ -39,7 +39,7 @@ export default function Messages() {
           headers: { 'Content-Type': 'application/json' }
         })
           .then(r => r.json())
-          .then(result => {
+          .then(() => {
             sessionStorage.setItem('channels_backfilled', 'true');
           })
           .catch(() => {});
@@ -92,6 +92,24 @@ export default function Messages() {
 
   return (
     <div className="h-full flex flex-col overflow-hidden">
+      {/* Fixed Header */}
+      <div className="flex-shrink-0 px-4 py-3 border-b border-border bg-background flex items-center gap-3">
+        {currentChannelUrl && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleBackToList}
+            data-testid="button-back"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+        )}
+        <h1 className="text-xl font-semibold text-foreground">
+          {currentChannelUrl ? "Chat" : "Messages"}
+        </h1>
+      </div>
+
+      {/* Main Content */}
       <SendbirdProvider
         appId={SENDBIRD_APP_ID}
         userId={user.id}
@@ -101,42 +119,23 @@ export default function Messages() {
         <div className="flex-1 flex overflow-hidden fusion-chat">
           {/* Channel List */}
           <div className={`w-full md:w-80 md:flex-shrink-0 md:border-r border-border h-full bg-background ${currentChannelUrl ? 'hidden md:block' : 'block'}`}>
-            <div className="h-full flex flex-col">
-              <div className="px-4 py-4 border-b border-border">
-                <h1 className="text-xl font-semibold text-foreground">Messages</h1>
-              </div>
-              <div className="flex-1 overflow-hidden">
-                <GroupChannelList
-                  onChannelSelect={handleChannelSelect}
-                  onChannelCreated={handleChannelSelect}
-                  channelListQueryParams={{ includeEmpty: true }}
-                />
-              </div>
+            <div className="h-full overflow-hidden">
+              <GroupChannelList
+                onChannelSelect={handleChannelSelect}
+                onChannelCreated={handleChannelSelect}
+                channelListQueryParams={{ includeEmpty: true }}
+              />
             </div>
           </div>
 
           {/* Conversation */}
           <div className={`flex-1 h-full flex flex-col bg-background ${currentChannelUrl ? 'block' : 'hidden md:flex'}`}>
             {currentChannelUrl ? (
-              <div className="h-full flex flex-col">
-                {/* Mobile back button */}
-                <div className="md:hidden px-2 py-2 border-b border-border flex items-center gap-2 bg-card">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleBackToList}
-                    data-testid="button-back"
-                  >
-                    <ArrowLeft className="w-5 h-5" />
-                  </Button>
-                  <span className="font-medium">Back</span>
-                </div>
-                <div className="flex-1 overflow-hidden">
-                  <GroupChannel
-                    channelUrl={currentChannelUrl}
-                    onBackClick={handleBackToList}
-                  />
-                </div>
+              <div className="h-full overflow-hidden">
+                <GroupChannel
+                  channelUrl={currentChannelUrl}
+                  onBackClick={handleBackToList}
+                />
               </div>
             ) : (
               <div className="flex-1 flex items-center justify-center text-muted-foreground">
@@ -157,6 +156,11 @@ export default function Messages() {
 
         .fusion-chat .sendbird-channel-list__header,
         .fusion-chat .sendbird-group-channel-list__header {
+          display: none !important;
+        }
+
+        .fusion-chat .sendbird-channel-header,
+        .fusion-chat .sendbird-group-channel-header {
           display: none !important;
         }
 
@@ -182,6 +186,7 @@ export default function Messages() {
         .fusion-chat .sendbird-conversation__messages,
         .fusion-chat .sendbird-group-channel-view__message-list {
           flex: 1 !important;
+          min-height: 0 !important;
           overflow-y: auto !important;
           background: hsl(var(--background)) !important;
         }
@@ -191,6 +196,7 @@ export default function Messages() {
           background: hsl(var(--card)) !important;
           border-top: 1px solid hsl(var(--border)) !important;
           padding: 12px !important;
+          margin-bottom: 0 !important;
         }
 
         .fusion-chat .sendbird-message-input-text-field {
