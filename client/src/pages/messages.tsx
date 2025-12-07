@@ -233,34 +233,20 @@ export default function Messages() {
         }
 
         /* Constrain images within chat boundaries */
-        .fusion-chat img {
-          max-width: 200px !important;
-          max-height: 300px !important;
+        .fusion-chat img:not(.sendbird-avatar-img):not(.sendbird-user-profile__avatar) {
+          max-width: 180px !important;
+          max-height: 240px !important;
           width: auto !important;
           height: auto !important;
-          object-fit: contain !important;
-          display: block !important;
+          object-fit: cover !important;
+          border-radius: 12px !important;
         }
 
-        .fusion-chat .sendbird-thumbnail-message-item-body,
-        .fusion-chat .sendbird-file-message-item-body,
-        .fusion-chat .sendbird-image-renderer,
-        .fusion-chat .sendbird-og-message-item-body__og-thumbnail,
-        .fusion-chat [class*="thumbnail"],
-        .fusion-chat [class*="image"] {
-          max-width: 200px !important;
-          max-height: 300px !important;
+        .fusion-chat .sendbird-thumbnail-message-item-body {
+          max-width: 180px !important;
+          max-height: 240px !important;
           overflow: hidden !important;
-        }
-
-        .fusion-chat .sendbird-message-content {
-          max-width: 70% !important;
-          overflow: hidden !important;
-        }
-
-        .fusion-chat .sendbird-message-content__middle {
-          max-width: 100% !important;
-          overflow: hidden !important;
+          border-radius: 12px !important;
         }
 
         .fusion-chat .sendbird-message-content--outgoing .sendbird-text-message-item-body {
