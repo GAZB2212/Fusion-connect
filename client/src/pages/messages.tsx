@@ -62,6 +62,7 @@ export default function Messages() {
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [reportReason, setReportReason] = useState<string>("");
   const [reportDetails, setReportDetails] = useState("");
+  const [selectedUserIdForAction, setSelectedUserIdForAction] = useState<string | null>(null);
 
   const { data: tokenData, isLoading: tokenLoading } = useQuery<SendbirdTokenResponse>({
     queryKey: ["/api/sendbird/token"],
@@ -112,7 +113,7 @@ export default function Messages() {
 
   const blockMutation = useMutation({
     mutationFn: async () => {
-      const blockedId = getOtherUserId();
+      const blockedId = selectedUserIdForAction || getOtherUserId();
       if (!blockedId) throw new Error("Cannot block user");
       return apiRequest("POST", `/api/users/${blockedId}/block`);
     },
@@ -122,8 +123,9 @@ export default function Messages() {
         description: "You won't see messages from this person anymore",
       });
       setShowBlockDialog(false);
+      setSelectedUserIdForAction(null);
       queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
-      handleBackToList();
+      if (currentChannelUrl) handleBackToList();
     },
     onError: (error: any) => {
       toast({
@@ -136,7 +138,7 @@ export default function Messages() {
 
   const reportMutation = useMutation({
     mutationFn: async () => {
-      const reportedId = getOtherUserId();
+      const reportedId = selectedUserIdForAction || getOtherUserId();
       if (!reportedId || !reportReason) throw new Error("Cannot report user");
       return apiRequest("POST", `/api/users/${reportedId}/report`, {
         reason: reportReason,
@@ -151,6 +153,7 @@ export default function Messages() {
       setShowReportDialog(false);
       setReportReason("");
       setReportDetails("");
+      setSelectedUserIdForAction(null);
     },
     onError: (error: any) => {
       toast({
