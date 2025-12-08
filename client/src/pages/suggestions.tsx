@@ -97,7 +97,7 @@ export default function Suggestions() {
               No Suggestions Yet
             </h2>
             <p className="text-[#F8F4E3]/70 mb-6">
-              We're still analyzing profiles to find your best matches. Check back soon!
+              We're still reviewing profiles to find your best matches. Check back soon!
             </p>
             <Button onClick={() => setLocation("/discover")} data-testid="button-go-discover">
               Start Discovering
@@ -116,11 +116,11 @@ export default function Suggestions() {
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="h-6 w-6 text-primary" />
             <h1 className="text-3xl font-serif font-bold text-[#F8F4E3]">
-              AI-Powered Suggestions
+              Curated For You
             </h1>
           </div>
           <p className="text-[#F8F4E3]/70">
-            Profiles selected based on your values, interests, and preferences
+            Potential matches carefully selected by our team based on your values and preferences
           </p>
         </div>
 
