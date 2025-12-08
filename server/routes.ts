@@ -2379,6 +2379,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete/Unmatch - Remove a match and leave the conversation
+  app.delete("/api/matches/:matchId", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+    const { matchId } = req.params;
+
+    try {
+      // Verify the match exists and user is part of it
+      const [match] = await db
+        .select()
+        .from(matches)
+        .where(
+          and(
+            eq(matches.id, matchId),
+            or(eq(matches.user1Id, userId), eq(matches.user2Id, userId))
+          )
+        )
+        .limit(1);
+
+      if (!match) {
+        return res.status(404).json({ message: "Match not found" });
+      }
+
+      // Delete the match
+      await db.delete(matches).where(eq(matches.id, matchId));
+
+      // Try to delete the Sendbird channel
+      try {
+        await SendbirdService.deleteChannel(matchId);
+      } catch (error) {
+        console.error('[Sendbird] Failed to delete channel:', error);
+      }
+
+      res.json({ message: "Chat deleted successfully" });
+    } catch (error: any) {
+      console.error('Error deleting match:', error);
+      res.status(500).json({ message: "Failed to delete chat" });
+    }
+  });
+
   // Delete Account
   app.delete("/api/account", isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;

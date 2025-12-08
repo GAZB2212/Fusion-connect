@@ -226,4 +226,25 @@ export class SendbirdService {
     
     console.log(`[Sendbird] Deleted user: ${userId}`);
   }
+
+  static async deleteChannel(channelUrl: string): Promise<void> {
+    if (!isConfigured) {
+      console.warn('[Sendbird] Skipping channel deletion - not configured');
+      return;
+    }
+    
+    const response = await fetch(`${baseUrl}/group_channels/${encodeURIComponent(channelUrl)}`, {
+      method: 'DELETE',
+      headers: {
+        'Api-Token': apiToken!
+      }
+    });
+    
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || 'Failed to delete channel');
+    }
+    
+    console.log(`[Sendbird] Deleted channel: ${channelUrl}`);
+  }
 }

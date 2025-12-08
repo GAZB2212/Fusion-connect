@@ -6,7 +6,7 @@ import GroupChannelList from "@sendbird/uikit-react/GroupChannelList";
 import GroupChannel from "@sendbird/uikit-react/GroupChannel";
 import "@sendbird/uikit-react/dist/index.css";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Video, MoreVertical, ShieldOff, Flag } from "lucide-react";
+import { ArrowLeft, Video, MoreVertical, ShieldOff, Flag, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -60,6 +60,7 @@ export default function Messages() {
   const [currentChannelUrl, setCurrentChannelUrl] = useState<string | null>(matchId || null);
   const [showBlockDialog, setShowBlockDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [reportReason, setReportReason] = useState<string>("");
   const [reportDetails, setReportDetails] = useState("");
   const [selectedUserIdForAction, setSelectedUserIdForAction] = useState<string | null>(null);
@@ -159,6 +160,29 @@ export default function Messages() {
       toast({
         title: "Failed to report",
         description: error.message || "Could not submit report",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteChatMutation = useMutation({
+    mutationFn: async () => {
+      if (!currentChannelUrl) throw new Error("No chat selected");
+      return apiRequest("DELETE", `/api/matches/${currentChannelUrl}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Chat deleted",
+        description: "The conversation has been removed",
+      });
+      setShowDeleteDialog(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
+      handleBackToList();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to delete",
+        description: error.message || "Could not delete chat",
         variant: "destructive",
       });
     },
@@ -266,6 +290,13 @@ export default function Messages() {
                   <Flag className="w-4 h-4 mr-2" />
                   Report
                 </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => setShowDeleteDialog(true)}
+                  data-testid="button-delete-chat"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete chat
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
                   onClick={() => setShowBlockDialog(true)}
@@ -280,6 +311,31 @@ export default function Messages() {
           </>
         )}
       </header>
+
+      {/* Delete Chat Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete this chat?</DialogTitle>
+            <DialogDescription>
+              This will remove the conversation and unmatch you from this person. You can match with them again in the future.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => deleteChatMutation.mutate()}
+              disabled={deleteChatMutation.isPending}
+              data-testid="button-confirm-delete"
+            >
+              {deleteChatMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Block Confirmation Dialog */}
       <Dialog open={showBlockDialog} onOpenChange={setShowBlockDialog}>
