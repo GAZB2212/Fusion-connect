@@ -501,8 +501,21 @@ export default function Messages() {
           border-radius: 20px !important;
           color: hsl(var(--foreground)) !important;
           min-height: 40px !important;
+          max-height: 120px !important;
           font-size: 15px !important;
           padding: 10px 16px !important;
+          word-wrap: break-word !important;
+          word-break: break-word !important;
+          white-space: pre-wrap !important;
+          overflow-wrap: break-word !important;
+          overflow-x: hidden !important;
+          overflow-y: auto !important;
+        }
+
+        .fusion-chat .sendbird-message-input-wrapper {
+          width: 100% !important;
+          max-width: 100% !important;
+          overflow: hidden !important;
         }
 
         .fusion-chat .sendbird-message-input-text-field::placeholder,
