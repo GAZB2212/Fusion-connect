@@ -362,9 +362,9 @@ export default function Messages() {
           accessToken={sendbirdToken}
           theme="dark"
           stringSet={{
-            MESSAGE_INPUT__PLACE_HOLDER: "Start chatting...",
-            MESSAGE_INPUT__PLACE_HOLDER__DISABLED: "Start chatting...",
-            MESSAGE_INPUT__PLACE_HOLDER__MUTED: "Start chatting...",
+            MESSAGE_INPUT__PLACE_HOLDER: "",
+            MESSAGE_INPUT__PLACE_HOLDER__DISABLED: "",
+            MESSAGE_INPUT__PLACE_HOLDER__MUTED: "",
           }}
         >
           <div className="h-full flex fusion-chat">
