@@ -172,7 +172,7 @@ export default function Messages() {
     },
     onSuccess: () => {
       toast({
-        title: "Chat deleted",
+        title: "Left chat",
         description: "The conversation has been removed",
       });
       setShowDeleteDialog(false);
@@ -292,10 +292,10 @@ export default function Messages() {
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={() => setShowDeleteDialog(true)}
-                  data-testid="button-delete-chat"
+                  data-testid="button-leave-chat"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
-                  Delete chat
+                  Leave chat
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem 
@@ -312,11 +312,11 @@ export default function Messages() {
         )}
       </header>
 
-      {/* Delete Chat Confirmation Dialog */}
+      {/* Leave Chat Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete this chat?</DialogTitle>
+            <DialogTitle>Leave this chat?</DialogTitle>
             <DialogDescription>
               This will remove the conversation and unmatch you from this person. You can match with them again in the future.
             </DialogDescription>
@@ -329,9 +329,9 @@ export default function Messages() {
               variant="destructive" 
               onClick={() => deleteChatMutation.mutate()}
               disabled={deleteChatMutation.isPending}
-              data-testid="button-confirm-delete"
+              data-testid="button-confirm-leave"
             >
-              {deleteChatMutation.isPending ? "Deleting..." : "Delete"}
+              {deleteChatMutation.isPending ? "Leaving..." : "Leave"}
             </Button>
           </DialogFooter>
         </DialogContent>
