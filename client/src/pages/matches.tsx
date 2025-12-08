@@ -24,7 +24,7 @@ export default function Matches() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [showUnmatchDialog, setShowUnmatchDialog] = useState(false);
-  const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null);
+  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [selectedMatchName, setSelectedMatchName] = useState<string>("");
   
   const { data: matches = [], isLoading, error } = useQuery<MatchWithProfiles[]>({
@@ -36,7 +36,7 @@ export default function Matches() {
   const requiresSubscription = error && (error as any).message?.includes("403");
 
   const unmatchMutation = useMutation({
-    mutationFn: async (matchId: number) => {
+    mutationFn: async (matchId: string) => {
       return apiRequest("DELETE", `/api/matches/${matchId}`);
     },
     onSuccess: () => {
