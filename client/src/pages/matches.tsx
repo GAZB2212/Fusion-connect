@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, MapPin, CheckCircle2, Heart, Crown, Lock, UserX } from "lucide-react";
+import { MessageSquare, MapPin, CheckCircle2, Heart, Crown, Lock, UserX, Eye } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -237,6 +237,15 @@ export default function Matches() {
                     )}
 
                     <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => setLocation(`/matches/${match.id}/profile`)}
+                      data-testid={`button-view-profile-${match.id}`}
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Profile
+                    </Button>
+                    <Button
                       className="w-full"
                       onClick={() => setLocation(`/messages/${match.id}`)}
                       data-testid={`button-message-${match.id}`}
@@ -245,7 +254,7 @@ export default function Matches() {
                       Send Message
                     </Button>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       className="w-full"
                       onClick={() => {
                         setSelectedMatchId(match.id);

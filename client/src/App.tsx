@@ -21,6 +21,7 @@ import Home from "@/pages/home";
 import ProfileSetup from "@/pages/profile-setup";
 import Verification from "@/pages/verification";
 import Matches from "@/pages/matches";
+import MatchProfile from "@/pages/match-profile";
 import Messages from "@/pages/messages";
 import Settings from "@/pages/settings";
 import Subscribe from "@/pages/subscribe";
@@ -139,6 +140,7 @@ function Router() {
       <Route path="/admin/qr-code" component={AdminQR} />
       <Route path="/suggestions" component={Suggestions} />
       <Route path="/matches" component={Matches} />
+      <Route path="/matches/:matchId/profile" component={MatchProfile} />
       <Route path="/messages/:matchId?" component={Messages} />
       <Route path="/settings" component={Settings} />
       <Route path="/subscribe" component={Subscribe} />
