@@ -1,16 +1,31 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, MapPin, CheckCircle2, Heart, Crown, Lock } from "lucide-react";
+import { MessageSquare, MapPin, CheckCircle2, Heart, Crown, Lock, UserX } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import type { MatchWithProfiles } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Matches() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [showUnmatchDialog, setShowUnmatchDialog] = useState(false);
+  const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null);
+  const [selectedMatchName, setSelectedMatchName] = useState<string>("");
   
   const { data: matches = [], isLoading, error } = useQuery<MatchWithProfiles[]>({
     queryKey: ["/api/matches"],
@@ -19,6 +34,29 @@ export default function Matches() {
 
   // Check if error is subscription required (403)
   const requiresSubscription = error && (error as any).message?.includes("403");
+
+  const unmatchMutation = useMutation({
+    mutationFn: async (matchId: number) => {
+      return apiRequest("DELETE", `/api/matches/${matchId}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Unmatched",
+        description: "You have been unmatched from this person",
+      });
+      setShowUnmatchDialog(false);
+      setSelectedMatchId(null);
+      setSelectedMatchName("");
+      queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to unmatch",
+        description: error.message || "Could not unmatch",
+        variant: "destructive",
+      });
+    },
+  });
 
   if (isLoading) {
     return (
@@ -206,6 +244,19 @@ export default function Matches() {
                       <MessageSquare className="h-4 w-4 mr-2" />
                       Send Message
                     </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        setSelectedMatchId(match.id);
+                        setSelectedMatchName(displayName);
+                        setShowUnmatchDialog(true);
+                      }}
+                      data-testid={`button-unmatch-${match.id}`}
+                    >
+                      <UserX className="h-4 w-4 mr-2" />
+                      Unmatch
+                    </Button>
                   </div>
                 </Card>
               );
@@ -213,6 +264,31 @@ export default function Matches() {
           </div>
         )}
       </div>
+
+      {/* Unmatch Confirmation Dialog */}
+      <Dialog open={showUnmatchDialog} onOpenChange={setShowUnmatchDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Unmatch from {selectedMatchName}?</DialogTitle>
+            <DialogDescription>
+              This will remove your match and delete any conversation. You can match with them again in the future.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setShowUnmatchDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => selectedMatchId && unmatchMutation.mutate(selectedMatchId)}
+              disabled={unmatchMutation.isPending}
+              data-testid="button-confirm-unmatch"
+            >
+              {unmatchMutation.isPending ? "Unmatching..." : "Unmatch"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
