@@ -429,6 +429,14 @@ export default function Messages() {
           display: none !important;
         }
 
+        /* Hide the upload/attachment button */
+        .fusion-chat .sendbird-message-input--attach,
+        .fusion-chat .sendbird-iconbutton--attach,
+        .fusion-chat [class*="message-input--attach"],
+        .fusion-chat .sendbird-message-input-wrapper__tools {
+          display: none !important;
+        }
+
         .fusion-chat .sendbird-channel-preview {
           width: calc(100% - 16px) !important;
           max-width: calc(100% - 16px) !important;
