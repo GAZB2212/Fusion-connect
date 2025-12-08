@@ -6,9 +6,33 @@ import GroupChannelList from "@sendbird/uikit-react/GroupChannelList";
 import GroupChannel from "@sendbird/uikit-react/GroupChannel";
 import "@sendbird/uikit-react/dist/index.css";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Video } from "lucide-react";
+import { ArrowLeft, Video, MoreVertical, ShieldOff, Flag } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 const SENDBIRD_APP_ID = import.meta.env.VITE_SENDBIRD_APP_ID || "A68E730B-8E56-4655-BCBD-A709F3162376";
@@ -34,6 +58,10 @@ export default function Messages() {
 
   const [sendbirdToken, setSendbirdToken] = useState<string | null>(null);
   const [currentChannelUrl, setCurrentChannelUrl] = useState<string | null>(matchId || null);
+  const [showBlockDialog, setShowBlockDialog] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [reportReason, setReportReason] = useState<string>("");
+  const [reportDetails, setReportDetails] = useState("");
 
   const { data: tokenData, isLoading: tokenLoading } = useQuery<SendbirdTokenResponse>({
     queryKey: ["/api/sendbird/token"],
@@ -77,6 +105,57 @@ export default function Messages() {
       toast({
         title: "Call failed",
         description: error.message || "Could not start video call",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const blockMutation = useMutation({
+    mutationFn: async () => {
+      const blockedId = getOtherUserId();
+      if (!blockedId) throw new Error("Cannot block user");
+      return apiRequest("POST", `/api/users/${blockedId}/block`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "User blocked",
+        description: "You won't see messages from this person anymore",
+      });
+      setShowBlockDialog(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
+      handleBackToList();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to block",
+        description: error.message || "Could not block user",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const reportMutation = useMutation({
+    mutationFn: async () => {
+      const reportedId = getOtherUserId();
+      if (!reportedId || !reportReason) throw new Error("Cannot report user");
+      return apiRequest("POST", `/api/users/${reportedId}/report`, {
+        reason: reportReason,
+        details: reportDetails || undefined,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Report submitted",
+        description: "Thank you for helping keep our community safe",
+      });
+      setShowReportDialog(false);
+      setReportReason("");
+      setReportDetails("");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to report",
+        description: error.message || "Could not submit report",
         variant: "destructive",
       });
     },
@@ -160,17 +239,120 @@ export default function Messages() {
           {currentChannelUrl ? "Chat" : "Messages"}
         </h1>
         {currentChannelUrl && currentMatch && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => startCallMutation.mutate()}
-            disabled={startCallMutation.isPending}
-            data-testid="button-video-call"
-          >
-            <Video className="w-5 h-5" />
-          </Button>
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => startCallMutation.mutate()}
+              disabled={startCallMutation.isPending}
+              data-testid="button-video-call"
+            >
+              <Video className="w-5 h-5" />
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" data-testid="button-chat-menu">
+                  <MoreVertical className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem 
+                  onClick={() => setShowReportDialog(true)}
+                  data-testid="button-report-user"
+                >
+                  <Flag className="w-4 h-4 mr-2" />
+                  Report
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => setShowBlockDialog(true)}
+                  className="text-destructive focus:text-destructive"
+                  data-testid="button-block-user"
+                >
+                  <ShieldOff className="w-4 h-4 mr-2" />
+                  Block
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
         )}
       </header>
+
+      {/* Block Confirmation Dialog */}
+      <Dialog open={showBlockDialog} onOpenChange={setShowBlockDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Block this person?</DialogTitle>
+            <DialogDescription>
+              They won't be able to message you anymore, and you won't see them in your matches. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setShowBlockDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => blockMutation.mutate()}
+              disabled={blockMutation.isPending}
+              data-testid="button-confirm-block"
+            >
+              {blockMutation.isPending ? "Blocking..." : "Block"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Report Dialog */}
+      <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Report inappropriate behavior</DialogTitle>
+            <DialogDescription>
+              Help us keep the community safe. Your report will be reviewed by our team.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="report-reason">Reason</Label>
+              <Select value={reportReason} onValueChange={setReportReason}>
+                <SelectTrigger id="report-reason" data-testid="select-report-reason">
+                  <SelectValue placeholder="Select a reason" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="harassment">Harassment</SelectItem>
+                  <SelectItem value="inappropriate_content">Inappropriate content</SelectItem>
+                  <SelectItem value="fake_profile">Fake profile</SelectItem>
+                  <SelectItem value="spam">Spam</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="report-details">Additional details (optional)</Label>
+              <Textarea
+                id="report-details"
+                placeholder="Describe what happened..."
+                value={reportDetails}
+                onChange={(e) => setReportDetails(e.target.value)}
+                data-testid="input-report-details"
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setShowReportDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => reportMutation.mutate()}
+              disabled={reportMutation.isPending || !reportReason}
+              data-testid="button-submit-report"
+            >
+              {reportMutation.isPending ? "Submitting..." : "Submit Report"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Main Content Area */}
       <div className="flex-1 min-h-0 overflow-hidden">
