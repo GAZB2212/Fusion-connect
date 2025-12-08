@@ -496,6 +496,15 @@ export default function Messages() {
           border-radius: 20px !important;
           color: hsl(var(--foreground)) !important;
           min-height: 40px !important;
+          font-size: 15px !important;
+          padding: 10px 16px !important;
+        }
+
+        .fusion-chat .sendbird-message-input-text-field::placeholder,
+        .fusion-chat .sendbird-message-input-text-field::-webkit-input-placeholder {
+          color: hsl(var(--muted-foreground)) !important;
+          opacity: 0.6 !important;
+          font-size: 15px !important;
         }
 
         .fusion-chat .sendbird-text-message-item-body {
