@@ -507,6 +507,18 @@ export default function Messages() {
           font-size: 15px !important;
         }
 
+        .fusion-chat .sendbird-message-input-text-field[placeholder]::placeholder {
+          color: transparent !important;
+        }
+
+        .fusion-chat .sendbird-message-input-text-field:empty::before {
+          content: "Start chatting..." !important;
+          color: hsl(var(--muted-foreground)) !important;
+          opacity: 0.6 !important;
+          font-size: 15px !important;
+          pointer-events: none !important;
+        }
+
         .fusion-chat .sendbird-text-message-item-body {
           border-radius: 16px !important;
           padding: 8px 12px !important;
