@@ -420,6 +420,15 @@ export default function Messages() {
           display: none !important;
         }
 
+        /* Hide the info button in conversation header */
+        .fusion-chat .sendbird-ui-header__right,
+        .fusion-chat .sendbird-conversation__header-icon--info,
+        .fusion-chat .sendbird-iconbutton--info,
+        .fusion-chat [class*="header-icon--info"],
+        .fusion-chat .sendbird-chat-header__right {
+          display: none !important;
+        }
+
         .fusion-chat .sendbird-channel-preview {
           width: calc(100% - 16px) !important;
           max-width: calc(100% - 16px) !important;
