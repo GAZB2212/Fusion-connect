@@ -442,6 +442,15 @@ export default function Messages() {
           display: none !important;
         }
 
+        /* Hide the leave channel and other default menu options */
+        .fusion-chat .sendbird-channel-preview__action,
+        .fusion-chat .sendbird-channel-preview-action,
+        .fusion-chat [class*="channel-preview__action"],
+        .fusion-chat [class*="leave-channel"],
+        .fusion-chat .sendbird-icon-leave {
+          display: none !important;
+        }
+
         .fusion-chat .sendbird-channel-preview {
           width: calc(100% - 16px) !important;
           max-width: calc(100% - 16px) !important;
