@@ -361,6 +361,11 @@ export default function Messages() {
           userId={user.id}
           accessToken={sendbirdToken}
           theme="dark"
+          stringSet={{
+            MESSAGE_INPUT__PLACE_HOLDER: "Start chatting...",
+            MESSAGE_INPUT__PLACE_HOLDER__DISABLED: "Start chatting...",
+            MESSAGE_INPUT__PLACE_HOLDER__MUTED: "Start chatting...",
+          }}
         >
           <div className="h-full flex fusion-chat">
             {/* Channel List */}
@@ -505,18 +510,6 @@ export default function Messages() {
           color: hsl(var(--muted-foreground)) !important;
           opacity: 0.6 !important;
           font-size: 15px !important;
-        }
-
-        .fusion-chat .sendbird-message-input-text-field[placeholder]::placeholder {
-          color: transparent !important;
-        }
-
-        .fusion-chat .sendbird-message-input-text-field:empty::before {
-          content: "Start chatting..." !important;
-          color: hsl(var(--muted-foreground)) !important;
-          opacity: 0.6 !important;
-          font-size: 15px !important;
-          pointer-events: none !important;
         }
 
         .fusion-chat .sendbird-text-message-item-body {
