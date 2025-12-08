@@ -189,7 +189,7 @@ export const videoCalls = pgTable("video_calls", {
   index("receiver_call_idx").on(table.receiverId),
 ]);
 
-// Push Subscriptions - Store web push notification subscriptions
+// Push Subscriptions - Store web push notification subscriptions (legacy)
 export const pushSubscriptions = pgTable("push_subscriptions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
@@ -199,6 +199,24 @@ export const pushSubscriptions = pgTable("push_subscriptions", {
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [
   index("user_push_idx").on(table.userId),
+]);
+
+// Push Tokens - Unified push token storage for web and native (Capacitor)
+export const pushTokens = pgTable("push_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  type: varchar("type", { length: 10 }).notNull(), // 'web', 'fcm', 'apns'
+  token: text("token").notNull(), // The actual token (for FCM/APNs) or endpoint (for web)
+  endpoint: text("endpoint"), // For web push only
+  auth: text("auth"), // For web push only
+  p256dh: text("p256dh"), // For web push only
+  deviceId: varchar("device_id", { length: 100 }), // Optional device identifier
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("user_push_token_idx").on(table.userId),
+  index("token_type_idx").on(table.type),
 ]);
 
 // Early signups - waitlist for pre-launch
@@ -346,6 +364,13 @@ export const pushSubscriptionsRelations = relations(pushSubscriptions, ({ one })
   }),
 }));
 
+export const pushTokensRelations = relations(pushTokens, ({ one }) => ({
+  user: one(users, {
+    fields: [pushTokens.userId],
+    references: [users.id],
+  }),
+}));
+
 export const blockedUsersRelations = relations(blockedUsers, ({ one }) => ({
   blocker: one(users, {
     fields: [blockedUsers.blockerId],
@@ -417,6 +442,15 @@ export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions
   p256dh: z.string().min(1, "P256dh key is required"),
 }).omit({ id: true, createdAt: true });
 
+export const insertPushTokenSchema = createInsertSchema(pushTokens, {
+  type: z.enum(["web", "fcm", "apns"]),
+  token: z.string().min(1, "Token is required"),
+  endpoint: z.string().url().optional(),
+  auth: z.string().optional(),
+  p256dh: z.string().optional(),
+  deviceId: z.string().optional(),
+}).omit({ id: true, createdAt: true, updatedAt: true, isActive: true });
+
 export const insertBlockedUserSchema = createInsertSchema(blockedUsers, {
   reason: z.string().optional(),
 }).omit({ id: true, createdAt: true, blockerId: true });
@@ -455,6 +489,8 @@ export type VideoCall = typeof videoCalls.$inferSelect;
 export type InsertVideoCall = z.infer<typeof insertVideoCallSchema>;
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
 export type InsertPushSubscription = z.infer<typeof insertPushSubscriptionSchema>;
+export type PushToken = typeof pushTokens.$inferSelect;
+export type InsertPushToken = z.infer<typeof insertPushTokenSchema>;
 export type BlockedUser = typeof blockedUsers.$inferSelect;
 export type InsertBlockedUser = z.infer<typeof insertBlockedUserSchema>;
 export type UserReport = typeof userReports.$inferSelect;

@@ -26,6 +26,7 @@ import {
   videoCalls,
   passwordResetTokens,
   pushSubscriptions,
+  pushTokens,
   blockedUsers,
   userReports,
   earlySignups,
@@ -33,6 +34,7 @@ import {
   insertMessageSchema,
   insertChaperoneSchema,
   insertPushSubscriptionSchema,
+  insertPushTokenSchema,
   insertBlockedUserSchema,
   insertUserReportSchema,
   registerUserSchema,
@@ -2249,6 +2251,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Push subscriptions removed" });
     } catch (error: any) {
       console.error('Error removing push subscription:', error);
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Unified Push Token Registration (supports web, FCM, and APNs)
+  app.post("/api/push/register", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+
+    try {
+      const validatedData = insertPushTokenSchema.parse({
+        userId,
+        ...req.body
+      });
+
+      // For web push, use endpoint as the unique identifier
+      // For native push, use the token itself
+      const tokenIdentifier = validatedData.type === 'web' 
+        ? validatedData.endpoint 
+        : validatedData.token;
+
+      if (!tokenIdentifier) {
+        return res.status(400).json({ message: "Token or endpoint required" });
+      }
+
+      // Check if this token already exists for this user
+      const [existing] = await db
+        .select()
+        .from(pushTokens)
+        .where(
+          and(
+            eq(pushTokens.userId, userId),
+            eq(pushTokens.token, validatedData.token)
+          )
+        )
+        .limit(1);
+
+      if (existing) {
+        // Update the existing token (mark as active, update timestamp)
+        await db
+          .update(pushTokens)
+          .set({ 
+            isActive: true, 
+            updatedAt: new Date(),
+            // Update web push keys if provided
+            endpoint: validatedData.endpoint || existing.endpoint,
+            auth: validatedData.auth || existing.auth,
+            p256dh: validatedData.p256dh || existing.p256dh,
+          })
+          .where(eq(pushTokens.id, existing.id));
+        
+        return res.json({ message: "Push token updated" });
+      }
+
+      // Create new token registration
+      await db.insert(pushTokens).values({
+        userId,
+        type: validatedData.type,
+        token: validatedData.token,
+        endpoint: validatedData.endpoint,
+        auth: validatedData.auth,
+        p256dh: validatedData.p256dh,
+        deviceId: validatedData.deviceId,
+        isActive: true,
+      });
+
+      res.json({ message: "Push token registered" });
+    } catch (error: any) {
+      console.error('Error registering push token:', error);
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Unregister push token
+  app.post("/api/push/unregister", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+    const { token, deviceId } = req.body;
+
+    try {
+      // If specific token provided, deactivate just that one
+      if (token) {
+        await db
+          .update(pushTokens)
+          .set({ isActive: false, updatedAt: new Date() })
+          .where(
+            and(
+              eq(pushTokens.userId, userId),
+              eq(pushTokens.token, token)
+            )
+          );
+      } else if (deviceId) {
+        // Deactivate by device ID
+        await db
+          .update(pushTokens)
+          .set({ isActive: false, updatedAt: new Date() })
+          .where(
+            and(
+              eq(pushTokens.userId, userId),
+              eq(pushTokens.deviceId, deviceId)
+            )
+          );
+      } else {
+        // Deactivate all tokens for this user
+        await db
+          .update(pushTokens)
+          .set({ isActive: false, updatedAt: new Date() })
+          .where(eq(pushTokens.userId, userId));
+      }
+
+      res.json({ message: "Push token unregistered" });
+    } catch (error: any) {
+      console.error('Error unregistering push token:', error);
       res.status(400).json({ message: error.message });
     }
   });
