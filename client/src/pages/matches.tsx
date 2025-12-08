@@ -254,7 +254,7 @@ export default function Matches() {
                       Send Message
                     </Button>
                     <Button
-                      variant="ghost"
+                      variant="destructive"
                       className="w-full"
                       onClick={() => {
                         setSelectedMatchId(match.id);
