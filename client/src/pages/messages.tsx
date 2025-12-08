@@ -465,8 +465,8 @@ export default function Messages() {
           width: 100% !important;
           max-width: 100% !important;
           box-sizing: border-box !important;
-          background: hsl(var(--card)) !important;
-          border-top: 1px solid hsl(var(--border)) !important;
+          background: transparent !important;
+          border: none !important;
           padding: 8px 12px !important;
         }
 
