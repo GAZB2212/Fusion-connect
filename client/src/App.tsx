@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import type { Profile } from "@shared/schema";
-import { initializePushNotifications } from "@/lib/pushNotifications";
+import { initializePushNotifications } from "@/lib/unifiedPushNotifications";
 import { VideoCallProvider } from "@/contexts/VideoCallContext";
 import { WebSocketProvider } from "@/contexts/WebSocketContext";
 import Landing from "@/pages/landing";
@@ -160,36 +160,27 @@ function AppContent() {
   });
 
   // Initialize push notifications when user is authenticated with complete profile
+  // Uses unified push service that works on both web and native (Capacitor)
   useEffect(() => {
     const setupPushNotifications = async () => {
       if (!isAuthenticated || !profile?.isComplete || !profile?.faceVerified) {
         return;
       }
 
+      // VAPID key only needed for web push, native uses FCM/APNs
       const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-      if (!vapidKey) {
-        console.log('VAPID key not configured');
-        return;
-      }
-
-      // Check if browser supports notifications
-      if (!('Notification' in window) || !('serviceWorker' in navigator)) {
-        console.log('Push notifications not supported in this browser');
-        return;
-      }
 
       try {
-        // Register service worker first
+        // Initialize unified push notifications (handles web and native automatically)
         await initializePushNotifications(vapidKey);
 
-        // Request permission if not already granted or denied
-        if (Notification.permission === 'default') {
-          const permission = await Notification.requestPermission();
-          if (permission === 'granted') {
-            // Subscribe to push notifications
-            const { enablePushNotifications } = await import('@/lib/pushNotifications');
-            await enablePushNotifications(vapidKey);
-          }
+        // Request permission if not already granted (for web browser)
+        // The unified service handles native permission requests internally
+        const { getNotificationPermission, enablePushNotifications } = await import('@/lib/unifiedPushNotifications');
+        const permission = await getNotificationPermission();
+        
+        if (permission === 'prompt') {
+          await enablePushNotifications(vapidKey);
         }
       } catch (error) {
         console.error('Failed to setup push notifications:', error);
