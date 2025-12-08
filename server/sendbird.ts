@@ -145,7 +145,7 @@ export class SendbirdService {
       console.log(`[Sendbird] Created channel for users: ${userIds.join(', ')}`);
       
       // Send a welcome message so the channel appears in users' channel lists
-      await this.sendSystemMessage(data.channel_url, "You're now connected! Start chatting.");
+      await this.sendSystemMessage(data.channel_url, "It's a match! Say salaam and start your conversation.");
       
       return data;
     } catch (error) {
