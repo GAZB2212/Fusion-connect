@@ -95,3 +95,33 @@ The platform features a luxury aesthetic with a primary deep navy color, gold ac
 *   **date-fns:** Date utility library.
 *   **nanoid:** Unique ID generation.
 *   **Zod & drizzle-zod:** Schema validation.
+
+## Capacitor Mobile App Deployment
+
+The application is designed to be wrapped with Capacitor for deployment to iOS and Android App Stores. Key considerations:
+
+### Push Notifications (Cross-Platform)
+The app uses a unified push notification system (`client/src/lib/unifiedPushNotifications.ts`) that automatically detects the platform and uses the appropriate push service:
+- **Web:** Uses Web Push API with VAPID keys and service workers
+- **iOS (Capacitor):** Uses Apple Push Notification service (APNs)
+- **Android (Capacitor):** Uses Firebase Cloud Messaging (FCM)
+
+Database table `push_tokens` stores tokens for all platforms with fields: type (web/apns/fcm), token, device info.
+
+### Platform Detection
+Utility at `client/src/lib/platform.ts` detects whether the app is running in a web browser or as a native Capacitor app.
+
+### Capacitor Setup Requirements
+To deploy as a native app:
+1. Install Capacitor: `npm install @capacitor/core @capacitor/cli`
+2. Initialize: `npx cap init`
+3. Add platforms: `npx cap add ios` and/or `npx cap add android`
+4. Install push plugin: `npm install @capacitor/push-notifications`
+5. Configure iOS: Requires Apple Developer account ($99/year), APNs certificate, and provisioning profile
+6. Configure Android: Requires Firebase project with google-services.json
+
+### Deployment Advantages
+- Web content updates deploy instantly without App Store review
+- Backend changes are immediate
+- Only native code changes require App Store resubmission
+- Single codebase serves web, iOS, and Android
