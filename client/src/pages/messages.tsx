@@ -424,6 +424,7 @@ export default function Messages() {
             MESSAGE_INPUT__PLACE_HOLDER: "",
             MESSAGE_INPUT__PLACE_HOLDER__DISABLED: "",
             MESSAGE_INPUT__PLACE_HOLDER__MUTED: "",
+            PLACE_HOLDER__NO_CHANNEL: "No Chats Available",
           }}
         >
           <div className="h-full flex fusion-chat">
