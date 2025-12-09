@@ -150,7 +150,8 @@ export default function Messages() {
         matchId: currentChannelUrl,
         receiverId,
       });
-      return res as unknown as VideoCall;
+      const call = await res.json();
+      return call as VideoCall;
     },
     onSuccess: async (call) => {
       setActiveCall(call);
