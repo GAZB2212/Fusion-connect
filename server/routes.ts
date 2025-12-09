@@ -336,6 +336,120 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ADMIN: Seed demo profiles for testing (call this on production to populate test data)
+  app.post('/api/admin/seed-demo-profiles', async (req: Request, res: Response) => {
+    const { adminKey } = req.body;
+    
+    // Simple admin key protection - change this to a secure value
+    if (adminKey !== 'fusion-seed-2024') {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    try {
+      const hashedPassword = await bcrypt.hash('Demo123!', 10);
+      const createdAccounts: string[] = [];
+
+      // Demo female profiles
+      const femaleProfiles = [
+        { email: 'aisha.demo@fusion.com', firstName: 'Aisha', displayName: 'Aisha', age: 26, location: 'London, UK', bio: 'Software engineer who loves hiking and photography. Looking for someone kind and ambitious.', sect: 'Sunni', prayerLevel: 'Regular', lookingFor: 'Marriage' },
+        { email: 'fatima.demo@fusion.com', firstName: 'Fatima', displayName: 'Fatima', age: 28, location: 'Manchester, UK', bio: 'Doctor by profession, artist by passion. Family-oriented and love good conversations.', sect: 'Sunni', prayerLevel: 'Regular', lookingFor: 'Marriage' },
+        { email: 'mariam.demo@fusion.com', firstName: 'Mariam', displayName: 'Mariam', age: 25, location: 'Birmingham, UK', bio: 'Teacher who loves reading and traveling. Looking for a partner who values education and growth.', sect: 'Sunni', prayerLevel: 'Sometimes', lookingFor: 'Marriage' },
+        { email: 'sara.demo@fusion.com', firstName: 'Sara', displayName: 'Sara', age: 27, location: 'Leeds, UK', bio: 'Marketing professional with a love for food and culture. Seeking a genuine connection.', sect: 'Sunni', prayerLevel: 'Regular', lookingFor: 'Marriage' },
+        { email: 'zainab.demo@fusion.com', firstName: 'Zainab', displayName: 'Zainab', age: 24, location: 'London, UK', bio: 'Law student passionate about justice and community service. Looking for someone with similar values.', sect: 'Shia', prayerLevel: 'Regular', lookingFor: 'Marriage' },
+      ];
+
+      // Demo male profiles
+      const maleProfiles = [
+        { email: 'ahmed.demo@fusion.com', firstName: 'Ahmed', displayName: 'Ahmed', age: 29, location: 'London, UK', bio: 'Entrepreneur building tech startups. Love sports, especially football. Family means everything.', sect: 'Sunni', prayerLevel: 'Regular', lookingFor: 'Marriage' },
+        { email: 'omar.demo@fusion.com', firstName: 'Omar', displayName: 'Omar', age: 31, location: 'Manchester, UK', bio: 'Architect who designs dreams. Enjoy traveling and exploring new cuisines. Ready to settle down.', sect: 'Sunni', prayerLevel: 'Regular', lookingFor: 'Marriage' },
+        { email: 'yusuf.demo@fusion.com', firstName: 'Yusuf', displayName: 'Yusuf', age: 27, location: 'Birmingham, UK', bio: 'Accountant with a passion for charity work. Looking for someone who shares my values.', sect: 'Sunni', prayerLevel: 'Sometimes', lookingFor: 'Marriage' },
+        { email: 'hassan.demo@fusion.com', firstName: 'Hassan', displayName: 'Hassan', age: 30, location: 'London, UK', bio: 'Doctor who loves making a difference. Enjoy reading, gym, and quality time with loved ones.', sect: 'Sunni', prayerLevel: 'Regular', lookingFor: 'Marriage' },
+        { email: 'ali.demo@fusion.com', firstName: 'Ali', displayName: 'Ali', age: 28, location: 'Leeds, UK', bio: 'Software developer and fitness enthusiast. Looking for a partner to build a meaningful life with.', sect: 'Shia', prayerLevel: 'Regular', lookingFor: 'Marriage' },
+      ];
+
+      // Create female accounts and profiles
+      for (const profile of femaleProfiles) {
+        // Check if user already exists
+        const [existing] = await db.select().from(users).where(eq(users.email, profile.email)).limit(1);
+        if (existing) continue;
+
+        // Create user
+        const [newUser] = await db.insert(users).values({
+          email: profile.email,
+          password: hashedPassword,
+          firstName: profile.firstName,
+          subscriptionStatus: 'active',
+          subscriptionEndsAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        }).returning();
+
+        // Create profile
+        await db.insert(profiles).values({
+          userId: newUser.id,
+          displayName: profile.displayName,
+          gender: 'female',
+          age: profile.age,
+          location: profile.location,
+          bio: profile.bio,
+          sect: profile.sect,
+          prayerFrequency: profile.prayerLevel,
+          lookingFor: profile.lookingFor,
+          photos: ['https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400'],
+          isActive: true,
+          isComplete: true,
+          isVerified: true,
+        });
+
+        createdAccounts.push(profile.email);
+      }
+
+      // Create male accounts and profiles
+      for (const profile of maleProfiles) {
+        // Check if user already exists
+        const [existing] = await db.select().from(users).where(eq(users.email, profile.email)).limit(1);
+        if (existing) continue;
+
+        // Create user
+        const [newUser] = await db.insert(users).values({
+          email: profile.email,
+          password: hashedPassword,
+          firstName: profile.firstName,
+          subscriptionStatus: 'active',
+          subscriptionEndsAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        }).returning();
+
+        // Create profile
+        await db.insert(profiles).values({
+          userId: newUser.id,
+          displayName: profile.displayName,
+          gender: 'male',
+          age: profile.age,
+          location: profile.location,
+          bio: profile.bio,
+          sect: profile.sect,
+          prayerFrequency: profile.prayerLevel,
+          lookingFor: profile.lookingFor,
+          photos: ['https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400'],
+          isActive: true,
+          isComplete: true,
+          isVerified: true,
+        });
+
+        createdAccounts.push(profile.email);
+      }
+
+      res.json({
+        success: true,
+        message: `Created ${createdAccounts.length} demo accounts`,
+        accounts: createdAccounts,
+        password: 'Demo123!',
+        note: 'All accounts have premium activated. Log in with any email above and password Demo123!'
+      });
+    } catch (error: any) {
+      console.error('Seed demo profiles error:', error);
+      return res.status(500).json({ message: error.message });
+    }
+  });
+
   // Subscription endpoints - Using Checkout Sessions API (modern approach)
   app.post('/api/create-checkout-session', isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;
