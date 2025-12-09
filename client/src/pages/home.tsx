@@ -237,12 +237,21 @@ export default function Home() {
                   <div key={i} className="flex flex-col items-center gap-1 min-w-[70px]">
                     <div className="h-16 w-16 rounded-full border-2 border-primary overflow-hidden bg-card">
                       {matchPhoto ? (
-                        <img src={matchPhoto} alt={matchName} className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-xl font-bold text-primary">
-                          {matchName.charAt(0)}
-                        </div>
-                      )}
+                        <img 
+                          src={matchPhoto} 
+                          alt={matchName} 
+                          className="w-full h-full object-cover" 
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const fallback = target.nextElementSibling as HTMLElement;
+                            if (fallback) fallback.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div className="w-full h-full items-center justify-center text-xl font-bold text-primary" style={{ display: matchPhoto ? 'none' : 'flex' }}>
+                        {matchName.charAt(0)}
+                      </div>
                     </div>
                     <span className="text-xs text-foreground font-medium truncate w-full text-center">
                       {matchName}
@@ -270,14 +279,19 @@ export default function Home() {
                 src={photos[0]}
                 alt={displayName}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const fallback = target.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'flex';
+                }}
               />
-            ) : (
-              <div className="w-full h-full bg-card flex items-center justify-center">
-                <span className="text-6xl font-bold text-primary">
-                  {displayName.charAt(0)}
-                </span>
-              </div>
-            )}
+            ) : null}
+            <div className="w-full h-full bg-card items-center justify-center" style={{ display: photos && photos[0] ? 'none' : 'flex' }}>
+              <span className="text-6xl font-bold text-primary">
+                {displayName.charAt(0)}
+              </span>
+            </div>
             
             {/* Match Percentage Badge */}
             <div className="absolute top-4 right-4">

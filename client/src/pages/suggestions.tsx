@@ -147,14 +147,19 @@ export default function Suggestions() {
                             src={mainPhoto}
                             alt={profile.displayName}
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const fallback = target.nextElementSibling as HTMLElement;
+                              if (fallback) fallback.style.display = 'flex';
+                            }}
                           />
-                        ) : (
-                          <div className="w-full h-full bg-[#0E1220] flex items-center justify-center">
-                            <span className="text-4xl text-[#F8F4E3]/30">
-                              {profile.displayName.charAt(0)}
-                            </span>
-                          </div>
-                        )}
+                        ) : null}
+                        <div className="w-full h-full bg-[#0E1220] items-center justify-center" style={{ display: mainPhoto ? 'none' : 'flex' }}>
+                          <span className="text-4xl text-[#F8F4E3]/30">
+                            {profile.displayName.charAt(0)}
+                          </span>
+                        </div>
                         
                         {/* Compatibility Score Badge */}
                         <div className="absolute top-3 left-3">

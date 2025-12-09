@@ -195,14 +195,22 @@ export default function Matches() {
                         src={otherProfile.photos[0]}
                         alt={displayName}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const fallback = target.nextElementSibling as HTMLElement;
+                          if (fallback) fallback.style.display = 'flex';
+                        }}
                       />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-6xl text-muted-foreground">
-                          {displayName.charAt(0)}
-                        </span>
-                      </div>
-                    )}
+                    ) : null}
+                    <div 
+                      className="w-full h-full items-center justify-center" 
+                      style={{ display: otherProfile.photos?.[0] ? 'none' : 'flex' }}
+                    >
+                      <span className="text-6xl text-muted-foreground">
+                        {displayName.charAt(0)}
+                      </span>
+                    </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
                       <div className="flex items-center gap-2 mb-1">
