@@ -13,7 +13,8 @@ import { createRequire } from "module";
 import QRCode from "qrcode";
 import { createCanvas, loadImage } from "canvas";
 import multer from "multer";
-import { uploadPhotoToR2, base64ToBuffer, detectContentType } from "./r2";
+import { uploadPhotoToR2, base64ToBuffer, detectContentType, r2Client, BUCKET_NAME } from "./r2";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
 const require = createRequire(import.meta.url);
 const { RtcTokenBuilder, RtcRole } = require("agora-token");
 import { 
@@ -712,6 +713,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Helper function to convert R2 proxy URL to base64 (defined here for use in face endpoints)
+  async function convertProxyUrlToBase64ForVerify(url: string): Promise<string> {
+    // If already a data URL, return as-is
+    if (url.startsWith('data:image/')) {
+      return url;
+    }
+    
+    // If it's a proxy URL, fetch from R2 and convert to base64
+    if (url.startsWith('/api/images/')) {
+      const fileKey = url.replace('/api/images/', '');
+      
+      const command = new GetObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: fileKey,
+      });
+
+      const response = await r2Client.send(command);
+      
+      if (!response.Body) {
+        throw new Error("Image not found in storage");
+      }
+
+      // Convert stream to buffer
+      const chunks: Uint8Array[] = [];
+      const stream = response.Body as NodeJS.ReadableStream;
+      
+      for await (const chunk of stream) {
+        chunks.push(chunk as Uint8Array);
+      }
+      
+      const buffer = Buffer.concat(chunks);
+      const base64 = buffer.toString('base64');
+      const contentType = response.ContentType || 'image/jpeg';
+      
+      return `data:${contentType};base64,${base64}`;
+    }
+    
+    // If it's an external HTTPS URL, return as-is (OpenAI can access these)
+    if (url.startsWith('https://')) {
+      return url;
+    }
+    
+    throw new Error("Invalid image URL format");
+  }
+
   // Face verification endpoint
   app.post("/api/verify-face", isAuthenticated, async (req: any, res: Response) => {
     try {
@@ -725,8 +771,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Image URL is required" });
       }
 
+      // Convert proxy URL to base64 if needed
+      const convertedImageUrl = await convertProxyUrlToBase64ForVerify(imageUrl);
+
       const { verifyFrontFacingPhoto } = await import("./faceVerification");
-      const result = await verifyFrontFacingPhoto(imageUrl);
+      const result = await verifyFrontFacingPhoto(convertedImageUrl);
 
       console.log(`[Verify Face] Result for user ${userId}:`, {
         passed: result.isFrontFacing,
@@ -757,8 +806,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Both uploaded photo and live selfie are required" });
       }
 
+      // Convert proxy URLs to base64 for OpenAI vision API
+      console.log(`[Compare Faces] Converting photos for AI analysis...`);
+      const uploadedPhotoBase64 = await convertProxyUrlToBase64ForVerify(uploadedPhoto);
+      const liveSelfieBase64 = await convertProxyUrlToBase64ForVerify(liveSelfie);
+      console.log(`[Compare Faces] Photos converted successfully`);
+
       const { compareFaces } = await import("./faceVerification");
-      const result = await compareFaces(uploadedPhoto, liveSelfie);
+      const result = await compareFaces(uploadedPhotoBase64, liveSelfieBase64);
 
       console.log(`[Compare Faces] Result for user ${userId}:`, {
         isMatch: result.isMatch,
@@ -990,6 +1045,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Failed to upload photos", 
         error: error.message 
       });
+    }
+  });
+
+  // Image proxy endpoint - serves images from R2 storage
+  app.get("/api/images/*", async (req: Request, res: Response) => {
+    try {
+      // Get the file key from the URL path (everything after /api/images/)
+      const fileKey = req.params[0];
+      
+      if (!fileKey) {
+        return res.status(400).json({ message: "No file key provided" });
+      }
+
+      // Fetch from R2
+      const command = new GetObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: fileKey,
+      });
+
+      const response = await r2Client.send(command);
+      
+      if (!response.Body) {
+        return res.status(404).json({ message: "Image not found" });
+      }
+
+      // Set appropriate headers
+      res.set('Content-Type', response.ContentType || 'image/jpeg');
+      res.set('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+      res.set('Access-Control-Allow-Origin', '*');
+
+      // Stream the response
+      const stream = response.Body as NodeJS.ReadableStream;
+      stream.pipe(res);
+    } catch (error: any) {
+      console.error("[Image Proxy] Error:", error.message);
+      if (error.name === 'NoSuchKey') {
+        return res.status(404).json({ message: "Image not found" });
+      }
+      res.status(500).json({ message: "Failed to load image" });
     }
   });
 

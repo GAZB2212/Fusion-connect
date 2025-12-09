@@ -160,20 +160,32 @@ export async function compareFaces(uploadedPhotoUrl: string, liveSelfieUrl: stri
   details?: string;
 }> {
   try {
-    // Validate that both images are proper data URLs
-    const validateDataUrl = (url: string): boolean => {
-      return url.startsWith('data:image/') && url.includes('base64,');
+    // Validate that images are either data URLs or valid HTTPS URLs
+    const validateImageUrl = (url: string): boolean => {
+      // Accept data URLs
+      if (url.startsWith('data:image/') && url.includes('base64,')) {
+        return true;
+      }
+      // Accept HTTPS URLs (for R2 hosted images)
+      if (url.startsWith('https://')) {
+        return true;
+      }
+      return false;
     };
 
-    if (!validateDataUrl(uploadedPhotoUrl)) {
-      console.error("Invalid uploaded photo URL format");
+    if (!validateImageUrl(uploadedPhotoUrl)) {
+      console.error("Invalid uploaded photo URL format:", uploadedPhotoUrl.substring(0, 50));
       throw new Error("Uploaded photo is not in valid format");
     }
 
-    if (!validateDataUrl(liveSelfieUrl)) {
-      console.error("Invalid live selfie URL format");
+    if (!validateImageUrl(liveSelfieUrl)) {
+      console.error("Invalid live selfie URL format:", liveSelfieUrl.substring(0, 50));
       throw new Error("Live selfie is not in valid format");
     }
+    
+    console.log("[Compare Faces] Comparing photos:");
+    console.log("  - Uploaded photo type:", uploadedPhotoUrl.startsWith('data:') ? 'base64' : 'URL');
+    console.log("  - Live selfie type:", liveSelfieUrl.startsWith('data:') ? 'base64' : 'URL');
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o", // Using gpt-4o for vision capabilities

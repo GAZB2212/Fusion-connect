@@ -1,6 +1,7 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import crypto from 'crypto';
+import type { Readable } from 'stream';
 
 // Initialize R2 client
 const r2Client = new S3Client({
@@ -13,6 +14,9 @@ const r2Client = new S3Client({
 });
 
 const BUCKET_NAME = process.env.R2_BUCKET_NAME!;
+
+// Export for use in routes
+export { r2Client, BUCKET_NAME };
 
 /**
  * Upload a photo to Cloudflare R2
@@ -47,8 +51,8 @@ export async function uploadPhotoToR2(
 
     await upload.done();
 
-    // Return public URL using custom domain
-    const publicUrl = `https://www.fusioncouples.com/${fileName}`;
+    // Return URL using our image proxy endpoint
+    const publicUrl = `/api/images/${fileName}`;
     
     console.log(`[R2 Upload] Successfully uploaded ${fileName}`);
     return publicUrl;
@@ -60,13 +64,21 @@ export async function uploadPhotoToR2(
 
 /**
  * Delete a photo from Cloudflare R2
- * @param photoUrl - Full URL of the photo to delete
+ * @param photoUrl - URL of the photo to delete (can be /api/images/... or full URL)
  */
 export async function deletePhotoFromR2(photoUrl: string): Promise<void> {
   try {
     // Extract the file key from the URL
-    const urlParts = photoUrl.split('/');
-    const fileName = urlParts.slice(3).join('/'); // Everything after domain
+    let fileName: string;
+    
+    if (photoUrl.startsWith('/api/images/')) {
+      // New format: /api/images/profile/userId/filename.jpg
+      fileName = photoUrl.replace('/api/images/', '');
+    } else {
+      // Legacy format: https://www.fusioncouples.com/profile/userId/filename.jpg
+      const urlParts = photoUrl.split('/');
+      fileName = urlParts.slice(3).join('/'); // Everything after domain
+    }
 
     const command = new DeleteObjectCommand({
       Bucket: BUCKET_NAME,
