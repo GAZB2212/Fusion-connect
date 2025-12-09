@@ -6,7 +6,9 @@ import GroupChannelList from "@sendbird/uikit-react/GroupChannelList";
 import GroupChannel from "@sendbird/uikit-react/GroupChannel";
 import "@sendbird/uikit-react/dist/index.css";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Video, MoreVertical, ShieldOff, Flag, Trash2 } from "lucide-react";
+import { ArrowLeft, Video, MoreVertical, ShieldOff, Flag, Trash2, Phone } from "lucide-react";
+import VideoCallComponent from "@/components/VideoCall";
+import { useVideoCall } from "@/contexts/VideoCallContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,6 +51,16 @@ interface Match {
   matchedAt: string;
 }
 
+interface VideoCall {
+  id: string;
+  matchId: string;
+  callerId: string;
+  receiverId: string;
+  channelName: string;
+  status: string;
+  duration?: number;
+}
+
 export default function Messages() {
   const { user } = useAuth();
   const [, params] = useRoute("/messages/:matchId");
@@ -64,6 +76,11 @@ export default function Messages() {
   const [reportReason, setReportReason] = useState<string>("");
   const [reportDetails, setReportDetails] = useState("");
   const [selectedUserIdForAction, setSelectedUserIdForAction] = useState<string | null>(null);
+  
+  // Video call state
+  const [activeCall, setActiveCall] = useState<VideoCall | null>(null);
+  const [callToken, setCallToken] = useState<string | null>(null);
+  const { isCallActive, setIsCallActive } = useVideoCall();
 
   const { data: tokenData, isLoading: tokenLoading } = useQuery<SendbirdTokenResponse>({
     queryKey: ["/api/sendbird/token"],
@@ -85,6 +102,38 @@ export default function Messages() {
     return currentMatch.user1Id === user.id ? currentMatch.user2Id : currentMatch.user1Id;
   };
 
+  // Check for incoming calls
+  const { data: incomingCall } = useQuery<VideoCall | null>({
+    queryKey: ["/api/video-call/incoming", currentChannelUrl],
+    queryFn: async () => {
+      if (!currentChannelUrl) return null;
+      const res = await fetch(`/api/video-call/incoming/${currentChannelUrl}`, {
+        credentials: 'include'
+      });
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: !!currentChannelUrl && !activeCall,
+    refetchInterval: 3000,
+  });
+
+  // Handle incoming call
+  useEffect(() => {
+    if (incomingCall && !activeCall && (incomingCall.status === 'initiated' || incomingCall.status === 'active')) {
+      setActiveCall(incomingCall);
+      // Fetch token for the call
+      fetch(`/api/video-call/token/${incomingCall.id}`, { credentials: 'include' })
+        .then(res => res.json())
+        .then(data => {
+          if (data.token) {
+            setCallToken(data.token);
+            setIsCallActive(true);
+          }
+        })
+        .catch(err => console.error('Failed to get call token:', err));
+    }
+  }, [incomingCall, activeCall, setIsCallActive]);
+
   // Video call mutation
   const startCallMutation = useMutation({
     mutationFn: async () => {
@@ -92,12 +141,25 @@ export default function Messages() {
       if (!receiverId || !currentChannelUrl) {
         throw new Error("Cannot start call");
       }
-      return apiRequest("POST", "/api/video-call/initiate", {
+      const res = await apiRequest("POST", "/api/video-call/initiate", {
         matchId: currentChannelUrl,
         receiverId,
       });
+      return res as unknown as VideoCall;
     },
-    onSuccess: () => {
+    onSuccess: async (call) => {
+      setActiveCall(call);
+      // Fetch token for the call
+      try {
+        const tokenRes = await fetch(`/api/video-call/token/${call.id}`, { credentials: 'include' });
+        const tokenData = await tokenRes.json();
+        if (tokenData.token) {
+          setCallToken(tokenData.token);
+          setIsCallActive(true);
+        }
+      } catch (err) {
+        console.error('Failed to get call token:', err);
+      }
       toast({
         title: "Calling...",
         description: "Starting video call",
@@ -111,6 +173,29 @@ export default function Messages() {
       });
     },
   });
+
+  // Handle ending the call
+  const handleEndCall = async (duration: number) => {
+    if (!activeCall) return;
+    
+    try {
+      await apiRequest("PATCH", `/api/video-call/${activeCall.id}/status`, {
+        status: 'ended',
+        duration,
+      });
+    } catch (err) {
+      console.error('Failed to update call status:', err);
+    }
+    
+    setActiveCall(null);
+    setCallToken(null);
+    setIsCallActive(false);
+    
+    toast({
+      title: "Call ended",
+      description: `Duration: ${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')}`,
+    });
+  };
 
   const blockMutation = useMutation({
     mutationFn: async () => {
@@ -626,6 +711,17 @@ export default function Messages() {
           color: hsl(var(--foreground)) !important;
         }
       `}</style>
+
+      {/* Video Call Overlay */}
+      {isCallActive && activeCall && callToken && (
+        <VideoCallComponent
+          callId={activeCall.id}
+          channelName={activeCall.channelName}
+          token={callToken}
+          onEndCall={handleEndCall}
+          isInitiator={activeCall.callerId === user?.id}
+        />
+      )}
     </div>
   );
 }
