@@ -976,20 +976,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`[DEV VERIFY] Manually verifying user ${userId}`);
       
-      await db
+      // Check if profile exists first
+      const [existingProfile] = await db
+        .select()
+        .from(profiles)
+        .where(eq(profiles.userId, userId))
+        .limit(1);
+      
+      if (!existingProfile) {
+        console.log(`[DEV VERIFY] No profile found for user ${userId}`);
+        return res.status(400).json({ 
+          success: false, 
+          message: "No profile found. Please complete your profile first." 
+        });
+      }
+      
+      console.log(`[DEV VERIFY] Found profile ${existingProfile.id}, current faceVerified: ${existingProfile.faceVerified}`);
+      
+      const [updatedProfile] = await db
         .update(profiles)
         .set({
           faceVerified: true,
           photoVerified: true,
           updatedAt: new Date(),
         })
-        .where(eq(profiles.userId, userId));
+        .where(eq(profiles.userId, userId))
+        .returning();
       
-      console.log(`[DEV VERIFY] User ${userId} manually verified successfully`);
+      console.log(`[DEV VERIFY] User ${userId} manually verified successfully. New faceVerified: ${updatedProfile.faceVerified}`);
       
       res.json({ 
         success: true, 
-        message: "Verification bypassed for development" 
+        message: "Verification bypassed for development",
+        faceVerified: updatedProfile.faceVerified
       });
     } catch (error: any) {
       console.error("[DEV VERIFY] ERROR:", error);
