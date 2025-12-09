@@ -80,6 +80,7 @@ export default function Messages() {
   // Video call state
   const [activeCall, setActiveCall] = useState<VideoCall | null>(null);
   const [callToken, setCallToken] = useState<string | null>(null);
+  const [endedCallId, setEndedCallId] = useState<string | null>(null);
   const { isCallActive, setIsCallActive } = useVideoCall();
 
   const { data: tokenData, isLoading: tokenLoading } = useQuery<SendbirdTokenResponse>({
@@ -119,6 +120,10 @@ export default function Messages() {
 
   // Handle incoming call
   useEffect(() => {
+    // Don't restart a call we just ended
+    if (incomingCall && incomingCall.id === endedCallId) {
+      return;
+    }
     if (incomingCall && !activeCall && (incomingCall.status === 'initiated' || incomingCall.status === 'active')) {
       setActiveCall(incomingCall);
       // Fetch token for the call
@@ -132,7 +137,7 @@ export default function Messages() {
         })
         .catch(err => console.error('Failed to get call token:', err));
     }
-  }, [incomingCall, activeCall, setIsCallActive]);
+  }, [incomingCall, activeCall, endedCallId, setIsCallActive]);
 
   // Video call mutation
   const startCallMutation = useMutation({
@@ -178,8 +183,12 @@ export default function Messages() {
   const handleEndCall = async (duration: number) => {
     if (!activeCall) return;
     
+    // Track ended call to prevent it from restarting
+    const callId = activeCall.id;
+    setEndedCallId(callId);
+    
     try {
-      await apiRequest("PATCH", `/api/video-call/${activeCall.id}/status`, {
+      await apiRequest("PATCH", `/api/video-call/${callId}/status`, {
         status: 'ended',
         duration,
       });
@@ -190,6 +199,11 @@ export default function Messages() {
     setActiveCall(null);
     setCallToken(null);
     setIsCallActive(false);
+    
+    // Clear the ended call ID after a delay to allow new calls
+    setTimeout(() => {
+      setEndedCallId(null);
+    }, 5000);
     
     toast({
       title: "Call ended",
