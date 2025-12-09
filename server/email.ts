@@ -3,6 +3,16 @@ import { Resend } from 'resend';
 let connectionSettings: any;
 
 async function getCredentials() {
+  // Prefer RESEND_API_KEY secret if available (more reliable than connector)
+  if (process.env.RESEND_API_KEY) {
+    console.log('[Email] Using RESEND_API_KEY from secrets');
+    return { 
+      apiKey: process.env.RESEND_API_KEY, 
+      fromEmail: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev' 
+    };
+  }
+
+  // Fallback to Resend connector
   const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
   const xReplitToken = process.env.REPL_IDENTITY 
     ? 'repl ' + process.env.REPL_IDENTITY 
@@ -11,14 +21,7 @@ async function getCredentials() {
     : null;
 
   if (!xReplitToken) {
-    // Fallback to RESEND_API_KEY if connector not available
-    if (process.env.RESEND_API_KEY) {
-      return { 
-        apiKey: process.env.RESEND_API_KEY, 
-        fromEmail: 'onboarding@resend.dev' 
-      };
-    }
-    throw new Error('Neither Resend connector nor RESEND_API_KEY found');
+    throw new Error('Neither RESEND_API_KEY nor Resend connector found');
   }
 
   connectionSettings = await fetch(
@@ -32,15 +35,10 @@ async function getCredentials() {
   ).then(res => res.json()).then(data => data.items?.[0]);
 
   if (!connectionSettings || (!connectionSettings.settings.api_key)) {
-    // Fallback to RESEND_API_KEY
-    if (process.env.RESEND_API_KEY) {
-      return { 
-        apiKey: process.env.RESEND_API_KEY, 
-        fromEmail: 'onboarding@resend.dev' 
-      };
-    }
     throw new Error('Resend not connected');
   }
+  
+  console.log('[Email] Using Resend connector');
   return {
     apiKey: connectionSettings.settings.api_key, 
     fromEmail: connectionSettings.settings.from_email
@@ -59,12 +57,22 @@ export async function getUncachableResendClient() {
 }
 
 export async function sendPasswordResetEmail(to: string, resetToken: string, userName: string) {
+  console.log(`[Email] Attempting to send password reset email to ${to}`);
   const { client, fromEmail } = await getUncachableResendClient();
-  const resetUrl = `${process.env.REPLIT_DEV_DOMAIN ? 'https://' + process.env.REPLIT_DEV_DOMAIN : 'http://localhost:5000'}/reset-password?token=${resetToken}`;
+  console.log(`[Email] Using from email: ${fromEmail}`);
   
-  await client.emails.send({
+  // Use production domain if available, otherwise dev domain
+  const domain = process.env.REPLIT_DOMAINS 
+    ? 'https://' + process.env.REPLIT_DOMAINS.split(',')[0]
+    : process.env.REPLIT_DEV_DOMAIN 
+      ? 'https://' + process.env.REPLIT_DEV_DOMAIN 
+      : 'http://localhost:5000';
+  const resetUrl = `${domain}/reset-password?token=${resetToken}`;
+  console.log(`[Email] Reset URL: ${resetUrl}`);
+  
+  const result = await client.emails.send({
     from: fromEmail,
-    to,
+    to: [to],
     subject: 'Reset Your Fusion Password',
     html: `
       <!DOCTYPE html>
@@ -106,4 +114,14 @@ export async function sendPasswordResetEmail(to: string, resetToken: string, use
       </html>
     `,
   });
+  
+  console.log(`[Email] Send result:`, JSON.stringify(result, null, 2));
+  
+  if (result.error) {
+    console.error(`[Email] Failed to send email:`, result.error.message);
+    throw new Error(result.error.message);
+  }
+  
+  console.log(`[Email] Email sent successfully, id:`, result.data?.id);
+  return result;
 }
