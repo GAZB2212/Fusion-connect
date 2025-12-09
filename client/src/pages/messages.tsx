@@ -142,34 +142,65 @@ export default function Messages() {
   // Video call mutation
   const startCallMutation = useMutation({
     mutationFn: async () => {
+      console.log('[VideoCall] Starting call mutation...');
       const receiverId = getOtherUserId();
+      console.log('[VideoCall] receiverId:', receiverId, 'currentChannelUrl:', currentChannelUrl);
       if (!receiverId || !currentChannelUrl) {
         throw new Error("Cannot start call");
       }
+      console.log('[VideoCall] Making API request to initiate call');
       const res = await apiRequest("POST", "/api/video-call/initiate", {
         matchId: currentChannelUrl,
         receiverId,
       });
+      console.log('[VideoCall] API response received, status:', res.status);
       const call = await res.json();
+      console.log('[VideoCall] Parsed call data:', call);
       return call as VideoCall;
     },
     onSuccess: async (call) => {
-      setActiveCall(call);
-      // Fetch token for the call
+      console.log('[VideoCall] Call initiated successfully:', call);
+      
+      // Fetch token for the call FIRST before setting any state
       try {
+        console.log('[VideoCall] Fetching token for call:', call.id);
         const tokenRes = await fetch(`/api/video-call/token/${call.id}`, { credentials: 'include' });
+        console.log('[VideoCall] Token response status:', tokenRes.status);
+        
+        if (!tokenRes.ok) {
+          throw new Error(`Token request failed: ${tokenRes.status}`);
+        }
+        
         const tokenData = await tokenRes.json();
+        console.log('[VideoCall] Token data:', tokenData);
+        
         if (tokenData.token) {
+          console.log('[VideoCall] Setting all call states together');
+          // Set all states together to avoid race conditions
+          setActiveCall(call);
           setCallToken(tokenData.token);
           setIsCallActive(true);
+          
+          toast({
+            title: "Calling...",
+            description: "Starting video call",
+          });
+        } else {
+          console.error('[VideoCall] No token in response:', tokenData);
+          toast({
+            title: "Call failed",
+            description: "Could not get video token",
+            variant: "destructive",
+          });
         }
       } catch (err) {
-        console.error('Failed to get call token:', err);
+        console.error('[VideoCall] Failed to get call token:', err);
+        toast({
+          title: "Call failed",
+          description: "Could not connect to video service",
+          variant: "destructive",
+        });
       }
-      toast({
-        title: "Calling...",
-        description: "Starting video call",
-      });
     },
     onError: (error: any) => {
       toast({
@@ -727,7 +758,8 @@ export default function Messages() {
         }
       `}</style>
 
-      {/* Video Call Overlay */}
+      {/* Video Call Overlay - Debug log */}
+      {(() => { console.log('[VideoCall Render] State check:', { isCallActive, hasActiveCall: !!activeCall, hasCallToken: !!callToken, activeCall, callToken }); return null; })()}
       {isCallActive && activeCall && callToken && (
         <VideoCallComponent
           callId={activeCall.id}
