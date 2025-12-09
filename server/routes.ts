@@ -1535,6 +1535,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (direction === "right") {
       console.log(`[SWIPE] Checking for mutual match between ${userId} and ${swipedId}`);
       
+      // Debug: Show all swipes from the other user
+      const allSwipesFromOther = await db
+        .select()
+        .from(swipes)
+        .where(eq(swipes.swiperId, swipedId));
+      console.log(`[SWIPE DEBUG] All swipes from ${swipedId}:`, JSON.stringify(allSwipesFromOther));
+      
       const [mutualSwipe] = await db
         .select()
         .from(swipes)
@@ -1546,6 +1553,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           )
         )
         .limit(1);
+
+      console.log(`[SWIPE DEBUG] Mutual swipe lookup result:`, mutualSwipe ? JSON.stringify(mutualSwipe) : 'null');
 
       if (mutualSwipe) {
         console.log(`[SWIPE] Found mutual swipe! Creating match...`);
