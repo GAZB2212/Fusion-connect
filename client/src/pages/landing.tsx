@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Shield, Users, MessageSquare, CheckCircle2, Star, Sparkles } from "lucide-react";
 import logoImage from "@assets/NEW logo 2_1761587557587.png";
 import loadingVideo from "@assets/Scene_a_muslim_202512100938_lunmc_1765359545154.mp4";
+import coupleImage from "@assets/Gemini_Generated_Image_jd1f1ljd1f1ljd1f_1765364924010.jpeg";
 
 function CountUpNumber({ end, suffix = "", duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
   const [count, setCount] = useState(0);
@@ -229,6 +230,20 @@ export default function Landing() {
               </div>
             </div>
           </div>
+      </section>
+
+      {/* Couple Image Section */}
+      <section className="py-16 relative">
+        <div className="container px-4">
+          <div className="max-w-4xl mx-auto">
+            <img 
+              src={coupleImage} 
+              alt="Muslim couple at mosque" 
+              className="w-full h-auto rounded-xl shadow-2xl"
+              data-testid="img-couple-feature"
+            />
+          </div>
+        </div>
       </section>
 
       {/* Features Section - Elevated Blue Cards */}
