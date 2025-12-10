@@ -8,7 +8,7 @@ import passport from "passport";
 import bcrypt from "bcrypt";
 import Stripe from "stripe";
 import { randomBytes } from "crypto";
-import { sendPasswordResetEmail } from "./email";
+import { sendPasswordResetEmail, sendChaperoneInvitationEmail } from "./email";
 import { createRequire } from "module";
 import QRCode from "qrcode";
 import { createCanvas, loadImage } from "canvas";
@@ -2245,6 +2245,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error('Sendbird error while setting up chaperone:', sendbirdError);
           // Continue even if Sendbird fails - chaperone record is saved
         }
+      }
+
+      // Send invitation email to the chaperone
+      try {
+        const domain = process.env.REPLIT_DOMAINS 
+          ? 'https://' + process.env.REPLIT_DOMAINS.split(',')[0]
+          : process.env.REPLIT_DEV_DOMAIN 
+            ? 'https://' + process.env.REPLIT_DEV_DOMAIN 
+            : 'http://localhost:5000';
+        const accessLink = `${domain}/chaperone?token=${accessToken}`;
+        
+        await sendChaperoneInvitationEmail(
+          validatedData.chaperoneEmail,
+          validatedData.chaperoneName,
+          userProfile?.displayName || 'A Fusion user',
+          validatedData.relationshipType || null,
+          accessLink,
+          accessType as 'live' | 'report'
+        );
+        console.log(`[Chaperone] Invitation email sent to ${validatedData.chaperoneEmail}`);
+      } catch (emailError) {
+        console.error('[Chaperone] Failed to send invitation email:', emailError);
+        // Continue even if email fails - chaperone record is saved
       }
 
       res.json(chaperone);

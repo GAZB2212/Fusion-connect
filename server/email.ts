@@ -215,3 +215,86 @@ export async function sendEarlyAccessEmail(to: string, firstName: string | null,
   console.log(`[Email] Early access email sent successfully, id:`, result.data?.id);
   return result;
 }
+
+export async function sendChaperoneInvitationEmail(
+  to: string, 
+  chaperoneName: string, 
+  userName: string, 
+  relationshipType: string | null,
+  accessLink: string,
+  accessType: 'live' | 'report'
+) {
+  console.log(`[Email] Sending chaperone invitation email to ${to}`);
+  const { client, fromEmail } = await getUncachableResendClient();
+  
+  const isLiveAccess = accessType === 'live';
+  const accessDescription = isLiveAccess 
+    ? 'You have been granted <strong>Live Access</strong>, which means you can view and participate in all conversations in real-time.'
+    : 'You have been granted <strong>Report Access</strong>, which means you will receive periodic email summaries of conversations.';
+  
+  const result = await client.emails.send({
+    from: fromEmail,
+    to: [to],
+    subject: `You've Been Added as a Chaperone on Fusion`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: Inter, sans-serif; background-color: #0A0E17; color: #F8F4E3; margin: 0; padding: 0; }
+            .container { max-width: 600px; margin: 40px auto; padding: 40px; background: #1A1E27; border-radius: 12px; }
+            .logo { text-align: center; margin-bottom: 30px; }
+            .logo h1 { color: #D4AF37; font-size: 32px; margin: 0; }
+            .content { line-height: 1.6; }
+            .button { display: inline-block; background-color: #D4AF37; color: #0A0E17; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 20px 0; }
+            .access-box { background: #0E1220; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${isLiveAccess ? '#10B981' : '#3B82F6'}; }
+            .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #2A2E37; color: #9CA3AF; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="logo">
+              <h1 style="font-family: 'Playfair Display', Georgia, serif; font-size: 36px; font-weight: 700; color: #D4AF37; margin: 0; letter-spacing: 2px;">Fusion</h1>
+              <p style="color: #9CA3AF; margin: 10px 0 0 0; font-size: 14px;">Premium Muslim Matchmaking</p>
+            </div>
+            <div class="content">
+              <h2 style="color: #F8F4E3;">Assalamu Alaikum ${chaperoneName},</h2>
+              <p><strong>${userName}</strong> has added you as their chaperone${relationshipType ? ` (${relationshipType})` : ''} on Fusion, a premium Muslim matchmaking platform.</p>
+              
+              <div class="access-box">
+                <p style="margin: 0;">${accessDescription}</p>
+              </div>
+              
+              ${isLiveAccess ? `
+              <p>As a chaperone with live access, you can oversee conversations to ensure they remain respectful and halal. Click the button below to access the Chaperone Portal:</p>
+              
+              <div style="text-align: center;">
+                <a href="${accessLink}" class="button">Access Chaperone Portal</a>
+              </div>
+              
+              <p style="color: #9CA3AF; font-size: 14px;">Or copy and paste this link into your browser:</p>
+              <p style="color: #9CA3AF; word-break: break-all; font-size: 12px;">${accessLink}</p>
+              ` : `
+              <p>As a chaperone with report access, you will receive periodic email summaries of ${userName}'s conversations. This allows you to stay informed while respecting privacy.</p>
+              `}
+              
+              <p style="margin-top: 24px;">Thank you for supporting ${userName} on their journey to finding a meaningful connection.</p>
+            </div>
+            <div class="footer">
+              <p>Fusion - Where Faith Meets Forever</p>
+              <p style="font-size: 12px; color: #6B7280;">This email was sent because ${userName} added you as their chaperone. If you believe this was sent in error, please contact them directly.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+  });
+  
+  if (result.error) {
+    console.error(`[Email] Failed to send chaperone invitation:`, result.error.message);
+    throw new Error(result.error.message);
+  }
+  
+  console.log(`[Email] Chaperone invitation sent successfully, id:`, result.data?.id);
+  return result;
+}
