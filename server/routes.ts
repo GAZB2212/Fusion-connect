@@ -1061,11 +1061,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .where(eq(profiles.userId, userId))
         .limit(1);
       
+      const profilePhotoUrl = profile?.photos?.[0];
+      console.log(`[Sendbird] User ${userId} profile photo URL:`, profilePhotoUrl);
+      
       // Ensure user exists in Sendbird first with profile photo
       await SendbirdService.createOrUpdateUser({
         userId: userId,
         nickname: `${req.user.firstName}${req.user.lastName ? ' ' + req.user.lastName : ''}`,
-        profileUrl: profile?.photos?.[0] || undefined,
+        profileUrl: profilePhotoUrl || undefined,
       });
       
       // Also sync profile photos for all match partners (in background)
@@ -2224,7 +2227,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await SendbirdService.createOrUpdateUser({
             userId: sendbirdUserId,
             nickname: `${validatedData.chaperoneName} (Chaperone)`,
-            profileUrl: 'https://via.placeholder.com/150?text=Wali',
+            profileUrl: 'https://via.placeholder.com/150',
           });
 
           // Get all user's match channels and invite chaperone
