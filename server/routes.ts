@@ -1054,10 +1054,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log(`[Sendbird] Token request for user ${userId}`);
       
-      // Ensure user exists in Sendbird first
+      // Get user's profile for photo
+      const [profile] = await db
+        .select()
+        .from(profiles)
+        .where(eq(profiles.userId, userId))
+        .limit(1);
+      
+      // Ensure user exists in Sendbird first with profile photo
       await SendbirdService.createOrUpdateUser({
         userId: userId,
         nickname: `${req.user.firstName}${req.user.lastName ? ' ' + req.user.lastName : ''}`,
+        profileUrl: profile?.photos?.[0] || undefined,
       });
       
       console.log(`[Sendbird] User created/updated, generating token...`);
