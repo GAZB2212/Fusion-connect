@@ -185,16 +185,7 @@ export default function Landing() {
         <div className="container relative z-10 px-4 pt-16 md:pt-24 pb-20">
             <div className="mx-auto max-w-4xl text-center">
               <div className="mb-8 flex justify-center">
-                <video
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  className="w-full max-w-2xl h-auto"
-                  data-testid="video-hero-logo"
-                >
-                  <source src={loadingVideo} type="video/mp4" />
-                </video>
+                <img src={logoImage} alt="Fusion Logo" className="w-full max-w-2xl h-auto" data-testid="img-hero-logo" />
               </div>
               <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-6 py-2 backdrop-blur-sm">
                 <Star className="h-4 w-4 text-primary fill-primary" />
