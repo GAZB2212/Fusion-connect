@@ -506,6 +506,26 @@ export const insertEarlySignupSchema = createInsertSchema(earlySignups).omit({
 export type EarlySignup = typeof earlySignups.$inferSelect;
 export type InsertEarlySignup = z.infer<typeof insertEarlySignupSchema>;
 
+// User Feedback table
+export const userFeedback = pgTable("user_feedback", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  category: varchar("category", { length: 50 }).notNull(), // bug, feature, general, other
+  rating: integer("rating"), // 1-5 stars (optional)
+  message: text("message").notNull(),
+  status: varchar("status", { length: 20 }).default("new"), // new, reviewed, resolved
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertUserFeedbackSchema = createInsertSchema(userFeedback, {
+  category: z.enum(["bug", "feature", "general", "other"]),
+  rating: z.number().min(1).max(5).optional(),
+  message: z.string().min(10, "Please provide at least 10 characters").max(2000),
+}).omit({ id: true, createdAt: true, userId: true, status: true });
+
+export type UserFeedback = typeof userFeedback.$inferSelect;
+export type InsertUserFeedback = z.infer<typeof insertUserFeedbackSchema>;
+
 // Extended types for API responses
 export type ProfileWithUser = Profile & {
   user: User;

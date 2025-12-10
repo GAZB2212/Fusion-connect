@@ -26,6 +26,7 @@ import Messages from "@/pages/messages";
 import Settings from "@/pages/settings";
 import Subscribe from "@/pages/subscribe";
 import Suggestions from "@/pages/suggestions";
+import Feedback from "@/pages/feedback";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
 import NotFound from "@/pages/not-found";
@@ -143,6 +144,7 @@ function Router() {
       <Route path="/matches/:matchId/profile" component={MatchProfile} />
       <Route path="/messages/:matchId?" component={Messages} />
       <Route path="/settings" component={Settings} />
+      <Route path="/feedback" component={Feedback} />
       <Route path="/subscribe" component={Subscribe} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms-of-service" component={TermsOfService} />

@@ -19,7 +19,8 @@ import {
   UserX, 
   Trash2, 
   FileText,
-  ExternalLink
+  ExternalLink,
+  MessageSquare
 } from "lucide-react";
 import type { Profile, Chaperone } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -561,6 +562,15 @@ export default function Settings() {
             Legal & Support
           </h2>
           <div className="space-y-3">
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={() => setLocation("/feedback")}
+              data-testid="button-feedback"
+            >
+              <MessageSquare className="h-4 w-4 mr-2" />
+              Share Feedback
+            </Button>
             <Button
               variant="outline"
               className="w-full justify-start"

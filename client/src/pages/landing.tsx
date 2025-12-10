@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Shield, Users, MessageSquare, CheckCircle2, Star, Sparkles } from "lucide-react";
 import logoImage from "@assets/NEW logo 2_1761587557587.png";
-import loadingVideo from "@assets/Lets_animate_this_202510271804_z56n5_1761588281340.mp4";
+import loadingVideo from "@assets/Scene_a_muslim_202512100938_lunmc_1765359545154.mp4";
 
 function CountUpNumber({ end, suffix = "", duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
   const [count, setCount] = useState(0);
@@ -67,6 +67,19 @@ export default function Landing() {
     };
   }, [showLoading]);
 
+  // State for logo slide-in animation
+  const [logoVisible, setLogoVisible] = useState(false);
+  
+  useEffect(() => {
+    if (showLoading) {
+      // Start logo slide-in after 1.5 seconds
+      const logoTimer = setTimeout(() => {
+        setLogoVisible(true);
+      }, 1500);
+      return () => clearTimeout(logoTimer);
+    }
+  }, [showLoading]);
+
   if (showLoading) {
     return (
       <div 
@@ -83,6 +96,22 @@ export default function Landing() {
         >
           <source src={loadingVideo} type="video/mp4" />
         </video>
+        
+        {/* Static logo sliding in from bottom */}
+        <div 
+          className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-all duration-1000 ease-out ${
+            logoVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
+          }`}
+        >
+          <div className="bg-background/80 backdrop-blur-sm rounded-2xl p-6 shadow-2xl">
+            <img 
+              src={logoImage} 
+              alt="Fusion Logo" 
+              className="w-48 h-auto"
+              data-testid="img-splash-logo"
+            />
+          </div>
+        </div>
       </div>
     );
   }

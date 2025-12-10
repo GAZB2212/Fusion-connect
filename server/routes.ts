@@ -31,6 +31,7 @@ import {
   blockedUsers,
   userReports,
   earlySignups,
+  userFeedback,
   insertProfileSchema,
   insertMessageSchema,
   insertChaperoneSchema,
@@ -38,6 +39,7 @@ import {
   insertPushTokenSchema,
   insertBlockedUserSchema,
   insertUserReportSchema,
+  insertUserFeedbackSchema,
   registerUserSchema,
   loginSchema,
   type Profile,
@@ -3088,6 +3090,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('[BACKFILL] Error:', error);
       res.status(500).json({ message: "Failed to backfill channels" });
+    }
+  });
+
+  // ============== Feedback Routes ==============
+  
+  // Submit feedback
+  app.post("/api/feedback", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+    
+    try {
+      const validatedData = insertUserFeedbackSchema.parse(req.body);
+      
+      const [feedback] = await db
+        .insert(userFeedback)
+        .values({
+          userId,
+          ...validatedData,
+        })
+        .returning();
+      
+      res.status(201).json(feedback);
+    } catch (error: any) {
+      console.error("[Feedback] Error submitting feedback:", error);
+      res.status(400).json({ message: error.message || "Failed to submit feedback" });
+    }
+  });
+  
+  // Get user's own feedback history
+  app.get("/api/feedback", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+    
+    try {
+      const feedbackList = await db
+        .select()
+        .from(userFeedback)
+        .where(eq(userFeedback.userId, userId))
+        .orderBy(desc(userFeedback.createdAt));
+      
+      res.json(feedbackList);
+    } catch (error: any) {
+      console.error("[Feedback] Error fetching feedback:", error);
+      res.status(500).json({ message: "Failed to fetch feedback" });
     }
   });
 
