@@ -654,6 +654,33 @@ export default function Messages() {
           background: hsl(var(--muted)) !important;
         }
 
+        /* Ensure avatars display properly */
+        .fusion-chat .sendbird-avatar,
+        .fusion-chat .sendbird-channel-preview__avatar {
+          width: 40px !important;
+          height: 40px !important;
+          min-width: 40px !important;
+          min-height: 40px !important;
+          border-radius: 50% !important;
+          overflow: hidden !important;
+        }
+
+        .fusion-chat .sendbird-avatar-img,
+        .fusion-chat .sendbird-channel-preview__avatar img {
+          width: 100% !important;
+          height: 100% !important;
+          object-fit: cover !important;
+          border-radius: 50% !important;
+        }
+
+        /* Message avatars */
+        .fusion-chat .sendbird-message-content__left__avatar .sendbird-avatar {
+          width: 28px !important;
+          height: 28px !important;
+          min-width: 28px !important;
+          min-height: 28px !important;
+        }
+
         .fusion-chat .sendbird-conversation,
         .fusion-chat .sendbird-group-channel-view {
           width: 100% !important;

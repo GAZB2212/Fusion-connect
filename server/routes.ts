@@ -1068,6 +1068,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         profileUrl: profile?.photos?.[0] || undefined,
       });
       
+      // Also sync profile photos for all match partners (in background)
+      (async () => {
+        try {
+          const userMatches = await db
+            .select()
+            .from(matches)
+            .where(or(eq(matches.user1Id, userId), eq(matches.user2Id, userId)));
+          
+          for (const match of userMatches) {
+            const partnerId = match.user1Id === userId ? match.user2Id : match.user1Id;
+            const [partnerProfile] = await db
+              .select()
+              .from(profiles)
+              .where(eq(profiles.userId, partnerId))
+              .limit(1);
+            
+            const [partnerUser] = await db
+              .select()
+              .from(users)
+              .where(eq(users.id, partnerId))
+              .limit(1);
+            
+            if (partnerUser && partnerProfile) {
+              await SendbirdService.createOrUpdateUser({
+                userId: partnerId,
+                nickname: partnerProfile.displayName || `${partnerUser.firstName || ''} ${partnerUser.lastName || ''}`.trim(),
+                profileUrl: partnerProfile.photos?.[0] || undefined,
+              });
+            }
+          }
+        } catch (err) {
+          console.error('[Sendbird] Error syncing partner profiles:', err);
+        }
+      })();
+      
       console.log(`[Sendbird] User created/updated, generating token...`);
       
       // Generate session token
