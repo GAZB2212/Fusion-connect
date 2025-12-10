@@ -29,6 +29,7 @@ import Suggestions from "@/pages/suggestions";
 import Feedback from "@/pages/feedback";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
+import ChaperonePortal from "@/pages/chaperone-portal";
 import NotFound from "@/pages/not-found";
 import { BottomNav } from "@/components/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -82,6 +83,7 @@ function Router() {
         <Route path="/reset-password" component={ResetPassword} />
         <Route path="/privacy-policy" component={PrivacyPolicy} />
         <Route path="/terms-of-service" component={TermsOfService} />
+        <Route path="/chaperone" component={ChaperonePortal} />
         <Route component={NotFound} />
       </Switch>
     );
@@ -148,6 +150,7 @@ function Router() {
       <Route path="/subscribe" component={Subscribe} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms-of-service" component={TermsOfService} />
+      <Route path="/chaperone" component={ChaperonePortal} />
       <Route component={NotFound} />
     </Switch>
   );

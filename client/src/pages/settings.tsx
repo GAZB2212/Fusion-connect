@@ -20,7 +20,9 @@ import {
   Trash2, 
   FileText,
   ExternalLink,
-  MessageSquare
+  MessageSquare,
+  Copy,
+  Link
 } from "lucide-react";
 import type { Profile, Chaperone } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -407,29 +409,65 @@ export default function Settings() {
             </p>
           ) : (
             <div className="space-y-3">
-              {chaperones.map((chaperone) => (
-                <div
-                  key={chaperone.id}
-                  className="flex items-center justify-between p-4 rounded-lg border"
-                  data-testid={`chaperone-${chaperone.id}`}
-                >
-                  <div>
-                    <p className="font-medium">{chaperone.chaperoneName}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {chaperone.chaperoneEmail}
-                      {chaperone.relationshipType && ` • ${chaperone.relationshipType}`}
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeChaperoneMutation.mutate(chaperone.id)}
-                    data-testid={`button-remove-${chaperone.id}`}
+              {chaperones.map((chaperone) => {
+                const chaperoneAccessLink = chaperone.accessToken 
+                  ? `${window.location.origin}/chaperone?token=${chaperone.accessToken}`
+                  : null;
+                
+                const copyAccessLink = () => {
+                  if (chaperoneAccessLink) {
+                    navigator.clipboard.writeText(chaperoneAccessLink);
+                    toast({
+                      title: "Link Copied",
+                      description: "Share this link with your chaperone so they can access conversations.",
+                    });
+                  }
+                };
+                
+                return (
+                  <div
+                    key={chaperone.id}
+                    className="p-4 rounded-lg border space-y-3"
+                    data-testid={`chaperone-${chaperone.id}`}
                   >
-                    Remove
-                  </Button>
-                </div>
-              ))}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">{chaperone.chaperoneName}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {chaperone.chaperoneEmail}
+                          {chaperone.relationshipType && ` • ${chaperone.relationshipType}`}
+                        </p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeChaperoneMutation.mutate(chaperone.id)}
+                        data-testid={`button-remove-${chaperone.id}`}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                    
+                    {chaperoneAccessLink && (
+                      <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
+                        <Link className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-muted-foreground mb-1">Chaperone Access Link</p>
+                          <p className="text-xs font-mono truncate">{chaperoneAccessLink}</p>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={copyAccessLink}
+                          data-testid={`button-copy-link-${chaperone.id}`}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </Card>

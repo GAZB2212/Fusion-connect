@@ -2301,6 +2301,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ success: true });
   });
 
+  // Chaperone portal authentication endpoints
+  app.post("/api/chaperone/login", async (req: Request, res: Response) => {
+    const { accessToken } = req.body;
+
+    if (!accessToken) {
+      return res.status(400).json({ message: "Access token is required" });
+    }
+
+    try {
+      // Find chaperone by access token
+      const [chaperone] = await db
+        .select()
+        .from(chaperones)
+        .where(
+          and(
+            eq(chaperones.accessToken, accessToken),
+            eq(chaperones.isActive, true)
+          )
+        )
+        .limit(1);
+
+      if (!chaperone) {
+        return res.status(401).json({ message: "Invalid or expired access token" });
+      }
+
+      // Get the user this chaperone is watching
+      const [userProfile] = await db
+        .select()
+        .from(profiles)
+        .where(eq(profiles.userId, chaperone.userId))
+        .limit(1);
+
+      // Generate Sendbird session token for the chaperone
+      let sendbirdToken = null;
+      if (chaperone.sendbirdUserId) {
+        try {
+          sendbirdToken = await SendbirdService.generateSessionToken(chaperone.sendbirdUserId);
+        } catch (error) {
+          console.error('Failed to generate Sendbird token for chaperone:', error);
+        }
+      }
+
+      res.json({
+        chaperone: {
+          id: chaperone.id,
+          name: chaperone.chaperoneName,
+          relationshipType: chaperone.relationshipType,
+          sendbirdUserId: chaperone.sendbirdUserId,
+        },
+        watchingUser: {
+          name: userProfile?.displayName || 'User',
+        },
+        sendbirdToken,
+      });
+    } catch (error: any) {
+      console.error('Chaperone login error:', error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  // Get Sendbird token for authenticated chaperone session
+  app.post("/api/chaperone/sendbird-token", async (req: Request, res: Response) => {
+    const { accessToken } = req.body;
+
+    if (!accessToken) {
+      return res.status(400).json({ message: "Access token is required" });
+    }
+
+    try {
+      const [chaperone] = await db
+        .select()
+        .from(chaperones)
+        .where(
+          and(
+            eq(chaperones.accessToken, accessToken),
+            eq(chaperones.isActive, true)
+          )
+        )
+        .limit(1);
+
+      if (!chaperone || !chaperone.sendbirdUserId) {
+        return res.status(401).json({ message: "Invalid access token" });
+      }
+
+      const token = await SendbirdService.generateSessionToken(chaperone.sendbirdUserId);
+      res.json({ token, userId: chaperone.sendbirdUserId });
+    } catch (error: any) {
+      console.error('Chaperone Sendbird token error:', error);
+      res.status(500).json({ message: "Failed to generate token" });
+    }
+  });
+
   // Video Call endpoints
   app.post("/api/video-call/initiate", isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;
