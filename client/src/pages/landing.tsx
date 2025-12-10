@@ -106,7 +106,7 @@ export default function Landing() {
           <img 
             src={logoImage} 
             alt="Fusion Logo" 
-            className="w-48 h-auto drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
+            className="w-72 h-auto drop-shadow-[0_8px_32px_rgba(0,0,0,0.8)] filter brightness-110"
             data-testid="img-splash-logo"
           />
         </div>
