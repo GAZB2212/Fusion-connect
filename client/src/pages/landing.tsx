@@ -97,20 +97,18 @@ export default function Landing() {
           <source src={loadingVideo} type="video/mp4" />
         </video>
         
-        {/* Static logo sliding in from bottom */}
+        {/* Static logo sliding in from bottom to top */}
         <div 
-          className={`absolute inset-0 flex items-center justify-center pointer-events-none transition-all duration-1000 ease-out ${
+          className={`absolute inset-x-0 top-0 flex justify-center pt-16 pointer-events-none transition-all duration-1000 ease-out ${
             logoVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
           }`}
         >
-          <div className="bg-background/80 backdrop-blur-sm rounded-2xl p-6 shadow-2xl">
-            <img 
-              src={logoImage} 
-              alt="Fusion Logo" 
-              className="w-48 h-auto"
-              data-testid="img-splash-logo"
-            />
-          </div>
+          <img 
+            src={logoImage} 
+            alt="Fusion Logo" 
+            className="w-48 h-auto drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)]"
+            data-testid="img-splash-logo"
+          />
         </div>
       </div>
     );
