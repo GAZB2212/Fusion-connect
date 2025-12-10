@@ -53,6 +53,7 @@ export default function Settings() {
   const [chaperoneName, setChaperoneName] = useState("");
   const [chaperoneEmail, setChaperoneEmail] = useState("");
   const [relationshipType, setRelationshipType] = useState("");
+  const [accessType, setAccessType] = useState<"live" | "report">("live");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
   
@@ -111,16 +112,20 @@ export default function Settings() {
         chaperoneName,
         chaperoneEmail,
         relationshipType,
+        accessType,
       });
     },
     onSuccess: () => {
       toast({
         title: "Chaperone Added",
-        description: "Your chaperone has been added successfully.",
+        description: accessType === 'live' 
+          ? "Your chaperone has been added and can now access conversations."
+          : "Your chaperone has been added and will receive conversation reports.",
       });
       setChaperoneName("");
       setChaperoneEmail("");
       setRelationshipType("");
+      setAccessType("live");
       setDialogOpen(false);
       queryClient.invalidateQueries({ queryKey: ["/api/chaperones"] });
     },
@@ -390,6 +395,49 @@ export default function Settings() {
                       data-testid="input-relationship"
                     />
                   </div>
+                  <div className="space-y-3">
+                    <Label>Access Type</Label>
+                    <div className="space-y-2">
+                      <label 
+                        className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${accessType === 'live' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+                        data-testid="radio-live-access"
+                      >
+                        <input
+                          type="radio"
+                          name="accessType"
+                          value="live"
+                          checked={accessType === 'live'}
+                          onChange={() => setAccessType('live')}
+                          className="mt-1"
+                        />
+                        <div>
+                          <p className="font-medium">Live Access</p>
+                          <p className="text-sm text-muted-foreground">
+                            Chaperone joins conversations and can see and send messages in real-time
+                          </p>
+                        </div>
+                      </label>
+                      <label 
+                        className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${accessType === 'report' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
+                        data-testid="radio-report-access"
+                      >
+                        <input
+                          type="radio"
+                          name="accessType"
+                          value="report"
+                          checked={accessType === 'report'}
+                          onChange={() => setAccessType('report')}
+                          className="mt-1"
+                        />
+                        <div>
+                          <p className="font-medium">Report Only</p>
+                          <p className="text-sm text-muted-foreground">
+                            Chaperone receives periodic email summaries of your conversations
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
                   <Button
                     onClick={() => addChaperoneMutation.mutate()}
                     disabled={!chaperoneName || !chaperoneEmail || addChaperoneMutation.isPending}
@@ -410,7 +458,8 @@ export default function Settings() {
           ) : (
             <div className="space-y-3">
               {chaperones.map((chaperone) => {
-                const chaperoneAccessLink = chaperone.accessToken 
+                const isLiveAccess = chaperone.accessType === 'live';
+                const chaperoneAccessLink = isLiveAccess && chaperone.accessToken 
                   ? `${window.location.origin}/chaperone?token=${chaperone.accessToken}`
                   : null;
                 
@@ -432,7 +481,12 @@ export default function Settings() {
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium">{chaperone.chaperoneName}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{chaperone.chaperoneName}</p>
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${isLiveAccess ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'}`}>
+                            {isLiveAccess ? 'Live Access' : 'Report Only'}
+                          </span>
+                        </div>
                         <p className="text-sm text-muted-foreground">
                           {chaperone.chaperoneEmail}
                           {chaperone.relationshipType && ` • ${chaperone.relationshipType}`}
@@ -463,6 +517,14 @@ export default function Settings() {
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
+                      </div>
+                    )}
+                    
+                    {!isLiveAccess && (
+                      <div className="p-3 bg-muted/50 rounded-lg">
+                        <p className="text-xs text-muted-foreground">
+                          {chaperone.chaperoneName} will receive email summaries of your conversations.
+                        </p>
                       </div>
                     )}
                   </div>

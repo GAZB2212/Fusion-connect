@@ -165,7 +165,8 @@ export const chaperones = pgTable("chaperones", {
   chaperoneName: varchar("chaperone_name", { length: 100 }).notNull(),
   chaperoneEmail: varchar("chaperone_email", { length: 255 }).notNull(),
   relationshipType: varchar("relationship_type", { length: 50 }), // Father, Mother, Brother, Sister, Guardian
-  sendbirdUserId: varchar("sendbird_user_id", { length: 255 }), // Sendbird user ID for chat access
+  accessType: varchar("access_type", { length: 20 }).default('live'), // 'live' for real-time access, 'report' for summaries only
+  sendbirdUserId: varchar("sendbird_user_id", { length: 255 }), // Sendbird user ID for chat access (only for live access)
   accessToken: varchar("access_token", { length: 255 }), // Token for chaperone portal access
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),

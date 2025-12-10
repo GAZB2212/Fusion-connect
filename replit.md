@@ -50,9 +50,10 @@ The platform features a luxury aesthetic with a primary deep navy color, gold ac
 - **Video Calling:** Real-time video calls with camera/mic controls, call duration tracking, call history, and branded Fusion logo overlay.
 - **Chaperone Support (Wali):** Full real-time guardian access to conversations for traditional courtship:
   - Users can add chaperones (father, mother, guardian, etc.) from Settings
-  - Chaperones are automatically added to all existing and future match conversations via Sendbird
-  - Chaperones receive a shareable access link to access the Chaperone Portal
-  - Chaperones can view and participate in conversations in real-time
+  - **Access Type Control:** Users choose between 'Live Access' (real-time conversation participation) or 'Report Only' (email summaries)
+  - Live access chaperones are automatically added to all existing and future match conversations via Sendbird
+  - Live access chaperones receive a shareable access link to access the Chaperone Portal
+  - Chaperones can view and participate in conversations in real-time (live access only)
   - System messages announce when chaperones join or leave conversations
   - Token-based authentication for chaperone portal access
 - **Face Verification & Anti-Fraud System:** Comprehensive AI-driven protection against fake profiles, bots, and scammers:
