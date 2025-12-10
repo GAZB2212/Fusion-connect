@@ -93,26 +93,30 @@ export default function MatchProfile() {
 
       <div className="max-w-2xl mx-auto">
         {/* Photo Gallery */}
-        <div className="relative">
+        <div className="p-4">
           {profile.photos && profile.photos.length > 0 ? (
-            <div className="space-y-1">
+            <div className="space-y-4">
               {profile.photos.map((photo, index) => (
-                <div key={index} className="aspect-[3/4] bg-muted">
-                  <img
-                    src={photo}
-                    alt={`${displayName} photo ${index + 1}`}
-                    className="w-full h-full object-cover"
-                    data-testid={`img-profile-photo-${index}`}
-                  />
-                </div>
+                <Card key={index} className="overflow-hidden">
+                  <div className="aspect-[4/5] bg-muted">
+                    <img
+                      src={photo}
+                      alt={`${displayName} photo ${index + 1}`}
+                      className="w-full h-full object-cover"
+                      data-testid={`img-profile-photo-${index}`}
+                    />
+                  </div>
+                </Card>
               ))}
             </div>
           ) : (
-            <div className="aspect-[3/4] bg-muted flex items-center justify-center">
-              <span className="text-8xl text-muted-foreground">
-                {displayName?.charAt(0)}
-              </span>
-            </div>
+            <Card className="overflow-hidden">
+              <div className="aspect-[4/5] bg-muted flex items-center justify-center">
+                <span className="text-8xl text-muted-foreground">
+                  {displayName?.charAt(0)}
+                </span>
+              </div>
+            </Card>
           )}
         </div>
 
