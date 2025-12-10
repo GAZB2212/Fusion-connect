@@ -18,11 +18,29 @@ export interface SendbirdUserParams {
 
 export class SendbirdService {
   
+  // Validate and sanitize profile URL
+  static getValidProfileUrl(url?: string): string {
+    const defaultUrl = 'https://via.placeholder.com/150';
+    if (!url || typeof url !== 'string' || url.trim() === '') {
+      return defaultUrl;
+    }
+    // Check if it's a valid URL
+    try {
+      new URL(url);
+      return url;
+    } catch {
+      console.warn('[Sendbird] Invalid profile URL, using default:', url);
+      return defaultUrl;
+    }
+  }
+  
   static async createOrUpdateUser(params: SendbirdUserParams): Promise<any> {
     if (!isConfigured) {
       console.warn('[Sendbird] Skipping user creation - not configured');
       return null;
     }
+    
+    const profileUrl = this.getValidProfileUrl(params.profileUrl);
     
     try {
       const response = await fetch(`${baseUrl}/users`, {
@@ -34,7 +52,7 @@ export class SendbirdService {
         body: JSON.stringify({
           user_id: params.userId,
           nickname: params.nickname,
-          profile_url: params.profileUrl || 'https://via.placeholder.com/150'
+          profile_url: profileUrl
         })
       });
       
@@ -58,6 +76,8 @@ export class SendbirdService {
   }
 
   static async updateUser(params: SendbirdUserParams): Promise<any> {
+    const profileUrl = this.getValidProfileUrl(params.profileUrl);
+    
     const response = await fetch(`${baseUrl}/users/${encodeURIComponent(params.userId)}`, {
       method: 'PUT',
       headers: {
@@ -66,7 +86,7 @@ export class SendbirdService {
       },
       body: JSON.stringify({
         nickname: params.nickname,
-        profile_url: params.profileUrl || 'https://via.placeholder.com/150'
+        profile_url: profileUrl
       })
     });
     
