@@ -233,7 +233,7 @@ export default function Landing() {
       </section>
 
       {/* Couple Image Section */}
-      <section className="py-16 relative">
+      <section className="pt-4 pb-8 relative">
         <div className="container px-4">
           <div className="max-w-4xl mx-auto">
             <img 
@@ -247,7 +247,7 @@ export default function Landing() {
       </section>
 
       {/* Features Section - Elevated Blue Cards */}
-      <section id="features" className="py-24 relative">
+      <section id="features" className="pt-8 pb-24 relative">
         <div className="container px-4 relative">
           <div className="mx-auto max-w-3xl text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
