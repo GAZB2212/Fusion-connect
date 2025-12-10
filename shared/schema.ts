@@ -433,7 +433,8 @@ export const insertChaperoneSchema = createInsertSchema(chaperones, {
   chaperoneName: z.string().min(2, "Name is required"),
   chaperoneEmail: z.string().email("Valid email is required"),
   relationshipType: z.string().optional(),
-}).omit({ id: true, createdAt: true });
+  accessType: z.enum(['live', 'report']).optional(),
+}).omit({ id: true, createdAt: true, userId: true, sendbirdUserId: true, accessToken: true, isActive: true });
 
 export const insertVideoCallSchema = createInsertSchema(videoCalls, {
   channelName: z.string().min(1, "Channel name is required"),
