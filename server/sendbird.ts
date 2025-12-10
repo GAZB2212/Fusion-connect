@@ -247,4 +247,98 @@ export class SendbirdService {
     
     console.log(`[Sendbird] Deleted channel: ${channelUrl}`);
   }
+
+  static async inviteToChannel(channelUrl: string, userIds: string[]): Promise<any> {
+    if (!isConfigured) {
+      console.warn('[Sendbird] Skipping channel invite - not configured');
+      return null;
+    }
+    
+    try {
+      const response = await fetch(`${baseUrl}/group_channels/${encodeURIComponent(channelUrl)}/invite`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Api-Token': apiToken!
+        },
+        body: JSON.stringify({
+          user_ids: userIds
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error('[Sendbird] Invite to channel failed:', data);
+        throw new Error(data.message || 'Failed to invite users to channel');
+      }
+      
+      console.log(`[Sendbird] Invited users ${userIds.join(', ')} to channel: ${channelUrl}`);
+      return data;
+    } catch (error) {
+      console.error('[Sendbird] Error inviting to channel:', error);
+      throw error;
+    }
+  }
+
+  static async removeFromChannel(channelUrl: string, userIds: string[]): Promise<any> {
+    if (!isConfigured) {
+      console.warn('[Sendbird] Skipping channel removal - not configured');
+      return null;
+    }
+    
+    try {
+      const response = await fetch(`${baseUrl}/group_channels/${encodeURIComponent(channelUrl)}/leave`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Api-Token': apiToken!
+        },
+        body: JSON.stringify({
+          user_ids: userIds
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error('[Sendbird] Remove from channel failed:', data);
+        throw new Error(data.message || 'Failed to remove users from channel');
+      }
+      
+      console.log(`[Sendbird] Removed users ${userIds.join(', ')} from channel: ${channelUrl}`);
+      return data;
+    } catch (error) {
+      console.error('[Sendbird] Error removing from channel:', error);
+      throw error;
+    }
+  }
+
+  static async getUserChannels(userId: string): Promise<any[]> {
+    if (!isConfigured) {
+      console.warn('[Sendbird] Skipping get channels - not configured');
+      return [];
+    }
+    
+    try {
+      const response = await fetch(`${baseUrl}/users/${encodeURIComponent(userId)}/my_group_channels?custom_types=fusion_match`, {
+        method: 'GET',
+        headers: {
+          'Api-Token': apiToken!
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error('[Sendbird] Get user channels failed:', data);
+        return [];
+      }
+      
+      return data.channels || [];
+    } catch (error) {
+      console.error('[Sendbird] Error getting user channels:', error);
+      return [];
+    }
+  }
 }

@@ -1674,6 +1674,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
               try {
                 await SendbirdService.createChannel([userId, swipedId], newMatch.id);
                 console.log(`[Sendbird] Created channel for match ${newMatch.id}`);
+                
+                // Add any chaperones from both users to the new channel
+                const allChaperones = await db
+                  .select()
+                  .from(chaperones)
+                  .where(
+                    and(
+                      or(eq(chaperones.userId, userId), eq(chaperones.userId, swipedId)),
+                      eq(chaperones.isActive, true)
+                    )
+                  );
+                
+                for (const chaperone of allChaperones) {
+                  if (chaperone.sendbirdUserId) {
+                    try {
+                      await SendbirdService.inviteToChannel(newMatch.id, [chaperone.sendbirdUserId]);
+                      
+                      // Get the user's profile to include in the message
+                      const [chaperoneUserProfile] = await db
+                        .select()
+                        .from(profiles)
+                        .where(eq(profiles.userId, chaperone.userId))
+                        .limit(1);
+                      
+                      await SendbirdService.sendSystemMessage(
+                        newMatch.id,
+                        `${chaperone.chaperoneName} (${chaperone.relationshipType || 'Chaperone'}) has joined as a chaperone for ${chaperoneUserProfile?.displayName || 'one of the users'}.`
+                      );
+                      console.log(`[Sendbird] Added chaperone ${chaperone.chaperoneName} to match ${newMatch.id}`);
+                    } catch (chaperoneError) {
+                      console.error(`[Sendbird] Failed to add chaperone to channel:`, chaperoneError);
+                    }
+                  }
+                }
               } catch (error) {
                 console.error('[Sendbird] Failed to create channel:', error);
               }
@@ -2157,13 +2191,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertChaperoneSchema.parse(req.body);
 
+      // Generate unique Sendbird user ID and access token for the chaperone
+      const sendbirdUserId = `chaperone_${randomBytes(8).toString('hex')}`;
+      const accessToken = randomBytes(32).toString('hex');
+
+      // Create chaperone record
       const [chaperone] = await db
         .insert(chaperones)
         .values({
           ...validatedData,
           userId,
+          sendbirdUserId,
+          accessToken,
         })
         .returning();
+
+      // Get user's profile for name
+      const [userProfile] = await db
+        .select()
+        .from(profiles)
+        .where(eq(profiles.userId, userId))
+        .limit(1);
+
+      // Create Sendbird user for the chaperone
+      try {
+        await SendbirdService.createOrUpdateUser({
+          userId: sendbirdUserId,
+          nickname: `${validatedData.chaperoneName} (Chaperone)`,
+          profileUrl: 'https://via.placeholder.com/150?text=Wali',
+        });
+
+        // Get all user's match channels and invite chaperone
+        const userChannels = await SendbirdService.getUserChannels(userId);
+        for (const channel of userChannels) {
+          try {
+            await SendbirdService.inviteToChannel(channel.channel_url, [sendbirdUserId]);
+            // Send system message announcing chaperone joined
+            await SendbirdService.sendSystemMessage(
+              channel.channel_url, 
+              `${validatedData.chaperoneName} (${validatedData.relationshipType || 'Chaperone'}) has joined this conversation as a chaperone for ${userProfile?.displayName || 'the user'}.`
+            );
+          } catch (inviteError) {
+            console.error(`Failed to invite chaperone to channel ${channel.channel_url}:`, inviteError);
+          }
+        }
+      } catch (sendbirdError) {
+        console.error('Sendbird error while setting up chaperone:', sendbirdError);
+        // Continue even if Sendbird fails - chaperone record is saved
+      }
 
       res.json(chaperone);
     } catch (error: any) {
@@ -2175,19 +2250,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const userId = req.user.id;
     const { chaperoneId } = req.params;
 
-    const [deleted] = await db
-      .delete(chaperones)
+    // First get the chaperone to get their Sendbird user ID
+    const [chaperoneToDelete] = await db
+      .select()
+      .from(chaperones)
       .where(
         and(
           eq(chaperones.id, chaperoneId),
           eq(chaperones.userId, userId)
         )
       )
-      .returning();
+      .limit(1);
 
-    if (!deleted) {
+    if (!chaperoneToDelete) {
       return res.status(404).json({ message: "Chaperone not found" });
     }
+
+    // Remove chaperone from all channels
+    if (chaperoneToDelete.sendbirdUserId) {
+      try {
+        const userChannels = await SendbirdService.getUserChannels(userId);
+        for (const channel of userChannels) {
+          try {
+            await SendbirdService.removeFromChannel(channel.channel_url, [chaperoneToDelete.sendbirdUserId]);
+            await SendbirdService.sendSystemMessage(
+              channel.channel_url,
+              `${chaperoneToDelete.chaperoneName} is no longer a chaperone in this conversation.`
+            );
+          } catch (removeError) {
+            console.error(`Failed to remove chaperone from channel ${channel.channel_url}:`, removeError);
+          }
+        }
+        
+        // Delete Sendbird user
+        try {
+          await SendbirdService.deleteUser(chaperoneToDelete.sendbirdUserId);
+        } catch (deleteError) {
+          console.error('Failed to delete chaperone Sendbird user:', deleteError);
+        }
+      } catch (sendbirdError) {
+        console.error('Sendbird error while removing chaperone:', sendbirdError);
+      }
+    }
+
+    // Delete from database
+    await db
+      .delete(chaperones)
+      .where(eq(chaperones.id, chaperoneId));
 
     res.json({ success: true });
   });
