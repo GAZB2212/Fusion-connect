@@ -83,9 +83,11 @@ export default function Messages() {
   const [endedCallId, setEndedCallId] = useState<string | null>(null);
   const { isCallActive, setIsCallActive } = useVideoCall();
 
-  const { data: tokenData, isLoading: tokenLoading } = useQuery<SendbirdTokenResponse>({
+  const { data: tokenData, isLoading: tokenLoading, isError: tokenError, refetch: refetchToken } = useQuery<SendbirdTokenResponse>({
     queryKey: ["/api/sendbird/token"],
     enabled: !!user,
+    retry: 3,
+    retryDelay: 1000,
   });
 
   // Fetch all matches to find the current one
@@ -364,6 +366,20 @@ export default function Messages() {
     return (
       <div className="fixed inset-0 bottom-16 flex items-center justify-center bg-background">
         <p className="text-muted-foreground">Please log in to view messages</p>
+      </div>
+    );
+  }
+
+  if (tokenError) {
+    return (
+      <div className="fixed inset-0 bottom-16 flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4 text-center px-4">
+          <p className="text-destructive">Failed to connect to messaging</p>
+          <p className="text-sm text-muted-foreground">Please try again or refresh the page</p>
+          <Button onClick={() => refetchToken()} data-testid="button-retry-connect">
+            Try Again
+          </Button>
+        </div>
       </div>
     );
   }
