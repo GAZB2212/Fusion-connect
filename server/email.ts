@@ -125,3 +125,93 @@ export async function sendPasswordResetEmail(to: string, resetToken: string, use
   console.log(`[Email] Email sent successfully, id:`, result.data?.id);
   return result;
 }
+
+export async function sendEarlyAccessEmail(to: string, firstName: string | null, promoCode: string, position: number) {
+  console.log(`[Email] Attempting to send early access email to ${to}`);
+  const { client, fromEmail } = await getUncachableResendClient();
+  console.log(`[Email] Using from email: ${fromEmail}`);
+  
+  const result = await client.emails.send({
+    from: fromEmail,
+    to: [to],
+    subject: 'Welcome to Fusion - Your Exclusive Promo Code Inside!',
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            body { font-family: Inter, sans-serif; background-color: #0A0E17; color: #F8F4E3; margin: 0; padding: 0; }
+            .container { max-width: 600px; margin: 40px auto; padding: 40px; background: #1A1E27; border-radius: 12px; }
+            .logo { text-align: center; margin-bottom: 30px; }
+            .logo h1 { color: #D4AF37; font-size: 36px; margin: 0; font-family: serif; }
+            .content { line-height: 1.6; }
+            .promo-box { background: linear-gradient(135deg, #D4AF37 0%, #B8962E 100%); color: #0A0E17; padding: 24px; border-radius: 12px; text-align: center; margin: 24px 0; }
+            .promo-code { font-size: 28px; font-weight: bold; font-family: monospace; letter-spacing: 2px; margin: 8px 0; }
+            .highlight { color: #D4AF37; font-weight: 600; }
+            .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #2A2E37; color: #9CA3AF; font-size: 14px; text-align: center; }
+            .benefits { background: #0E1220; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .benefit-item { display: flex; align-items: flex-start; margin: 12px 0; }
+            .check { color: #10B981; margin-right: 10px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="logo">
+              <h1>Fusion</h1>
+              <p style="color: #9CA3AF; margin: 5px 0;">Premium Muslim Matchmaking</p>
+            </div>
+            <div class="content">
+              <h2 style="color: #F8F4E3; text-align: center;">You're In! 🎉</h2>
+              <p>Assalamu Alaikum${firstName ? ' ' + firstName : ''},</p>
+              <p>Thank you for joining the Fusion waitlist! You're one of the first <span class="highlight">${position.toLocaleString()}</span> people to sign up.</p>
+              
+              <div class="promo-box">
+                <p style="margin: 0 0 8px 0; font-size: 14px;">Your Exclusive Promo Code</p>
+                <div class="promo-code">${promoCode}</div>
+                <p style="margin: 8px 0 0 0; font-size: 14px;">Save this code for 2 MONTHS FREE premium access!</p>
+              </div>
+              
+              <div class="benefits">
+                <p style="margin: 0 0 12px 0; font-weight: 600;">What you'll get with premium:</p>
+                <div class="benefit-item">
+                  <span class="check">✓</span>
+                  <span>Unlimited messaging with your matches</span>
+                </div>
+                <div class="benefit-item">
+                  <span class="check">✓</span>
+                  <span>Video calling to meet face-to-face</span>
+                </div>
+                <div class="benefit-item">
+                  <span class="check">✓</span>
+                  <span>Chaperone support for halal courtship</span>
+                </div>
+                <div class="benefit-item">
+                  <span class="check">✓</span>
+                  <span>Advanced filters and preferences</span>
+                </div>
+              </div>
+              
+              <p>We'll email you as soon as Fusion launches. Get ready to find your perfect match, the halal way.</p>
+              
+              <p style="color: #9CA3AF; font-size: 14px;">Keep this email safe - you'll need your promo code when we launch!</p>
+            </div>
+            <div class="footer">
+              <p>Fusion - Where Faith Meets Forever</p>
+              <p style="font-size: 12px; color: #6B7280;">© 2025 Fusion. All rights reserved.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+  });
+  
+  console.log(`[Email] Send result:`, JSON.stringify(result, null, 2));
+  
+  if (result.error) {
+    console.error(`[Email] Failed to send early access email:`, result.error.message);
+    throw new Error(result.error.message);
+  }
+  
+  console.log(`[Email] Early access email sent successfully, id:`, result.data?.id);
+  return result;
+}

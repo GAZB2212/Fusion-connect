@@ -2907,15 +2907,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create signup
+      const position = currentCount + 1;
       const [signup] = await db
         .insert(earlySignups)
         .values({
           email: email.toLowerCase(),
           firstName: firstName || null,
           promoCode,
-          position: currentCount + 1,
+          position,
         })
         .returning();
+
+      // Send welcome email with promo code
+      try {
+        const { sendEarlyAccessEmail } = await import('./email');
+        await sendEarlyAccessEmail(email.toLowerCase(), firstName || null, promoCode, position);
+        console.log(`[EarlySignup] Welcome email sent to ${email}`);
+      } catch (emailError: any) {
+        console.error(`[EarlySignup] Failed to send welcome email:`, emailError.message);
+        // Don't fail the signup if email fails - they still get the promo code on screen
+      }
 
       res.json({ signup, message: "Successfully joined the waitlist!" });
     } catch (error: any) {
