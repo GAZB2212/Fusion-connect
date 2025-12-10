@@ -97,6 +97,9 @@ export default function Landing() {
           <source src={loadingVideo} type="video/mp4" />
         </video>
         
+        {/* Dark overlay for logo visibility */}
+        <div className="absolute inset-0 bg-black/40" />
+        
         {/* Static logo sliding in from bottom to top */}
         <div 
           className={`absolute inset-x-0 top-0 flex justify-center pt-16 pointer-events-none transition-all duration-1000 ease-out ${
@@ -106,7 +109,7 @@ export default function Landing() {
           <img 
             src={logoImage} 
             alt="Fusion Logo" 
-            className="w-72 h-auto drop-shadow-[0_8px_32px_rgba(0,0,0,0.8)] filter brightness-110"
+            className="w-72 h-auto drop-shadow-[0_8px_40px_rgba(0,0,0,0.9)]"
             data-testid="img-splash-logo"
           />
         </div>
