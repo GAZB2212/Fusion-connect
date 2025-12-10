@@ -83,12 +83,25 @@ export default function Messages() {
   const [endedCallId, setEndedCallId] = useState<string | null>(null);
   const { isCallActive, setIsCallActive } = useVideoCall();
 
-  const { data: tokenData, isLoading: tokenLoading, isError: tokenError, refetch: refetchToken } = useQuery<SendbirdTokenResponse>({
+  const { data: tokenData, isLoading: tokenLoading, isError: tokenError, error: tokenErrorDetails, refetch: refetchToken } = useQuery<SendbirdTokenResponse>({
     queryKey: ["/api/sendbird/token"],
     enabled: !!user,
-    retry: 3,
+    retry: 2,
     retryDelay: 1000,
+    staleTime: 0, // Always refetch token
   });
+
+  // Handle auth errors - if token request fails with 401, invalidate auth cache
+  useEffect(() => {
+    if (tokenError && tokenErrorDetails) {
+      const errorMsg = String(tokenErrorDetails);
+      console.log('[Messages] Token error:', errorMsg);
+      if (errorMsg.includes('401')) {
+        console.log('[Messages] Session expired, invalidating auth cache');
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      }
+    }
+  }, [tokenError, tokenErrorDetails]);
 
   // Fetch all matches to find the current one
   const { data: matches } = useQuery<Match[]>({
