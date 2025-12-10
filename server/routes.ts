@@ -2906,8 +2906,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         promoCode = generatePromoCode();
       }
 
-      // Create signup
-      const position = currentCount + 1;
+      // Create signup - start from 501 since we show 500 already signed up
+      const position = currentCount + 501;
       const [signup] = await db
         .insert(earlySignups)
         .values({
