@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import logoImage from "@assets/NEW logo 2_1761587557587.png";
-import animatedLogo from "@assets/Lets_animate_this_202510271804_z56n5_1761588281340.mp4";
+import loadingVideo from "@assets/Scene_a_muslim_202512100938_lunmc_1765359545154.mp4";
 import gajoLogo from "@assets/LOGO_1762434272542.png";
 import { 
   Shield, 
@@ -27,21 +27,30 @@ export default function Launch() {
   const [position, setPosition] = useState(0);
   const [showAnimation, setShowAnimation] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
+  const [logoVisible, setLogoVisible] = useState(false);
 
   // Handle video end with fade out transition
   const handleVideoEnd = () => {
     setFadeOut(true);
     setTimeout(() => {
       setShowAnimation(false);
-    }, 1500); // Longer fade-out duration for smoothness
+    }, 1000);
   };
 
-  // Fallback: Hide animation after 10 seconds if video doesn't end (video is 8 seconds)
+  // Fallback: Hide animation after 8 seconds if video doesn't end
   useEffect(() => {
+    // Start logo slide-in after 1.5 seconds
+    const logoTimer = setTimeout(() => {
+      setLogoVisible(true);
+    }, 1500);
+
     const fallbackTimer = setTimeout(() => {
       handleVideoEnd();
-    }, 10000);
-    return () => clearTimeout(fallbackTimer);
+    }, 8000);
+    return () => {
+      clearTimeout(logoTimer);
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
   // Fetch count of signups
@@ -100,32 +109,38 @@ export default function Launch() {
   // Show loading animation
   if (showAnimation) {
     return (
-      <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black transition-opacity ${fadeOut ? 'opacity-0' : 'opacity-100'}`} style={{ transitionDuration: '1500ms' }}>
-        <style>{`
-          @keyframes fadeInFromBlack {
-            0% {
-              opacity: 0;
-            }
-            20% {
-              opacity: 1;
-            }
-            100% {
-              opacity: 1;
-            }
-          }
-          .video-fade-in {
-            animation: fadeInFromBlack 1.5s ease-in forwards;
-          }
-        `}</style>
-        <video 
-          autoPlay 
-          muted 
+      <div 
+        className={`fixed inset-0 bg-background flex items-center justify-center z-50 transition-opacity duration-1000 ${
+          fadeOut ? 'opacity-0' : 'opacity-100'
+        }`}
+      >
+        <video
+          autoPlay
+          muted
           playsInline
-          className="w-full max-w-2xl h-auto video-fade-in"
+          className="w-full h-full object-cover"
           onEnded={handleVideoEnd}
+          data-testid="video-loading"
         >
-          <source src={animatedLogo} type="video/mp4" />
+          <source src={loadingVideo} type="video/mp4" />
         </video>
+        
+        {/* Dark overlay for logo visibility */}
+        <div className="absolute inset-0 bg-black/40" />
+        
+        {/* Static logo sliding in from bottom to top */}
+        <div 
+          className={`absolute inset-x-0 top-0 flex justify-center pt-16 pointer-events-none transition-all duration-1000 ease-out ${
+            logoVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
+          }`}
+        >
+          <img 
+            src={logoImage} 
+            alt="Fusion Logo" 
+            className="w-72 h-auto drop-shadow-[0_8px_40px_rgba(0,0,0,0.9)]"
+            data-testid="img-splash-logo"
+          />
+        </div>
       </div>
     );
   }
