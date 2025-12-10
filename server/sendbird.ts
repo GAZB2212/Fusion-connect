@@ -26,8 +26,11 @@ export class SendbirdService {
     }
     // Check if it's a valid URL
     try {
-      new URL(url);
-      return url;
+      const parsedUrl = new URL(url);
+      // Remove query parameters as Sendbird may reject them
+      const cleanUrl = `${parsedUrl.origin}${parsedUrl.pathname}`;
+      console.log('[Sendbird] Cleaned profile URL:', cleanUrl);
+      return cleanUrl;
     } catch {
       console.warn('[Sendbird] Invalid profile URL, using default:', url);
       return defaultUrl;
