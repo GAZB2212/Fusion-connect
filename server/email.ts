@@ -157,8 +157,8 @@ export async function sendEarlyAccessEmail(to: string, firstName: string | null,
         <body>
           <div class="container">
             <div class="logo">
-              <h1>Fusion</h1>
-              <p style="color: #9CA3AF; margin: 5px 0;">Premium Muslim Matchmaking</p>
+              <img src="https://www.fusioncouples.co.uk/fusion-logo.png" alt="Fusion" style="max-width: 280px; height: auto;" />
+              <p style="color: #9CA3AF; margin: 10px 0 0 0;">Premium Muslim Matchmaking</p>
             </div>
             <div class="content">
               <h2 style="color: #F8F4E3; text-align: center;">You're In! 🎉</h2>
