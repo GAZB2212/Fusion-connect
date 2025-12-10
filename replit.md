@@ -48,7 +48,13 @@ The platform features a luxury aesthetic with a primary deep navy color, gold ac
 - **Discovery & Swiping:** Users can discover potential matches and perform swipe actions.
 - **Messaging:** Real-time secure messaging between matched users powered by WebSockets, with instant message delivery and call records for video calls.
 - **Video Calling:** Real-time video calls with camera/mic controls, call duration tracking, call history, and branded Fusion logo overlay.
-- **Chaperone Support:** Optional guardian access to conversations for traditional courtship.
+- **Chaperone Support (Wali):** Full real-time guardian access to conversations for traditional courtship:
+  - Users can add chaperones (father, mother, guardian, etc.) from Settings
+  - Chaperones are automatically added to all existing and future match conversations via Sendbird
+  - Chaperones receive a shareable access link to access the Chaperone Portal
+  - Chaperones can view and participate in conversations in real-time
+  - System messages announce when chaperones join or leave conversations
+  - Token-based authentication for chaperone portal access
 - **Face Verification & Anti-Fraud System:** Comprehensive AI-driven protection against fake profiles, bots, and scammers:
   - **Enhanced Photo Verification:** AI detects stock photos, watermarks, screenshots, and professional modeling shots
   - **Mandatory Verification:** Face verification required before users can swipe or match
