@@ -1065,11 +1065,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`[Sendbird] User ${userId} profile photo URL:`, profilePhotoUrl);
       
       // Ensure user exists in Sendbird first with profile photo
-      await SendbirdService.createOrUpdateUser({
-        userId: userId,
-        nickname: `${req.user.firstName}${req.user.lastName ? ' ' + req.user.lastName : ''}`,
-        profileUrl: profilePhotoUrl || undefined,
-      });
+      // Try with photo first, fallback to no photo if it fails
+      try {
+        await SendbirdService.createOrUpdateUser({
+          userId: userId,
+          nickname: `${req.user.firstName}${req.user.lastName ? ' ' + req.user.lastName : ''}`,
+          profileUrl: profilePhotoUrl || undefined,
+        });
+      } catch (userCreateError: any) {
+        console.warn('[Sendbird] User creation with photo failed, trying without photo:', userCreateError.message);
+        // Retry without profile photo
+        await SendbirdService.createOrUpdateUser({
+          userId: userId,
+          nickname: `${req.user.firstName}${req.user.lastName ? ' ' + req.user.lastName : ''}`,
+          profileUrl: undefined,
+        });
+      }
       
       // Also sync profile photos for all match partners (in background)
       (async () => {

@@ -19,6 +19,7 @@ export interface SendbirdUserParams {
 export class SendbirdService {
   
   // Validate and sanitize profile URL - use empty string if invalid (Sendbird accepts empty string)
+  // Sendbird has a 2048 character limit on profile_url
   static getValidProfileUrl(url?: string): string {
     if (!url || typeof url !== 'string' || url.trim() === '') {
       return '';
@@ -27,6 +28,13 @@ export class SendbirdService {
     try {
       const parsedUrl = new URL(url);
       const cleanUrl = `${parsedUrl.origin}${parsedUrl.pathname}`;
+      
+      // Sendbird has a 2048 character limit on profile_url
+      if (cleanUrl.length > 2000) {
+        console.warn('[Sendbird] Profile URL too long, using empty string. Length:', cleanUrl.length);
+        return '';
+      }
+      
       return cleanUrl;
     } catch {
       console.warn('[Sendbird] Invalid profile URL, using empty string:', url);
