@@ -18,25 +18,23 @@ export interface SendbirdUserParams {
 
 export class SendbirdService {
   
-  // Validate and sanitize profile URL
+  // Validate and sanitize profile URL - use empty string if invalid (Sendbird accepts empty string)
   static getValidProfileUrl(url?: string): string {
-    const defaultUrl = 'https://via.placeholder.com/150';
     if (!url || typeof url !== 'string' || url.trim() === '') {
-      return defaultUrl;
+      return '';
     }
-    // Check if it's a valid URL
+    // Check if it's a valid URL and strip query parameters
     try {
       const parsedUrl = new URL(url);
-      // Remove query parameters as Sendbird may reject them
       const cleanUrl = `${parsedUrl.origin}${parsedUrl.pathname}`;
-      console.log('[Sendbird] Cleaned profile URL:', cleanUrl);
       return cleanUrl;
     } catch {
-      console.warn('[Sendbird] Invalid profile URL, using default:', url);
-      return defaultUrl;
+      console.warn('[Sendbird] Invalid profile URL, using empty string:', url);
+      return '';
     }
   }
   
+  // Use PUT to upsert user (create or update in one call)
   static async createOrUpdateUser(params: SendbirdUserParams): Promise<any> {
     if (!isConfigured) {
       console.warn('[Sendbird] Skipping user creation - not configured');
@@ -46,8 +44,8 @@ export class SendbirdService {
     const profileUrl = this.getValidProfileUrl(params.profileUrl);
     
     try {
-      const response = await fetch(`${baseUrl}/users`, {
-        method: 'POST',
+      const response = await fetch(`${baseUrl}/users/${encodeURIComponent(params.userId)}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Api-Token': apiToken!
@@ -55,52 +53,29 @@ export class SendbirdService {
         body: JSON.stringify({
           user_id: params.userId,
           nickname: params.nickname,
-          profile_url: profileUrl
+          profile_url: profileUrl,
+          issue_access_token: true
         })
       });
       
       const data = await response.json();
       
       if (!response.ok) {
-        // User already exists (400202) - try updating
-        if (data.code === 400202) {
-          return await this.updateUser(params);
-        }
-        console.error('[Sendbird] Create user failed:', data);
-        throw new Error(data.message || 'Failed to create user');
+        console.error('[Sendbird] Create/update user failed:', data);
+        throw new Error(data.message || 'Failed to create/update user');
       }
       
-      console.log(`[Sendbird] Created user: ${params.userId}`);
+      console.log(`[Sendbird] Created/updated user: ${params.userId}`);
       return data;
     } catch (error) {
-      console.error('[Sendbird] Error creating user:', error);
+      console.error('[Sendbird] Error creating/updating user:', error);
       throw error;
     }
   }
 
   static async updateUser(params: SendbirdUserParams): Promise<any> {
-    const profileUrl = this.getValidProfileUrl(params.profileUrl);
-    
-    const response = await fetch(`${baseUrl}/users/${encodeURIComponent(params.userId)}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Api-Token': apiToken!
-      },
-      body: JSON.stringify({
-        nickname: params.nickname,
-        profile_url: profileUrl
-      })
-    });
-    
-    if (!response.ok) {
-      const data = await response.json();
-      console.error('[Sendbird] Update user failed:', data);
-      throw new Error(data.message || 'Failed to update user');
-    }
-    
-    console.log(`[Sendbird] Updated user: ${params.userId}`);
-    return await response.json();
+    // Now just calls createOrUpdateUser since we use PUT for upsert
+    return this.createOrUpdateUser(params);
   }
 
   static async generateSessionToken(userId: string): Promise<string> {
