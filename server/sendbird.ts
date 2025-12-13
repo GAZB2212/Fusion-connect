@@ -75,8 +75,8 @@ export class SendbirdService {
         return createData;
       }
       
-      // If user already exists (400102), try to update with PUT
-      if (createData.code === 400102 || createData.message?.includes('already exists')) {
+      // If user already exists (400102 or 400202 unique constraint), try to update with PUT
+      if (createData.code === 400102 || createData.code === 400202 || createData.message?.includes('already exists') || createData.message?.includes('unique constraint')) {
         console.log(`[Sendbird] User ${params.userId} already exists, updating...`);
         
         const updateResponse = await fetch(`${baseUrl}/users/${encodeURIComponent(params.userId)}`, {
