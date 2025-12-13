@@ -687,6 +687,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create Stripe Customer Portal session for subscription management
+  app.post('/api/create-portal-session', isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+
+    try {
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (!user.stripeCustomerId) {
+        return res.status(400).json({ message: "No subscription found. Please subscribe first." });
+      }
+
+      // Get the correct domain for return URL
+      const getDomain = () => {
+        if (process.env.REPLIT_DOMAINS) {
+          const domains = process.env.REPLIT_DOMAINS.split(',');
+          return `https://${domains[0]}`;
+        }
+        if (process.env.REPLIT_DEV_DOMAIN) {
+          return process.env.REPLIT_DEV_DOMAIN.startsWith('http') 
+            ? process.env.REPLIT_DEV_DOMAIN 
+            : `https://${process.env.REPLIT_DEV_DOMAIN}`;
+        }
+        return 'http://localhost:5000';
+      };
+
+      const session = await stripe.billingPortal.sessions.create({
+        customer: user.stripeCustomerId,
+        return_url: `${getDomain()}/settings`,
+      });
+
+      res.json({ url: session.url });
+    } catch (error: any) {
+      console.error('Portal session creation error:', error);
+      return res.status(400).json({ message: error.message || "Failed to create portal session" });
+    }
+  });
+
   // Stripe Webhook Handler - Handles subscription lifecycle events
   app.post('/api/webhook', async (req: Request, res: Response) => {
     const sig = req.headers['stripe-signature'];
