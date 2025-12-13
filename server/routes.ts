@@ -3411,6 +3411,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // DEVELOPMENT: Backfill Sendbird users for ALL existing users
+  app.post('/api/dev/backfill-sendbird-users', isAuthenticated, async (req: any, res: Response) => {
+    try {
+      console.log('[BACKFILL-USERS] Starting Sendbird user backfill for all users');
+      
+      // Get all users with their profiles
+      const allUsers = await db
+        .select({
+          user: users,
+          profile: profiles,
+        })
+        .from(users)
+        .leftJoin(profiles, eq(users.id, profiles.userId));
+      
+      const results = { created: 0, updated: 0, errors: 0, total: allUsers.length };
+      
+      for (const { user, profile } of allUsers) {
+        try {
+          const nickname = profile?.displayName || 
+            `${user.firstName || ''}${user.lastName ? ' ' + user.lastName : ''}`.trim() || 
+            user.email;
+          
+          await SendbirdService.createOrUpdateUser({
+            userId: user.id,
+            nickname: nickname,
+            profileUrl: profile?.photos?.[0] || undefined,
+          });
+          
+          results.created++;
+          console.log(`[BACKFILL-USERS] ✅ Created/updated Sendbird user: ${user.id} (${nickname})`);
+        } catch (error: any) {
+          results.errors++;
+          console.error(`[BACKFILL-USERS] ❌ Error for user ${user.id}:`, error.message);
+        }
+      }
+      
+      console.log('[BACKFILL-USERS] Complete:', results);
+      res.json({ success: true, results });
+    } catch (error: any) {
+      console.error('[BACKFILL-USERS] Error:', error);
+      res.status(500).json({ message: "Failed to backfill Sendbird users" });
+    }
+  });
+
   // ============== Feedback Routes ==============
   
   // Submit feedback
