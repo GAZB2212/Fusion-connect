@@ -8,6 +8,17 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   Shield, 
   Eye, 
@@ -22,11 +33,26 @@ import {
   ExternalLink,
   MessageSquare,
   Copy,
-  Link
+  Link,
+  User,
+  Edit3,
+  MapPin,
+  Calendar,
+  Ruler,
+  Upload,
+  X
 } from "lucide-react";
 import type { Profile, Chaperone } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import {
+  HEIGHT_OPTIONS_CM,
+  SECT_OPTIONS,
+  RELIGIOUS_PRACTICE_OPTIONS,
+  MARITAL_STATUS_OPTIONS,
+  ETHNICITY_OPTIONS,
+  EDUCATION_OPTIONS,
+} from "@shared/constants";
 import {
   Dialog,
   DialogContent,
@@ -65,6 +91,12 @@ export default function Settings() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // Profile editing state
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const [editingProfile, setEditingProfile] = useState<Partial<Profile>>({});
+  const [editPhotos, setEditPhotos] = useState<string[]>([]);
+  const [selectedEthnicities, setSelectedEthnicities] = useState<string[]>([]);
 
   // Fetch user profile
   const { data: profile } = useQuery<Profile>({
@@ -246,6 +278,125 @@ export default function Settings() {
     },
   });
 
+  // Update full profile mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: async (updates: Partial<Profile>) => {
+      return apiRequest("PATCH", "/api/profile", updates);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
+      setProfileDialogOpen(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update profile",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Open edit profile dialog
+  const openEditProfile = () => {
+    if (profile) {
+      setEditingProfile({
+        displayName: profile.displayName,
+        bio: profile.bio || "",
+        location: profile.location,
+        age: profile.age,
+        height: profile.height,
+        occupation: profile.occupation || "",
+        education: profile.education || "",
+        sect: profile.sect || "",
+        religiousPractice: profile.religiousPractice || "",
+        maritalStatus: profile.maritalStatus || "",
+        wantsChildren: profile.wantsChildren || "",
+      });
+      setEditPhotos(profile.photos || []);
+      setSelectedEthnicities(profile.ethnicities || []);
+      setProfileDialogOpen(true);
+    }
+  };
+
+  // Photo upload handler for profile edit
+  const handleEditPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const filesToUpload = Array.from(files).slice(0, 6 - editPhotos.length);
+    if (filesToUpload.length === 0) return;
+
+    try {
+      toast({
+        title: "Uploading photos...",
+        description: `Uploading ${filesToUpload.length} photo(s)`,
+      });
+
+      const formData = new FormData();
+      filesToUpload.forEach((file) => {
+        formData.append('photos', file);
+      });
+
+      const response = await fetch('/api/photos/upload', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(error || 'Upload failed');
+      }
+
+      const data = await response.json();
+
+      if (data.photoUrls) {
+        setEditPhotos([...editPhotos, ...data.photoUrls]);
+        toast({
+          title: "Upload successful",
+          description: `${data.photoUrls.length} photo(s) uploaded`,
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Upload failed",
+        description: error.message || "Failed to upload photos",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const removeEditPhoto = (index: number) => {
+    setEditPhotos(editPhotos.filter((_, i) => i !== index));
+  };
+
+  const toggleEditEthnicity = (ethnicity: string) => {
+    if (selectedEthnicities.includes(ethnicity)) {
+      setSelectedEthnicities(selectedEthnicities.filter(e => e !== ethnicity));
+    } else {
+      setSelectedEthnicities([...selectedEthnicities, ethnicity]);
+    }
+  };
+
+  const saveProfile = () => {
+    updateProfileMutation.mutate({
+      ...editingProfile,
+      photos: editPhotos,
+      ethnicities: selectedEthnicities,
+    });
+  };
+
+  // Helper to get height display
+  const getHeightDisplay = (heightCm: number | null | undefined) => {
+    if (!heightCm) return null;
+    const option = HEIGHT_OPTIONS_CM.find(h => h.cm === heightCm);
+    return option ? `${option.cm}cm (${option.ft})` : `${heightCm}cm`;
+  };
+
   // Manage subscription - Opens Stripe Customer Portal
   const manageSubscription = async () => {
     try {
@@ -275,6 +426,402 @@ export default function Settings() {
             Manage your privacy and account preferences
           </p>
         </div>
+
+        {/* My Profile Section */}
+        <Card className="p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <User className="h-5 w-5" />
+              My Profile
+            </h2>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={openEditProfile}
+              data-testid="button-edit-profile"
+            >
+              <Edit3 className="h-4 w-4 mr-2" />
+              Edit Profile
+            </Button>
+          </div>
+
+          {/* Profile Preview */}
+          <div className="flex gap-4">
+            {/* Main Photo */}
+            <div className="flex-shrink-0">
+              <Avatar className="h-24 w-24 rounded-lg">
+                <AvatarImage 
+                  src={profile?.photos?.[0]} 
+                  alt={profile?.displayName}
+                  className="object-cover"
+                />
+                <AvatarFallback className="rounded-lg text-2xl">
+                  {profile?.displayName?.charAt(0) || "?"}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+
+            {/* Profile Info */}
+            <div className="flex-1 min-w-0 space-y-2">
+              <div>
+                <h3 className="text-lg font-semibold" data-testid="text-profile-name">
+                  {profile?.displayName}
+                </h3>
+                <p className="text-sm text-muted-foreground flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  {profile?.age} years old
+                  {profile?.height && (
+                    <>
+                      <span className="mx-1">-</span>
+                      <Ruler className="h-3 w-3" />
+                      {getHeightDisplay(profile.height)}
+                    </>
+                  )}
+                </p>
+              </div>
+              
+              {profile?.location && (
+                <p className="text-sm text-muted-foreground flex items-center gap-1">
+                  <MapPin className="h-3 w-3" />
+                  {profile.location}
+                </p>
+              )}
+
+              {profile?.bio && (
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {profile.bio}
+                </p>
+              )}
+
+              {/* Quick Info Badges */}
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {profile?.religiousPractice && (
+                  <Badge variant="secondary" className="text-xs">
+                    {profile.religiousPractice}
+                  </Badge>
+                )}
+                {profile?.maritalStatus && (
+                  <Badge variant="secondary" className="text-xs">
+                    {profile.maritalStatus}
+                  </Badge>
+                )}
+                {profile?.occupation && (
+                  <Badge variant="outline" className="text-xs">
+                    {profile.occupation}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Photo Gallery Preview */}
+          {profile?.photos && profile.photos.length > 1 && (
+            <div className="mt-4">
+              <p className="text-sm text-muted-foreground mb-2">Your Photos ({profile.photos.length}/6)</p>
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {profile.photos.map((photo, index) => (
+                  <div 
+                    key={index} 
+                    className="relative flex-shrink-0 h-16 w-16 rounded-md overflow-hidden"
+                  >
+                    <img 
+                      src={photo} 
+                      alt={`Photo ${index + 1}`} 
+                      className="h-full w-full object-cover"
+                    />
+                    {index === 0 && (
+                      <div className="absolute bottom-0 left-0 right-0 bg-primary/80 text-primary-foreground text-[10px] text-center py-0.5">
+                        Main
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </Card>
+
+        {/* Edit Profile Dialog */}
+        <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Profile</DialogTitle>
+              <DialogDescription>
+                Update your profile information
+              </DialogDescription>
+            </DialogHeader>
+
+            <Tabs defaultValue="basic" className="mt-4">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="basic">Basic Info</TabsTrigger>
+                <TabsTrigger value="photos">Photos</TabsTrigger>
+                <TabsTrigger value="details">Details</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="basic" className="space-y-4 mt-4">
+                <div>
+                  <Label>Display Name</Label>
+                  <Input
+                    value={editingProfile.displayName || ""}
+                    onChange={(e) => setEditingProfile({ ...editingProfile, displayName: e.target.value })}
+                    placeholder="Your name"
+                    data-testid="input-edit-name"
+                  />
+                </div>
+
+                <div>
+                  <Label>Bio</Label>
+                  <Textarea
+                    value={editingProfile.bio || ""}
+                    onChange={(e) => setEditingProfile({ ...editingProfile, bio: e.target.value })}
+                    placeholder="Tell others about yourself..."
+                    rows={3}
+                    data-testid="input-edit-bio"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Age</Label>
+                    <Input
+                      type="number"
+                      value={editingProfile.age || ""}
+                      onChange={(e) => setEditingProfile({ ...editingProfile, age: parseInt(e.target.value) || 0 })}
+                      data-testid="input-edit-age"
+                    />
+                  </div>
+                  <div>
+                    <Label>Height</Label>
+                    <Select
+                      value={editingProfile.height?.toString() || ""}
+                      onValueChange={(value) => setEditingProfile({ ...editingProfile, height: parseInt(value) })}
+                    >
+                      <SelectTrigger data-testid="select-edit-height">
+                        <SelectValue placeholder="Select height" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[40vh]">
+                        {HEIGHT_OPTIONS_CM.map((option) => (
+                          <SelectItem key={option.cm} value={option.cm.toString()}>
+                            {option.cm}cm - {option.ft}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Location</Label>
+                  <Input
+                    value={editingProfile.location || ""}
+                    onChange={(e) => setEditingProfile({ ...editingProfile, location: e.target.value })}
+                    placeholder="City, Country"
+                    data-testid="input-edit-location"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Occupation</Label>
+                    <Input
+                      value={editingProfile.occupation || ""}
+                      onChange={(e) => setEditingProfile({ ...editingProfile, occupation: e.target.value })}
+                      placeholder="Your occupation"
+                      data-testid="input-edit-occupation"
+                    />
+                  </div>
+                  <div>
+                    <Label>Education</Label>
+                    <Select
+                      value={editingProfile.education || ""}
+                      onValueChange={(value) => setEditingProfile({ ...editingProfile, education: value })}
+                    >
+                      <SelectTrigger data-testid="select-edit-education">
+                        <SelectValue placeholder="Select education" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[40vh]">
+                        {EDUCATION_OPTIONS.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="photos" className="space-y-4 mt-4">
+                <p className="text-sm text-muted-foreground">
+                  Upload 3-6 clear photos. Your first photo will be your main profile photo.
+                </p>
+                <div className="grid grid-cols-3 gap-3">
+                  {[...Array(6)].map((_, index) => (
+                    <div key={index} className="relative aspect-square">
+                      {editPhotos[index] ? (
+                        <div className="relative h-full group">
+                          <img
+                            src={editPhotos[index]}
+                            alt={`Photo ${index + 1}`}
+                            className="h-full w-full object-cover rounded-lg"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => removeEditPhoto(index)}
+                            data-testid={`button-remove-edit-photo-${index}`}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                          {index === 0 && (
+                            <Badge className="absolute bottom-1 left-1 text-xs">
+                              Main
+                            </Badge>
+                          )}
+                        </div>
+                      ) : (
+                        <label
+                          htmlFor={`edit-photo-upload-${index}`}
+                          className="flex flex-col items-center justify-center h-full border-2 border-dashed rounded-lg cursor-pointer hover-elevate"
+                        >
+                          <Upload className="h-5 w-5 text-muted-foreground mb-1" />
+                          <span className="text-xs text-muted-foreground">Upload</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleEditPhotoUpload}
+                            className="hidden"
+                            id={`edit-photo-upload-${index}`}
+                          />
+                        </label>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {editPhotos.length < 3 && (
+                  <p className="text-sm text-destructive">
+                    Please have at least 3 photos
+                  </p>
+                )}
+              </TabsContent>
+
+              <TabsContent value="details" className="space-y-4 mt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Sect</Label>
+                    <Select
+                      value={editingProfile.sect || ""}
+                      onValueChange={(value) => setEditingProfile({ ...editingProfile, sect: value })}
+                    >
+                      <SelectTrigger data-testid="select-edit-sect">
+                        <SelectValue placeholder="Select sect" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[40vh]">
+                        {SECT_OPTIONS.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Religious Practice</Label>
+                    <Select
+                      value={editingProfile.religiousPractice || ""}
+                      onValueChange={(value) => setEditingProfile({ ...editingProfile, religiousPractice: value })}
+                    >
+                      <SelectTrigger data-testid="select-edit-practice">
+                        <SelectValue placeholder="Select practice level" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[40vh]">
+                        {RELIGIOUS_PRACTICE_OPTIONS.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.value}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Marital Status</Label>
+                    <Select
+                      value={editingProfile.maritalStatus || ""}
+                      onValueChange={(value) => setEditingProfile({ ...editingProfile, maritalStatus: value })}
+                    >
+                      <SelectTrigger data-testid="select-edit-marital">
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-[40vh]">
+                        {MARITAL_STATUS_OPTIONS.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Want Children?</Label>
+                    <Select
+                      value={editingProfile.wantsChildren || ""}
+                      onValueChange={(value) => setEditingProfile({ ...editingProfile, wantsChildren: value })}
+                    >
+                      <SelectTrigger data-testid="select-edit-children">
+                        <SelectValue placeholder="Select option" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Yes">Yes</SelectItem>
+                        <SelectItem value="No">No</SelectItem>
+                        <SelectItem value="Maybe">Maybe</SelectItem>
+                        <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="mb-2 block">Ethnicity</Label>
+                  <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto border rounded-lg p-3">
+                    {ETHNICITY_OPTIONS.map((ethnicity) => (
+                      <Badge
+                        key={ethnicity}
+                        variant={selectedEthnicities.includes(ethnicity) ? "default" : "outline"}
+                        className="cursor-pointer hover-elevate"
+                        onClick={() => toggleEditEthnicity(ethnicity)}
+                        data-testid={`badge-edit-ethnicity-${ethnicity}`}
+                      >
+                        {ethnicity}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+
+            <div className="flex justify-end gap-3 mt-6 pt-4 border-t">
+              <Button
+                variant="outline"
+                onClick={() => setProfileDialogOpen(false)}
+                data-testid="button-cancel-edit"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={saveProfile}
+                disabled={updateProfileMutation.isPending || editPhotos.length < 3}
+                data-testid="button-save-profile"
+              >
+                {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Privacy Settings */}
         <Card className="p-6 mb-6">
