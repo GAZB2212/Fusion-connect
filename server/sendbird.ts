@@ -42,7 +42,7 @@ export class SendbirdService {
     }
   }
   
-  // Use PUT to upsert user (create or update in one call)
+  // Create or update user - tries POST first, falls back to PUT if user exists
   static async createOrUpdateUser(params: SendbirdUserParams): Promise<any> {
     if (!isConfigured) {
       console.warn('[Sendbird] Skipping user creation - not configured');
@@ -52,8 +52,9 @@ export class SendbirdService {
     const profileUrl = this.getValidProfileUrl(params.profileUrl);
     
     try {
-      const response = await fetch(`${baseUrl}/users/${encodeURIComponent(params.userId)}`, {
-        method: 'PUT',
+      // First, try to create with POST
+      const createResponse = await fetch(`${baseUrl}/users`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Api-Token': apiToken!
@@ -66,15 +67,45 @@ export class SendbirdService {
         })
       });
       
-      const data = await response.json();
+      const createData = await createResponse.json();
       
-      if (!response.ok) {
-        console.error('[Sendbird] Create/update user failed:', data);
-        throw new Error(data.message || 'Failed to create/update user');
+      // If POST succeeds, return the created user
+      if (createResponse.ok) {
+        console.log(`[Sendbird] Created new user: ${params.userId}`);
+        return createData;
       }
       
-      console.log(`[Sendbird] Created/updated user: ${params.userId}`);
-      return data;
+      // If user already exists (400102), try to update with PUT
+      if (createData.code === 400102 || createData.message?.includes('already exists')) {
+        console.log(`[Sendbird] User ${params.userId} already exists, updating...`);
+        
+        const updateResponse = await fetch(`${baseUrl}/users/${encodeURIComponent(params.userId)}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Api-Token': apiToken!
+          },
+          body: JSON.stringify({
+            nickname: params.nickname,
+            profile_url: profileUrl,
+            issue_access_token: true
+          })
+        });
+        
+        const updateData = await updateResponse.json();
+        
+        if (!updateResponse.ok) {
+          console.error('[Sendbird] Update user failed:', updateData);
+          throw new Error(updateData.message || 'Failed to update user');
+        }
+        
+        console.log(`[Sendbird] Updated user: ${params.userId}`);
+        return updateData;
+      }
+      
+      // Other error
+      console.error('[Sendbird] Create user failed:', createData);
+      throw new Error(createData.message || 'Failed to create user');
     } catch (error) {
       console.error('[Sendbird] Error creating/updating user:', error);
       throw error;
