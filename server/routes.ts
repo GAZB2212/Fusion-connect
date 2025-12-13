@@ -1686,6 +1686,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
               
               // Create Sendbird channel for the match
               try {
+                // First ensure both users exist in Sendbird
+                const [profile1] = await db.select().from(profiles).where(eq(profiles.userId, userId)).limit(1);
+                const [profile2] = await db.select().from(profiles).where(eq(profiles.userId, swipedId)).limit(1);
+                
+                await SendbirdService.createOrUpdateUser({
+                  userId: userId,
+                  nickname: profile1?.displayName || currentUser?.firstName || 'User',
+                  profileUrl: profile1?.photos?.[0] || undefined,
+                });
+                console.log(`[Sendbird] Created/updated user ${userId} for match`);
+                
+                await SendbirdService.createOrUpdateUser({
+                  userId: swipedId,
+                  nickname: profile2?.displayName || otherUser?.firstName || 'User',
+                  profileUrl: profile2?.photos?.[0] || undefined,
+                });
+                console.log(`[Sendbird] Created/updated user ${swipedId} for match`);
+                
+                // Now create the channel
                 await SendbirdService.createChannel([userId, swipedId], newMatch.id);
                 console.log(`[Sendbird] Created channel for match ${newMatch.id}`);
                 
