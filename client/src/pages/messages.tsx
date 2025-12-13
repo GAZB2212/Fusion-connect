@@ -36,6 +36,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useRingtone } from "@/hooks/use-ringtone";
 
 const SENDBIRD_APP_ID = import.meta.env.VITE_SENDBIRD_APP_ID || "A68E730B-8E56-4655-BCBD-A709F3162376";
 
@@ -82,6 +83,18 @@ export default function Messages() {
   const [callToken, setCallToken] = useState<string | null>(null);
   const [endedCallId, setEndedCallId] = useState<string | null>(null);
   const { isCallActive, setIsCallActive } = useVideoCall();
+  
+  // Ringtone for incoming and outgoing calls
+  const { startRinging: startIncomingRing, stopRinging: stopIncomingRing } = useRingtone({ 
+    frequency: 440, 
+    duration: 400, 
+    interval: 200 
+  });
+  const { startRinging: startOutgoingRing, stopRinging: stopOutgoingRing } = useRingtone({ 
+    frequency: 350, 
+    duration: 300, 
+    interval: 400 
+  });
 
   const { data: tokenData, isLoading: tokenLoading, isError: tokenError, error: tokenErrorDetails, refetch: refetchToken } = useQuery<SendbirdTokenResponse>({
     queryKey: ["/api/sendbird/token"],
@@ -140,6 +153,9 @@ export default function Messages() {
       return;
     }
     if (incomingCall && !activeCall && (incomingCall.status === 'initiated' || incomingCall.status === 'active')) {
+      // Start ringing for incoming call
+      startIncomingRing();
+      
       setActiveCall(incomingCall);
       // Fetch token for the call
       fetch(`/api/video-call/token/${incomingCall.id}`, { credentials: 'include' })
@@ -152,7 +168,7 @@ export default function Messages() {
         })
         .catch(err => console.error('Failed to get call token:', err));
     }
-  }, [incomingCall, activeCall, endedCallId, setIsCallActive]);
+  }, [incomingCall, activeCall, endedCallId, setIsCallActive, startIncomingRing]);
 
   // Video call mutation
   const startCallMutation = useMutation({
@@ -191,6 +207,9 @@ export default function Messages() {
         
         if (tokenData.token) {
           console.log('[VideoCall] Setting all call states together');
+          // Start outgoing ring sound
+          startOutgoingRing();
+          
           // Set all states together to avoid race conditions
           setActiveCall(call);
           setCallToken(tokenData.token);
@@ -229,6 +248,10 @@ export default function Messages() {
   // Handle ending the call
   const handleEndCall = async (duration: number) => {
     if (!activeCall) return;
+    
+    // Stop all ringing sounds
+    stopIncomingRing();
+    stopOutgoingRing();
     
     // Track ended call to prevent it from restarting
     const callId = activeCall.id;
@@ -823,6 +846,7 @@ export default function Messages() {
           token={callToken}
           onEndCall={handleEndCall}
           isInitiator={activeCall.callerId === user?.id}
+          onConnected={() => { stopIncomingRing(); stopOutgoingRing(); }}
         />
       )}
     </div>

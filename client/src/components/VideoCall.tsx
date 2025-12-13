@@ -34,13 +34,15 @@ interface VideoCallProps {
   token: string;
   onEndCall: (duration: number) => void;
   isInitiator: boolean;
+  onConnected?: () => void;
 }
 
 function VideoCallContent({ 
   channelName, 
   token, 
   onEndCall,
-  isInitiator 
+  isInitiator,
+  onConnected 
 }: Omit<VideoCallProps, 'callId'>) {
   const client = useRTCClient(AgoraRTC.createClient({ mode: "rtc", codec: "vp8" }));
   const { isLoading: isLoadingMic, localMicrophoneTrack } = useLocalMicrophoneTrack(true);
@@ -123,7 +125,7 @@ function VideoCallContent({
     return () => clearInterval(interval);
   }, [isConnected]);
 
-  // Show toast when remote user joins
+  // Show toast when remote user joins and stop ringing
   useEffect(() => {
     if (remoteUsers.length > 0) {
       console.log('Remote users in call:', remoteUsers.length);
@@ -137,12 +139,15 @@ function VideoCallContent({
         });
       });
       
+      // Stop ringing when connected
+      onConnected?.();
+      
       toast({
         title: "Connected",
         description: "Your match has joined the call",
       });
     }
-  }, [remoteUsers.length, toast]);
+  }, [remoteUsers.length, toast, onConnected]);
 
   const toggleMic = async (e: React.MouseEvent) => {
     e.stopPropagation();
