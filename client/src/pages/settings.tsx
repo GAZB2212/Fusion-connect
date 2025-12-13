@@ -814,7 +814,7 @@ export default function Settings() {
               </Button>
               <Button
                 onClick={saveProfile}
-                disabled={updateProfileMutation.isPending || editPhotos.length < 3}
+                disabled={updateProfileMutation.isPending}
                 data-testid="button-save-profile"
               >
                 {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
