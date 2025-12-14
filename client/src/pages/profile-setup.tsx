@@ -28,7 +28,7 @@ import {
 import { insertProfileSchema, type InsertProfile } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, CheckCircle2, LogOut } from "lucide-react";
+import { Upload, CheckCircle2, LogOut, MapPin, Loader2 } from "lucide-react";
 import {
   INTEREST_CATEGORIES,
   PROFESSIONS,
@@ -61,6 +61,8 @@ export default function ProfileSetup() {
   const [partnerEthnicities, setPartnerEthnicities] = useState<string[]>([]);
   const [ageRange, setAgeRange] = useState<[number, number]>([18, 45]);
   const [professionSearch, setProfessionSearch] = useState("");
+  const [isLocating, setIsLocating] = useState(false);
+  const [userCoordinates, setUserCoordinates] = useState<{lat: number, lng: number} | null>(null);
 
   // Fetch existing profile if restarting
   const { data: existingProfile } = useQuery<Profile>({
@@ -220,6 +222,8 @@ export default function ProfileSetup() {
   const onSubmit = (data: InsertProfile) => {
     createProfileMutation.mutate({
       ...data,
+      latitude: userCoordinates?.lat,
+      longitude: userCoordinates?.lng,
       isComplete: true,
     });
   };
@@ -312,6 +316,69 @@ export default function ProfileSetup() {
       : [...selectedTraits, trait];
     setSelectedTraits(newTraits);
     form.setValue("personalityTraits", newTraits);
+  };
+
+  // Get user's location using browser geolocation
+  const detectLocation = async () => {
+    if (!navigator.geolocation) {
+      toast({
+        title: "Location not supported",
+        description: "Your browser doesn't support location detection. Please enter your location manually.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLocating(true);
+    
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        });
+      });
+
+      const { latitude, longitude } = position.coords;
+      setUserCoordinates({ lat: latitude, lng: longitude });
+
+      // Reverse geocode to get city name using OpenStreetMap Nominatim
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`,
+        { headers: { 'Accept-Language': 'en' } }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        const city = data.address?.city || data.address?.town || data.address?.village || data.address?.county || '';
+        const country = data.address?.country || '';
+        const locationString = city && country ? `${city}, ${country}` : city || country || 'Unknown location';
+        
+        form.setValue("location", locationString);
+        toast({
+          title: "Location detected",
+          description: locationString,
+        });
+      }
+    } catch (error: any) {
+      console.error('Location detection error:', error);
+      let message = "Could not detect your location. Please enter it manually.";
+      if (error.code === 1) {
+        message = "Location access denied. Please enable location permissions or enter manually.";
+      } else if (error.code === 2) {
+        message = "Location unavailable. Please enter your location manually.";
+      } else if (error.code === 3) {
+        message = "Location request timed out. Please try again or enter manually.";
+      }
+      toast({
+        title: "Location detection failed",
+        description: message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLocating(false);
+    }
   };
 
   const toggleEthnicity = (ethnicity: string) => {
@@ -474,9 +541,28 @@ export default function ProfileSetup() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Location</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="City, Country" data-testid="input-location" />
-                        </FormControl>
+                        <div className="flex gap-2">
+                          <FormControl>
+                            <Input {...field} placeholder="City, Country" data-testid="input-location" className="flex-1" />
+                          </FormControl>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={detectLocation}
+                            disabled={isLocating}
+                            data-testid="button-detect-location"
+                          >
+                            {isLocating ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <MapPin className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Click the pin icon to auto-detect your location
+                        </p>
                         <FormMessage />
                       </FormItem>
                     )}

@@ -1362,7 +1362,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Discover endpoint - get profiles to swipe on
+  // Helper function to calculate distance between two coordinates using Haversine formula
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c; // Distance in kilometers
+  };
+
+  // Discover endpoint - get profiles to swipe on (sorted by distance, nearest first)
   app.get("/api/discover", isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;
 
@@ -1386,6 +1399,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const swipedIds = alreadySwiped.map((s) => s.swipedId);
 
     // Get profiles to show (opposite gender, not self, not already swiped, active profiles)
+    // Fetch more than needed to allow for distance sorting
     let discoverProfiles = await db
       .select({
         profile: profiles,
@@ -1402,7 +1416,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           swipedIds.length > 0 ? notInArray(profiles.userId, swipedIds) : undefined
         )
       )
-      .limit(20);
+      .limit(100); // Fetch more to allow sorting
 
     // DEV MODE: If no profiles found and we're in development, loop all profiles (ignore swipes)
     if (discoverProfiles.length === 0 && process.env.NODE_ENV === 'development') {
@@ -1421,15 +1435,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
             ne(profiles.gender, userProfile.gender)
           )
         )
-        .limit(20);
+        .limit(100);
     }
 
-    const result: ProfileWithUser[] = discoverProfiles.map((dp) => ({
+    // Sort by distance if user has coordinates
+    let result: (ProfileWithUser & { distance?: number })[] = discoverProfiles.map((dp) => ({
       ...dp.profile,
       user: dp.user,
     }));
 
-    res.json(result);
+    if (userProfile.latitude && userProfile.longitude) {
+      result = result.map((profile) => {
+        let distance: number | undefined;
+        if (profile.latitude && profile.longitude) {
+          distance = calculateDistance(
+            userProfile.latitude!,
+            userProfile.longitude!,
+            profile.latitude,
+            profile.longitude
+          );
+        }
+        return { ...profile, distance };
+      });
+
+      // Sort by distance (nearest first), profiles without coordinates go to the end
+      result.sort((a, b) => {
+        if (a.distance === undefined && b.distance === undefined) return 0;
+        if (a.distance === undefined) return 1;
+        if (b.distance === undefined) return -1;
+        return a.distance - b.distance;
+      });
+    }
+
+    // Return top 20 profiles
+    res.json(result.slice(0, 20));
   });
 
   // AI-Powered Suggestions endpoint - get compatible profiles with compatibility scores
