@@ -40,7 +40,8 @@ import {
   Calendar,
   Ruler,
   Upload,
-  X
+  X,
+  Mail
 } from "lucide-react";
 import type { Profile, Chaperone } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -484,6 +485,13 @@ export default function Settings() {
                 <p className="text-sm text-muted-foreground flex items-center gap-1">
                   <MapPin className="h-3 w-3" />
                   {profile.location}
+                </p>
+              )}
+
+              {user?.email && (
+                <p className="text-sm text-muted-foreground flex items-center gap-1" data-testid="text-profile-email">
+                  <Mail className="h-3 w-3" />
+                  {user.email}
                 </p>
               )}
 
