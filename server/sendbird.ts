@@ -4,6 +4,20 @@ const apiToken = process.env.SENDBIRD_API_TOKEN;
 const isConfigured = !!(appId && apiToken);
 const baseUrl = `https://api-${appId}.sendbird.com/v3`;
 
+// Get the site URL for converting relative URLs to absolute
+// Production uses the custom domain, otherwise use Replit URL
+const getSiteBaseUrl = (): string => {
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://www.fusioncouples.com';
+  }
+  // In development, use the Replit URL if available
+  if (process.env.REPLIT_DEV_DOMAIN) {
+    return `https://${process.env.REPLIT_DEV_DOMAIN}`;
+  }
+  // Fallback to localhost
+  return 'http://localhost:5000';
+};
+
 if (isConfigured) {
   console.log('[Sendbird] Successfully configured');
 } else {
@@ -24,7 +38,28 @@ export class SendbirdService {
     if (!url || typeof url !== 'string' || url.trim() === '') {
       return '';
     }
-    // Check if it's a valid URL and strip query parameters
+    
+    // Skip base64 data URLs - they're too long for Sendbird
+    if (url.startsWith('data:')) {
+      console.warn('[Sendbird] Skipping data URL (base64 not supported for profile photos)');
+      return '';
+    }
+    
+    // Handle relative URLs (like /api/images/...) by converting to absolute
+    if (url.startsWith('/')) {
+      const siteBaseUrl = getSiteBaseUrl();
+      const absoluteUrl = `${siteBaseUrl}${url}`;
+      console.log('[Sendbird] Converted relative URL to absolute:', absoluteUrl);
+      
+      if (absoluteUrl.length > 2000) {
+        console.warn('[Sendbird] Profile URL too long, using empty string. Length:', absoluteUrl.length);
+        return '';
+      }
+      
+      return absoluteUrl;
+    }
+    
+    // Check if it's a valid absolute URL
     try {
       const parsedUrl = new URL(url);
       const cleanUrl = `${parsedUrl.origin}${parsedUrl.pathname}`;
