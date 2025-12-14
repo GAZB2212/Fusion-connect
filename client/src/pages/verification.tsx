@@ -100,6 +100,8 @@ export default function Verification() {
 
   const retakePhoto = () => {
     setCapturedImage(null);
+    setVerificationStatus('idle');
+    setIsVerifying(false);
     startCamera();
   };
 
@@ -148,7 +150,10 @@ export default function Verification() {
   };
 
   const restartProfileSetup = () => {
-    // Redirect back to profile setup to re-upload photos
+    // Reset verification state and redirect back to profile setup to re-upload photos
+    setVerificationStatus('idle');
+    setIsVerifying(false);
+    setCapturedImage(null);
     setLocation("/?restart=true");
   };
 
