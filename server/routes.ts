@@ -975,10 +975,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Convert proxy URLs to base64 for OpenAI vision API
-      console.log(`[Compare Faces] Converting photos for AI analysis...`);
+      console.log(`[Compare Faces] Input photos:`);
+      console.log(`  - Uploaded photo: ${uploadedPhoto.substring(0, 80)}...`);
+      console.log(`  - Live selfie type: ${liveSelfie.startsWith('data:') ? 'base64' : 'url'} (length: ${liveSelfie.length})`);
+      
       const uploadedPhotoBase64 = await convertProxyUrlToBase64ForVerify(uploadedPhoto);
       const liveSelfieBase64 = await convertProxyUrlToBase64ForVerify(liveSelfie);
-      console.log(`[Compare Faces] Photos converted successfully`);
+      
+      console.log(`[Compare Faces] Converted photos:`);
+      console.log(`  - Uploaded photo base64 length: ${uploadedPhotoBase64.length}`);
+      console.log(`  - Live selfie base64 length: ${liveSelfieBase64.length}`);
 
       const { compareFaces } = await import("./faceVerification");
       const result = await compareFaces(uploadedPhotoBase64, liveSelfieBase64);

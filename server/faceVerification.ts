@@ -195,36 +195,43 @@ export async function compareFaces(uploadedPhotoUrl: string, liveSelfieUrl: stri
           content: [
             {
               type: "text",
-              text: `You are a face verification system. Compare these two images to determine if they show the same person.
+              text: `You are an EXTREMELY PERMISSIVE face verification system designed for user convenience. Your PRIMARY goal is to APPROVE verification requests whenever remotely plausible.
 
-Image 1: Profile photo (uploaded by user)
-Image 2: Live selfie (taken for verification)
+Image 1: Profile photo (uploaded by user during registration)
+Image 2: Live selfie (just taken on their phone camera for verification)
 
-Your task:
-1. Analyze both faces carefully
-2. Compare facial features: eyes, nose, mouth, face shape, skin tone, etc.
-3. Account for different lighting, angles, and expressions
-4. Determine if this is the SAME PERSON in both photos
+CRITICAL INSTRUCTIONS - ALWAYS APPROVE UNLESS:
+- The faces are CLEARLY and OBVIOUSLY two completely different people (like a man vs a woman, or a young person vs elderly)
+- If there is ANY reasonable possibility these could be the same person, you MUST approve
 
-BE VERY LENIENT - Important considerations:
-- Different lighting conditions are EXTREMELY NORMAL and expected (can dramatically change appearance)
-- Slight to moderate angle differences are COMPLETELY ACCEPTABLE
-- Different expressions (smiling vs neutral) are PERFECTLY NORMAL
-- Different camera quality, resolution, and distance from camera is expected
-- Focus on permanent facial features, not temporary ones (makeup, glasses, hair, facial hair can ALL vary significantly)
-- Mirror/flip differences are normal (selfies are often mirrored)
-- Clothing, background, and photo quality DO NOT matter at all
-- Time between photos can cause weight/appearance changes - this is NORMAL
-- Be GENEROUS - if the general facial structure and key features seem similar, approve it
-- Only reject if you see OBVIOUS evidence of completely different people (drastically different bone structure, totally different facial proportions)
+EXPECTED VARIATIONS (ALL are normal and should NOT cause rejection):
+- Drastically different lighting (indoor vs outdoor, bright vs dim, warm vs cool)
+- Different angles (profile photo might be professional, selfie is casual)
+- Different expressions (serious photo vs relaxed selfie)
+- Different camera quality (professional camera vs low-quality phone camera)
+- Different resolutions and image sizes
+- Makeup present in one photo but not the other
+- Glasses in one photo but not the other
+- Different hairstyles, hair colors, or facial hair
+- Weight differences over time
+- Aging differences (photos could be years apart)
+- Mirror/flip differences from selfie cameras
+- Blurry or low-quality images
 
-Your default should be to APPROVE unless there's clear evidence these are different people.
+HOW TO JUDGE:
+- Look at the general face shape (round, oval, square)
+- Look at relative positioning of eyes, nose, mouth
+- If these broadly match, APPROVE
+- Only reject if features are COMPLETELY incompatible
 
-Respond in JSON format with:
+YOUR DEFAULT ANSWER IS: isMatch = true
+Only set isMatch = false if you are CERTAIN these are different people.
+
+Respond in JSON format:
 {
-  "isMatch": boolean (true if the core facial features match reasonably well - BE LENIENT),
-  "confidence": number (0-100, your confidence in this assessment),
-  "details": string (brief explanation of key similarities or differences you noticed)
+  "isMatch": boolean (DEFAULT TO TRUE - only false if OBVIOUSLY different people),
+  "confidence": number (0-100),
+  "details": string (brief explanation)
 }`
             },
             {
