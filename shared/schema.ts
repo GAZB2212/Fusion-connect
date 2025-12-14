@@ -9,6 +9,7 @@ import {
   text,
   boolean,
   integer,
+  doublePrecision,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -53,6 +54,8 @@ export const profiles = pgTable("profiles", {
   age: integer("age").notNull(),
   gender: varchar("gender", { length: 20 }).notNull(), // male, female
   location: varchar("location", { length: 200 }).notNull(),
+  latitude: doublePrecision("latitude"), // For distance-based matching
+  longitude: doublePrecision("longitude"), // For distance-based matching
   bio: text("bio"),
   height: integer("height"), // in cm
   heightUnit: varchar("height_unit", { length: 10 }).default('cm'), // cm or ft
