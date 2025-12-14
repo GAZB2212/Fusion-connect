@@ -986,8 +986,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`  - Uploaded photo base64 length: ${uploadedPhotoBase64.length}`);
       console.log(`  - Live selfie base64 length: ${liveSelfieBase64.length}`);
 
-      const { compareFaces } = await import("./faceVerification");
-      const result = await compareFaces(uploadedPhotoBase64, liveSelfieBase64);
+      // Use AWS Rekognition for robust face comparison
+      const { compareFacesWithRekognition } = await import("./rekognitionService");
+      const result = await compareFacesWithRekognition(uploadedPhotoBase64, liveSelfieBase64, 80);
 
       console.log(`[Compare Faces] Result for user ${userId}:`, {
         isMatch: result.isMatch,
