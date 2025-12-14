@@ -70,7 +70,8 @@ export default function Messages() {
   const { toast } = useToast();
 
   const [sendbirdToken, setSendbirdToken] = useState<string | null>(null);
-  const [currentChannelUrl, setCurrentChannelUrl] = useState<string | null>(matchId || null);
+  // Don't initialize with matchId - wait for SDK to validate channel exists
+  const [currentChannelUrl, setCurrentChannelUrl] = useState<string | null>(null);
   const [showBlockDialog, setShowBlockDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
