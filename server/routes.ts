@@ -3211,6 +3211,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email, firstName } = req.body;
 
+      if (!firstName || !firstName.trim()) {
+        return res.status(400).json({ message: "First name is required" });
+      }
+
       if (!email) {
         return res.status(400).json({ message: "Email is required" });
       }

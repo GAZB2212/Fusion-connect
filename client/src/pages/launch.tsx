@@ -92,6 +92,14 @@ export default function Launch() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!firstName.trim()) {
+      toast({
+        title: "Name required",
+        description: "Please enter your first name",
+        variant: "destructive",
+      });
+      return;
+    }
     if (!email) {
       toast({
         title: "Email required",
@@ -271,9 +279,10 @@ export default function Launch() {
                 <div>
                   <Input
                     type="text"
-                    placeholder="First name (optional)"
+                    placeholder="First name"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
+                    required
                     className="bg-[#0E1220] border-white/10 text-[#F8F4E3] placeholder:text-[#F8F4E3]/40"
                     data-testid="input-first-name"
                   />
