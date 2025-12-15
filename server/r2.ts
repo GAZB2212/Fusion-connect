@@ -113,3 +113,57 @@ export function detectContentType(base64String: string): string {
   const match = base64String.match(/^data:(image\/\w+);base64,/);
   return match ? match[1] : 'image/jpeg'; // Default to JPEG
 }
+
+/**
+ * Get an object from R2 as a Buffer
+ * @param key - The file key in R2
+ * @returns Buffer of the file contents
+ */
+export async function getObjectFromR2(key: string): Promise<Buffer> {
+  try {
+    const command = new GetObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: key,
+    });
+
+    const response = await r2Client.send(command);
+    
+    if (!response.Body) {
+      throw new Error("No body in R2 response");
+    }
+
+    // Convert stream to buffer
+    const chunks: Buffer[] = [];
+    for await (const chunk of response.Body as any) {
+      chunks.push(Buffer.from(chunk));
+    }
+    
+    return Buffer.concat(chunks);
+  } catch (error) {
+    console.error('[R2 Get] Failed to get object:', error);
+    throw new Error('Failed to get object from storage');
+  }
+}
+
+/**
+ * Get image buffer from R2 URL
+ * @param photoUrl - The photo URL (e.g., /api/images/profile/userId/filename.jpg)
+ * @returns Buffer of the image
+ */
+export async function getImageBufferFromR2Url(photoUrl: string): Promise<Buffer> {
+  // Extract the file key from the URL
+  let fileKey: string;
+  
+  if (photoUrl.startsWith('/api/images/')) {
+    fileKey = photoUrl.replace('/api/images/', '');
+  } else if (photoUrl.startsWith('data:image/')) {
+    // It's a base64 string, convert directly
+    return base64ToBuffer(photoUrl);
+  } else {
+    // Legacy format or external URL - try to extract key
+    const urlParts = photoUrl.split('/');
+    fileKey = urlParts.slice(3).join('/');
+  }
+  
+  return getObjectFromR2(fileKey);
+}

@@ -19,34 +19,28 @@ export interface FaceComparisonResult {
   details?: string;
 }
 
-function extractBase64Data(dataUrl: string): Buffer {
-  if (dataUrl.startsWith('data:')) {
-    const base64Data = dataUrl.split(',')[1];
-    return Buffer.from(base64Data, 'base64');
-  }
-  throw new Error("Expected base64 data URL");
-}
-
+/**
+ * Compare two faces using AWS Rekognition
+ * @param sourceImageBuffer - Buffer of the source image (profile photo)
+ * @param targetImageBuffer - Buffer of the target image (live selfie)
+ * @param similarityThreshold - Minimum similarity percentage to consider a match (default: 85)
+ */
 export async function compareFacesWithRekognition(
-  sourceImageUrl: string,
-  targetImageUrl: string,
-  similarityThreshold: number = 80
+  sourceImageBuffer: Buffer,
+  targetImageBuffer: Buffer,
+  similarityThreshold: number = 85
 ): Promise<FaceComparisonResult> {
   try {
     console.log("[Rekognition] Starting face comparison...");
-    
-    const sourceImageBytes = extractBase64Data(sourceImageUrl);
-    const targetImageBytes = extractBase64Data(targetImageUrl);
-    
-    console.log(`[Rekognition] Source image size: ${sourceImageBytes.length} bytes`);
-    console.log(`[Rekognition] Target image size: ${targetImageBytes.length} bytes`);
+    console.log(`[Rekognition] Source image size: ${sourceImageBuffer.length} bytes`);
+    console.log(`[Rekognition] Target image size: ${targetImageBuffer.length} bytes`);
 
     const params: CompareFacesCommandInput = {
       SourceImage: {
-        Bytes: sourceImageBytes,
+        Bytes: sourceImageBuffer,
       },
       TargetImage: {
-        Bytes: targetImageBytes,
+        Bytes: targetImageBuffer,
       },
       SimilarityThreshold: similarityThreshold,
     };

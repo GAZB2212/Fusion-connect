@@ -1,0 +1,132 @@
+// server/routes.ts
+import { RekognitionClient, CompareFacesCommand } from "@aws-sdk/client-rekognition";
+import { getObjectFromR2 } from "./r2"; // Your existing R2 helper
+
+// Initialize Rekognition client
+const rekognitionClient = new RekognitionClient({
+  region: process.env.AWS_REGION || "us-east-1",
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
+});
+
+// Helper: Convert base64 to buffer
+function base64ToBuffer(base64String: string): Buffer {
+  const base64Data = base64String.replace(/^data:image\/\w+;base64,/, '');
+  return Buffer.from(base64Data, 'base64');
+}
+
+// Helper: Get image buffer from R2 URL
+async function getImageBufferFromR2Url(photoUrl: string, userId: number): Promise<Buffer> {
+  // Extract filename from URL: /api/images/profile/{userId}/{filename}.jpg
+  const urlParts = photoUrl.split('/');
+  const filename = urlParts[urlParts.length - 1];
+  const key = `profile/${userId}/${filename}`;
+  
+  // Fetch from R2
+  const imageData = await getObjectFromR2(key);
+  
+  if (!imageData) {
+    throw new Error("Failed to fetch profile photo from storage");
+  }
+  
+  // Convert stream/data to buffer
+  if (Buffer.isBuffer(imageData)) {
+    return imageData;
+  }
+  
+  // If it's a ReadableStream, convert to buffer
+  const chunks: Buffer[] = [];
+  for await (const chunk of imageData as any) {
+    chunks.push(Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks);
+}
+
+// Compare faces endpoint
+app.post("/api/compare-faces", async (req, res) => {
+  try {
+    const { uploadedPhoto, liveSelfie } = req.body;
+    const userId = req.user?.id; // Adjust based on your auth
+
+    if (!uploadedPhoto || !liveSelfie) {
+      return res.status(400).json({ 
+        message: "Both photos are required",
+        isMatch: false 
+      });
+    }
+
+    if (!userId) {
+      return res.status(401).json({ 
+        message: "Unauthorized",
+        isMatch: false 
+      });
+    }
+
+    // Fetch the first profile photo from R2
+    const uploadedPhotoBuffer = await getImageBufferFromR2Url(uploadedPhoto, userId);
+    
+    // Convert live selfie from base64
+    const liveSelfieBuffer = base64ToBuffer(liveSelfie);
+
+    // Compare faces using AWS Rekognition
+    const command = new CompareFacesCommand({
+      SourceImage: { Bytes: uploadedPhotoBuffer },
+      TargetImage: { Bytes: liveSelfieBuffer },
+      SimilarityThreshold: 85, // Adjust as needed (80-99)
+    });
+
+    const response = await rekognitionClient.send(command);
+
+    // Check if faces match
+    if (response.FaceMatches && response.FaceMatches.length > 0) {
+      const similarity = response.FaceMatches[0].Similarity || 0;
+      
+      if (similarity >= 85) {
+        // Update verified status in database
+        await db
+          .update(profiles)
+          .set({ 
+            photoVerified: true,
+            faceVerified: true,
+            verifiedAt: new Date()
+          })
+          .where(eq(profiles.userId, userId));
+        
+        return res.json({
+          isMatch: true,
+          message: "Face verification successful",
+          confidence: similarity.toFixed(2),
+        });
+      }
+    }
+
+    // No match found
+    return res.json({
+      isMatch: false,
+      message: "Face verification failed - photos don't match",
+      details: response.UnmatchedFaces?.length 
+        ? "Face detected but doesn't match profile photo" 
+        : "No face detected in one or both images",
+    });
+
+  } catch (error: any) {
+    console.error("Rekognition error:", error);
+    
+    // Handle specific AWS errors
+    if (error.name === "InvalidParameterException") {
+      return res.status(400).json({
+        isMatch: false,
+        message: "Invalid image format or no face detected",
+        details: error.message,
+      });
+    }
+
+    return res.status(500).json({
+      isMatch: false,
+      message: "Verification service error",
+      details: error.message,
+    });
+  }
+});

@@ -961,7 +961,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Compare faces for identity verification
+  // Compare faces for identity verification using AWS Rekognition
   app.post("/api/compare-faces", isAuthenticated, async (req: any, res: Response) => {
     try {
       const { uploadedPhoto, liveSelfie } = req.body;
@@ -971,24 +971,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!uploadedPhoto || !liveSelfie) {
         console.log(`[Compare Faces] FAILED: Missing photos`);
-        return res.status(400).json({ message: "Both uploaded photo and live selfie are required" });
+        return res.status(400).json({ message: "Both uploaded photo and live selfie are required", isMatch: false });
       }
 
-      // Convert proxy URLs to base64 for OpenAI vision API
       console.log(`[Compare Faces] Input photos:`);
       console.log(`  - Uploaded photo: ${uploadedPhoto.substring(0, 80)}...`);
       console.log(`  - Live selfie type: ${liveSelfie.startsWith('data:') ? 'base64' : 'url'} (length: ${liveSelfie.length})`);
       
-      const uploadedPhotoBase64 = await convertProxyUrlToBase64ForVerify(uploadedPhoto);
-      const liveSelfieBase64 = await convertProxyUrlToBase64ForVerify(liveSelfie);
+      // Get image buffers directly (more efficient than base64 conversion)
+      const { getImageBufferFromR2Url, base64ToBuffer } = await import("./r2");
       
-      console.log(`[Compare Faces] Converted photos:`);
-      console.log(`  - Uploaded photo base64 length: ${uploadedPhotoBase64.length}`);
-      console.log(`  - Live selfie base64 length: ${liveSelfieBase64.length}`);
+      // Fetch profile photo from R2 storage
+      const uploadedPhotoBuffer = await getImageBufferFromR2Url(uploadedPhoto);
+      
+      // Convert live selfie from base64
+      const liveSelfieBuffer = base64ToBuffer(liveSelfie);
+      
+      console.log(`[Compare Faces] Image buffers:`);
+      console.log(`  - Uploaded photo buffer size: ${uploadedPhotoBuffer.length} bytes`);
+      console.log(`  - Live selfie buffer size: ${liveSelfieBuffer.length} bytes`);
 
       // Use AWS Rekognition for robust face comparison
       const { compareFacesWithRekognition } = await import("./rekognitionService");
-      const result = await compareFacesWithRekognition(uploadedPhotoBase64, liveSelfieBase64, 80);
+      const result = await compareFacesWithRekognition(uploadedPhotoBuffer, liveSelfieBuffer, 85);
 
       console.log(`[Compare Faces] Result for user ${userId}:`, {
         isMatch: result.isMatch,
@@ -1016,9 +1021,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(result);
     } catch (error: any) {
       console.error("[Compare Faces] ERROR:", error);
+      
+      // Handle specific AWS errors
+      if (error.name === "InvalidParameterException") {
+        return res.status(400).json({
+          isMatch: false,
+          message: "Invalid image format or no face detected",
+          details: error.message,
+        });
+      }
+      
       res.status(500).json({ 
         message: "Face comparison failed", 
-        error: error.message 
+        error: error.message,
+        isMatch: false
       });
     }
   });
