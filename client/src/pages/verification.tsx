@@ -119,10 +119,12 @@ export default function Verification() {
     setVerificationStatus('verifying');
 
     try {
-      const result = await apiRequest("POST", "/api/compare-faces", {
+      const response = await apiRequest("POST", "/api/compare-faces", {
         uploadedPhoto: profile.photos[0],
         liveSelfie: capturedImage,
-      }) as unknown as { isMatch: boolean; message: string; details?: string };
+      });
+      
+      const result = await response.json() as { isMatch: boolean; message: string; details?: string };
 
       if (result.isMatch) {
         setVerificationStatus('success');
