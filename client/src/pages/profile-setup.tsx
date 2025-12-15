@@ -147,8 +147,9 @@ export default function ProfileSetup() {
         useNickname: existingProfile.useNickname || false,
       });
 
-      // Set state variables
-      setPhotos(existingProfile.photos);
+      // Set state variables - clear photos so user uploads new ones for verification
+      setPhotos([]);
+      form.setValue("photos", []);
       setSelectedInterests(existingProfile.interests || []);
       setSelectedTraits(existingProfile.personalityTraits || []);
       setSelectedEthnicities(existingProfile.ethnicities || []);
@@ -163,12 +164,12 @@ export default function ProfileSetup() {
         ]);
       }
       
-      // Jump to photo step (step 3) since that's what they need to update
-      setStep(3);
+      // Stay on step 1 where photos are uploaded
+      setStep(1);
       
       toast({
-        title: "Update Your Photos",
-        description: "Upload new photos to retry verification.",
+        title: "Upload New Photos",
+        description: "Please upload new photos and complete the form to retry verification.",
       });
     }
   }, [isRestart, existingProfile, form, toast]);
