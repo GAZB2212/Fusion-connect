@@ -183,6 +183,7 @@ export function FastOnboardingChat({ onComplete, onExitToForms }: FastOnboarding
       timestamp: new Date(),
     };
     setMessages((prev) => [...prev, userMessage]);
+    setAutoStartListening(false);
     chatMutation.mutate(content);
   };
 
