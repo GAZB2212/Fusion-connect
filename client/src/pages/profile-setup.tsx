@@ -63,6 +63,7 @@ export default function ProfileSetup() {
   const [professionSearch, setProfessionSearch] = useState("");
   const [isLocating, setIsLocating] = useState(false);
   const [userCoordinates, setUserCoordinates] = useState<{lat: number, lng: number} | null>(null);
+  const [profileSubmitted, setProfileSubmitted] = useState(false);
 
   // Fetch existing profile if restarting
   const { data: existingProfile } = useQuery<Profile>({
@@ -179,18 +180,14 @@ export default function ProfileSetup() {
       return apiRequest("POST", "/api/profile", data);
     },
     onSuccess: async () => {
-      // Invalidate the profile query so App.tsx sees the updated profile
-      await queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
+      // Show success screen first
+      setProfileSubmitted(true);
       
-      toast({
-        title: "Profile Complete!",
-        description: "Now let's verify your identity with a live selfie.",
-      });
-      
-      // Redirect to verification page
-      setTimeout(() => {
+      // Wait 2 seconds to show the success message, then invalidate and redirect
+      setTimeout(async () => {
+        await queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
         setLocation("/");
-      }, 100);
+      }, 2000);
     },
     onError: (error) => {
       toast({
@@ -430,6 +427,32 @@ export default function ProfileSetup() {
   const filteredProfessions = PROFESSIONS.filter((prof) =>
     prof.toLowerCase().includes(professionSearch.toLowerCase())
   );
+
+  // Show success screen after profile submission
+  if (profileSubmitted) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-md w-full p-8">
+          <div className="text-center space-y-6">
+            <div className="mx-auto w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center">
+              <CheckCircle2 className="h-10 w-10 text-emerald-500" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold mb-2">Profile Complete!</h2>
+              <p className="text-muted-foreground">
+                Now let's verify your identity with a quick selfie...
+              </p>
+            </div>
+            <div className="flex gap-2 justify-center">
+              <div className="h-2 w-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }} />
+              <div className="h-2 w-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }} />
+              <div className="h-2 w-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }} />
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
