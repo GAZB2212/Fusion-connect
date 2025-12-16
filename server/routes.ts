@@ -1634,6 +1634,60 @@ Only include values that were actually extracted in this response.`;
     }
   });
 
+  // AI Bio Enhancement endpoint
+  app.post("/api/enhance-bio", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const { bio, userInfo } = req.body;
+
+      if (!bio || typeof bio !== "string" || bio.trim().length < 10) {
+        return res.status(400).json({ 
+          message: "Please write at least a few words about yourself first" 
+        });
+      }
+
+      const openai = new OpenAI();
+
+      const systemPrompt = `You are a professional dating profile writer helping Muslim singles create compelling bios for a marriage-focused dating app called Fusion.
+
+Your task is to enhance and expand the user's bio while:
+- Keeping their authentic voice and personality
+- Making it warm, genuine, and appealing
+- Highlighting their values and what makes them unique
+- Keeping it appropriate for a Muslim dating context
+- Making it 2-3 paragraphs (around 100-150 words)
+- Not adding any information they didn't mention
+- Using natural, conversational language
+
+${userInfo ? `Context about the user: ${JSON.stringify(userInfo)}` : ''}
+
+Return ONLY the enhanced bio text, no explanations or quotes.`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Please enhance this bio: "${bio}"` },
+        ],
+        temperature: 0.7,
+        max_tokens: 300,
+      });
+
+      const enhancedBio = completion.choices[0]?.message?.content?.trim();
+
+      if (!enhancedBio) {
+        throw new Error("No response from AI");
+      }
+
+      res.json({ enhancedBio });
+    } catch (error: any) {
+      console.error("[Bio Enhancement] Error:", error);
+      res.status(500).json({ 
+        message: "Failed to enhance bio", 
+        error: error.message 
+      });
+    }
+  });
+
   // Get existing onboarding conversation (for resume)
   app.get("/api/onboarding/conversation", isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;
