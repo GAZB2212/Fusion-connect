@@ -1,13 +1,20 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Loader2, Mic, MicOff, X, Keyboard, Check, RotateCcw, Volume2 } from "lucide-react";
+import { Send, Loader2, Mic, MicOff, X, Keyboard, Check, RotateCcw, Volume2, Square } from "lucide-react";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { useWhisperTranscription } from "@/hooks/useWhisperTranscription";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n/onboarding";
 
 type VoiceState = "idle" | "listening" | "confirming" | "processing";
 type InputMode = "text" | "voice";
+
+const isIOS = () => {
+  if (typeof window === "undefined") return false;
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+};
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -39,6 +46,8 @@ export function ChatInput({
   const transcriptRef = useRef("");
 
   const { t } = useTranslation(language as any);
+  
+  const useWhisperMode = useMemo(() => isIOS(), []);
 
   const {
     transcript,
@@ -54,22 +63,22 @@ export function ChatInput({
   } = useSpeechRecognition({
     language,
     onError: (err) => {
-      onVoiceError?.(err);
-      setVoiceState("idle");
-      setInputMode("text");
+      if (!useWhisperMode) {
+        onVoiceError?.(err);
+        setVoiceState("idle");
+        setInputMode("text");
+      }
     },
     onEnd: () => {
-      // Capture transcript immediately in case it changes
+      if (useWhisperMode) return;
+      
       const finalTranscript = transcriptRef.current.trim();
       
       if (finalTranscript) {
         if (skipConfirmation) {
-          // Send immediately without confirmation
-          // Clear state first, THEN send
           resetTranscript();
           setConfirmedTranscript("");
           setVoiceState("idle");
-          // Use captured transcript, not the state
           onSend(finalTranscript);
         } else {
           setConfirmedTranscript(finalTranscript);
@@ -81,42 +90,74 @@ export function ChatInput({
     },
   });
 
+  const {
+    isRecording: whisperRecording,
+    isTranscribing,
+    transcript: whisperTranscript,
+    error: whisperError,
+    startRecording,
+    stopRecording,
+    resetTranscript: resetWhisperTranscript,
+  } = useWhisperTranscription({
+    language,
+    onError: (err) => {
+      onVoiceError?.(err);
+      setVoiceState("idle");
+    },
+  });
+
   // Keep transcript ref in sync
   useEffect(() => {
     transcriptRef.current = transcript;
   }, [transcript]);
 
-  useEffect(() => {
-    if (autoStartVoice && isSupported && inputMode === "text" && !disabled) {
-      requestPermission().then((granted) => {
-        if (granted) {
-          setInputMode("voice");
-          setVoiceState("idle");
-        }
-      });
-    }
-  }, [autoStartVoice, isSupported, disabled]);
+  const voiceSupported = useWhisperMode || isSupported;
+  const activelyListening = useWhisperMode ? whisperRecording : isListening;
+  const activeError = useWhisperMode ? whisperError : error;
 
   useEffect(() => {
-    if (autoStartListening && isSupported && !disabled && !isListening && voiceState !== "confirming" && voiceState !== "processing") {
+    if (autoStartVoice && voiceSupported && inputMode === "text" && !disabled) {
+      if (useWhisperMode) {
+        setInputMode("voice");
+        setVoiceState("idle");
+      } else {
+        requestPermission().then((granted) => {
+          if (granted) {
+            setInputMode("voice");
+            setVoiceState("idle");
+          }
+        });
+      }
+    }
+  }, [autoStartVoice, voiceSupported, disabled, useWhisperMode]);
+
+  useEffect(() => {
+    if (autoStartListening && voiceSupported && !disabled && !activelyListening && voiceState !== "confirming" && voiceState !== "processing") {
       setInputMode("voice");
-      resetTranscript();
+      if (useWhisperMode) {
+        resetWhisperTranscript();
+      } else {
+        resetTranscript();
+      }
       setConfirmedTranscript("");
       setVoiceState("listening");
-      // Delay to ensure TTS audio has fully stopped before starting microphone
       const timer = setTimeout(async () => {
-        await startListening();
+        if (useWhisperMode) {
+          await startRecording();
+        } else {
+          await startListening();
+        }
         onListeningStarted?.();
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [autoStartListening, isSupported, disabled, isListening, voiceState]);
+  }, [autoStartListening, voiceSupported, disabled, activelyListening, voiceState, useWhisperMode]);
 
   useEffect(() => {
-    if (error) {
-      onVoiceError?.(error);
+    if (activeError && !useWhisperMode) {
+      onVoiceError?.(activeError);
     }
-  }, [error, onVoiceError]);
+  }, [activeError, onVoiceError, useWhisperMode]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,60 +168,116 @@ export function ChatInput({
   };
 
   const handleStartVoiceMode = async () => {
-    const granted = await requestPermission();
-    if (granted) {
+    if (useWhisperMode) {
       setInputMode("voice");
       setVoiceState("idle");
-      resetTranscript();
+      resetWhisperTranscript();
       setConfirmedTranscript("");
+    } else {
+      const granted = await requestPermission();
+      if (granted) {
+        setInputMode("voice");
+        setVoiceState("idle");
+        resetTranscript();
+        setConfirmedTranscript("");
+      }
     }
   };
 
   const handleStartListening = async () => {
-    resetTranscript();
+    if (useWhisperMode) {
+      resetWhisperTranscript();
+    } else {
+      resetTranscript();
+    }
     setConfirmedTranscript("");
     setVoiceState("listening");
-    await startListening();
+    if (useWhisperMode) {
+      await startRecording();
+    } else {
+      await startListening();
+    }
   };
 
-  const handleStopListening = () => {
-    stopListening();
+  const handleStopListening = async () => {
+    if (useWhisperMode) {
+      setVoiceState("processing");
+      const text = await stopRecording();
+      if (text) {
+        if (skipConfirmation) {
+          resetWhisperTranscript();
+          setConfirmedTranscript("");
+          setVoiceState("idle");
+          onSend(text);
+        } else {
+          setConfirmedTranscript(text);
+          setVoiceState("confirming");
+        }
+      } else {
+        setVoiceState("idle");
+      }
+    } else {
+      stopListening();
+    }
   };
 
   const handleConfirmTranscript = () => {
     setVoiceState("processing");
     setTimeout(() => {
       onSend(confirmedTranscript);
-      resetTranscript();
+      if (useWhisperMode) {
+        resetWhisperTranscript();
+      } else {
+        resetTranscript();
+      }
       setConfirmedTranscript("");
       setVoiceState("idle");
     }, 300);
   };
 
   const handleRetryVoice = async () => {
-    resetTranscript();
+    if (useWhisperMode) {
+      resetWhisperTranscript();
+    } else {
+      resetTranscript();
+    }
     setConfirmedTranscript("");
     setVoiceState("listening");
-    await startListening();
+    if (useWhisperMode) {
+      await startRecording();
+    } else {
+      await startListening();
+    }
   };
 
   const handleEditAsText = () => {
     setMessage(confirmedTranscript);
     setConfirmedTranscript("");
-    resetTranscript();
+    if (useWhisperMode) {
+      resetWhisperTranscript();
+    } else {
+      resetTranscript();
+    }
     setInputMode("text");
     setVoiceState("idle");
   };
 
   const handleCancelVoice = () => {
-    stopListening();
-    resetTranscript();
+    if (useWhisperMode) {
+      stopRecording();
+      resetWhisperTranscript();
+    } else {
+      stopListening();
+      resetTranscript();
+    }
     setConfirmedTranscript("");
     setInputMode("text");
     setVoiceState("idle");
   };
 
-  const currentTranscript = transcript + interimTranscript;
+  const currentTranscript = useWhisperMode 
+    ? (whisperRecording ? "Recording..." : whisperTranscript)
+    : (transcript + interimTranscript);
 
   if (inputMode === "voice") {
     return (
@@ -239,37 +336,48 @@ export function ChatInput({
                 {t.editAsText || "Edit as text"}
               </Button>
             </div>
+          ) : isTranscribing ? (
+            <div className="flex flex-col items-center gap-3 py-4">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <p className="text-sm text-muted-foreground">Transcribing...</p>
+            </div>
           ) : (
             <>
               <div className="relative flex items-center justify-center">
                 <div
                   className={cn(
                     "h-24 w-24 rounded-full flex items-center justify-center transition-all cursor-pointer",
-                    isListening
+                    activelyListening
                       ? "bg-red-500 animate-pulse"
                       : "bg-primary hover:bg-primary/90"
                   )}
-                  onClick={isListening ? handleStopListening : handleStartListening}
+                  onClick={activelyListening ? handleStopListening : handleStartListening}
                   data-testid="button-voice-record"
                 >
-                  {isListening ? (
-                    <Volume2 className="h-10 w-10 text-white animate-pulse" />
+                  {activelyListening ? (
+                    useWhisperMode ? (
+                      <Square className="h-10 w-10 text-white" />
+                    ) : (
+                      <Volume2 className="h-10 w-10 text-white animate-pulse" />
+                    )
                   ) : (
                     <Mic className="h-10 w-10 text-white" />
                   )}
                 </div>
-                {isListening && (
+                {activelyListening && (
                   <div className="absolute inset-0 h-24 w-24 rounded-full border-4 border-red-500/50 animate-ping" />
                 )}
               </div>
 
               <p className="text-sm text-center font-medium">
-                {isListening
-                  ? t.listeningTapToStop || "Listening... Tap to stop"
+                {activelyListening
+                  ? (useWhisperMode 
+                      ? "Recording... Tap to stop" 
+                      : (t.listeningTapToStop || "Listening... Tap to stop"))
                   : t.tapToSpeak || "Tap to speak your answer"}
               </p>
 
-              {currentTranscript && (
+              {currentTranscript && !useWhisperMode && (
                 <div className="w-full bg-muted rounded-lg p-3 max-h-24 overflow-y-auto">
                   <p className="text-sm">
                     {transcript}
@@ -285,7 +393,7 @@ export function ChatInput({
                   variant="outline"
                   size="sm"
                   onClick={handleCancelVoice}
-                  disabled={disabled || isListening}
+                  disabled={disabled || activelyListening}
                   data-testid="button-cancel-voice"
                 >
                   <Keyboard className="h-4 w-4 mr-1" />
@@ -316,7 +424,7 @@ export function ChatInput({
         className="flex-1"
         data-testid="input-chat-message"
       />
-      {isSupported && (
+      {voiceSupported && (
         <Button
           type="button"
           size="icon"
