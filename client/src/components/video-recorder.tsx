@@ -64,6 +64,12 @@ export function VideoRecorder({
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        // Explicitly play the video - required for Safari
+        try {
+          await videoRef.current.play();
+        } catch (playError) {
+          console.log("Auto-play prevented, user interaction needed:", playError);
+        }
       }
       setCameraActive(true);
     } catch (error) {
