@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send, Loader2, Mic, MicOff, X, Keyboard, Check, RotateCcw, Volume2 } from "lucide-react";
@@ -36,6 +36,7 @@ export function ChatInput({
   const [inputMode, setInputMode] = useState<InputMode>("text");
   const [voiceState, setVoiceState] = useState<VoiceState>("idle");
   const [confirmedTranscript, setConfirmedTranscript] = useState("");
+  const transcriptRef = useRef("");
 
   const { t } = useTranslation(language as any);
 
@@ -56,15 +57,20 @@ export function ChatInput({
       setInputMode("text");
     },
     onEnd: () => {
-      if (transcript.trim()) {
+      // Capture transcript immediately in case it changes
+      const finalTranscript = transcriptRef.current.trim();
+      
+      if (finalTranscript) {
         if (skipConfirmation) {
           // Send immediately without confirmation
-          onSend(transcript.trim());
+          // Clear state first, THEN send
           resetTranscript();
           setConfirmedTranscript("");
           setVoiceState("idle");
+          // Use captured transcript, not the state
+          onSend(finalTranscript);
         } else {
-          setConfirmedTranscript(transcript.trim());
+          setConfirmedTranscript(finalTranscript);
           setVoiceState("confirming");
         }
       } else {
@@ -72,6 +78,11 @@ export function ChatInput({
       }
     },
   });
+
+  // Keep transcript ref in sync
+  useEffect(() => {
+    transcriptRef.current = transcript;
+  }, [transcript]);
 
   useEffect(() => {
     if (autoStartVoice && isSupported && inputMode === "text" && !disabled) {
