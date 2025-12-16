@@ -58,15 +58,11 @@ export function ChatInput({
     onEnd: () => {
       if (transcript.trim()) {
         if (skipConfirmation) {
-          const finalTranscript = transcript.trim();
-          setVoiceState("processing");
+          // Send immediately without confirmation
+          onSend(transcript.trim());
           resetTranscript();
           setConfirmedTranscript("");
-          // Send immediately without state changes
-          setTimeout(() => {
-            onSend(finalTranscript);
-            setVoiceState("idle");
-          }, 50);
+          setVoiceState("idle");
         } else {
           setConfirmedTranscript(transcript.trim());
           setVoiceState("confirming");
