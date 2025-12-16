@@ -43,7 +43,8 @@ import {
   X,
   Mail,
   Video,
-  Play
+  Play,
+  BookOpen
 } from "lucide-react";
 import { VideoRecorder } from "@/components/video-recorder";
 import type { Profile, Chaperone } from "@shared/schema";
@@ -1347,6 +1348,15 @@ export default function Settings() {
             Legal & Support
           </h2>
           <div className="space-y-3">
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={() => setLocation("/guidance")}
+              data-testid="button-guidance-hub"
+            >
+              <BookOpen className="h-4 w-4 mr-2" />
+              Guidance Hub
+            </Button>
             <Button
               variant="outline"
               className="w-full justify-start"
