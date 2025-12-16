@@ -45,7 +45,9 @@ export function ChatInput({
     interimTranscript,
     isListening,
     isSupported,
+    hasPermission,
     error,
+    requestPermission,
     startListening,
     stopListening,
     resetTranscript,
@@ -86,8 +88,12 @@ export function ChatInput({
 
   useEffect(() => {
     if (autoStartVoice && isSupported && inputMode === "text" && !disabled) {
-      setInputMode("voice");
-      setVoiceState("idle");
+      requestPermission().then((granted) => {
+        if (granted) {
+          setInputMode("voice");
+          setVoiceState("idle");
+        }
+      });
     }
   }, [autoStartVoice, isSupported, disabled]);
 
@@ -98,8 +104,8 @@ export function ChatInput({
       setConfirmedTranscript("");
       setVoiceState("listening");
       // Delay to ensure TTS audio has fully stopped before starting microphone
-      const timer = setTimeout(() => {
-        startListening();
+      const timer = setTimeout(async () => {
+        await startListening();
         onListeningStarted?.();
       }, 500);
       return () => clearTimeout(timer);
@@ -120,18 +126,21 @@ export function ChatInput({
     }
   };
 
-  const handleStartVoiceMode = () => {
-    setInputMode("voice");
-    setVoiceState("idle");
-    resetTranscript();
-    setConfirmedTranscript("");
+  const handleStartVoiceMode = async () => {
+    const granted = await requestPermission();
+    if (granted) {
+      setInputMode("voice");
+      setVoiceState("idle");
+      resetTranscript();
+      setConfirmedTranscript("");
+    }
   };
 
-  const handleStartListening = () => {
+  const handleStartListening = async () => {
     resetTranscript();
     setConfirmedTranscript("");
     setVoiceState("listening");
-    startListening();
+    await startListening();
   };
 
   const handleStopListening = () => {
@@ -148,11 +157,11 @@ export function ChatInput({
     }, 300);
   };
 
-  const handleRetryVoice = () => {
+  const handleRetryVoice = async () => {
     resetTranscript();
     setConfirmedTranscript("");
     setVoiceState("listening");
-    startListening();
+    await startListening();
   };
 
   const handleEditAsText = () => {

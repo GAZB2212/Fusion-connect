@@ -20,8 +20,10 @@ interface SpeechRecognitionHook {
   interimTranscript: string;
   isListening: boolean;
   isSupported: boolean;
+  hasPermission: boolean;
   error: string | null;
   confidence: number;
+  requestPermission: () => Promise<boolean>;
   startListening: () => void;
   stopListening: () => void;
   resetTranscript: () => void;
@@ -58,6 +60,7 @@ export function useSpeechRecognition(
   const [isListening, setIsListening] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confidence, setConfidence] = useState(0);
+  const [hasPermission, setHasPermission] = useState(false);
 
   const recognitionRef = useRef<any>(null);
 
@@ -65,12 +68,50 @@ export function useSpeechRecognition(
     typeof window !== "undefined" &&
     (!!window.SpeechRecognition || !!window.webkitSpeechRecognition);
 
-  const startListening = useCallback(() => {
+  const requestPermission = useCallback(async (): Promise<boolean> => {
+    if (!isSupported) {
+      return false;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop());
+      setHasPermission(true);
+      setError(null);
+      return true;
+    } catch (err: any) {
+      console.error("[SpeechRecognition] Permission denied:", err);
+      setHasPermission(false);
+      if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+        const errorMsg = "Microphone permission was denied. Please enable it in your browser settings.";
+        setError(errorMsg);
+        onError?.(errorMsg);
+      } else if (err.name === "NotFoundError") {
+        const errorMsg = "No microphone was found on this device.";
+        setError(errorMsg);
+        onError?.(errorMsg);
+      } else {
+        const errorMsg = "Could not access microphone. Please check your device settings.";
+        setError(errorMsg);
+        onError?.(errorMsg);
+      }
+      return false;
+    }
+  }, [isSupported, onError]);
+
+  const startListening = useCallback(async () => {
     if (!isSupported) {
       const errorMsg = "Speech recognition is not supported in this browser";
       setError(errorMsg);
       onError?.(errorMsg);
       return;
+    }
+
+    if (!hasPermission) {
+      const granted = await requestPermission();
+      if (!granted) {
+        return;
+      }
     }
 
     setError(null);
@@ -163,7 +204,7 @@ export function useSpeechRecognition(
       setError(errorMsg);
       onError?.(errorMsg);
     }
-  }, [isSupported, language, continuous, interimResults, onResult, onError, onEnd]);
+  }, [isSupported, hasPermission, requestPermission, language, continuous, interimResults, onResult, onError, onEnd]);
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current) {
@@ -202,8 +243,10 @@ export function useSpeechRecognition(
     interimTranscript,
     isListening,
     isSupported,
+    hasPermission,
     error,
     confidence,
+    requestPermission,
     startListening,
     stopListening,
     resetTranscript,
