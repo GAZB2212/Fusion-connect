@@ -14,39 +14,52 @@ interface OnboardingReviewProps {
 
 const FIELD_LABELS: Record<keyof ExtractedData, string> = {
   firstName: "Name",
+  gender: "Gender",
   age: "Age",
   city: "Location",
-  marriageIntent: "Looking For",
-  timeframe: "Timeframe",
+  ethnicity: "Ethnicity",
+  maritalStatus: "Marital Status",
+  hasChildren: "Has Children",
+  numberOfChildren: "Number of Children",
+  wantsChildren: "Wants Children",
+  education: "Education",
+  occupation: "Occupation",
+  sect: "Sect",
+  prayerFrequency: "Prayer Frequency",
   religiosityRaw: "Religious Practice",
-  waliInvolvement: "Family Involvement",
-  dealBreakers: "Deal-breakers",
-  communicationStyle: "Communication Style",
+  bio: "About You",
+  lookingForDescription: "Looking For",
 };
 
-const MARRIAGE_INTENT_LABELS: Record<string, string> = {
-  marriage_soon: "Marriage (soon)",
-  marriage_eventually: "Marriage (eventually)",
-  exploring: "Exploring options",
-  unsure: "Not sure yet",
+const MARITAL_STATUS_LABELS: Record<string, string> = {
+  never_married: "Never married",
+  divorced: "Divorced",
+  widowed: "Widowed",
 };
 
-const WALI_LABELS: Record<string, string> = {
-  essential: "Essential",
-  preferred: "Preferred",
-  flexible: "Flexible",
-  not_needed: "Not needed",
+const WANTS_CHILDREN_LABELS: Record<string, string> = {
+  yes: "Yes",
+  no: "No",
+  open: "Open to it",
 };
 
 function formatValue(field: keyof ExtractedData, value: any): string {
   if (value === null || value === undefined) return "Not provided";
   
-  if (field === "marriageIntent" && typeof value === "string") {
-    return MARRIAGE_INTENT_LABELS[value] || value;
+  if (field === "gender" && typeof value === "string") {
+    return value === "male" ? "Brother" : "Sister";
   }
   
-  if (field === "waliInvolvement" && typeof value === "string") {
-    return WALI_LABELS[value] || value;
+  if (field === "maritalStatus" && typeof value === "string") {
+    return MARITAL_STATUS_LABELS[value] || value;
+  }
+  
+  if (field === "wantsChildren" && typeof value === "string") {
+    return WANTS_CHILDREN_LABELS[value] || value;
+  }
+  
+  if (field === "hasChildren") {
+    return value ? "Yes" : "No";
   }
   
   if (field === "age") {

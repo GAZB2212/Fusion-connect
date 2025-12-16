@@ -1472,23 +1472,29 @@ YOUR ROLE:
 - Keep responses SHORT (1-2 sentences max)
 - Be warm, respectful, and non-judgmental
 - Never pressure the user
-- Always respect if they want to skip a question
+- Always respect if they want to skip optional questions
 
 CONVERSATION FLOW (ask in this order):
 
-1. First name
-2. Age (must be 18+)
-3. City/Location (where they live)
-4. Marriage intention - Ask: "Are you looking for marriage, or still exploring your options?"
-5. Timeframe (OPTIONAL) - Ask: "Do you have a timeframe in mind?"
-6. Religious practice (OPTIONAL) - Ask: "How would you describe your religious practice?"
-7. Family involvement (OPTIONAL) - Ask: "How important is family or wali involvement to you?"
-8. Deal-breakers (OPTIONAL) - Ask: "Are there any absolute must-haves or must-nots you're looking for?"
-9. Communication preference (OPTIONAL) - Ask: "What's your preferred communication style?"
+1. First name (REQUIRED)
+2. Gender (REQUIRED) - Ask: "Are you a brother or sister?" Map to male/female
+3. Age (REQUIRED) - Must be 18+
+4. City/Location (REQUIRED) - Where they live
+5. Ethnicity - Ask: "What's your ethnic background?"
+6. Marital status - Ask: "Have you been married before?" (never_married, divorced, widowed)
+7. Children - Ask: "Do you have any children?" If yes, ask how many
+8. Wants children - Ask: "Would you like to have children in the future?" (yes, no, open)
+9. Education - Ask: "What's your highest level of education?"
+10. Occupation - Ask: "What do you do for work?"
+11. Religious sect - Ask: "Which sect do you identify with?" (Sunni, Shia, Just Muslim, Other)
+12. Prayer frequency - Ask: "How often do you pray?"
+13. Religious practice - Ask: "How would you describe your religious practice overall?" Store EXACT words
+14. Bio - Ask: "Tell me a little about yourself - your personality, hobbies, what makes you unique?"
+15. What you're looking for - Ask: "What are you looking for in a partner?"
 
 RULES:
 - If they give unclear/ambiguous answer, politely ask for clarification
-- If they seem uncomfortable, remind them they can skip
+- If they want to skip an optional question, that's fine - move on
 - For age, verify they're 18+ (if not, politely explain app requirement)
 - For religious topics, NEVER interpret, judge, or provide rulings
 - Store their exact phrasing for sensitive topics
@@ -1499,23 +1505,31 @@ IMPORTANT: You MUST respond with valid JSON only. After each user response, resp
   "reply": "Your conversational response to the user",
   "extractedData": {
     "firstName": null,
+    "gender": null,
     "age": null,
     "city": null,
-    "marriageIntent": null,
-    "timeframe": null,
+    "ethnicity": null,
+    "maritalStatus": null,
+    "hasChildren": null,
+    "numberOfChildren": null,
+    "wantsChildren": null,
+    "education": null,
+    "occupation": null,
+    "sect": null,
+    "prayerFrequency": null,
     "religiosityRaw": null,
-    "waliInvolvement": null,
-    "dealBreakers": null,
-    "communicationStyle": null
+    "bio": null,
+    "lookingForDescription": null
   },
   "currentQuestion": 1,
   "isComplete": false
 }
 
-For marriageIntent use: "marriage_soon", "marriage_eventually", "exploring", or "unsure"
-For waliInvolvement use: "essential", "preferred", "flexible", or "not_needed"
-Set isComplete to true only after all 9 questions have been addressed.
-Only include values that were extracted in this response.`;
+For gender use: "male" or "female"
+For maritalStatus use: "never_married", "divorced", or "widowed"
+For wantsChildren use: "yes", "no", or "open"
+Set isComplete to true only after question 15 has been answered.
+Only include values that were actually extracted in this response.`;
 
   // AI Chat endpoint for fast onboarding
   app.post("/api/onboarding/ai-chat", isAuthenticated, async (req: any, res: Response) => {
@@ -1655,9 +1669,9 @@ Only include values that were extracted in this response.`;
     try {
       const { profileData, conversationLog } = req.body;
 
-      if (!profileData || !profileData.firstName || !profileData.age || !profileData.city) {
+      if (!profileData || !profileData.firstName || !profileData.age || !profileData.city || !profileData.gender) {
         return res.status(400).json({ 
-          message: "Missing required fields (firstName, age, city)" 
+          message: "Missing required fields (firstName, gender, age, city)" 
         });
       }
 
@@ -1677,19 +1691,25 @@ Only include values that were extracted in this response.`;
 
       const profileValues = {
         displayName: profileData.firstName,
+        gender: profileData.gender,
         age: profileData.age,
         location: profileData.city,
-        gender: profileData.gender || "male", // Will need to be updated
-        lookingFor: profileData.marriageIntent === "marriage_soon" || 
-                    profileData.marriageIntent === "marriage_eventually" 
-                    ? "Marriage" : "Marriage",
+        lookingFor: "Marriage" as const,
         onboardingMethod: "fast",
-        marriageIntent: profileData.marriageIntent,
-        marriageTimeframe: profileData.timeframe,
+        // New comprehensive fields
+        ethnicities: profileData.ethnicity ? [profileData.ethnicity] : [],
+        maritalStatus: profileData.maritalStatus || "",
+        hasChildren: profileData.hasChildren || false,
+        wantsChildren: profileData.wantsChildren || "",
+        education: profileData.education || "",
+        occupation: profileData.occupation || "",
+        profession: profileData.occupation || "",
+        sect: profileData.sect || "",
+        prayerFrequency: profileData.prayerFrequency || "",
+        religiosity: profileData.religiosityRaw || "",
+        bio: profileData.bio || "",
+        // Store the raw looking for description for reference
         religiosityRaw: profileData.religiosityRaw,
-        waliInvolvement: profileData.waliInvolvement,
-        dealBreakers: profileData.dealBreakers,
-        communicationStyle: profileData.communicationStyle,
         photos: [], // User will add photos next
         isComplete: false, // Profile not complete until photos added
         updatedAt: new Date(),
