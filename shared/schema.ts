@@ -108,6 +108,15 @@ export const profiles = pgTable("profiles", {
   isActive: boolean("is_active").default(true),
   lastActive: timestamp("last_active").defaultNow(), // For "Active today" badge
   
+  // Fast Onboarding fields
+  onboardingMethod: varchar("onboarding_method", { length: 20 }), // 'fast' | 'standard'
+  marriageIntent: varchar("marriage_intent", { length: 30 }), // marriage_soon, marriage_eventually, exploring, unsure
+  marriageTimeframe: varchar("marriage_timeframe", { length: 50 }),
+  religiosityRaw: text("religiosity_raw"), // Store user's exact words
+  waliInvolvement: varchar("wali_involvement", { length: 30 }), // essential, preferred, flexible, not_needed
+  dealBreakers: text("deal_breakers"),
+  communicationStyle: varchar("communication_style", { length: 100 }),
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -267,6 +276,20 @@ export const userReports = pgTable("user_reports", {
   index("reporter_idx").on(table.reporterId),
   index("reported_idx").on(table.reportedId),
   index("status_idx").on(table.status),
+]);
+
+// Onboarding Conversations - Track AI chat conversations for fast onboarding
+export const onboardingConversations = pgTable("onboarding_conversations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  conversationLog: jsonb("conversation_log").notNull().default(sql`'[]'::jsonb`),
+  extractedData: jsonb("extracted_data").default(sql`'{}'::jsonb`),
+  currentQuestion: integer("current_question").default(1),
+  completed: boolean("completed").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+}, (table) => [
+  index("user_onboarding_idx").on(table.userId),
 ]);
 
 // Relations

@@ -30,6 +30,7 @@ import Feedback from "@/pages/feedback";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
 import ChaperonePortal from "@/pages/chaperone-portal";
+import FastOnboarding from "@/pages/fast-onboarding";
 import NotFound from "@/pages/not-found";
 import { BottomNav } from "@/components/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -38,9 +39,11 @@ function Router() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [location, setLocation] = useLocation();
 
-  // Check for restart parameter
+  // Check for URL parameters
   const searchParams = new URLSearchParams(window.location.search);
   const isRestart = searchParams.get('restart') === 'true';
+  const onboardingMethod = searchParams.get('onboardingMethod');
+  const fastOnboardingComplete = searchParams.get('fastOnboardingComplete') === 'true';
 
   // Fetch user profile if authenticated
   const { data: profile, isLoading: profileLoading } = useQuery<Profile>({
@@ -89,11 +92,27 @@ function Router() {
     );
   }
 
-  // Authenticated but profile not complete - only show profile setup
+  // Authenticated but profile not complete
   if (!profile?.isComplete) {
+    // If user chose standard forms or completed fast onboarding, show ProfileSetup
+    if (onboardingMethod === 'standard' || fastOnboardingComplete || profile) {
+      return (
+        <Switch>
+          <Route path="/" component={ProfileSetup} />
+          <Route path="/:rest*">
+            {() => {
+              setLocation("/");
+              return null;
+            }}
+          </Route>
+        </Switch>
+      );
+    }
+    
+    // Otherwise show onboarding choice (Fast vs Standard)
     return (
       <Switch>
-        <Route path="/" component={ProfileSetup} />
+        <Route path="/" component={FastOnboarding} />
         <Route path="/:rest*">
           {() => {
             setLocation("/");

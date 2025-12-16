@@ -32,6 +32,7 @@ import {
   userReports,
   earlySignups,
   userFeedback,
+  onboardingConversations,
   insertProfileSchema,
   insertMessageSchema,
   insertChaperoneSchema,
@@ -52,6 +53,7 @@ import {
   type MessageWithSender,
   type EarlySignup,
 } from "@shared/schema";
+import OpenAI from "openai";
 import { eq, and, or, ne, notInArray, desc, sql, lt } from "drizzle-orm";
 import { sendVideoCallNotification } from "./pushNotifications";
 import { getCached, setCached, deleteCached } from "./caching";
@@ -1460,6 +1462,299 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+
+  // ===== Fast Onboarding API Routes =====
+  
+  const FAST_ONBOARDING_SYSTEM_PROMPT = `You are helping a user complete their profile on Fusion, a Muslim-focused marriage-intent dating app.
+
+YOUR ROLE:
+- Ask ONE question at a time
+- Keep responses SHORT (1-2 sentences max)
+- Be warm, respectful, and non-judgmental
+- Never pressure the user
+- Always respect if they want to skip a question
+
+CONVERSATION FLOW (ask in this order):
+
+1. First name
+2. Age (must be 18+)
+3. City/Location (where they live)
+4. Marriage intention - Ask: "Are you looking for marriage, or still exploring your options?"
+5. Timeframe (OPTIONAL) - Ask: "Do you have a timeframe in mind?"
+6. Religious practice (OPTIONAL) - Ask: "How would you describe your religious practice?"
+7. Family involvement (OPTIONAL) - Ask: "How important is family or wali involvement to you?"
+8. Deal-breakers (OPTIONAL) - Ask: "Are there any absolute must-haves or must-nots you're looking for?"
+9. Communication preference (OPTIONAL) - Ask: "What's your preferred communication style?"
+
+RULES:
+- If they give unclear/ambiguous answer, politely ask for clarification
+- If they seem uncomfortable, remind them they can skip
+- For age, verify they're 18+ (if not, politely explain app requirement)
+- For religious topics, NEVER interpret, judge, or provide rulings
+- Store their exact phrasing for sensitive topics
+- Never give advice, therapy, or religious guidance
+
+IMPORTANT: You MUST respond with valid JSON only. After each user response, respond with this exact JSON format:
+{
+  "reply": "Your conversational response to the user",
+  "extractedData": {
+    "firstName": null,
+    "age": null,
+    "city": null,
+    "marriageIntent": null,
+    "timeframe": null,
+    "religiosityRaw": null,
+    "waliInvolvement": null,
+    "dealBreakers": null,
+    "communicationStyle": null
+  },
+  "currentQuestion": 1,
+  "isComplete": false
+}
+
+For marriageIntent use: "marriage_soon", "marriage_eventually", "exploring", or "unsure"
+For waliInvolvement use: "essential", "preferred", "flexible", or "not_needed"
+Set isComplete to true only after all 9 questions have been addressed.
+Only include values that were extracted in this response.`;
+
+  // AI Chat endpoint for fast onboarding
+  app.post("/api/onboarding/ai-chat", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+
+    try {
+      const { conversationHistory, currentExtractedData } = req.body;
+
+      if (!conversationHistory || !Array.isArray(conversationHistory)) {
+        return res.status(400).json({ message: "Invalid conversation history" });
+      }
+
+      // Initialize OpenAI client
+      const openai = new OpenAI();
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: FAST_ONBOARDING_SYSTEM_PROMPT },
+          ...conversationHistory.map((msg: any) => ({
+            role: msg.role as "user" | "assistant",
+            content: msg.content,
+          })),
+        ],
+        temperature: 0.7,
+        max_tokens: 500,
+      });
+
+      const responseContent = completion.choices[0]?.message?.content;
+      
+      if (!responseContent) {
+        throw new Error("No response from AI");
+      }
+
+      // Parse JSON response from AI
+      let aiResponse;
+      try {
+        // Extract JSON from the response (handle markdown code blocks)
+        const jsonMatch = responseContent.match(/```json\n?([\s\S]*?)\n?```/) || 
+                         responseContent.match(/\{[\s\S]*\}/);
+        const jsonStr = jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : responseContent;
+        aiResponse = JSON.parse(jsonStr);
+      } catch (parseError) {
+        console.error("[Onboarding] Failed to parse AI response:", responseContent);
+        // Fallback response if parsing fails
+        aiResponse = {
+          reply: responseContent,
+          extractedData: currentExtractedData || {},
+          currentQuestion: 1,
+          isComplete: false,
+        };
+      }
+
+      // Save or update conversation in database
+      const existing = await db
+        .select()
+        .from(onboardingConversations)
+        .where(and(
+          eq(onboardingConversations.userId, userId),
+          eq(onboardingConversations.completed, false)
+        ))
+        .limit(1);
+
+      const updatedConversation = [
+        ...conversationHistory,
+        { role: "assistant", content: aiResponse.reply }
+      ];
+
+      const mergedExtractedData = { ...currentExtractedData, ...aiResponse.extractedData };
+
+      if (existing.length > 0) {
+        await db
+          .update(onboardingConversations)
+          .set({
+            conversationLog: updatedConversation,
+            extractedData: mergedExtractedData,
+            currentQuestion: aiResponse.currentQuestion,
+          })
+          .where(eq(onboardingConversations.id, existing[0].id));
+      } else {
+        await db.insert(onboardingConversations).values({
+          userId,
+          conversationLog: updatedConversation,
+          extractedData: mergedExtractedData,
+          currentQuestion: aiResponse.currentQuestion,
+          completed: false,
+        });
+      }
+
+      res.json({
+        reply: aiResponse.reply,
+        extractedData: aiResponse.extractedData,
+        currentQuestion: aiResponse.currentQuestion,
+        isComplete: aiResponse.isComplete,
+      });
+    } catch (error: any) {
+      console.error("[Onboarding AI Chat] Error:", error);
+      res.status(500).json({ 
+        message: "Failed to process chat", 
+        error: error.message 
+      });
+    }
+  });
+
+  // Get existing onboarding conversation (for resume)
+  app.get("/api/onboarding/conversation", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+
+    try {
+      const existing = await db
+        .select()
+        .from(onboardingConversations)
+        .where(and(
+          eq(onboardingConversations.userId, userId),
+          eq(onboardingConversations.completed, false)
+        ))
+        .limit(1);
+
+      if (existing.length > 0) {
+        res.json({
+          exists: true,
+          conversation: existing[0],
+        });
+      } else {
+        res.json({ exists: false });
+      }
+    } catch (error: any) {
+      console.error("[Onboarding Get] Error:", error);
+      res.status(500).json({ message: "Failed to get conversation" });
+    }
+  });
+
+  // Complete fast onboarding and save profile
+  app.post("/api/onboarding/complete", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+
+    try {
+      const { profileData, conversationLog } = req.body;
+
+      if (!profileData || !profileData.firstName || !profileData.age || !profileData.city) {
+        return res.status(400).json({ 
+          message: "Missing required fields (firstName, age, city)" 
+        });
+      }
+
+      // Validate age
+      if (profileData.age < 18) {
+        return res.status(400).json({ 
+          message: "You must be 18 or older to use Fusion" 
+        });
+      }
+
+      // Check if user already has a profile
+      const existingProfile = await db
+        .select()
+        .from(profiles)
+        .where(eq(profiles.userId, userId))
+        .limit(1);
+
+      const profileValues = {
+        displayName: profileData.firstName,
+        age: profileData.age,
+        location: profileData.city,
+        gender: profileData.gender || "male", // Will need to be updated
+        lookingFor: profileData.marriageIntent === "marriage_soon" || 
+                    profileData.marriageIntent === "marriage_eventually" 
+                    ? "Marriage" : "Marriage",
+        onboardingMethod: "fast",
+        marriageIntent: profileData.marriageIntent,
+        marriageTimeframe: profileData.timeframe,
+        religiosityRaw: profileData.religiosityRaw,
+        waliInvolvement: profileData.waliInvolvement,
+        dealBreakers: profileData.dealBreakers,
+        communicationStyle: profileData.communicationStyle,
+        photos: [], // User will add photos next
+        isComplete: false, // Profile not complete until photos added
+        updatedAt: new Date(),
+      };
+
+      if (existingProfile.length > 0) {
+        await db
+          .update(profiles)
+          .set(profileValues)
+          .where(eq(profiles.userId, userId));
+      } else {
+        await db.insert(profiles).values({
+          userId,
+          ...profileValues,
+        });
+      }
+
+      // Mark conversation as completed
+      await db
+        .update(onboardingConversations)
+        .set({ 
+          completed: true, 
+          completedAt: new Date() 
+        })
+        .where(and(
+          eq(onboardingConversations.userId, userId),
+          eq(onboardingConversations.completed, false)
+        ));
+
+      console.log(`[Onboarding Complete] User ${userId} completed fast onboarding`);
+
+      res.json({ 
+        success: true, 
+        message: "Profile data saved successfully",
+        nextStep: "photos", // User needs to add photos next
+      });
+    } catch (error: any) {
+      console.error("[Onboarding Complete] Error:", error);
+      res.status(500).json({ 
+        message: "Failed to save profile", 
+        error: error.message 
+      });
+    }
+  });
+
+  // Clear onboarding conversation (start over)
+  app.delete("/api/onboarding/conversation", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+
+    try {
+      await db
+        .delete(onboardingConversations)
+        .where(and(
+          eq(onboardingConversations.userId, userId),
+          eq(onboardingConversations.completed, false)
+        ));
+
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("[Onboarding Clear] Error:", error);
+      res.status(500).json({ message: "Failed to clear conversation" });
+    }
+  });
+
+  // ===== End Fast Onboarding API Routes =====
 
   // Helper function to calculate distance between two coordinates using Haversine formula
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
