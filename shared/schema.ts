@@ -285,6 +285,7 @@ export const onboardingConversations = pgTable("onboarding_conversations", {
   conversationLog: jsonb("conversation_log").notNull().default(sql`'[]'::jsonb`),
   extractedData: jsonb("extracted_data").default(sql`'{}'::jsonb`),
   currentQuestion: integer("current_question").default(1),
+  language: varchar("language", { length: 5 }).default("en"),
   completed: boolean("completed").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   completedAt: timestamp("completed_at"),

@@ -43,6 +43,22 @@ After each user response, respond with JSON:
 
 Set isComplete to true only after question 15 has been answered.`;
 
+export const getSystemPromptForLanguage = (language: string) => {
+  const languageInstructions: Record<string, string> = {
+    en: "Respond in English.",
+    ur: "Respond in Urdu (اردو). Use respectful, formal language appropriate for Muslim users in Pakistan. Use culturally appropriate terminology: دین، نکاح، ولی، نماز",
+    ar: "Respond in Arabic (العربية). Use formal, respectful Modern Standard Arabic appropriate for Muslim users. Use culturally appropriate terminology: دين، نكاح، ولي، صلاة",
+    bn: "Respond in Bengali (বাংলা). Use respectful language appropriate for Muslim users in Bangladesh. Use culturally appropriate terminology: দ্বীন, নিকাহ, ওলী, নামাজ",
+  };
+
+  return `${FAST_ONBOARDING_SYSTEM_PROMPT}
+
+LANGUAGE INSTRUCTION:
+${languageInstructions[language] || languageInstructions.en}
+
+IMPORTANT: Store user's EXACT words regardless of language. Do not translate their responses.`;
+};
+
 export const QUESTIONS = [
   { id: 1, field: "firstName", label: "First Name", required: true },
   { id: 2, field: "gender", label: "Gender", required: true },

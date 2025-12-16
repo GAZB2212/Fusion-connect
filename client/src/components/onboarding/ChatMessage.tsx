@@ -5,9 +5,10 @@ interface ChatMessageProps {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  isRTL?: boolean;
 }
 
-export function ChatMessage({ role, content, timestamp }: ChatMessageProps) {
+export function ChatMessage({ role, content, timestamp, isRTL = false }: ChatMessageProps) {
   const isUser = role === "user";
 
   return (
@@ -16,6 +17,7 @@ export function ChatMessage({ role, content, timestamp }: ChatMessageProps) {
         "flex w-full mb-3",
         isUser ? "justify-end" : "justify-start"
       )}
+      dir={isRTL ? "rtl" : "ltr"}
       data-testid={`message-${role}`}
     >
       <div

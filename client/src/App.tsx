@@ -31,6 +31,7 @@ import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
 import ChaperonePortal from "@/pages/chaperone-portal";
 import FastOnboarding from "@/pages/fast-onboarding";
+import GuidanceHub from "@/pages/guidance-hub";
 import NotFound from "@/pages/not-found";
 import { BottomNav } from "@/components/navigation";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -165,6 +166,7 @@ function Router() {
       <Route path="/matches/:matchId/profile" component={MatchProfile} />
       <Route path="/messages/:matchId?" component={Messages} />
       <Route path="/settings" component={Settings} />
+      <Route path="/guidance" component={GuidanceHub} />
       <Route path="/feedback" component={Feedback} />
       <Route path="/subscribe" component={Subscribe} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />

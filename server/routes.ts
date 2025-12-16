@@ -1531,12 +1531,29 @@ For wantsChildren use: "yes", "no", or "open"
 Set isComplete to true only after question 15 has been answered.
 Only include values that were actually extracted in this response.`;
 
+  // Helper function to get language-specific system prompt
+  const getSystemPromptForLanguage = (language: string) => {
+    const languageInstructions: Record<string, string> = {
+      en: "Respond in English.",
+      ur: "Respond in Urdu (اردو). Use respectful, formal language appropriate for Muslim users in Pakistan. Use culturally appropriate terminology: دین، نکاح، ولی، نماز",
+      ar: "Respond in Arabic (العربية). Use formal, respectful Modern Standard Arabic appropriate for Muslim users. Use culturally appropriate terminology: دين، نكاح، ولي، صلاة",
+      bn: "Respond in Bengali (বাংলা). Use respectful language appropriate for Muslim users in Bangladesh. Use culturally appropriate terminology: দ্বীন, নিকাহ, ওলী, নামাজ",
+    };
+
+    return `${FAST_ONBOARDING_SYSTEM_PROMPT}
+
+LANGUAGE INSTRUCTION:
+${languageInstructions[language] || languageInstructions.en}
+
+IMPORTANT: Store user's EXACT words regardless of language. Do not translate their responses.`;
+  };
+
   // AI Chat endpoint for fast onboarding
   app.post("/api/onboarding/ai-chat", isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;
 
     try {
-      const { conversationHistory, currentExtractedData } = req.body;
+      const { conversationHistory, currentExtractedData, language = "en" } = req.body;
 
       if (!conversationHistory || !Array.isArray(conversationHistory)) {
         return res.status(400).json({ message: "Invalid conversation history" });
@@ -1545,10 +1562,13 @@ Only include values that were actually extracted in this response.`;
       // Initialize OpenAI client
       const openai = new OpenAI();
 
+      // Get language-specific system prompt
+      const systemPrompt = getSystemPromptForLanguage(language);
+
       const completion = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
-          { role: "system", content: FAST_ONBOARDING_SYSTEM_PROMPT },
+          { role: "system", content: systemPrompt },
           ...conversationHistory.map((msg: any) => ({
             role: msg.role as "user" | "assistant",
             content: msg.content,
@@ -1607,6 +1627,7 @@ Only include values that were actually extracted in this response.`;
             conversationLog: updatedConversation,
             extractedData: mergedExtractedData,
             currentQuestion: aiResponse.currentQuestion,
+            language,
           })
           .where(eq(onboardingConversations.id, existing[0].id));
       } else {
@@ -1615,6 +1636,7 @@ Only include values that were actually extracted in this response.`;
           conversationLog: updatedConversation,
           extractedData: mergedExtractedData,
           currentQuestion: aiResponse.currentQuestion,
+          language,
           completed: false,
         });
       }
@@ -1703,9 +1725,14 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
         .limit(1);
 
       if (existing.length > 0) {
+        const conv = existing[0];
         res.json({
           exists: true,
-          conversation: existing[0],
+          conversationHistory: conv.conversationLog,
+          extractedData: conv.extractedData,
+          currentQuestionIndex: conv.currentQuestion,
+          language: conv.language || "en",
+          createdAt: conv.createdAt,
         });
       } else {
         res.json({ exists: false });
