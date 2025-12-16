@@ -49,9 +49,10 @@ export default function ProfileSetup() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   
-  // Check if this is a restart (coming from failed verification)
+  // Check URL parameters
   const searchParams = new URLSearchParams(window.location.search);
   const isRestart = searchParams.get('restart') === 'true';
+  const isFastOnboardingComplete = searchParams.get('fastOnboardingComplete') === 'true';
   
   const [step, setStep] = useState(1);
   const [photos, setPhotos] = useState<string[]>([]);
@@ -537,24 +538,36 @@ export default function ProfileSetup() {
         <Card className="p-8">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Step 1: Basic Info */}
+              {/* Step 1: Basic Info (or just photos for fast onboarding) */}
               {step === 1 && (
                 <div className="space-y-6">
-                  <h2 className="text-xl font-semibold">Basic Information</h2>
+                  {isFastOnboardingComplete ? (
+                    <>
+                      <div className="text-center mb-6">
+                        <CheckCircle2 className="h-12 w-12 text-emerald-500 mx-auto mb-3" />
+                        <h2 className="text-xl font-semibold">Almost Done!</h2>
+                        <p className="text-muted-foreground">
+                          Your profile info is saved. Now add some photos to complete your profile.
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <h2 className="text-xl font-semibold">Basic Information</h2>
 
-                  <FormField
-                    control={form.control}
-                    name="displayName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Full Name</FormLabel>
-                        <FormControl>
-                          <Input {...field} placeholder="Your full name" data-testid="input-name" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      <FormField
+                        control={form.control}
+                        name="displayName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Full Name</FormLabel>
+                            <FormControl>
+                              <Input {...field} placeholder="Your full name" data-testid="input-name" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
@@ -680,6 +693,8 @@ export default function ProfileSetup() {
                       ))}
                     </div>
                   </div>
+                    </>
+                  )}
 
                   {/* Photo Upload - Min 3 photos required */}
                   <div>
