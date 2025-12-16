@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Loader2, Mic, MicOff, X, Keyboard } from "lucide-react";
+import { Send, Loader2, Mic, MicOff, X, Keyboard, Check, RotateCcw, Volume2 } from "lucide-react";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/lib/i18n/onboarding";
 
+type VoiceState = "idle" | "listening" | "confirming" | "processing";
 type InputMode = "text" | "voice";
 
 interface ChatInputProps {
@@ -13,6 +15,7 @@ interface ChatInputProps {
   placeholder?: string;
   language?: string;
   onVoiceError?: (error: string) => void;
+  autoStartVoice?: boolean;
 }
 
 export function ChatInput({
@@ -21,10 +24,14 @@ export function ChatInput({
   placeholder = "Type your message...",
   language = "en",
   onVoiceError,
+  autoStartVoice = false,
 }: ChatInputProps) {
   const [message, setMessage] = useState("");
   const [inputMode, setInputMode] = useState<InputMode>("text");
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [voiceState, setVoiceState] = useState<VoiceState>("idle");
+  const [confirmedTranscript, setConfirmedTranscript] = useState("");
+
+  const { t } = useTranslation(language as any);
 
   const {
     transcript,
@@ -39,20 +46,25 @@ export function ChatInput({
     language,
     onError: (err) => {
       onVoiceError?.(err);
+      setVoiceState("idle");
       setInputMode("text");
     },
     onEnd: () => {
       if (transcript.trim()) {
-        setIsProcessing(true);
-        setTimeout(() => {
-          onSend(transcript.trim());
-          resetTranscript();
-          setInputMode("text");
-          setIsProcessing(false);
-        }, 300);
+        setConfirmedTranscript(transcript.trim());
+        setVoiceState("confirming");
+      } else {
+        setVoiceState("idle");
       }
     },
   });
+
+  useEffect(() => {
+    if (autoStartVoice && isSupported && inputMode === "text" && !disabled) {
+      setInputMode("voice");
+      setVoiceState("idle");
+    }
+  }, [autoStartVoice, isSupported, disabled]);
 
   useEffect(() => {
     if (error) {
@@ -68,31 +80,55 @@ export function ChatInput({
     }
   };
 
-  const handleMicClick = () => {
-    if (inputMode === "text") {
-      setInputMode("voice");
+  const handleStartVoiceMode = () => {
+    setInputMode("voice");
+    setVoiceState("idle");
+    resetTranscript();
+    setConfirmedTranscript("");
+  };
+
+  const handleStartListening = () => {
+    resetTranscript();
+    setConfirmedTranscript("");
+    setVoiceState("listening");
+    startListening();
+  };
+
+  const handleStopListening = () => {
+    stopListening();
+  };
+
+  const handleConfirmTranscript = () => {
+    setVoiceState("processing");
+    setTimeout(() => {
+      onSend(confirmedTranscript);
       resetTranscript();
-      startListening();
-    } else if (isListening) {
-      stopListening();
-    } else {
-      startListening();
-    }
+      setConfirmedTranscript("");
+      setVoiceState("idle");
+    }, 300);
+  };
+
+  const handleRetryVoice = () => {
+    resetTranscript();
+    setConfirmedTranscript("");
+    setVoiceState("listening");
+    startListening();
+  };
+
+  const handleEditAsText = () => {
+    setMessage(confirmedTranscript);
+    setConfirmedTranscript("");
+    resetTranscript();
+    setInputMode("text");
+    setVoiceState("idle");
   };
 
   const handleCancelVoice = () => {
     stopListening();
     resetTranscript();
+    setConfirmedTranscript("");
     setInputMode("text");
-  };
-
-  const handleSwitchToText = () => {
-    stopListening();
-    if (transcript.trim()) {
-      setMessage(transcript.trim());
-    }
-    resetTranscript();
-    setInputMode("text");
+    setVoiceState("idle");
   };
 
   const currentTranscript = transcript + interimTranscript;
@@ -101,51 +137,94 @@ export function ChatInput({
     return (
       <div className="p-4 pb-20 border-t bg-background shrink-0">
         <div className="flex flex-col items-center gap-4">
-          {isProcessing ? (
+          {voiceState === "processing" ? (
             <div className="flex flex-col items-center gap-3 py-4">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-sm text-muted-foreground">Processing...</p>
+              <p className="text-sm text-muted-foreground">{t.processing || "Sending..."}</p>
+            </div>
+          ) : voiceState === "confirming" ? (
+            <div className="w-full space-y-4">
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground mb-2">{t.youSaid || "You said:"}</p>
+                <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
+                  <p className="text-base font-medium">{confirmedTranscript}</p>
+                </div>
+              </div>
+
+              <p className="text-sm text-center text-muted-foreground">
+                {t.isThisCorrect || "Is this correct?"}
+              </p>
+
+              <div className="flex gap-2 justify-center">
+                <Button
+                  variant="default"
+                  onClick={handleConfirmTranscript}
+                  disabled={disabled}
+                  className="flex-1 max-w-[140px]"
+                  data-testid="button-confirm-voice"
+                >
+                  <Check className="h-4 w-4 mr-2" />
+                  {t.yesThatsRight || "Yes, send"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleRetryVoice}
+                  disabled={disabled}
+                  className="flex-1 max-w-[140px]"
+                  data-testid="button-retry-voice"
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  {t.tryAgain || "Try again"}
+                </Button>
+              </div>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleEditAsText}
+                disabled={disabled}
+                className="w-full text-muted-foreground"
+                data-testid="button-edit-as-text"
+              >
+                <Keyboard className="h-4 w-4 mr-1" />
+                {t.editAsText || "Edit as text"}
+              </Button>
             </div>
           ) : (
             <>
               <div className="relative flex items-center justify-center">
                 <div
                   className={cn(
-                    "h-20 w-20 rounded-full flex items-center justify-center transition-all",
+                    "h-24 w-24 rounded-full flex items-center justify-center transition-all cursor-pointer",
                     isListening
                       ? "bg-red-500 animate-pulse"
-                      : "bg-primary/10"
+                      : "bg-primary hover:bg-primary/90"
                   )}
+                  onClick={isListening ? handleStopListening : handleStartListening}
+                  data-testid="button-voice-record"
                 >
-                  <button
-                    onClick={handleMicClick}
-                    className="h-full w-full flex items-center justify-center"
-                    disabled={disabled}
-                    data-testid="button-voice-record"
-                  >
-                    {isListening ? (
-                      <Mic className="h-8 w-8 text-white" />
-                    ) : (
-                      <MicOff className="h-8 w-8 text-primary" />
-                    )}
-                  </button>
+                  {isListening ? (
+                    <Volume2 className="h-10 w-10 text-white animate-pulse" />
+                  ) : (
+                    <Mic className="h-10 w-10 text-white" />
+                  )}
                 </div>
                 {isListening && (
-                  <div className="absolute inset-0 h-20 w-20 rounded-full border-4 border-red-500 animate-ping" />
+                  <div className="absolute inset-0 h-24 w-24 rounded-full border-4 border-red-500/50 animate-ping" />
                 )}
               </div>
 
-              <p className="text-sm text-center text-muted-foreground">
+              <p className="text-sm text-center font-medium">
                 {isListening
-                  ? "Listening... Tap to stop"
-                  : "Tap microphone to start"}
+                  ? t.listeningTapToStop || "Listening... Tap to stop"
+                  : t.tapToSpeak || "Tap to speak your answer"}
               </p>
 
               {currentTranscript && (
                 <div className="w-full bg-muted rounded-lg p-3 max-h-24 overflow-y-auto">
                   <p className="text-sm">
                     {transcript}
-                    <span className="text-muted-foreground">
+                    <span className="text-muted-foreground italic">
                       {interimTranscript}
                     </span>
                   </p>
@@ -157,21 +236,11 @@ export function ChatInput({
                   variant="outline"
                   size="sm"
                   onClick={handleCancelVoice}
-                  disabled={disabled}
+                  disabled={disabled || isListening}
                   data-testid="button-cancel-voice"
                 >
-                  <X className="h-4 w-4 mr-1" />
-                  Cancel
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSwitchToText}
-                  disabled={disabled}
-                  data-testid="button-switch-to-text"
-                >
                   <Keyboard className="h-4 w-4 mr-1" />
-                  Type instead
+                  {t.typeInstead || "Type instead"}
                 </Button>
               </div>
 
@@ -202,9 +271,10 @@ export function ChatInput({
         <Button
           type="button"
           size="icon"
-          variant="ghost"
-          onClick={handleMicClick}
+          variant="outline"
+          onClick={handleStartVoiceMode}
           disabled={disabled}
+          className="shrink-0"
           data-testid="button-start-voice"
         >
           <Mic className="h-4 w-4" />

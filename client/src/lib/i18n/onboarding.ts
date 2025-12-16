@@ -33,6 +33,12 @@ export interface OnboardingTranslations {
   cancel: string;
   send: string;
   typeMessage: string;
+  processing: string;
+  youSaid: string;
+  yesThatsRight: string;
+  editAsText: string;
+  listeningTapToStop: string;
+  tapToSpeak: string;
 }
 
 export const translations: Record<SupportedLanguage, OnboardingTranslations> = {
@@ -69,6 +75,12 @@ export const translations: Record<SupportedLanguage, OnboardingTranslations> = {
     cancel: "Cancel",
     send: "Send",
     typeMessage: "Type your message...",
+    processing: "Sending...",
+    youSaid: "You said:",
+    yesThatsRight: "Yes, send",
+    editAsText: "Edit as text",
+    listeningTapToStop: "Listening... Tap to stop",
+    tapToSpeak: "Tap to speak your answer",
   },
   ur: {
     fastSetup: "تیز رفتار سیٹ اپ",
@@ -103,6 +115,12 @@ export const translations: Record<SupportedLanguage, OnboardingTranslations> = {
     cancel: "منسوخ کریں",
     send: "بھیجیں",
     typeMessage: "اپنا پیغام لکھیں...",
+    processing: "بھیج رہے ہیں...",
+    youSaid: "آپ نے کہا:",
+    yesThatsRight: "ہاں، بھیجیں",
+    editAsText: "متن میں ترمیم کریں",
+    listeningTapToStop: "سن رہے ہیں... رکنے کے لیے ٹچ کریں",
+    tapToSpeak: "اپنا جواب بولنے کے لیے ٹچ کریں",
   },
   ar: {
     fastSetup: "إعداد سريع",
@@ -137,6 +155,12 @@ export const translations: Record<SupportedLanguage, OnboardingTranslations> = {
     cancel: "إلغاء",
     send: "إرسال",
     typeMessage: "اكتب رسالتك...",
+    processing: "جاري الإرسال...",
+    youSaid: "قلت:",
+    yesThatsRight: "نعم، أرسل",
+    editAsText: "تعديل كنص",
+    listeningTapToStop: "الاستماع... انقر للإيقاف",
+    tapToSpeak: "انقر للتحدث بإجابتك",
   },
   bn: {
     fastSetup: "দ্রুত সেটআপ",
@@ -171,6 +195,12 @@ export const translations: Record<SupportedLanguage, OnboardingTranslations> = {
     cancel: "বাতিল",
     send: "পাঠান",
     typeMessage: "আপনার বার্তা লিখুন...",
+    processing: "পাঠানো হচ্ছে...",
+    youSaid: "আপনি বলেছেন:",
+    yesThatsRight: "হ্যাঁ, পাঠান",
+    editAsText: "টেক্সট হিসাবে সম্পাদনা করুন",
+    listeningTapToStop: "শুনছি... থামতে ট্যাপ করুন",
+    tapToSpeak: "আপনার উত্তর বলতে ট্যাপ করুন",
   },
 };
 

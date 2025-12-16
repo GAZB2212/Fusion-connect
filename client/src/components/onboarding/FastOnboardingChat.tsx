@@ -4,11 +4,12 @@ import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { OnboardingProgress } from "./OnboardingProgress";
 import { LanguageSelector, LanguageToggle } from "./LanguageSelector";
-import { ClipboardList } from "lucide-react";
+import { ClipboardList, Volume2, VolumeX } from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation, type SupportedLanguage } from "@/lib/i18n/onboarding";
+import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { 
   INITIAL_MESSAGE, 
   type ChatMessage as ChatMessageType, 
@@ -37,8 +38,17 @@ export function FastOnboardingChat({ onComplete, onExitToForms }: FastOnboarding
   const [extractedData, setExtractedData] = useState<Partial<ExtractedData>>({});
   const [currentQuestion, setCurrentQuestion] = useState(1);
   const [isTyping, setIsTyping] = useState(false);
+  const [voiceModeEnabled, setVoiceModeEnabled] = useState(true);
+  const [shouldAutoSpeak, setShouldAutoSpeak] = useState(false);
 
   const { t, translate, isRTL } = useTranslation(selectedLanguage || "en");
+
+  const { speak, stop: stopSpeaking, isSpeaking, isSupported: ttsSupported } = useTextToSpeech({
+    language: selectedLanguage || "en",
+    onEnd: () => {
+      setShouldAutoSpeak(false);
+    },
+  });
 
   // Check for existing conversation to resume
   const { data: existingConversation, isLoading: loadingConversation } = useQuery({
@@ -75,13 +85,17 @@ export function FastOnboardingChat({ onComplete, onExitToForms }: FastOnboarding
   const handleLanguageSelect = (lang: SupportedLanguage) => {
     setSelectedLanguage(lang);
     setShowLanguageSelector(false);
+    const initialMessage = INITIAL_MESSAGES_BY_LANG[lang];
     setMessages([
       {
         role: "assistant",
-        content: INITIAL_MESSAGES_BY_LANG[lang],
+        content: initialMessage,
         timestamp: new Date(),
       },
     ]);
+    if (voiceModeEnabled && ttsSupported) {
+      setTimeout(() => speak(initialMessage), 500);
+    }
   };
 
   const chatMutation = useMutation({
@@ -119,6 +133,10 @@ export function FastOnboardingChat({ onComplete, onExitToForms }: FastOnboarding
       }
       
       setCurrentQuestion(data.currentQuestion);
+
+      if (voiceModeEnabled && ttsSupported && !data.isComplete) {
+        setTimeout(() => speak(data.reply), 300);
+      }
 
       if (data.isComplete) {
         setTimeout(() => {
@@ -193,6 +211,25 @@ export function FastOnboardingChat({ onComplete, onExitToForms }: FastOnboarding
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {ttsSupported && (
+            <Button
+              variant={voiceModeEnabled ? "default" : "outline"}
+              size="icon"
+              onClick={() => {
+                if (isSpeaking) stopSpeaking();
+                setVoiceModeEnabled(!voiceModeEnabled);
+              }}
+              className="h-8 w-8"
+              data-testid="button-toggle-voice-mode"
+              title={voiceModeEnabled ? "Voice mode on" : "Voice mode off"}
+            >
+              {voiceModeEnabled ? (
+                <Volume2 className="h-4 w-4" />
+              ) : (
+                <VolumeX className="h-4 w-4" />
+              )}
+            </Button>
+          )}
           {selectedLanguage && (
             <LanguageToggle
               currentLanguage={selectedLanguage}
@@ -256,6 +293,14 @@ export function FastOnboardingChat({ onComplete, onExitToForms }: FastOnboarding
                 <div className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "150ms" }} />
                 <div className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: "300ms" }} />
               </div>
+            </div>
+          </div>
+        )}
+        {isSpeaking && (
+          <div className={`flex ${isRTL ? "justify-end" : "justify-start"} mb-3`}>
+            <div className="bg-primary/10 text-primary rounded-full px-3 py-1 text-xs flex items-center gap-2">
+              <Volume2 className="h-3 w-3 animate-pulse" />
+              Speaking...
             </div>
           </div>
         )}
