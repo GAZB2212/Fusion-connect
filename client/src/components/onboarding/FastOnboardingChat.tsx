@@ -43,7 +43,7 @@ export function FastOnboardingChat({ onComplete, onExitToForms }: FastOnboarding
 
   const { t, translate, isRTL } = useTranslation(selectedLanguage || "en");
 
-  const { speak, stop: stopSpeaking, isSpeaking, isSupported: ttsSupported } = useTextToSpeech({
+  const { speak, stop: stopSpeaking, isSpeaking, isLoading: ttsLoading, isSupported: ttsSupported } = useTextToSpeech({
     language: selectedLanguage || "en",
     onEnd: () => {
       setShouldAutoSpeak(false);
@@ -296,11 +296,11 @@ export function FastOnboardingChat({ onComplete, onExitToForms }: FastOnboarding
             </div>
           </div>
         )}
-        {isSpeaking && (
+        {(isSpeaking || ttsLoading) && (
           <div className={`flex ${isRTL ? "justify-end" : "justify-start"} mb-3`}>
             <div className="bg-primary/10 text-primary rounded-full px-3 py-1 text-xs flex items-center gap-2">
               <Volume2 className="h-3 w-3 animate-pulse" />
-              Speaking...
+              {ttsLoading ? "Preparing..." : "Speaking..."}
             </div>
           </div>
         )}

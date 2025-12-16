@@ -1898,6 +1898,48 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
     }
   });
 
+  // Text-to-speech using OpenAI TTS API
+  app.post("/api/tts", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const { text, language = "en" } = req.body;
+      
+      if (!text || typeof text !== "string") {
+        return res.status(400).json({ message: "Text is required" });
+      }
+
+      // Limit text length to avoid excessive API costs
+      const truncatedText = text.slice(0, 4000);
+
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+
+      // Use alloy voice - natural sounding and works well with all languages
+      const response = await openai.audio.speech.create({
+        model: "tts-1",
+        voice: "nova", // Nova has a warm, friendly tone good for conversations
+        input: truncatedText,
+        response_format: "mp3",
+      });
+
+      // Get the audio as a buffer
+      const audioBuffer = Buffer.from(await response.arrayBuffer());
+
+      // Send as audio/mpeg
+      res.set({
+        "Content-Type": "audio/mpeg",
+        "Content-Length": audioBuffer.length,
+      });
+      res.send(audioBuffer);
+    } catch (error: any) {
+      console.error("[TTS] Error:", error);
+      res.status(500).json({ 
+        message: "Failed to generate speech", 
+        error: error.message 
+      });
+    }
+  });
+
   // ===== End Fast Onboarding API Routes =====
 
   // Helper function to calculate distance between two coordinates using Haversine formula

@@ -2,87 +2,115 @@ import { useState, useCallback, useRef, useEffect } from "react";
 
 interface UseTextToSpeechOptions {
   language?: string;
-  rate?: number;
-  pitch?: number;
   onEnd?: () => void;
   onStart?: () => void;
+  onError?: (error: Error) => void;
 }
 
-const LANGUAGE_MAP: Record<string, string> = {
-  en: "en-US",
-  ur: "ur-PK",
-  ar: "ar-SA",
-  bn: "bn-BD",
-};
-
 export function useTextToSpeech(options: UseTextToSpeechOptions = {}) {
-  const { language = "en", rate = 0.95, pitch = 1, onEnd, onStart } = options;
+  const { language = "en", onEnd, onStart, onError } = options;
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [isSupported, setIsSupported] = useState(false);
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-
-  useEffect(() => {
-    setIsSupported(typeof window !== "undefined" && "speechSynthesis" in window);
-  }, []);
+  const [isLoading, setIsLoading] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const speak = useCallback(
-    (text: string) => {
-      if (!isSupported) return;
+    async (text: string) => {
+      if (!text.trim()) return;
 
-      window.speechSynthesis.cancel();
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = LANGUAGE_MAP[language] || language;
-      utterance.rate = rate;
-      utterance.pitch = pitch;
-
-      const voices = window.speechSynthesis.getVoices();
-      const preferredVoice = voices.find(
-        (v) => v.lang.startsWith(LANGUAGE_MAP[language]?.split("-")[0] || language)
-      );
-      if (preferredVoice) {
-        utterance.voice = preferredVoice;
+      // Stop any current playback
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
 
-      utterance.onstart = () => {
-        setIsSpeaking(true);
-        onStart?.();
-      };
+      setIsLoading(true);
+      abortControllerRef.current = new AbortController();
 
-      utterance.onend = () => {
-        setIsSpeaking(false);
-        onEnd?.();
-      };
+      try {
+        const response = await fetch("/api/tts", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text, language }),
+          signal: abortControllerRef.current.signal,
+          credentials: "include",
+        });
 
-      utterance.onerror = () => {
-        setIsSpeaking(false);
-      };
+        if (!response.ok) {
+          throw new Error("Failed to generate speech");
+        }
 
-      utteranceRef.current = utterance;
-      window.speechSynthesis.speak(utterance);
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = new Audio(audioUrl);
+        audioRef.current = audio;
+
+        audio.onplay = () => {
+          setIsSpeaking(true);
+          setIsLoading(false);
+          onStart?.();
+        };
+
+        audio.onended = () => {
+          setIsSpeaking(false);
+          URL.revokeObjectURL(audioUrl);
+          audioRef.current = null;
+          onEnd?.();
+        };
+
+        audio.onerror = () => {
+          setIsSpeaking(false);
+          setIsLoading(false);
+          URL.revokeObjectURL(audioUrl);
+          audioRef.current = null;
+          onError?.(new Error("Audio playback failed"));
+        };
+
+        await audio.play();
+      } catch (error: any) {
+        if (error.name !== "AbortError") {
+          console.error("[TTS] Error:", error);
+          setIsLoading(false);
+          onError?.(error);
+        }
+      }
     },
-    [isSupported, language, rate, pitch, onEnd, onStart]
+    [language, onEnd, onStart, onError]
   );
 
   const stop = useCallback(() => {
-    if (isSupported) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
     }
-  }, [isSupported]);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    setIsSpeaking(false);
+    setIsLoading(false);
+  }, []);
 
   useEffect(() => {
     return () => {
-      if (isSupported) {
-        window.speechSynthesis.cancel();
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
     };
-  }, [isSupported]);
+  }, []);
 
   return {
     speak,
     stop,
     isSpeaking,
-    isSupported,
+    isLoading,
+    isSupported: true, // OpenAI TTS is always supported if backend is available
   };
 }
