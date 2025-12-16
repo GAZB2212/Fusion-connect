@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, X, MapPin, Search, Calendar, Crown } from "lucide-react";
+import { Heart, X, MapPin, Search, Calendar, Crown, Play } from "lucide-react";
 import type { ProfileWithUser } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +34,9 @@ export default function Home() {
   
   // Animation state
   const [showAnimation, setShowAnimation] = useState<'like' | 'pass' | null>(null);
+  
+  // Video modal state
+  const [showVideoModal, setShowVideoModal] = useState(false);
 
   // Fetch discover profiles
   const { data: profiles = [], isLoading } = useQuery<ProfileWithUser[]>({
@@ -300,6 +303,24 @@ export default function Home() {
               </Badge>
             </div>
 
+            {/* Video Intro Button */}
+            {currentProfile.introVideoUrl && (
+              <div className="absolute top-4 left-4">
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="h-12 w-12 rounded-full bg-white/90 hover:bg-white shadow-lg"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowVideoModal(true);
+                  }}
+                  data-testid="button-play-video"
+                >
+                  <Play className="h-6 w-6 text-primary fill-primary" />
+                </Button>
+              </div>
+            )}
+
             {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
             
@@ -396,6 +417,27 @@ export default function Home() {
           </Card>
         </div>
       </div>
+
+      {/* Video Modal */}
+      <Dialog open={showVideoModal} onOpenChange={setShowVideoModal}>
+        <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-black border-0">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Video Introduction</DialogTitle>
+            <DialogDescription>Watch {currentProfile?.displayName?.split(' ')[0] || 'their'} intro video</DialogDescription>
+          </DialogHeader>
+          <div className="relative aspect-[9/16] w-full max-h-[80vh]">
+            {currentProfile?.introVideoUrl && (
+              <video
+                src={currentProfile.introVideoUrl}
+                className="w-full h-full object-cover"
+                controls
+                autoPlay
+                playsInline
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Subscribe Dialog */}
       <Dialog open={showSubscribeDialog} onOpenChange={setShowSubscribeDialog}>

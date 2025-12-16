@@ -41,8 +41,11 @@ import {
   Ruler,
   Upload,
   X,
-  Mail
+  Mail,
+  Video,
+  Play
 } from "lucide-react";
+import { VideoRecorder } from "@/components/video-recorder";
 import type { Profile, Chaperone } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -99,6 +102,11 @@ export default function Settings() {
   const [editingProfile, setEditingProfile] = useState<Partial<Profile>>({});
   const [editPhotos, setEditPhotos] = useState<string[]>([]);
   const [selectedEthnicities, setSelectedEthnicities] = useState<string[]>([]);
+  
+  // Video management state
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [showVideoRecorder, setShowVideoRecorder] = useState(false);
+  const [editVideoUrl, setEditVideoUrl] = useState<string | null>(null);
 
   // Fetch user profile
   const { data: profile } = useQuery<Profile>({
@@ -320,7 +328,67 @@ export default function Settings() {
       });
       setEditPhotos(profile.photos || []);
       setSelectedEthnicities(profile.ethnicities || []);
+      setEditVideoUrl(profile.introVideoUrl || null);
+      setShowVideoRecorder(false);
       setProfileDialogOpen(true);
+    }
+  };
+
+  // Video upload handler for profile edit
+  const handleVideoRecorded = async (videoBlob: Blob) => {
+    setIsUploadingVideo(true);
+    
+    try {
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve) => {
+        reader.onloadend = () => resolve(reader.result as string);
+      });
+      reader.readAsDataURL(videoBlob);
+      const base64Video = await base64Promise;
+
+      const response = await apiRequest("POST", "/api/video/upload", {
+        video: base64Video,
+      });
+      
+      const data = await response.json();
+      
+      if (data.videoUrl) {
+        setEditVideoUrl(data.videoUrl);
+        setShowVideoRecorder(false);
+        toast({
+          title: "Video uploaded!",
+          description: "Your intro video has been saved.",
+        });
+        queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
+      }
+    } catch (error: any) {
+      console.error("Video upload error:", error);
+      toast({
+        title: "Upload failed",
+        description: error.message || "Failed to upload video. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingVideo(false);
+    }
+  };
+
+  // Delete video handler
+  const handleDeleteVideo = async () => {
+    try {
+      await apiRequest("DELETE", "/api/video");
+      setEditVideoUrl(null);
+      toast({
+        title: "Video deleted",
+        description: "Your intro video has been removed.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete video",
+        variant: "destructive",
+      });
     }
   };
 
@@ -561,9 +629,10 @@ export default function Settings() {
             </DialogHeader>
 
             <Tabs defaultValue="basic" className="mt-4">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="basic">Basic Info</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="basic">Basic</TabsTrigger>
                 <TabsTrigger value="photos">Photos</TabsTrigger>
+                <TabsTrigger value="video">Video</TabsTrigger>
                 <TabsTrigger value="details">Details</TabsTrigger>
               </TabsList>
 
@@ -713,6 +782,66 @@ export default function Settings() {
                   <p className="text-sm text-destructive">
                     Please have at least 3 photos
                   </p>
+                )}
+              </TabsContent>
+
+              <TabsContent value="video" className="space-y-4 mt-4">
+                <p className="text-sm text-muted-foreground">
+                  Record a 20-second intro video to help potential matches get to know you better.
+                </p>
+                
+                {showVideoRecorder ? (
+                  <VideoRecorder
+                    onVideoRecorded={handleVideoRecorded}
+                    onCancel={() => setShowVideoRecorder(false)}
+                    isUploading={isUploadingVideo}
+                  />
+                ) : editVideoUrl ? (
+                  <div className="space-y-4">
+                    <div className="relative aspect-[9/16] max-h-[300px] mx-auto bg-black rounded-lg overflow-hidden">
+                      <video
+                        src={editVideoUrl}
+                        className="w-full h-full object-cover"
+                        controls
+                        playsInline
+                      />
+                    </div>
+                    <div className="flex gap-3 justify-center">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setShowVideoRecorder(true)}
+                        data-testid="button-record-new-video"
+                      >
+                        <Video className="h-4 w-4 mr-2" />
+                        Record New
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        onClick={handleDeleteVideo}
+                        data-testid="button-delete-video"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Video
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 border-2 border-dashed rounded-lg">
+                    <Video className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-sm text-muted-foreground mb-4">
+                      No intro video yet. Profiles with videos get 3x more matches!
+                    </p>
+                    <Button
+                      type="button"
+                      onClick={() => setShowVideoRecorder(true)}
+                      data-testid="button-add-video"
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Record Intro Video
+                    </Button>
+                  </div>
                 )}
               </TabsContent>
 
