@@ -69,15 +69,19 @@ export function FastOnboardingChat({ onComplete, onExitToForms }: FastOnboarding
         },
       ]);
 
+      // Merge the new extracted data with existing data
+      const mergedData = { ...extractedData, ...data.extractedData };
+      
       if (data.extractedData) {
-        setExtractedData((prev) => ({ ...prev, ...data.extractedData }));
+        setExtractedData(mergedData);
       }
       
       setCurrentQuestion(data.currentQuestion);
 
       if (data.isComplete) {
+        // Use the merged data, not the stale state
         setTimeout(() => {
-          onComplete(extractedData as ExtractedData);
+          onComplete(mergedData as ExtractedData);
         }, 500);
       }
     },
