@@ -179,6 +179,16 @@ export function useSpeechRecognition(
     setError(null);
   }, []);
 
+  // Clean up recognition when language changes
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.abort();
+      }
+    };
+  }, [language]);
+
+  // Also ensure cleanup on unmount
   useEffect(() => {
     return () => {
       if (recognitionRef.current) {
