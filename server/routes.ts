@@ -13,7 +13,7 @@ import { createRequire } from "module";
 import QRCode from "qrcode";
 import { createCanvas, loadImage } from "canvas";
 import multer from "multer";
-import { uploadPhotoToR2, base64ToBuffer, detectContentType, r2Client, BUCKET_NAME } from "./r2";
+import { uploadPhotoToR2, uploadVideoToR2, base64ToBuffer, detectContentType, r2Client, BUCKET_NAME } from "./r2";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 const require = createRequire(import.meta.url);
 const { RtcTokenBuilder, RtcRole } = require("agora-token");
@@ -1380,6 +1380,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("[Photo Upload Base64] Error:", error);
       res.status(500).json({ 
         message: "Failed to upload photo", 
+        error: error.message 
+      });
+    }
+  });
+
+  // Upload intro video (20 seconds max) - base64 encoded
+  app.post("/api/video/upload", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+    const { video } = req.body;
+
+    if (!video) {
+      return res.status(400).json({ message: "No video data provided" });
+    }
+
+    try {
+      // Check video size (rough estimate from base64 length - max 20MB)
+      const estimatedSize = (video.length * 3) / 4;
+      const maxSize = 20 * 1024 * 1024; // 20MB
+      
+      if (estimatedSize > maxSize) {
+        return res.status(400).json({ message: "Video too large. Maximum size is 20MB." });
+      }
+
+      const buffer = base64ToBuffer(video);
+      const contentType = detectContentType(video);
+      
+      // Verify it's a video
+      if (!contentType.startsWith('video/')) {
+        return res.status(400).json({ message: "Invalid file type. Please upload a video." });
+      }
+
+      const videoUrl = await uploadVideoToR2(buffer, contentType, userId);
+
+      // Update profile with video URL
+      await db
+        .update(profiles)
+        .set({ introVideoUrl: videoUrl, updatedAt: new Date() })
+        .where(eq(profiles.userId, userId));
+
+      console.log(`[Video Upload] Successfully uploaded intro video for user ${userId}`);
+
+      res.json({ 
+        success: true, 
+        videoUrl,
+        message: "Video uploaded successfully"
+      });
+    } catch (error: any) {
+      console.error("[Video Upload] Error:", error);
+      res.status(500).json({ 
+        message: "Failed to upload video", 
+        error: error.message 
+      });
+    }
+  });
+
+  // Delete intro video
+  app.delete("/api/video", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+
+    try {
+      // Update profile to remove video URL
+      await db
+        .update(profiles)
+        .set({ introVideoUrl: null, updatedAt: new Date() })
+        .where(eq(profiles.userId, userId));
+
+      console.log(`[Video Delete] Successfully deleted intro video for user ${userId}`);
+
+      res.json({ 
+        success: true, 
+        message: "Video deleted successfully"
+      });
+    } catch (error: any) {
+      console.error("[Video Delete] Error:", error);
+      res.status(500).json({ 
+        message: "Failed to delete video", 
         error: error.message 
       });
     }
