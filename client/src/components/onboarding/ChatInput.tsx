@@ -97,8 +97,12 @@ export function ChatInput({
       resetTranscript();
       setConfirmedTranscript("");
       setVoiceState("listening");
-      startListening();
-      onListeningStarted?.();
+      // Delay to ensure TTS audio has fully stopped before starting microphone
+      const timer = setTimeout(() => {
+        startListening();
+        onListeningStarted?.();
+      }, 500);
+      return () => clearTimeout(timer);
     }
   }, [autoStartListening, isSupported, disabled, isListening, voiceState]);
 
