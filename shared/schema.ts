@@ -439,7 +439,7 @@ export const insertProfileSchema = createInsertSchema(profiles, {
   location: z.string().min(2, "Location is required"),
   bio: z.string().max(500, "Bio must be 500 characters or less").optional(),
   photos: z.array(z.string()).min(3, "Minimum 3 photos required").max(6, "Maximum 6 photos"),
-  lookingFor: z.enum(["Marriage", "Friendship", "Networking"]),
+  lookingFor: z.enum(["Marriage", "Friendship", "Networking"]).optional(),
   sect: z.string().optional(),
   prayerFrequency: z.string().optional(),
   halalImportance: z.string().optional(),
