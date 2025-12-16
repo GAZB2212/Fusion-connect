@@ -83,6 +83,7 @@ export default function Settings() {
   const [accessType, setAccessType] = useState<"live" | "report">("live");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteAccountDialogOpen, setDeleteAccountDialogOpen] = useState(false);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
   
   // Password change state
   const [currentPassword, setCurrentPassword] = useState("");
@@ -1293,7 +1294,13 @@ export default function Settings() {
         </Card>
 
         {/* Delete Account Confirmation */}
-        <AlertDialog open={deleteAccountDialogOpen} onOpenChange={setDeleteAccountDialogOpen}>
+        <AlertDialog 
+          open={deleteAccountDialogOpen} 
+          onOpenChange={(open) => {
+            setDeleteAccountDialogOpen(open);
+            if (!open) setDeleteConfirmationText("");
+          }}
+        >
           <AlertDialogContent data-testid="dialog-delete-account">
             <AlertDialogHeader>
               <div className="flex items-center gap-3 mb-2">
@@ -1315,6 +1322,13 @@ export default function Settings() {
                 <p className="pt-2 text-sm">
                   Are you absolutely sure you want to delete your account? Type <strong>"DELETE"</strong> below to confirm.
                 </p>
+                <Input
+                  type="text"
+                  placeholder='Type "DELETE" to confirm'
+                  value={deleteConfirmationText}
+                  onChange={(e) => setDeleteConfirmationText(e.target.value.toUpperCase())}
+                  data-testid="input-delete-confirmation"
+                />
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -1326,7 +1340,7 @@ export default function Settings() {
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={() => deleteAccountMutation.mutate()}
-                disabled={deleteAccountMutation.isPending}
+                disabled={deleteAccountMutation.isPending || deleteConfirmationText !== "DELETE"}
                 className="bg-destructive hover:bg-destructive/90"
                 data-testid="button-confirm-delete"
               >
