@@ -18,6 +18,7 @@ interface ChatInputProps {
   autoStartVoice?: boolean;
   autoStartListening?: boolean;
   onListeningStarted?: () => void;
+  skipConfirmation?: boolean;
 }
 
 export function ChatInput({
@@ -29,6 +30,7 @@ export function ChatInput({
   autoStartVoice = false,
   autoStartListening = false,
   onListeningStarted,
+  skipConfirmation = false,
 }: ChatInputProps) {
   const [message, setMessage] = useState("");
   const [inputMode, setInputMode] = useState<InputMode>("text");
@@ -55,8 +57,14 @@ export function ChatInput({
     },
     onEnd: () => {
       if (transcript.trim()) {
-        setConfirmedTranscript(transcript.trim());
-        setVoiceState("confirming");
+        if (skipConfirmation) {
+          onSend(transcript.trim());
+          resetTranscript();
+          setVoiceState("idle");
+        } else {
+          setConfirmedTranscript(transcript.trim());
+          setVoiceState("confirming");
+        }
       } else {
         setVoiceState("idle");
       }

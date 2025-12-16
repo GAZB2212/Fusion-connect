@@ -77,13 +77,20 @@ export function FastOnboardingChat({ onComplete, onExitToForms }: FastOnboarding
       const conv = existingConversation as any;
       const lang = (conv.language as SupportedLanguage) || "en";
       setSelectedLanguage(lang);
-      setMessages(conv.conversationHistory.map((m: any) => ({
+      const history = conv.conversationHistory.map((m: any) => ({
         role: m.role,
         content: m.content,
         timestamp: new Date(),
-      })));
+      }));
+      setMessages(history);
       setExtractedData(conv.extractedData || {});
       setCurrentQuestion(conv.currentQuestionIndex || 1);
+      
+      // Auto-speak the last assistant message when resuming
+      const lastMessage = history[history.length - 1];
+      if (lastMessage?.role === "assistant" && voiceModeEnabled) {
+        setTimeout(() => speak(lastMessage.content), 800);
+      }
     }
   }, [existingConversation, loadingConversation]);
 
@@ -328,6 +335,7 @@ export function FastOnboardingChat({ onComplete, onExitToForms }: FastOnboarding
         onVoiceError={handleVoiceError}
         autoStartListening={autoStartListening}
         onListeningStarted={() => setAutoStartListening(false)}
+        skipConfirmation={voiceModeEnabled}
       />
     </div>
   );
