@@ -43,10 +43,15 @@ export function FastOnboardingChat({ onComplete, onExitToForms }: FastOnboarding
 
   const { t, translate, isRTL } = useTranslation(selectedLanguage || "en");
 
+  const [autoStartListening, setAutoStartListening] = useState(false);
+
   const { speak, stop: stopSpeaking, isSpeaking, isLoading: ttsLoading, isSupported: ttsSupported } = useTextToSpeech({
     language: selectedLanguage || "en",
     onEnd: () => {
       setShouldAutoSpeak(false);
+      if (voiceModeEnabled) {
+        setAutoStartListening(true);
+      }
     },
     onError: (error) => {
       console.error("[TTS] Error:", error);
@@ -317,10 +322,12 @@ export function FastOnboardingChat({ onComplete, onExitToForms }: FastOnboarding
 
       <ChatInput
         onSend={handleSendMessage}
-        disabled={chatMutation.isPending || isTyping}
+        disabled={chatMutation.isPending || isTyping || isSpeaking || ttsLoading}
         placeholder={t.typeMessage}
         language={selectedLanguage || "en"}
         onVoiceError={handleVoiceError}
+        autoStartListening={autoStartListening}
+        onListeningStarted={() => setAutoStartListening(false)}
       />
     </div>
   );

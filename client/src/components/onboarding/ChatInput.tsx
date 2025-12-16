@@ -16,6 +16,8 @@ interface ChatInputProps {
   language?: string;
   onVoiceError?: (error: string) => void;
   autoStartVoice?: boolean;
+  autoStartListening?: boolean;
+  onListeningStarted?: () => void;
 }
 
 export function ChatInput({
@@ -25,6 +27,8 @@ export function ChatInput({
   language = "en",
   onVoiceError,
   autoStartVoice = false,
+  autoStartListening = false,
+  onListeningStarted,
 }: ChatInputProps) {
   const [message, setMessage] = useState("");
   const [inputMode, setInputMode] = useState<InputMode>("text");
@@ -65,6 +69,17 @@ export function ChatInput({
       setVoiceState("idle");
     }
   }, [autoStartVoice, isSupported, disabled]);
+
+  useEffect(() => {
+    if (autoStartListening && isSupported && !disabled && !isListening && voiceState !== "confirming" && voiceState !== "processing") {
+      setInputMode("voice");
+      resetTranscript();
+      setConfirmedTranscript("");
+      setVoiceState("listening");
+      startListening();
+      onListeningStarted?.();
+    }
+  }, [autoStartListening, isSupported, disabled, isListening, voiceState]);
 
   useEffect(() => {
     if (error) {
