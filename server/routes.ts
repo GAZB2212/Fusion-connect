@@ -1828,6 +1828,49 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
     }
   });
 
+  // Transcribe audio using OpenAI Whisper API (fallback for Web Speech API)
+  app.post("/api/onboarding/transcribe", isAuthenticated, upload.single('audio'), async (req: any, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No audio file provided" });
+      }
+
+      const language = req.body.language || "en";
+      const languageMap: Record<string, string> = {
+        en: "en",
+        ur: "ur",
+        ar: "ar",
+        bn: "bn",
+      };
+
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+
+      // Create a File object from the buffer for the API
+      const audioFile = new File([req.file.buffer], "audio.webm", {
+        type: req.file.mimetype || "audio/webm",
+      });
+
+      const transcription = await openai.audio.transcriptions.create({
+        file: audioFile,
+        model: "whisper-1",
+        language: languageMap[language] || "en",
+      });
+
+      res.json({
+        transcript: transcription.text,
+        confidence: 0.95, // Whisper doesn't return confidence, assume high
+      });
+    } catch (error: any) {
+      console.error("[Transcribe] Error:", error);
+      res.status(500).json({ 
+        message: "Failed to transcribe audio", 
+        error: error.message 
+      });
+    }
+  });
+
   // ===== End Fast Onboarding API Routes =====
 
   // Helper function to calculate distance between two coordinates using Haversine formula
