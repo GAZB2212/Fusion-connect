@@ -104,8 +104,8 @@ export function FastOnboardingChat({ onComplete, onExitToForms }: FastOnboarding
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <header className="flex items-center justify-between p-4 border-b bg-background sticky top-0 z-10">
+    <div className="h-screen bg-background flex flex-col overflow-hidden">
+      <header className="flex items-center justify-between p-4 border-b bg-background shrink-0">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
             <span className="text-primary font-bold text-lg">F</span>
@@ -127,9 +127,11 @@ export function FastOnboardingChat({ onComplete, onExitToForms }: FastOnboarding
         </Button>
       </header>
 
-      <OnboardingProgress currentQuestion={currentQuestion} />
+      <div className="shrink-0">
+        <OnboardingProgress currentQuestion={currentQuestion} />
+      </div>
 
-      <div className="flex-1 overflow-y-auto p-4" data-testid="chat-messages-container">
+      <div className="flex-1 overflow-y-auto p-4 min-h-0" data-testid="chat-messages-container">
         {messages.map((message, index) => (
           <ChatMessage
             key={index}
