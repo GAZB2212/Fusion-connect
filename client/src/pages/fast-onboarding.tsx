@@ -7,7 +7,8 @@ import { OnboardingReview } from "@/components/onboarding/OnboardingReview";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { ExtractedData } from "@/lib/onboarding/prompts";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +28,7 @@ export default function FastOnboarding() {
   const [step, setStep] = useState<OnboardingStep>("choice");
   const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
   const [showResumeDialog, setShowResumeDialog] = useState(false);
+  const [showExitDialog, setShowExitDialog] = useState(false);
   const [existingConversation, setExistingConversation] = useState<any>(null);
 
   // Check for existing conversation
@@ -144,6 +146,25 @@ export default function FastOnboarding() {
     setStep("choice");
   };
 
+  const handleBack = () => {
+    if (step === "choice") {
+      // On choice step, go back to login/landing
+      setLocation("/");
+    } else if (step === "chat" || step === "review") {
+      // Show confirmation dialog
+      setShowExitDialog(true);
+    }
+  };
+
+  const handleConfirmExit = () => {
+    setShowExitDialog(false);
+    toast({
+      title: "Progress saved",
+      description: "You can continue your profile setup anytime.",
+    });
+    setLocation("/");
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -153,30 +174,48 @@ export default function FastOnboarding() {
   }
 
   return (
-    <>
-      {step === "choice" && (
-        <OnboardingChoice
-          onChooseFast={handleChooseFast}
-          onChooseStandard={handleChooseStandard}
-        />
-      )}
+    <div className="min-h-screen flex flex-col">
+      {/* Persistent Back Button Header */}
+      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+        <div className="flex items-center h-14 px-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleBack}
+            data-testid="button-back"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <span className="ml-3 font-semibold text-lg">Profile Setup</span>
+        </div>
+      </header>
 
-      {step === "chat" && (
-        <FastOnboardingChat
-          onComplete={handleChatComplete}
-          onExitToForms={handleExitToForms}
-        />
-      )}
+      {/* Content */}
+      <div className="flex-1">
+        {step === "choice" && (
+          <OnboardingChoice
+            onChooseFast={handleChooseFast}
+            onChooseStandard={handleChooseStandard}
+          />
+        )}
 
-      {step === "review" && extractedData && (
-        <OnboardingReview
-          data={extractedData}
-          onConfirm={handleConfirmProfile}
-          onEdit={handleEditField}
-          onStartOver={handleStartOver}
-          isSubmitting={completeMutation.isPending}
-        />
-      )}
+        {step === "chat" && (
+          <FastOnboardingChat
+            onComplete={handleChatComplete}
+            onExitToForms={handleExitToForms}
+          />
+        )}
+
+        {step === "review" && extractedData && (
+          <OnboardingReview
+            data={extractedData}
+            onConfirm={handleConfirmProfile}
+            onEdit={handleEditField}
+            onStartOver={handleStartOver}
+            isSubmitting={completeMutation.isPending}
+          />
+        )}
+      </div>
 
       {/* Resume Dialog */}
       <AlertDialog open={showResumeDialog} onOpenChange={setShowResumeDialog}>
@@ -197,6 +236,26 @@ export default function FastOnboarding() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+
+      {/* Exit Confirmation Dialog */}
+      <AlertDialog open={showExitDialog} onOpenChange={setShowExitDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Leave profile setup?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your progress will be saved. You can continue setting up your profile anytime.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>
+              Stay
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmExit}>
+              Leave
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 }
