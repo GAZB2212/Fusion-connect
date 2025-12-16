@@ -71,10 +71,10 @@ export default function ProfileSetup() {
   const [isEnhancingBio, setIsEnhancingBio] = useState(false);
   const [fastBio, setFastBio] = useState("");
 
-  // Fetch existing profile if restarting
+  // Fetch existing profile if restarting or fast onboarding complete
   const { data: existingProfile } = useQuery<Profile>({
     queryKey: ["/api/profile"],
-    enabled: isRestart,
+    enabled: isRestart || isFastOnboardingComplete,
   });
 
   const form = useForm<InsertProfile>({
@@ -115,9 +115,9 @@ export default function ProfileSetup() {
     },
   });
 
-  // Load existing profile data when restarting
+  // Load existing profile data when restarting or from fast onboarding
   useEffect(() => {
-    if (isRestart && existingProfile) {
+    if ((isRestart || isFastOnboardingComplete) && existingProfile) {
       // Pre-fill form with existing data
       form.reset({
         displayName: existingProfile.displayName,
@@ -154,12 +154,15 @@ export default function ProfileSetup() {
         useNickname: existingProfile.useNickname || false,
       });
 
-      // Set state variables - clear photos so user uploads new ones for verification
-      setPhotos([]);
-      form.setValue("photos", []);
+      // Set state variables
       setSelectedInterests(existingProfile.interests || []);
       setSelectedTraits(existingProfile.personalityTraits || []);
       setSelectedEthnicities(existingProfile.ethnicities || []);
+      
+      // For fast onboarding, also set the bio field
+      if (isFastOnboardingComplete && existingProfile.bio) {
+        setFastBio(existingProfile.bio);
+      }
       
       if (existingProfile.partnerPreferences && typeof existingProfile.partnerPreferences === 'object') {
         const prefs = existingProfile.partnerPreferences as any;
@@ -174,12 +177,19 @@ export default function ProfileSetup() {
       // Stay on step 1 where photos are uploaded
       setStep(1);
       
-      toast({
-        title: "Upload New Photos",
-        description: "Please upload new photos and complete the form to retry verification.",
-      });
+      // Clear photos for new uploads (both restart and fast onboarding need fresh photos)
+      setPhotos([]);
+      form.setValue("photos", []);
+      
+      // Only show toast for restart users, not fast onboarding
+      if (isRestart) {
+        toast({
+          title: "Upload New Photos",
+          description: "Please upload new photos and complete the form to retry verification.",
+        });
+      }
     }
-  }, [isRestart, existingProfile, form, toast]);
+  }, [isRestart, isFastOnboardingComplete, existingProfile, form, toast]);
 
   const createProfileMutation = useMutation({
     mutationFn: async (data: InsertProfile) => {
