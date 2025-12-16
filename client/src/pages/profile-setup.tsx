@@ -28,7 +28,8 @@ import {
 import { insertProfileSchema, type InsertProfile } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, CheckCircle2, LogOut, MapPin, Loader2 } from "lucide-react";
+import { Upload, CheckCircle2, LogOut, MapPin, Loader2, Video } from "lucide-react";
+import { VideoRecorder } from "@/components/video-recorder";
 import {
   INTEREST_CATEGORIES,
   PROFESSIONS,
@@ -64,6 +65,8 @@ export default function ProfileSetup() {
   const [isLocating, setIsLocating] = useState(false);
   const [userCoordinates, setUserCoordinates] = useState<{lat: number, lng: number} | null>(null);
   const [profileSubmitted, setProfileSubmitted] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [introVideoUrl, setIntroVideoUrl] = useState<string | null>(null);
 
   // Fetch existing profile if restarting
   const { data: existingProfile } = useQuery<Profile>({
@@ -287,11 +290,48 @@ export default function ProfileSetup() {
   };
 
   const nextStep = () => {
-    if (step < 7) setStep(step + 1);
+    if (step < 8) setStep(step + 1);
   };
 
   const prevStep = () => {
     if (step > 1) setStep(step - 1);
+  };
+
+  const handleVideoRecorded = async (videoBlob: Blob) => {
+    setIsUploadingVideo(true);
+    
+    try {
+      // Convert blob to base64
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve) => {
+        reader.onloadend = () => resolve(reader.result as string);
+      });
+      reader.readAsDataURL(videoBlob);
+      const base64Video = await base64Promise;
+
+      const response = await apiRequest("POST", "/api/video/upload", {
+        video: base64Video,
+      });
+      
+      const data = await response.json();
+      
+      if (data.videoUrl) {
+        setIntroVideoUrl(data.videoUrl);
+        toast({
+          title: "Video uploaded!",
+          description: "Your intro video has been saved.",
+        });
+      }
+    } catch (error: any) {
+      console.error("Video upload error:", error);
+      toast({
+        title: "Upload failed",
+        description: error.message || "Failed to upload video. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingVideo(false);
+    }
   };
 
   const toggleInterest = (interest: string) => {
@@ -483,7 +523,7 @@ export default function ProfileSetup() {
           
           {/* Progress */}
           <div className="flex items-center justify-center gap-2 mt-6">
-            {[1, 2, 3, 4, 5, 6, 7].map((s) => (
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
               <div
                 key={s}
                 className={`h-2 w-10 rounded-full ${
@@ -1074,13 +1114,59 @@ export default function ProfileSetup() {
                     )}
                   />
 
+                </div>
+              )}
+
+              {/* Step 8: Video Intro */}
+              {step === 8 && (
+                <div className="space-y-6">
+                  <h2 className="text-xl font-semibold">Record Your Intro Video</h2>
+                  <p className="text-muted-foreground">
+                    Help potential matches get to know you with a short 20-second video introduction. This is optional but highly recommended!
+                  </p>
+
+                  {introVideoUrl ? (
+                    <div className="space-y-4">
+                      <div className="relative aspect-[9/16] max-h-[400px] mx-auto bg-black rounded-lg overflow-hidden">
+                        <video
+                          src={introVideoUrl}
+                          className="w-full h-full object-cover"
+                          controls
+                          playsInline
+                        />
+                      </div>
+                      <div className="flex justify-center gap-3">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIntroVideoUrl(null)}
+                          data-testid="button-remove-video"
+                        >
+                          Record New Video
+                        </Button>
+                      </div>
+                      <div className="bg-emerald-500/10 rounded-lg p-4 border border-emerald-500/20">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                          <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Video saved! Click Complete Profile to continue.</span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <VideoRecorder
+                      onVideoRecorded={handleVideoRecorded}
+                      onCancel={() => nextStep()}
+                      isUploading={isUploadingVideo}
+                    />
+                  )}
+
                   <div className="bg-muted/50 rounded-lg p-6 border">
                     <div className="flex items-start gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
+                      <Video className="h-5 w-5 text-primary mt-0.5" />
                       <div>
-                        <h3 className="font-semibold mb-2">Profile Complete!</h3>
+                        <h3 className="font-semibold mb-2">Why add a video?</h3>
                         <p className="text-sm text-muted-foreground">
-                          Your profile is ready. Click submit to start discovering matches.
+                          Profiles with videos get 3x more matches! It helps others see your personality and feel more confident about connecting with you.
                         </p>
                       </div>
                     </div>
@@ -1098,19 +1184,19 @@ export default function ProfileSetup() {
                   <div />
                 )}
 
-                {step < 7 ? (
+                {step < 8 ? (
                   <Button 
                     type="button" 
                     onClick={nextStep} 
                     data-testid="button-next"
                     disabled={step === 1 && photos.length < 3}
                   >
-                    Next
+                    {step === 7 ? "Next: Add Video" : "Next"}
                   </Button>
                 ) : (
                   <Button
                     type="submit"
-                    disabled={createProfileMutation.isPending}
+                    disabled={createProfileMutation.isPending || isUploadingVideo}
                     data-testid="button-submit-profile"
                   >
                     {createProfileMutation.isPending ? "Creating..." : "Complete Profile"}
