@@ -28,7 +28,7 @@ import {
 import { insertProfileSchema, type InsertProfile } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, CheckCircle2, LogOut, MapPin, Loader2, Video } from "lucide-react";
+import { Upload, CheckCircle2, LogOut, MapPin, Loader2, Video, Sparkles } from "lucide-react";
 import { VideoRecorder } from "@/components/video-recorder";
 import {
   INTEREST_CATEGORIES,
@@ -68,6 +68,8 @@ export default function ProfileSetup() {
   const [profileSubmitted, setProfileSubmitted] = useState(false);
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const [introVideoUrl, setIntroVideoUrl] = useState<string | null>(null);
+  const [isEnhancingBio, setIsEnhancingBio] = useState(false);
+  const [fastBio, setFastBio] = useState("");
 
   // Fetch existing profile if restarting
   const { data: existingProfile } = useQuery<Profile>({
@@ -291,7 +293,12 @@ export default function ProfileSetup() {
   };
 
   const nextStep = () => {
-    if (step < 8) setStep(step + 1);
+    // For fast onboarding users, skip from step 1 directly to step 8 (verification)
+    if (isFastOnboardingComplete && step === 1) {
+      setStep(8);
+    } else if (step < 8) {
+      setStep(step + 1);
+    }
   };
 
   const prevStep = () => {
@@ -517,21 +524,35 @@ export default function ProfileSetup() {
 
       <div className="container max-w-2xl mx-auto px-4 py-12">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold mb-2">Create Your Profile</h1>
+          <h1 className="text-3xl font-bold mb-2">
+            {isFastOnboardingComplete ? "Complete Your Profile" : "Create Your Profile"}
+          </h1>
           <p className="text-muted-foreground">
-            Let's help you find your perfect match
+            {isFastOnboardingComplete 
+              ? "Just add photos and a bio, then verify your identity" 
+              : "Let's help you find your perfect match"
+            }
           </p>
           
-          {/* Progress */}
+          {/* Progress - simplified for fast onboarding */}
           <div className="flex items-center justify-center gap-2 mt-6">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
-              <div
-                key={s}
-                className={`h-2 w-10 rounded-full ${
-                  s <= step ? 'bg-primary' : 'bg-muted'
-                }`}
-              />
-            ))}
+            {isFastOnboardingComplete ? (
+              // Fast onboarding: 2 steps (Photos+Bio, Verification)
+              <>
+                <div className={`h-2 w-16 rounded-full ${step === 1 ? 'bg-primary' : 'bg-muted'}`} />
+                <div className={`h-2 w-16 rounded-full ${step === 8 ? 'bg-primary' : 'bg-muted'}`} />
+              </>
+            ) : (
+              // Standard: 8 steps
+              [1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
+                <div
+                  key={s}
+                  className={`h-2 w-10 rounded-full ${
+                    s <= step ? 'bg-primary' : 'bg-muted'
+                  }`}
+                />
+              ))
+            )}
           </div>
         </div>
 
@@ -756,6 +777,78 @@ export default function ProfileSetup() {
                       </p>
                     )}
                   </div>
+
+                  {/* Bio with AI Enhancement - Only for fast onboarding */}
+                  {isFastOnboardingComplete && (
+                    <div className="space-y-3">
+                      <Label>About Me</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Write a short bio about yourself. Use the AI button to enhance it!
+                      </p>
+                      <div className="relative">
+                        <Textarea
+                          value={fastBio}
+                          onChange={(e) => {
+                            setFastBio(e.target.value);
+                            form.setValue("bio", e.target.value);
+                          }}
+                          placeholder="I'm a kind-hearted person who loves..."
+                          className="min-h-32 pr-12"
+                          data-testid="textarea-fast-bio"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute top-2 right-2 h-8 w-8 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+                          onClick={async () => {
+                            if (!fastBio || fastBio.trim().length < 10) {
+                              toast({
+                                title: "Write something first",
+                                description: "Please write at least a few words about yourself before enhancing",
+                                variant: "destructive",
+                              });
+                              return;
+                            }
+                            setIsEnhancingBio(true);
+                            try {
+                              const response = await apiRequest("POST", "/api/enhance-bio", {
+                                bio: fastBio,
+                              });
+                              const data = await response.json();
+                              if (data.enhancedBio) {
+                                setFastBio(data.enhancedBio);
+                                form.setValue("bio", data.enhancedBio);
+                                toast({
+                                  title: "Bio enhanced!",
+                                  description: "Your bio has been improved by AI",
+                                });
+                              }
+                            } catch (error: any) {
+                              toast({
+                                title: "Enhancement failed",
+                                description: error.message || "Could not enhance bio",
+                                variant: "destructive",
+                              });
+                            } finally {
+                              setIsEnhancingBio(false);
+                            }
+                          }}
+                          disabled={isEnhancingBio}
+                          data-testid="button-enhance-bio"
+                        >
+                          {isEnhancingBio ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Sparkles className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Tip: Write a few sentences, then tap the sparkle button to let AI make it shine!
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
 
