@@ -1898,7 +1898,7 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
     }
   });
 
-  // Text-to-speech using OpenAI TTS API
+  // Text-to-speech using ElevenLabs API (premium quality voices)
   app.post("/api/tts", isAuthenticated, async (req: any, res: Response) => {
     try {
       const { text, language = "en" } = req.body;
@@ -1910,17 +1910,36 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
       // Limit text length to avoid excessive API costs
       const truncatedText = text.slice(0, 4000);
 
-      const openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-      });
+      // ElevenLabs voice IDs - Rachel is warm and conversational
+      const voiceId = "21m00Tcm4TlvDq8ikWAM"; // Rachel - calm, warm female voice
+      
+      const response = await fetch(
+        `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+        {
+          method: "POST",
+          headers: {
+            "Accept": "audio/mpeg",
+            "Content-Type": "application/json",
+            "xi-api-key": process.env.ELEVENLABS_API_KEY || "",
+          },
+          body: JSON.stringify({
+            text: truncatedText,
+            model_id: "eleven_multilingual_v2", // Supports 29 languages including Urdu, Arabic, Bengali
+            voice_settings: {
+              stability: 0.5,
+              similarity_boost: 0.75,
+              style: 0.4,
+              use_speaker_boost: true,
+            },
+          }),
+        }
+      );
 
-      // Use alloy voice - natural sounding and works well with all languages
-      const response = await openai.audio.speech.create({
-        model: "tts-1",
-        voice: "nova", // Nova has a warm, friendly tone good for conversations
-        input: truncatedText,
-        response_format: "mp3",
-      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("[TTS] ElevenLabs error:", errorText);
+        throw new Error(`ElevenLabs API error: ${response.status}`);
+      }
 
       // Get the audio as a buffer
       const audioBuffer = Buffer.from(await response.arrayBuffer());
