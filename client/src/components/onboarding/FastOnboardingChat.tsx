@@ -48,6 +48,14 @@ export function FastOnboardingChat({ onComplete, onExitToForms }: FastOnboarding
     onEnd: () => {
       setShouldAutoSpeak(false);
     },
+    onError: (error) => {
+      console.error("[TTS] Error:", error);
+      toast({
+        title: "Voice playback issue",
+        description: "Couldn't play the audio. Please try again.",
+        variant: "destructive",
+      });
+    },
   });
 
   // Check for existing conversation to resume
