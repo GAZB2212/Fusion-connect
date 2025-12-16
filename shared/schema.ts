@@ -66,6 +66,9 @@ export const profiles = pgTable("profiles", {
   photoVisibility: varchar("photo_visibility", { length: 20 }).default('visible'), // visible, blurred, hidden
   photoVerified: boolean("photo_verified").default(false), // Photo verification status
   
+  // Video Intro (20 second intro video)
+  introVideoUrl: varchar("intro_video_url", { length: 500 }), // URL to user's intro video
+  
   // Islamic Preferences
   bornMuslim: boolean("born_muslim"), // Were you born a Muslim?
   sect: varchar("sect", { length: 50 }), // No preference, Sunni, Sunni (Hanafi), Sunni (Maliki), Sunni (Shafi), Sunni (Hanbali), Shia, Shia (Twelver), Shia (Ismaili), Shia (Zaydi), Sufi, Other
