@@ -64,12 +64,12 @@ The platform features a luxury aesthetic with a primary deep navy color, gold ac
   - **Rate Limiting:** Tiered message limits based on account age and verification status (5-100 msgs/day)
   - **Scam Pattern Detection:** Blocks requests for money transfers, external platform redirects, and financial schemes
 - **Subscription Tiers:** Free and premium tiers with distinct feature sets.
-- **AI Fast Onboarding:** Conversational profile creation system with multi-modal input:
-  - **Voice Input:** Web Speech API for instant transcription, OpenAI Whisper API as fallback
-  - **Multi-Language Support:** English, Urdu (اردو), Arabic (العربية), Bengali (বাংলা) with RTL layout for Arabic/Urdu
-  - **Voice Confirmation:** Sensitive questions (religious practice, marriage intent, wali involvement) require transcript confirmation
-  - **Resume Later:** Onboarding state saved to database, users can continue where they left off
-  - **AI Processing:** GPT-4o extracts structured profile data from natural conversation
+- **Profile Setup:** Traditional step-by-step profile creation with form-based input:
+  - 8 steps covering basic info, photos, Islamic values, profession, interests, partner preferences, bio, and video intro
+  - Location detection with geocoding support
+  - AI-powered bio enhancement option
+  - Photo upload with main photo selection
+  - *Note: AI Fast Onboarding with voice input is disabled but code remains for potential future use*
 - **Guidance Hub:** Emotional support center with 8 articles for users navigating the matching journey:
   - Categories: Navigating Connections, Healthy Communication, Focus & Intention
   - Topics include handling rejection, managing expectations, boundaries, patience, and respectful communication
