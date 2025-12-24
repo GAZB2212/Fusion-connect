@@ -8,29 +8,22 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
 // CORS configuration for Capacitor iOS/Android app
-const allowedOrigins = [
-  'capacitor://localhost',
-  'capacitor://',
-  'ionic://localhost',
-  'http://localhost',
-  'http://localhost:5000',
-  'https://fusionmatch.replit.app',
-  'https://www.fusioncouples.com',
-];
-
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   
-  // Allow requests with no origin (mobile apps, Postman, etc.)
-  if (!origin) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  } else if (allowedOrigins.includes(origin) || origin.startsWith('capacitor://')) {
+  // For Capacitor apps and development, allow the origin
+  // Always set the origin header to support credentials
+  if (origin) {
     res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    // For requests without origin (like mobile apps making direct requests)
+    res.setHeader('Access-Control-Allow-Origin', 'capacitor://localhost');
   }
   
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
   
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
