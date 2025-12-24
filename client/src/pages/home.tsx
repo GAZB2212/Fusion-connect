@@ -175,7 +175,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-20" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       {/* Swipe Animations */}
       <AnimatePresence>
         {showAnimation === 'like' && (

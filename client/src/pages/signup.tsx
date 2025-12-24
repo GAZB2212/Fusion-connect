@@ -101,7 +101,7 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0E17] flex items-center justify-center px-4 py-12 islamic-pattern">
+    <div className="min-h-screen bg-[#0A0E17] flex items-center justify-center px-4 py-12 islamic-pattern" style={{ paddingTop: 'max(env(safe-area-inset-top), 3rem)', paddingBottom: 'max(env(safe-area-inset-bottom), 3rem)' }}>
       <div className="w-full max-w-md">
         {/* Back Button */}
         <div className="mb-6">

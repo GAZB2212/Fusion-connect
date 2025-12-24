@@ -23,6 +23,7 @@ export function BottomNav() {
         "transition-transform duration-300 ease-in-out",
         isCallActive ? "translate-y-full" : "translate-y-0"
       )}
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       data-testid="bottom-nav"
     >
       <div className="container max-w-3xl mx-auto px-4">
