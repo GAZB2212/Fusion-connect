@@ -2,6 +2,7 @@
 // Works with both Web Push (browsers) and Native Push (Capacitor iOS/Android)
 
 import { isCapacitorNative, getPlatform, getPlatformInfo } from './platform';
+import { getApiUrl } from './queryClient';
 
 export type NotificationPermissionStatus = 'granted' | 'denied' | 'prompt' | 'unknown';
 
@@ -259,7 +260,7 @@ export async function unregisterFromPushNotifications(): Promise<boolean> {
 // Save push token to server
 export async function savePushTokenToServer(token: PushToken): Promise<boolean> {
   try {
-    const response = await fetch('/api/push/register', {
+    const response = await fetch(getApiUrl('/api/push/register'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -288,7 +289,7 @@ export async function savePushTokenToServer(token: PushToken): Promise<boolean> 
 // Remove push token from server
 export async function removePushTokenFromServer(): Promise<boolean> {
   try {
-    const response = await fetch('/api/push/unregister', {
+    const response = await fetch(getApiUrl('/api/push/unregister'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include'

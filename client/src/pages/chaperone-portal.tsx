@@ -9,6 +9,7 @@ import SendbirdProvider from "@sendbird/uikit-react/SendbirdProvider";
 import GroupChannelList from "@sendbird/uikit-react/GroupChannelList";
 import GroupChannel from "@sendbird/uikit-react/GroupChannel";
 import "@sendbird/uikit-react/dist/index.css";
+import { getApiUrl } from "@/lib/queryClient";
 
 const SENDBIRD_APP_ID = import.meta.env.VITE_SENDBIRD_APP_ID || "A68E730B-8E56-4655-BCBD-A709F3162376";
 
@@ -56,10 +57,11 @@ export default function ChaperonePortal() {
     setError("");
 
     try {
-      const response = await fetch("/api/chaperone/login", {
+      const response = await fetch(getApiUrl("/api/chaperone/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ accessToken: tokenToUse }),
+        credentials: "include",
       });
 
       if (!response.ok) {

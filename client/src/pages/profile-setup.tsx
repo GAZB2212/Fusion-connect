@@ -26,7 +26,7 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { insertProfileSchema, type InsertProfile } from "@shared/schema";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient, getApiUrl } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, CheckCircle2, LogOut, MapPin, Loader2, Video, Sparkles } from "lucide-react";
 import { VideoRecorder } from "@/components/video-recorder";
@@ -263,7 +263,7 @@ export default function ProfileSetup() {
       });
 
       // Upload to R2 using fetch (FormData requires multipart/form-data)
-      const response = await fetch('/api/photos/upload', {
+      const response = await fetch(getApiUrl('/api/photos/upload'), {
         method: 'POST',
         body: formData,
         credentials: 'include',

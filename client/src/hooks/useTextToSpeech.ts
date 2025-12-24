@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
+import { getApiUrl } from "@/lib/queryClient";
 
 interface UseTextToSpeechOptions {
   language?: string;
@@ -31,7 +32,7 @@ export function useTextToSpeech(options: UseTextToSpeechOptions = {}) {
       abortControllerRef.current = new AbortController();
 
       try {
-        const response = await fetch("/api/tts", {
+        const response = await fetch(getApiUrl("/api/tts"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

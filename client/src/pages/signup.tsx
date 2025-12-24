@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import logoImage from "@assets/NEW logo 2_1761587557587.png";
+import { getApiUrl } from "@/lib/queryClient";
 
 export default function Signup() {
   const [, setLocation] = useLocation();
@@ -66,7 +67,7 @@ export default function Signup() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/register", {
+      const response = await fetch(getApiUrl("/api/register"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -75,6 +76,7 @@ export default function Signup() {
           firstName: formData.firstName,
           lastName: formData.lastName,
         }),
+        credentials: "include",
       });
 
       const data = await response.json();

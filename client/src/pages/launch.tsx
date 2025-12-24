@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import logoImage from "@assets/NEW logo 2_1761587557587.png";
 import loadingVideo from "@assets/Scene_a_muslim_202512100938_lunmc_1765359545154.mp4";
 import gajoLogo from "@assets/LOGO_1762434272542.png";
+import { getApiUrl } from "@/lib/queryClient";
 import { 
   Shield, 
   Users, 
@@ -61,10 +62,11 @@ export default function Launch() {
 
   const signupMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch("/api/early-signup", {
+      const response = await fetch(getApiUrl("/api/early-signup"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, firstName }),
+        credentials: "include",
       });
       if (!response.ok) {
         const error = await response.json();

@@ -1,4 +1,5 @@
 // Push Notifications Utility
+import { getApiUrl } from './queryClient';
 
 // Convert VAPID key for subscription
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
@@ -119,9 +120,10 @@ export async function saveSubscriptionToServer(subscription: PushSubscription): 
   try {
     const subscriptionJson = subscription.toJSON();
     
-    const response = await fetch('/api/push/subscribe', {
+    const response = await fetch(getApiUrl('/api/push/subscribe'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({
         endpoint: subscriptionJson.endpoint,
         auth: subscriptionJson.keys?.auth,
@@ -145,9 +147,10 @@ export async function saveSubscriptionToServer(subscription: PushSubscription): 
 // Remove subscription from server
 export async function removeSubscriptionFromServer(): Promise<boolean> {
   try {
-    const response = await fetch('/api/push/unsubscribe', {
+    const response = await fetch(getApiUrl('/api/push/unsubscribe'), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
     });
     
     if (response.ok) {

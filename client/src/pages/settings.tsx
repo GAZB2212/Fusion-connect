@@ -48,7 +48,7 @@ import {
 } from "lucide-react";
 import { VideoRecorder } from "@/components/video-recorder";
 import type { Profile, Chaperone } from "@shared/schema";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient, getApiUrl } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import {
   HEIGHT_OPTIONS_CM,
@@ -412,7 +412,7 @@ export default function Settings() {
         formData.append('photos', file);
       });
 
-      const response = await fetch('/api/photos/upload', {
+      const response = await fetch(getApiUrl('/api/photos/upload'), {
         method: 'POST',
         body: formData,
         credentials: 'include',

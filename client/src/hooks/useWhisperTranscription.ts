@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, getApiUrl } from "@/lib/queryClient";
 
 interface UseWhisperTranscriptionOptions {
   language?: string;
@@ -113,7 +113,7 @@ export function useWhisperTranscription(
           formData.append("audio", audioBlob, `recording.${extension}`);
           formData.append("language", language);
 
-          const response = await fetch("/api/onboarding/transcribe", {
+          const response = await fetch(getApiUrl("/api/onboarding/transcribe"), {
             method: "POST",
             body: formData,
             credentials: "include",

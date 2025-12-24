@@ -34,7 +34,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest, queryClient, getApiUrl } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useRingtone } from "@/hooks/use-ringtone";
 
@@ -362,9 +362,10 @@ export default function Messages() {
     if (user) {
       const hasBackfilled = sessionStorage.getItem('channels_backfilled');
       if (!hasBackfilled) {
-        fetch('/api/dev/backfill-channels', { 
+        fetch(getApiUrl('/api/dev/backfill-channels'), { 
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include'
         })
           .then(r => r.json())
           .then(() => {
