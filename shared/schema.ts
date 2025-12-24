@@ -495,15 +495,22 @@ export const insertUserReportSchema = createInsertSchema(userReports, {
   details: z.string().max(500, "Details too long").optional(),
 }).omit({ id: true, createdAt: true, reporterId: true, status: true });
 
+// Lenient email validation that works across web and mobile (iOS/Android)
+const emailSchema = z.string()
+  .transform(val => val.trim().toLowerCase())
+  .refine(val => val.includes('@') && val.includes('.'), {
+    message: "Valid email is required"
+  });
+
 export const registerUserSchema = z.object({
-  email: z.string().email("Valid email is required"),
+  email: emailSchema,
   password: z.string().min(8, "Password must be at least 8 characters"),
   firstName: z.string().min(2, "First name is required"),
   lastName: z.string().optional(),
 });
 
 export const loginSchema = z.object({
-  email: z.string().email("Valid email is required"),
+  email: emailSchema,
   password: z.string().min(1, "Password is required"),
 });
 
