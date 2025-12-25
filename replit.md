@@ -24,7 +24,10 @@ The platform features a luxury aesthetic with a primary deep navy color, gold ac
 ### Technical Implementations
 **Frontend:** Built with React 18, TypeScript, Wouter for routing, TanStack Query for data fetching, Vite as a build tool, shadcn/ui for components, and Tailwind CSS for styling.
 **Backend:** Developed with Node.js, Express.js, and TypeScript. It uses Drizzle ORM for PostgreSQL interactions and Passport.js with a custom local strategy for authentication.
-**Authentication:** Custom email/password authentication via Passport Local Strategy with bcrypt for password hashing and PostgreSQL for session storage. A comprehensive AI Face Verification system, using OpenAI Vision API (GPT-4o), ensures identity verification by comparing uploaded profile photos with live selfies. The system uses lenient AI prompts to accept normal selfies while detecting obvious stock photos, watermarks, and screenshots. Detailed logging tracks all verification attempts.
+**Authentication:** Dual authentication system supporting both web and mobile apps:
+  - **Web:** Cookie-based sessions via Passport Local Strategy with bcrypt for password hashing and PostgreSQL for session storage (SameSite=None, Secure=true for cross-origin support)
+  - **Mobile (Capacitor):** JWT token-based authentication stored in localStorage, sent via Authorization header. Tokens are generated on login/signup and cleared on logout.
+  - A comprehensive AI Face Verification system, using OpenAI Vision API (GPT-4o), ensures identity verification by comparing uploaded profile photos with live selfies. The system uses lenient AI prompts to accept normal selfies while detecting obvious stock photos, watermarks, and screenshots. Detailed logging tracks all verification attempts.
 **Photo Storage:** Cloudflare R2 object storage integration for profile photos with zero egress fees, global CDN distribution, and custom domain (www.fusioncouples.com) for professional URLs. AWS SDK v3 handles S3-compatible uploads with automatic content type detection and multipart support.
 **Content Moderation:** Multi-layered protection system:
   - OpenAI Moderation API for detecting sexual content, harassment, violence, and hate speech
