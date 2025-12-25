@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from "lucide-react";
 import logoImage from "@assets/NEW logo 2_1761587557587.png";
-import { getApiUrl } from "@/lib/queryClient";
+import { getApiUrl, setAuthToken } from "@/lib/queryClient";
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -32,6 +32,11 @@ export default function Login() {
 
       if (!response.ok) {
         throw new Error(data.message || "Login failed");
+      }
+
+      // Store JWT token for mobile app support
+      if (data.token) {
+        setAuthToken(data.token);
       }
 
       toast({

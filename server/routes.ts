@@ -134,7 +134,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         const { password: _, ...userWithoutPassword } = newUser;
-        res.json({ user: userWithoutPassword });
+        // Generate JWT token for mobile app support
+        const token = generateToken(newUser.id);
+        res.json({ user: userWithoutPassword, token });
       });
     } catch (error: any) {
       console.error("Registration error:", error);

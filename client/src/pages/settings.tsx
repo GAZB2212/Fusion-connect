@@ -48,7 +48,7 @@ import {
 } from "lucide-react";
 import { VideoRecorder } from "@/components/video-recorder";
 import type { Profile, Chaperone } from "@shared/schema";
-import { apiRequest, queryClient, getApiUrl } from "@/lib/queryClient";
+import { apiRequest, queryClient, getApiUrl, clearAuthToken } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import {
   HEIGHT_OPTIONS_CM,
@@ -234,9 +234,13 @@ export default function Settings() {
       return apiRequest("POST", "/api/logout", {});
     },
     onSuccess: () => {
+      // Clear JWT token for mobile app support
+      clearAuthToken();
       window.location.href = "/";
     },
     onError: () => {
+      // Still clear token even on error
+      clearAuthToken();
       toast({
         title: "Error",
         description: "Failed to logout. Please try again.",

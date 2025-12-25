@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import logoImage from "@assets/NEW logo 2_1761587557587.png";
-import { getApiUrl } from "@/lib/queryClient";
+import { getApiUrl, setAuthToken } from "@/lib/queryClient";
 
 export default function Signup() {
   const [, setLocation] = useLocation();
@@ -83,6 +83,11 @@ export default function Signup() {
 
       if (!response.ok) {
         throw new Error(data.message || "Registration failed");
+      }
+
+      // Store JWT token for mobile app support
+      if (data.token) {
+        setAuthToken(data.token);
       }
 
       toast({
