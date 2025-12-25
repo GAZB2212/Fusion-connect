@@ -26,7 +26,7 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { insertProfileSchema, type InsertProfile } from "@shared/schema";
-import { apiRequest, queryClient, getApiUrl } from "@/lib/queryClient";
+import { apiRequest, queryClient, getApiUrl, clearAuthToken } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, CheckCircle2, LogOut, MapPin, Loader2, Video, Sparkles } from "lucide-react";
 import { VideoRecorder } from "@/components/video-recorder";
@@ -219,12 +219,16 @@ export default function ProfileSetup() {
       return apiRequest("POST", "/api/logout", {});
     },
     onSuccess: async () => {
+      // Clear JWT token for mobile app support
+      clearAuthToken();
       await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       await queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
       queryClient.clear();
       setLocation("/");
     },
     onError: (error) => {
+      // Still clear token even on error
+      clearAuthToken();
       toast({
         title: "Logout Failed",
         description: error.message,
