@@ -1,6 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
-import { setupAuth, isAuthenticated } from "./auth";
+import { setupAuth, isAuthenticated, generateToken } from "./auth";
 import { broadcastToUser } from "./websocket";
 import { db } from "./db";
 import { SendbirdService } from "./sendbird";
@@ -165,7 +165,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (err) {
           return res.status(500).json({ message: "Login failed" });
         }
-        res.json({ user });
+        // Generate JWT token for mobile app support
+        const token = generateToken(user.id);
+        res.json({ user, token });
       });
     })(req, res, next);
   });

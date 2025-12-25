@@ -7,6 +7,22 @@ import { db } from "./db";
 import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.SESSION_SECRET || 'fusion-jwt-secret';
+const JWT_EXPIRES_IN = '7d';
+
+export function generateToken(userId: string): string {
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+}
+
+export function verifyToken(token: string): { userId: string } | null {
+  try {
+    return jwt.verify(token, JWT_SECRET) as { userId: string };
+  } catch {
+    return null;
+  }
+}
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -119,9 +135,36 @@ export async function setupAuth(app: Express) {
   });
 }
 
-export const isAuthenticated: RequestHandler = (req, res, next) => {
+export const isAuthenticated: RequestHandler = async (req: any, res, next) => {
+  // First check session-based auth (for web users)
   if (req.isAuthenticated()) {
     return next();
   }
+
+  // Then check JWT token (for mobile app users)
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+    const decoded = verifyToken(token);
+    
+    if (decoded) {
+      try {
+        const [user] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, decoded.userId))
+          .limit(1);
+        
+        if (user) {
+          const { password: _, ...userWithoutPassword } = user;
+          req.user = userWithoutPassword;
+          return next();
+        }
+      } catch (error) {
+        console.error('JWT auth error:', error);
+      }
+    }
+  }
+
   res.status(401).json({ message: "Unauthorized" });
 };

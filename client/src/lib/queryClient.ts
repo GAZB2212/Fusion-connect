@@ -3,6 +3,43 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 // Base API URL for mobile app support - falls back to relative paths for web
 const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
+// Auth token storage key
+const AUTH_TOKEN_KEY = 'fusion_auth_token';
+
+// Helper to get/set auth token from localStorage
+export function getAuthToken(): string | null {
+  try {
+    return localStorage.getItem(AUTH_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setAuthToken(token: string): void {
+  try {
+    localStorage.setItem(AUTH_TOKEN_KEY, token);
+  } catch (e) {
+    console.error('Failed to save auth token:', e);
+  }
+}
+
+export function clearAuthToken(): void {
+  try {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+  } catch (e) {
+    console.error('Failed to clear auth token:', e);
+  }
+}
+
+// Helper to get auth headers
+function getAuthHeaders(): Record<string, string> {
+  const token = getAuthToken();
+  if (token) {
+    return { 'Authorization': `Bearer ${token}` };
+  }
+  return {};
+}
+
 // Helper to get full API URL
 export function getApiUrl(path: string): string {
   // Ensure path starts with /
@@ -25,7 +62,10 @@ export async function apiRequest(
   const fullUrl = getApiUrl(url);
   const res = await fetch(fullUrl, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers: {
+      ...(data ? { "Content-Type": "application/json" } : {}),
+      ...getAuthHeaders(),
+    },
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
   });
@@ -44,6 +84,7 @@ export const getQueryFn: <T>(options: {
     const fullUrl = getApiUrl(path);
     const res = await fetch(fullUrl, {
       credentials: "include",
+      headers: getAuthHeaders(),
     });
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
