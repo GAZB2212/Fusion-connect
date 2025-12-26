@@ -136,16 +136,23 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req: any, res, next) => {
+  const requestPath = req.path || req.url;
+  
   // First check session-based auth (for web users)
   if (req.isAuthenticated()) {
+    console.log(`[Auth] Session auth successful for ${requestPath}`);
     return next();
   }
 
   // Then check JWT token (for mobile app users)
   const authHeader = req.headers.authorization;
+  console.log(`[Auth] Checking JWT for ${requestPath}, Authorization header present: ${!!authHeader}`);
+  
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.substring(7);
     const decoded = verifyToken(token);
+    
+    console.log(`[Auth] Token decoded: ${!!decoded}, userId: ${decoded?.userId || 'none'}`);
     
     if (decoded) {
       try {
@@ -158,13 +165,19 @@ export const isAuthenticated: RequestHandler = async (req: any, res, next) => {
         if (user) {
           const { password: _, ...userWithoutPassword } = user;
           req.user = userWithoutPassword;
+          console.log(`[Auth] JWT auth successful for user ${user.id} on ${requestPath}`);
           return next();
+        } else {
+          console.log(`[Auth] User not found for userId: ${decoded.userId}`);
         }
       } catch (error) {
-        console.error('JWT auth error:', error);
+        console.error('[Auth] JWT auth database error:', error);
       }
+    } else {
+      console.log(`[Auth] Token verification failed for ${requestPath}`);
     }
   }
 
+  console.log(`[Auth] Unauthorized request to ${requestPath}`);
   res.status(401).json({ message: "Unauthorized" });
 };
