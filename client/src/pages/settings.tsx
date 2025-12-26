@@ -48,7 +48,7 @@ import {
 } from "lucide-react";
 import { VideoRecorder } from "@/components/video-recorder";
 import type { Profile, Chaperone } from "@shared/schema";
-import { apiRequest, queryClient, getApiUrl, clearAuthToken } from "@/lib/queryClient";
+import { apiRequest, queryClient, getApiUrl, clearAuthToken, getAuthToken } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import {
   HEIGHT_OPTIONS_CM,
@@ -416,10 +416,13 @@ export default function Settings() {
         formData.append('photos', file);
       });
 
+      // Include auth token for Capacitor mobile app support
+      const token = getAuthToken();
       const response = await fetch(getApiUrl('/api/photos/upload'), {
         method: 'POST',
         body: formData,
         credentials: 'include',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       });
 
       if (!response.ok) {
