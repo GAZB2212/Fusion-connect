@@ -3,6 +3,43 @@ import { Upload } from '@aws-sdk/lib-storage';
 import crypto from 'crypto';
 import type { Readable } from 'stream';
 
+/**
+ * Get the base URL for the application
+ * Uses REPLIT_DOMAINS in production, falls back to localhost for development
+ */
+export function getBaseUrl(): string {
+  // Check for production domains
+  if (process.env.REPLIT_DOMAINS) {
+    const domains = process.env.REPLIT_DOMAINS.split(',');
+    // Prefer the published domain (usually the first one without -00-)
+    const productionDomain = domains.find(d => !d.includes('-00-')) || domains[0];
+    return `https://${productionDomain}`;
+  }
+  
+  // Development fallback
+  if (process.env.REPLIT_DEV_DOMAIN) {
+    return `https://${process.env.REPLIT_DEV_DOMAIN}`;
+  }
+  
+  return 'http://localhost:5000';
+}
+
+/**
+ * Convert a relative URL to absolute URL for mobile app compatibility
+ */
+export function toAbsoluteUrl(relativeUrl: string): string {
+  if (!relativeUrl) return relativeUrl;
+  
+  // Already absolute
+  if (relativeUrl.startsWith('http://') || relativeUrl.startsWith('https://')) {
+    return relativeUrl;
+  }
+  
+  // Convert relative to absolute
+  const baseUrl = getBaseUrl();
+  return `${baseUrl}${relativeUrl.startsWith('/') ? '' : '/'}${relativeUrl}`;
+}
+
 // Initialize R2 client
 const r2Client = new S3Client({
   region: 'auto',
@@ -51,8 +88,8 @@ export async function uploadPhotoToR2(
 
     await upload.done();
 
-    // Return URL using our image proxy endpoint
-    const publicUrl = `/api/images/${fileName}`;
+    // Return absolute URL for mobile app compatibility
+    const publicUrl = toAbsoluteUrl(`/api/images/${fileName}`);
     
     console.log(`[R2 Upload] Successfully uploaded ${fileName}`);
     return publicUrl;
@@ -93,8 +130,8 @@ export async function uploadVideoToR2(
 
     await upload.done();
 
-    // Return URL using our media proxy endpoint
-    const publicUrl = `/api/images/${fileName}`;
+    // Return absolute URL for mobile app compatibility
+    const publicUrl = toAbsoluteUrl(`/api/images/${fileName}`);
     
     console.log(`[R2 Upload] Successfully uploaded video ${fileName}`);
     return publicUrl;

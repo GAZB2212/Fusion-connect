@@ -13,7 +13,7 @@ import { createRequire } from "module";
 import QRCode from "qrcode";
 import { createCanvas, loadImage } from "canvas";
 import multer from "multer";
-import { uploadPhotoToR2, uploadVideoToR2, base64ToBuffer, detectContentType, r2Client, BUCKET_NAME } from "./r2";
+import { uploadPhotoToR2, uploadVideoToR2, base64ToBuffer, detectContentType, r2Client, BUCKET_NAME, toAbsoluteUrl } from "./r2";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 const require = createRequire(import.meta.url);
 const { RtcTokenBuilder, RtcRole } = require("agora-token");
@@ -65,6 +65,19 @@ if (!process.env.STRIPE_SECRET_KEY) {
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2025-09-30.clover",
 });
+
+/**
+ * Convert all photo/video URLs in a profile to absolute URLs for mobile app compatibility
+ */
+function profileWithAbsoluteUrls<T extends { photos?: string[] | null; videoIntroUrl?: string | null }>(profile: T): T {
+  if (!profile) return profile;
+  
+  return {
+    ...profile,
+    photos: profile.photos?.map(url => toAbsoluteUrl(url)) || null,
+    videoIntroUrl: profile.videoIntroUrl ? toAbsoluteUrl(profile.videoIntroUrl) : null,
+  };
+}
 
 // Configure multer for photo uploads (memory storage)
 const upload = multer({
@@ -1135,7 +1148,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .where(eq(profiles.userId, userId))
         .limit(1);
       
-      const profilePhotoUrl = profile?.photos?.[0];
+      const profilePhotoUrl = profile?.photos?.[0] ? toAbsoluteUrl(profile.photos[0]) : undefined;
       console.log(`[Sendbird] User ${userId} profile photo URL:`, profilePhotoUrl);
       
       // Ensure user exists in Sendbird first with profile photo
@@ -1144,7 +1157,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await SendbirdService.createOrUpdateUser({
           userId: userId,
           nickname: `${req.user.firstName}${req.user.lastName ? ' ' + req.user.lastName : ''}`,
-          profileUrl: profilePhotoUrl || undefined,
+          profileUrl: profilePhotoUrl,
         });
       } catch (userCreateError: any) {
         console.warn('[Sendbird] User creation with photo failed, trying without photo:', userCreateError.message);
@@ -1179,10 +1192,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
               .limit(1);
             
             if (partnerUser && partnerProfile) {
+              const partnerPhotoUrl = partnerProfile.photos?.[0] ? toAbsoluteUrl(partnerProfile.photos[0]) : undefined;
               await SendbirdService.createOrUpdateUser({
                 userId: partnerId,
                 nickname: partnerProfile.displayName || `${partnerUser.firstName || ''} ${partnerUser.lastName || ''}`.trim(),
-                profileUrl: partnerProfile.photos?.[0] || undefined,
+                profileUrl: partnerPhotoUrl,
               });
             }
           }
@@ -1222,7 +1236,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(404).json({ message: "Profile not found" });
     }
 
-    res.json(profile);
+    // Convert relative URLs to absolute for mobile app compatibility
+    res.json(profileWithAbsoluteUrls(profile));
   });
 
   app.post("/api/profile", isAuthenticated, async (req: any, res: Response) => {
@@ -1250,7 +1265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .where(eq(profiles.userId, userId))
           .returning();
 
-        return res.json(profile);
+        return res.json(profileWithAbsoluteUrls(profile));
       }
 
       // Create new profile
@@ -1263,7 +1278,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })
         .returning();
 
-      res.json(profile);
+      res.json(profileWithAbsoluteUrls(profile));
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }
@@ -1285,7 +1300,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(404).json({ message: "Profile not found" });
     }
 
-    res.json(profile);
+    res.json(profileWithAbsoluteUrls(profile));
   });
 
   // Upload profile photos to R2
@@ -2043,7 +2058,7 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
 
     // Sort by distance if user has coordinates
     let result: (ProfileWithUser & { distance?: number })[] = discoverProfiles.map((dp) => ({
-      ...dp.profile,
+      ...profileWithAbsoluteUrls(dp.profile),
       user: dp.user,
     }));
 
@@ -2070,7 +2085,7 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
       });
     }
 
-    // Return top 20 profiles
+    // Return top 20 profiles (with absolute URLs for mobile app compatibility)
     res.json(result.slice(0, 20));
   });
 
@@ -2237,7 +2252,7 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
         const compatibilityScore = Math.round((totalScore / maxScore) * 100);
 
         return {
-          profile: { ...profile, user },
+          profile: { ...profileWithAbsoluteUrls(profile), user },
           compatibilityScore,
           matchReasons: matchReasons.slice(0, 3), // Top 3 reasons
         };
@@ -2380,14 +2395,14 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
                 await SendbirdService.createOrUpdateUser({
                   userId: userId,
                   nickname: profile1?.displayName || currentUser?.firstName || 'User',
-                  profileUrl: profile1?.photos?.[0] || undefined,
+                  profileUrl: profile1?.photos?.[0] ? toAbsoluteUrl(profile1.photos[0]) : undefined,
                 });
                 console.log(`[Sendbird] Created/updated user ${userId} for match`);
                 
                 await SendbirdService.createOrUpdateUser({
                   userId: swipedId,
                   nickname: profile2?.displayName || otherUser?.firstName || 'User',
-                  profileUrl: profile2?.photos?.[0] || undefined,
+                  profileUrl: profile2?.photos?.[0] ? toAbsoluteUrl(profile2.photos[0]) : undefined,
                 });
                 console.log(`[Sendbird] Created/updated user ${swipedId} for match`);
                 
@@ -2503,11 +2518,11 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
         result.push({
           ...match,
           user1Profile: {
-            ...user1Profile.profile,
+            ...profileWithAbsoluteUrls(user1Profile.profile),
             user: user1Profile.user,
           },
           user2Profile: {
-            ...user2Profile.profile,
+            ...profileWithAbsoluteUrls(user2Profile.profile),
             user: user2Profile.user,
           },
         });
@@ -2564,11 +2579,11 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
     const result: MatchWithProfiles = {
       ...match,
       user1Profile: {
-        ...user1Profile.profile,
+        ...profileWithAbsoluteUrls(user1Profile.profile),
         user: user1Profile.user,
       },
       user2Profile: {
-        ...user2Profile.profile,
+        ...profileWithAbsoluteUrls(user2Profile.profile),
         user: user2Profile.user,
       },
     };
@@ -2682,7 +2697,8 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
           dateOfBirth: row.other_dob,
           gender: row.other_gender,
           location: row.other_location,
-          photos: row.other_photos,
+          // Convert photos to absolute URLs for mobile app compatibility
+          photos: row.other_photos?.map((url: string) => toAbsoluteUrl(url)) || null,
           bio: row.other_bio,
           profession: row.other_profession,
           faceVerified: row.other_face_verified,
@@ -4063,7 +4079,7 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
             await SendbirdService.createOrUpdateUser({
               userId: user1.id,
               nickname: profile1.displayName || user1.firstName || user1.email,
-              profileUrl: profile1.photos?.[0] || undefined
+              profileUrl: profile1.photos?.[0] ? toAbsoluteUrl(profile1.photos[0]) : undefined
             });
             console.log(`[BACKFILL] Created/updated Sendbird user: ${user1.id}`);
           }
@@ -4073,7 +4089,7 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
             await SendbirdService.createOrUpdateUser({
               userId: user2.id,
               nickname: profile2.displayName || user2.firstName || user2.email,
-              profileUrl: profile2.photos?.[0] || undefined
+              profileUrl: profile2.photos?.[0] ? toAbsoluteUrl(profile2.photos[0]) : undefined
             });
             console.log(`[BACKFILL] Created/updated Sendbird user: ${user2.id}`);
           }
@@ -4127,7 +4143,7 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
           await SendbirdService.createOrUpdateUser({
             userId: user.id,
             nickname: nickname,
-            profileUrl: profile?.photos?.[0] || undefined,
+            profileUrl: profile?.photos?.[0] ? toAbsoluteUrl(profile.photos[0]) : undefined,
           });
           
           results.created++;
