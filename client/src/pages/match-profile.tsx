@@ -77,7 +77,7 @@ export default function MatchProfile() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-32">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background border-b p-3 flex items-center gap-3">
         <Button 
