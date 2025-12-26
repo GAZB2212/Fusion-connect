@@ -34,7 +34,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
-import { apiRequest, queryClient, getApiUrl } from "@/lib/queryClient";
+import { apiRequest, queryClient, getApiUrl, getAuthToken } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useRingtone } from "@/hooks/use-ringtone";
 
@@ -137,8 +137,10 @@ export default function Messages() {
     queryKey: ["/api/video-call/incoming", currentChannelUrl],
     queryFn: async () => {
       if (!currentChannelUrl) return null;
-      const res = await fetch(`/api/video-call/incoming/${currentChannelUrl}`, {
-        credentials: 'include'
+      const token = getAuthToken();
+      const res = await fetch(getApiUrl(`/api/video-call/incoming/${currentChannelUrl}`), {
+        credentials: 'include',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
       });
       if (!res.ok) return null;
       return res.json();
@@ -159,7 +161,11 @@ export default function Messages() {
       
       setActiveCall(incomingCall);
       // Fetch token for the call
-      fetch(`/api/video-call/token/${incomingCall.id}`, { credentials: 'include' })
+      const token = getAuthToken();
+      fetch(getApiUrl(`/api/video-call/token/${incomingCall.id}`), { 
+        credentials: 'include',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      })
         .then(res => res.json())
         .then(data => {
           if (data.token) {
@@ -196,7 +202,11 @@ export default function Messages() {
       // Fetch token for the call FIRST before setting any state
       try {
         console.log('[VideoCall] Fetching token for call:', call.id);
-        const tokenRes = await fetch(`/api/video-call/token/${call.id}`, { credentials: 'include' });
+        const callToken = getAuthToken();
+        const tokenRes = await fetch(getApiUrl(`/api/video-call/token/${call.id}`), { 
+          credentials: 'include',
+          headers: callToken ? { 'Authorization': `Bearer ${callToken}` } : {},
+        });
         console.log('[VideoCall] Token response status:', tokenRes.status);
         
         if (!tokenRes.ok) {
