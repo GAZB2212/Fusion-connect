@@ -43,7 +43,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRingtone } from "@/hooks/use-ringtone";
 import { getUnreadMessageCount, updateBadgeCount } from "@/lib/unifiedPushNotifications";
 import { IOSSpinner } from "@/components/ios-spinner";
-import waliBadgeImage from "@assets/Gold_\"Wali\"_badge_with_Islamic_design_1766878269204.png";
+import waliBadgeImage from "@assets/Untitled_design-45_1766878749533.png";
 
 const SENDBIRD_APP_ID = import.meta.env.VITE_SENDBIRD_APP_ID || "A68E730B-8E56-4655-BCBD-A709F3162376";
 
