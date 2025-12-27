@@ -37,6 +37,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient, getApiUrl, getAuthToken } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useRingtone } from "@/hooks/use-ringtone";
+import { getUnreadMessageCount, updateBadgeCount } from "@/lib/unifiedPushNotifications";
 
 const SENDBIRD_APP_ID = import.meta.env.VITE_SENDBIRD_APP_ID || "A68E730B-8E56-4655-BCBD-A709F3162376";
 
@@ -401,6 +402,19 @@ export default function Messages() {
     // matchId can be undefined (list view) or a string (chat view)
     setCurrentChannelUrl(matchId || null);
   }, [matchId]);
+
+  // Update app badge count when entering/leaving messages page
+  useEffect(() => {
+    const updateBadge = async () => {
+      const unreadCount = await getUnreadMessageCount();
+      await updateBadgeCount(unreadCount);
+    };
+    updateBadge();
+    
+    // Also update when messages are marked as read (channel is viewed)
+    const interval = setInterval(updateBadge, 30000);
+    return () => clearInterval(interval);
+  }, [currentChannelUrl]);
 
   const handleChannelSelect = (channel: any) => {
     if (channel?.url) {
