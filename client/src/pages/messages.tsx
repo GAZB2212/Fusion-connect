@@ -394,44 +394,90 @@ export default function Messages() {
 
   // Ensure Sendbird channel exists when navigating to a match
   const [isEnsuringChannel, setIsEnsuringChannel] = useState(false);
+  const [ensuredMatchId, setEnsuredMatchId] = useState<string | null>(null);
+  const [ensureAttempts, setEnsureAttempts] = useState(0);
   
   useEffect(() => {
-    if (matchId && user) {
-      setIsEnsuringChannel(true);
-      
-      const token = getAuthToken();
-      fetch(getApiUrl(`/api/sendbird/ensure-channel/${matchId}`), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-        },
-        credentials: 'include',
+    // Skip if no matchId or user
+    if (!matchId || !user) return;
+    
+    // Skip if we already ensured this matchId successfully
+    if (ensuredMatchId === matchId) return;
+    
+    // Skip if already in progress
+    if (isEnsuringChannel) return;
+    
+    // Limit retry attempts to prevent infinite loops
+    if (ensureAttempts >= 2) {
+      console.error('[Messages] Max ensure attempts reached for:', matchId);
+      toast({
+        title: "Connection error",
+        description: "Could not open conversation after multiple attempts.",
+        variant: "destructive",
+      });
+      setLocation("/messages");
+      return;
+    }
+    
+    setIsEnsuringChannel(true);
+    setEnsureAttempts(prev => prev + 1);
+    
+    const token = getAuthToken();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    fetch(getApiUrl(`/api/sendbird/ensure-channel/${matchId}`), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      credentials: 'include',
+      signal: controller.signal,
+    })
+      .then(res => {
+        clearTimeout(timeoutId);
+        if (!res.ok) {
+          throw new Error('Failed to ensure channel');
+        }
+        return res.json();
       })
-        .then(res => {
-          if (!res.ok) {
-            throw new Error('Failed to ensure channel');
-          }
-          return res.json();
-        })
-        .then(data => {
-          console.log('[Messages] Channel ensured:', data);
-          setCurrentChannelUrl(data.channelUrl || matchId);
-        })
-        .catch(err => {
-          console.error('[Messages] Error ensuring channel:', err);
+      .then(data => {
+        console.log('[Messages] Channel ensured:', data);
+        setEnsuredMatchId(matchId);
+        setCurrentChannelUrl(data.channelUrl || matchId);
+        setEnsureAttempts(0); // Reset attempts on success
+      })
+      .catch(err => {
+        clearTimeout(timeoutId);
+        console.error('[Messages] Error ensuring channel:', err);
+        // Don't redirect on first failure - let the retry logic handle it
+        if (ensureAttempts >= 1) {
           toast({
             title: "Connection error",
             description: "Could not open conversation. Please try again.",
             variant: "destructive",
           });
           setLocation("/messages");
-        })
-        .finally(() => {
-          setIsEnsuringChannel(false);
-        });
+        }
+      })
+      .finally(() => {
+        setIsEnsuringChannel(false);
+      });
+      
+    return () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, [matchId, user?.id, ensuredMatchId, isEnsuringChannel, ensureAttempts]);
+  
+  // Reset ensure state when matchId changes
+  useEffect(() => {
+    if (!matchId) {
+      setEnsuredMatchId(null);
+      setEnsureAttempts(0);
     }
-  }, [matchId, user]);
+  }, [matchId]);
 
   const handleChannelSelect = (channel: any) => {
     if (channel?.url) {
