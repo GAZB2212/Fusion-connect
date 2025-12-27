@@ -392,11 +392,46 @@ export default function Messages() {
     }
   }, [tokenData]);
 
+  // Ensure Sendbird channel exists when navigating to a match
+  const [isEnsuringChannel, setIsEnsuringChannel] = useState(false);
+  
   useEffect(() => {
-    if (matchId) {
-      setCurrentChannelUrl(matchId);
+    if (matchId && user) {
+      setIsEnsuringChannel(true);
+      
+      const token = getAuthToken();
+      fetch(getApiUrl(`/api/sendbird/ensure-channel/${matchId}`), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        credentials: 'include',
+      })
+        .then(res => {
+          if (!res.ok) {
+            throw new Error('Failed to ensure channel');
+          }
+          return res.json();
+        })
+        .then(data => {
+          console.log('[Messages] Channel ensured:', data);
+          setCurrentChannelUrl(data.channelUrl || matchId);
+        })
+        .catch(err => {
+          console.error('[Messages] Error ensuring channel:', err);
+          toast({
+            title: "Connection error",
+            description: "Could not open conversation. Please try again.",
+            variant: "destructive",
+          });
+          setLocation("/messages");
+        })
+        .finally(() => {
+          setIsEnsuringChannel(false);
+        });
     }
-  }, [matchId]);
+  }, [matchId, user]);
 
   const handleChannelSelect = (channel: any) => {
     if (channel?.url) {
@@ -432,12 +467,12 @@ export default function Messages() {
     );
   }
 
-  if (tokenLoading || !sendbirdToken) {
+  if (tokenLoading || !sendbirdToken || isEnsuringChannel) {
     return (
       <div className="fixed inset-0 bottom-16 flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted-foreground">Connecting...</p>
+          <p className="text-muted-foreground">{isEnsuringChannel ? "Opening conversation..." : "Connecting..."}</p>
         </div>
       </div>
     );

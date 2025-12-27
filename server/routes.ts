@@ -1222,6 +1222,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Ensure Sendbird channel exists for a match
+  app.post("/api/sendbird/ensure-channel/:matchId", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+    const { matchId } = req.params;
+    
+    try {
+      console.log(`[Sendbird] Ensuring channel exists for match ${matchId}, user ${userId}`);
+      
+      // Get the match from database
+      const [match] = await db
+        .select()
+        .from(matches)
+        .where(eq(matches.id, matchId))
+        .limit(1);
+      
+      if (!match) {
+        return res.status(404).json({ message: "Match not found" });
+      }
+      
+      // Verify user is part of this match
+      if (match.user1Id !== userId && match.user2Id !== userId) {
+        return res.status(403).json({ message: "You are not part of this match" });
+      }
+      
+      const partnerId = match.user1Id === userId ? match.user2Id : match.user1Id;
+      
+      // Try to get existing channel
+      try {
+        const existingChannel = await SendbirdService.getChannel(matchId);
+        console.log(`[Sendbird] Channel ${matchId} already exists`);
+        
+        // Check if user is a member
+        const members = existingChannel.members || [];
+        const userIsMember = members.some((m: any) => m.user_id === userId);
+        
+        if (!userIsMember) {
+          // Invite user to channel
+          await SendbirdService.inviteToChannel(matchId, [userId]);
+          console.log(`[Sendbird] Invited user ${userId} to channel ${matchId}`);
+        }
+        
+        return res.json({ 
+          success: true, 
+          channelUrl: existingChannel.channel_url,
+          created: false 
+        });
+      } catch (channelError: any) {
+        // Channel doesn't exist, create it
+        console.log(`[Sendbird] Channel ${matchId} not found, creating...`);
+        
+        // Ensure both users exist in Sendbird first
+        const [userProfile] = await db
+          .select()
+          .from(profiles)
+          .where(eq(profiles.userId, userId))
+          .limit(1);
+        
+        const [partnerProfile] = await db
+          .select()
+          .from(profiles)
+          .where(eq(profiles.userId, partnerId))
+          .limit(1);
+        
+        const [partnerUser] = await db
+          .select()
+          .from(users)
+          .where(eq(users.id, partnerId))
+          .limit(1);
+        
+        // Create/update users in Sendbird
+        await SendbirdService.createOrUpdateUser({
+          userId: userId,
+          nickname: `${req.user.firstName}${req.user.lastName ? ' ' + req.user.lastName : ''}`,
+          profileUrl: userProfile?.photos?.[0] ? toAbsoluteUrl(userProfile.photos[0]) : undefined,
+        });
+        
+        if (partnerUser) {
+          await SendbirdService.createOrUpdateUser({
+            userId: partnerId,
+            nickname: partnerProfile?.displayName || `${partnerUser.firstName || ''} ${partnerUser.lastName || ''}`.trim(),
+            profileUrl: partnerProfile?.photos?.[0] ? toAbsoluteUrl(partnerProfile.photos[0]) : undefined,
+          });
+        }
+        
+        // Create the channel with the match ID as the URL
+        const newChannel = await SendbirdService.createChannel([userId, partnerId], matchId);
+        console.log(`[Sendbird] Created channel ${matchId}`);
+        
+        // Update match with channelUrl if not set
+        if (!match.channelUrl) {
+          await db
+            .update(matches)
+            .set({ channelUrl: matchId })
+            .where(eq(matches.id, matchId));
+        }
+        
+        return res.json({ 
+          success: true, 
+          channelUrl: newChannel.channel_url,
+          created: true 
+        });
+      }
+    } catch (error: any) {
+      console.error('[Sendbird] Error ensuring channel:', error);
+      res.status(500).json({ 
+        message: "Failed to ensure channel exists",
+        error: error.message 
+      });
+    }
+  });
+
   // Profile endpoints
   app.get("/api/profile", isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;
