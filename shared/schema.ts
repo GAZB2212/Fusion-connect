@@ -117,6 +117,9 @@ export const profiles = pgTable("profiles", {
   dealBreakers: text("deal_breakers"),
   communicationStyle: varchar("communication_style", { length: 100 }),
   
+  // Islamic Profile Prompts - conversation starters
+  profilePrompts: jsonb("profile_prompts"), // Array of { promptId: string, answer: string }
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

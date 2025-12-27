@@ -18,6 +18,7 @@ import {
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { getPromptById, type ProfilePromptAnswer } from "@/lib/islamicPrompts";
 
 export default function Home() {
   const { user } = useAuth();
@@ -337,10 +338,10 @@ export default function Home() {
                 Verified
               </Badge>
             )}
-            {currentProfile.chaperoneId && (
+            {currentProfile.waliInvolvement && currentProfile.waliInvolvement !== 'not_needed' && (
               <Badge className="bg-primary/90 text-primary-foreground border-0 gap-1.5 px-2.5 py-1">
                 <Users className="h-3.5 w-3.5" />
-                Wali Connected
+                Wali Involved
               </Badge>
             )}
             {currentProfile.lookingFor === "Marriage" && (
@@ -389,8 +390,25 @@ export default function Home() {
             )}
           </div>
 
+          {/* Islamic Profile Prompt */}
+          {currentProfile.profilePrompts && (currentProfile.profilePrompts as ProfilePromptAnswer[]).length > 0 && (
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 mb-3">
+              {(() => {
+                const prompts = currentProfile.profilePrompts as ProfilePromptAnswer[];
+                const firstPrompt = prompts[0];
+                const promptConfig = getPromptById(firstPrompt.promptId);
+                return (
+                  <div>
+                    <p className="text-xs text-white/70 mb-1">{promptConfig?.prompt || 'About me...'}</p>
+                    <p className="text-sm text-white font-medium line-clamp-2">{firstPrompt.answer}</p>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
           {/* Bio */}
-          {currentProfile.bio && (
+          {currentProfile.bio && !currentProfile.profilePrompts && (
             <p className="text-base leading-relaxed text-white/90 line-clamp-2 mb-2">
               {currentProfile.bio}
             </p>
