@@ -99,7 +99,7 @@ export default function Suggestions() {
             <p className="text-[#F8F4E3]/70 mb-6">
               We're still reviewing profiles to find your best matches. Check back soon!
             </p>
-            <Button onClick={() => setLocation("/discover")} data-testid="button-go-discover">
+            <Button onClick={() => setLocation("/")} data-testid="button-go-discover">
               Start Discovering
             </Button>
           </CardContent>
