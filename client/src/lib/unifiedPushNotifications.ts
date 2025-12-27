@@ -1,6 +1,7 @@
 // Unified Push Notification Service
 // Works with both Web Push (browsers) and Native Push (Capacitor iOS/Android)
 
+import { PushNotifications, Token, PushNotificationSchema, ActionPerformed } from '@capacitor/push-notifications';
 import { isCapacitorNative, getPlatform, getPlatformInfo } from './platform';
 import { getApiUrl, getAuthToken } from './queryClient';
 
@@ -9,7 +10,6 @@ export type NotificationPermissionStatus = 'granted' | 'denied' | 'prompt' | 'un
 export interface PushToken {
   type: 'web' | 'fcm' | 'apns';
   token: string;
-  // For web push, these additional fields are needed
   endpoint?: string;
   auth?: string;
   p256dh?: string;
@@ -21,6 +21,9 @@ export interface NotificationData {
   data?: Record<string, any>;
   badge?: number;
 }
+
+// Store the current device token for reference
+let currentDeviceToken: string | null = null;
 
 // ============================================
 // Web Push Implementation (for browsers)
@@ -113,12 +116,10 @@ async function webUnsubscribe(): Promise<boolean> {
 // ============================================
 
 async function nativeGetPermission(): Promise<NotificationPermissionStatus> {
-  const PushNotifications = (window as any).Capacitor?.Plugins?.PushNotifications;
-  if (!PushNotifications) return 'unknown';
+  if (!isCapacitorNative()) return 'unknown';
   
   try {
     const result = await PushNotifications.checkPermissions();
-    // Capacitor returns: 'prompt', 'prompt-with-rationale', 'granted', 'denied'
     if (result.receive === 'granted') return 'granted';
     if (result.receive === 'denied') return 'denied';
     return 'prompt';
@@ -129,8 +130,7 @@ async function nativeGetPermission(): Promise<NotificationPermissionStatus> {
 }
 
 async function nativeRequestPermission(): Promise<NotificationPermissionStatus> {
-  const PushNotifications = (window as any).Capacitor?.Plugins?.PushNotifications;
-  if (!PushNotifications) return 'denied';
+  if (!isCapacitorNative()) return 'denied';
   
   try {
     const result = await PushNotifications.requestPermissions();
@@ -144,13 +144,20 @@ async function nativeRequestPermission(): Promise<NotificationPermissionStatus> 
 }
 
 async function nativeRegister(): Promise<PushToken | null> {
-  const PushNotifications = (window as any).Capacitor?.Plugins?.PushNotifications;
-  if (!PushNotifications) return null;
+  if (!isCapacitorNative()) return null;
   
   return new Promise((resolve) => {
+    let resolved = false;
+    
     // Listen for registration success
-    PushNotifications.addListener('registration', (token: { value: string }) => {
+    PushNotifications.addListener('registration', (token: Token) => {
+      if (resolved) return;
+      resolved = true;
+      
       const platform = getPlatform();
+      currentDeviceToken = token.value;
+      console.log(`[Push] Received ${platform} device token:`, token.value.substring(0, 20) + '...');
+      
       resolve({
         type: platform === 'ios' ? 'apns' : 'fcm',
         token: token.value
@@ -159,6 +166,8 @@ async function nativeRegister(): Promise<PushToken | null> {
     
     // Listen for registration error
     PushNotifications.addListener('registrationError', (error: any) => {
+      if (resolved) return;
+      resolved = true;
       console.error('Native push registration error:', error);
       resolve(null);
     });
@@ -167,14 +176,26 @@ async function nativeRegister(): Promise<PushToken | null> {
     PushNotifications.register();
     
     // Timeout after 10 seconds
-    setTimeout(() => resolve(null), 10000);
+    setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        console.warn('[Push] Registration timed out');
+        resolve(null);
+      }
+    }, 10000);
   });
 }
 
 async function nativeUnsubscribe(): Promise<boolean> {
-  // Native apps don't really "unsubscribe" - they just stop sending the token to server
-  // The token remains valid until the app is uninstalled
+  currentDeviceToken = null;
   return true;
+}
+
+// Navigation callback for handling notification taps
+let navigationCallback: ((matchId: string) => void) | null = null;
+
+export function setNavigationCallback(callback: (matchId: string) => void): void {
+  navigationCallback = callback;
 }
 
 // Set up native notification listeners
@@ -184,27 +205,56 @@ export function setupNativeNotificationListeners(
 ): void {
   if (!isCapacitorNative()) return;
   
-  const PushNotifications = (window as any).Capacitor?.Plugins?.PushNotifications;
-  if (!PushNotifications) return;
+  console.log('[Push] Setting up native notification listeners');
   
   // Notification received while app is in foreground
-  PushNotifications.addListener('pushNotificationReceived', (notification: any) => {
-    console.log('Push notification received:', notification);
+  PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
+    console.log('[Push] Notification received in foreground:', notification);
+    
+    // Parse Sendbird push data
+    const sendbirdData = notification.data?.sendbird ? JSON.parse(notification.data.sendbird) : null;
+    const channelUrl = sendbirdData?.channel?.channel_url || notification.data?.channelUrl || notification.data?.matchId;
+    
     onNotificationReceived?.({
       title: notification.title || '',
       body: notification.body || '',
-      data: notification.data
+      data: {
+        ...notification.data,
+        matchId: channelUrl,
+        channelUrl
+      }
     });
   });
   
   // Notification tapped (app was in background or closed)
-  PushNotifications.addListener('pushNotificationActionPerformed', (action: any) => {
-    console.log('Push notification tapped:', action);
-    onNotificationTapped?.({
+  PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
+    console.log('[Push] Notification tapped:', action);
+    
+    // Parse Sendbird push data
+    const notificationData = action.notification?.data;
+    const sendbirdData = notificationData?.sendbird ? JSON.parse(notificationData.sendbird) : null;
+    const channelUrl = sendbirdData?.channel?.channel_url || notificationData?.channelUrl || notificationData?.matchId;
+    
+    const parsedNotification: NotificationData = {
       title: action.notification?.title || '',
       body: action.notification?.body || '',
-      data: action.notification?.data
-    });
+      data: {
+        ...notificationData,
+        matchId: channelUrl,
+        channelUrl
+      }
+    };
+    
+    onNotificationTapped?.(parsedNotification);
+    
+    // Navigate to the chat if we have a channel URL
+    if (channelUrl && navigationCallback) {
+      console.log('[Push] Navigating to chat:', channelUrl);
+      navigationCallback(channelUrl);
+    } else if (channelUrl) {
+      // Fallback to direct location change
+      window.location.href = `/messages/${channelUrl}`;
+    }
   });
 }
 
@@ -214,7 +264,7 @@ export function setupNativeNotificationListeners(
 
 export async function isPushSupported(): Promise<boolean> {
   if (isCapacitorNative()) {
-    return !!(window as any).Capacitor?.Plugins?.PushNotifications;
+    return true; // Capacitor always supports push on iOS/Android
   }
   return webPushSupported();
 }
@@ -237,10 +287,8 @@ export async function registerForPushNotifications(vapidPublicKey?: string): Pro
   const platformInfo = getPlatformInfo();
   
   if (platformInfo.isNative) {
-    // Native Capacitor app
     return nativeRegister();
   } else {
-    // Web browser
     if (!vapidPublicKey) {
       console.error('VAPID public key required for web push');
       return null;
@@ -257,7 +305,7 @@ export async function unregisterFromPushNotifications(): Promise<boolean> {
   return webUnsubscribe();
 }
 
-// Save push token to server
+// Save push token to server (also registers with Sendbird for native tokens)
 export async function savePushTokenToServer(token: PushToken): Promise<boolean> {
   try {
     const authToken = getAuthToken();
@@ -278,14 +326,14 @@ export async function savePushTokenToServer(token: PushToken): Promise<boolean> 
     });
     
     if (response.ok) {
-      console.log('Push token saved to server');
+      console.log('[Push] Token saved to server and registered with Sendbird');
       return true;
     } else {
-      console.error('Failed to save push token:', await response.text());
+      console.error('[Push] Failed to save push token:', await response.text());
       return false;
     }
   } catch (error) {
-    console.error('Error saving push token:', error);
+    console.error('[Push] Error saving push token:', error);
     return false;
   }
 }
@@ -300,56 +348,115 @@ export async function removePushTokenFromServer(): Promise<boolean> {
         'Content-Type': 'application/json',
         ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
       },
-      credentials: 'include'
+      credentials: 'include',
+      body: JSON.stringify({
+        token: currentDeviceToken
+      })
     });
     
     if (response.ok) {
-      console.log('Push token removed from server');
+      console.log('[Push] Token removed from server');
       return true;
     } else {
-      console.error('Failed to remove push token:', await response.text());
+      console.error('[Push] Failed to remove push token:', await response.text());
       return false;
     }
   } catch (error) {
-    console.error('Error removing push token:', error);
+    console.error('[Push] Error removing push token:', error);
     return false;
   }
 }
 
-// Initialize push notifications (call on app load)
-export async function initializePushNotifications(vapidPublicKey?: string): Promise<void> {
+// Get unread message count for badge
+export async function getUnreadMessageCount(): Promise<number> {
+  try {
+    const authToken = getAuthToken();
+    const response = await fetch(getApiUrl('/api/push/unread-count'), {
+      method: 'GET',
+      headers: { 
+        'Content-Type': 'application/json',
+        ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+      },
+      credentials: 'include'
+    });
+    
+    if (response.ok) {
+      const data = await response.json();
+      return data.unreadCount || 0;
+    }
+    return 0;
+  } catch (error) {
+    console.error('[Push] Error getting unread count:', error);
+    return 0;
+  }
+}
+
+// Update app badge count (iOS only)
+export async function updateBadgeCount(count: number): Promise<void> {
+  if (!isCapacitorNative()) return;
+  
+  try {
+    // On iOS, the badge is typically updated via the push notification payload
+    // However, we can also set it locally using Capacitor Badge plugin if available
+    const Badge = (window as any).Capacitor?.Plugins?.Badge;
+    if (Badge) {
+      if (count > 0) {
+        await Badge.set({ count });
+      } else {
+        await Badge.clear();
+      }
+      console.log('[Push] Badge count updated to:', count);
+    }
+  } catch (error) {
+    console.error('[Push] Error updating badge:', error);
+  }
+}
+
+// Initialize push notifications (call on app load after user is authenticated)
+export async function initializePushNotifications(
+  vapidPublicKey?: string,
+  onNavigateToChat?: (matchId: string) => void
+): Promise<void> {
   const supported = await isPushSupported();
   if (!supported) {
-    console.log('Push notifications not supported on this platform');
+    console.log('[Push] Push notifications not supported on this platform');
     return;
   }
   
   const platformInfo = getPlatformInfo();
-  console.log(`Initializing push notifications for ${platformInfo.platform}`);
+  console.log(`[Push] Initializing push notifications for ${platformInfo.platform}`);
+  
+  // Set navigation callback
+  if (onNavigateToChat) {
+    setNavigationCallback(onNavigateToChat);
+  }
   
   // Set up native listeners if on Capacitor
   if (platformInfo.isNative) {
     setupNativeNotificationListeners(
       (notification) => {
-        // Handle foreground notification
-        console.log('Foreground notification:', notification);
+        console.log('[Push] Foreground notification:', notification);
+        // Could show an in-app notification banner here
       },
       (notification) => {
-        // Handle notification tap - navigate to relevant screen
-        console.log('Notification tapped:', notification);
-        if (notification.data?.matchId) {
-          window.location.href = `/messages/${notification.data.matchId}`;
-        }
+        console.log('[Push] Notification tapped, data:', notification.data);
+        // Navigation is handled in the listener
       }
     );
   }
   
   // Check if permission already granted
   const permission = await getNotificationPermission();
+  console.log('[Push] Current permission status:', permission);
+  
   if (permission === 'granted') {
     const token = await registerForPushNotifications(vapidPublicKey);
     if (token) {
       await savePushTokenToServer(token);
+      
+      // Update badge count after registration
+      const unreadCount = await getUnreadMessageCount();
+      await updateBadgeCount(unreadCount);
     }
   }
 }
@@ -361,7 +468,7 @@ export async function enablePushNotifications(vapidPublicKey?: string): Promise<
   
   const permission = await requestNotificationPermission();
   if (permission !== 'granted') {
-    console.log('Notification permission denied');
+    console.log('[Push] Notification permission denied');
     return false;
   }
   
@@ -373,10 +480,22 @@ export async function enablePushNotifications(vapidPublicKey?: string): Promise<
 
 // Disable push notifications
 export async function disablePushNotifications(): Promise<boolean> {
+  await removePushTokenFromServer();
   const unregistered = await unregisterFromPushNotifications();
-  if (unregistered) {
-    await removePushTokenFromServer();
-    return true;
-  }
-  return false;
+  await updateBadgeCount(0);
+  return unregistered;
+}
+
+// Re-register push token (call after login or when token might be stale)
+export async function refreshPushToken(vapidPublicKey?: string): Promise<boolean> {
+  const supported = await isPushSupported();
+  if (!supported) return false;
+  
+  const permission = await getNotificationPermission();
+  if (permission !== 'granted') return false;
+  
+  const token = await registerForPushNotifications(vapidPublicKey);
+  if (!token) return false;
+  
+  return savePushTokenToServer(token);
 }
