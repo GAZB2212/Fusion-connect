@@ -3672,6 +3672,17 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
           })
           .where(eq(pushTokens.id, existing.id));
         
+        // Re-register with Sendbird in case it was removed
+        if (validatedData.type === 'apns') {
+          try {
+            await SendbirdService.registerApnsPushToken(userId, validatedData.token);
+          } catch (e) { /* ignore */ }
+        } else if (validatedData.type === 'fcm') {
+          try {
+            await SendbirdService.registerFcmPushToken(userId, validatedData.token);
+          } catch (e) { /* ignore */ }
+        }
+        
         return res.json({ message: "Push token updated" });
       }
 
@@ -3686,6 +3697,24 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
         deviceId: validatedData.deviceId,
         isActive: true,
       });
+
+      // Also register native push tokens with Sendbird for chat notifications
+      if (validatedData.type === 'apns') {
+        try {
+          await SendbirdService.registerApnsPushToken(userId, validatedData.token);
+          console.log(`[Push] Registered APNs token with Sendbird for user ${userId}`);
+        } catch (sendbirdError) {
+          console.error('[Push] Failed to register APNs token with Sendbird:', sendbirdError);
+          // Don't fail the request, still store locally
+        }
+      } else if (validatedData.type === 'fcm') {
+        try {
+          await SendbirdService.registerFcmPushToken(userId, validatedData.token);
+          console.log(`[Push] Registered FCM token with Sendbird for user ${userId}`);
+        } catch (sendbirdError) {
+          console.error('[Push] Failed to register FCM token with Sendbird:', sendbirdError);
+        }
+      }
 
       res.json({ message: "Push token registered" });
     } catch (error: any) {
@@ -3734,6 +3763,19 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
     } catch (error: any) {
       console.error('Error unregistering push token:', error);
       res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Get unread message count for badge updates
+  app.get("/api/push/unread-count", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+    
+    try {
+      const unreadCount = await SendbirdService.getUnreadMessageCount(userId);
+      res.json({ unreadCount });
+    } catch (error: any) {
+      console.error('Error getting unread count:', error);
+      res.json({ unreadCount: 0 });
     }
   });
 
