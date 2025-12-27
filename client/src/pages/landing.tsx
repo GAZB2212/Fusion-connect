@@ -1,79 +1,53 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Shield, Users, MessageSquare, CheckCircle2, Star, Sparkles } from "lucide-react";
+import { Link } from "wouter";
 import logoImage from "@assets/NEW logo 2_1761587557587.png";
 import loadingVideo from "@assets/Scene_a_muslim_202512100938_lunmc_1765359545154.mp4";
-import coupleImage from "@assets/Gemini_Generated_Image_jd1f1ljd1f1ljd1f_1765364924010.jpeg";
-
-function CountUpNumber({ end, suffix = "", duration = 2000 }: { end: number; suffix?: string; duration?: number }) {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    let startTime: number | null = null;
-    const animate = (currentTime: number) => {
-      if (!startTime) startTime = currentTime;
-      const progress = Math.min((currentTime - startTime) / duration, 1);
-      
-      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-      setCount(Math.floor(easeOutQuart * end));
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-    
-    requestAnimationFrame(animate);
-  }, [end, duration]);
-
-  return <>{count}{suffix}</>;
-}
 
 export default function Landing() {
-  // Check if animation has already been shown this session
   const [showLoading, setShowLoading] = useState(() => {
     const hasSeenAnimation = sessionStorage.getItem('fusionAnimationShown');
     return !hasSeenAnimation;
   });
   const [fadeOut, setFadeOut] = useState(false);
   const [contentVisible, setContentVisible] = useState(!showLoading);
+  const [logoVisible, setLogoVisible] = useState(false);
+  const [elementsVisible, setElementsVisible] = useState(false);
 
   useEffect(() => {
     if (!showLoading) {
-      // Animation already shown, skip it
+      setTimeout(() => setElementsVisible(true), 100);
       return;
     }
 
-    // Mark animation as shown for this session
     sessionStorage.setItem('fusionAnimationShown', 'true');
 
-    // Video plays for ~7 seconds, hold for 1 second, then fade
     const fadeTimer = setTimeout(() => {
       setFadeOut(true);
     }, 8000);
 
-    // Remove splash screen after fade completes
     const removeTimer = setTimeout(() => {
       setShowLoading(false);
     }, 9000);
 
-    // Start fading in content shortly after splash starts fading out
     const contentTimer = setTimeout(() => {
       setContentVisible(true);
     }, 8500);
+
+    const elementsTimer = setTimeout(() => {
+      setElementsVisible(true);
+    }, 9200);
 
     return () => {
       clearTimeout(fadeTimer);
       clearTimeout(removeTimer);
       clearTimeout(contentTimer);
+      clearTimeout(elementsTimer);
     };
   }, [showLoading]);
-
-  // State for logo slide-in animation
-  const [logoVisible, setLogoVisible] = useState(false);
   
   useEffect(() => {
     if (showLoading) {
-      // Start logo slide-in after 1.5 seconds
       const logoTimer = setTimeout(() => {
         setLogoVisible(true);
       }, 1500);
@@ -98,10 +72,8 @@ export default function Landing() {
           <source src={loadingVideo} type="video/mp4" />
         </video>
         
-        {/* Dark overlay for logo visibility */}
         <div className="absolute inset-0 bg-black/40" />
         
-        {/* Static logo sliding in from bottom to top */}
         <div 
           className={`absolute inset-x-0 top-0 flex justify-center pt-16 pointer-events-none transition-all duration-1000 ease-out ${
             logoVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
@@ -118,361 +90,85 @@ export default function Landing() {
     );
   }
 
-  const features = [
-    {
-      icon: Shield,
-      title: "Privacy & Safety First",
-      description: "Verified profiles, photo blur options, and complete control over your visibility. Your privacy is our priority."
-    },
-    {
-      icon: Sparkles,
-      title: "Faith-Based Matching",
-      description: "Find someone who shares your values. Filter by sect, prayer habits, halal lifestyle, and marriage intentions."
-    },
-    {
-      icon: Users,
-      title: "Chaperone Feature",
-      description: "Include your Wali or guardian in conversations for traditional courtship with modern convenience."
-    },
-    {
-      icon: MessageSquare,
-      title: "Safe Communication",
-      description: "Message only after mutual matches. No unsolicited messages, no pressure, just meaningful connections."
-    }
-  ];
-
-  const stats = [
-    { number: 15, suffix: "M+", label: "Muslim Singles" },
-    { number: 600, suffix: "K+", label: "Success Stories" },
-    { number: 500, suffix: "+", label: "Daily Matches" }
-  ];
-
-  const testimonials = [
-    {
-      quote: "A beautiful halal way to meet my spouse. The chaperone feature gave my family peace of mind.",
-      author: "Fatima & Ahmed",
-      badge: "Married 2024"
-    },
-    {
-      quote: "Finally, an app that respects our values and traditions while being modern and easy to use.",
-      author: "Aisha & Omar",
-      badge: "Married 2023"
-    }
-  ];
-
   return (
-    <div className={`min-h-screen transition-opacity duration-1000 ${contentVisible ? 'opacity-100' : 'opacity-0'}`}>
-      {/* Navigation - Fixed to top with safe area for iPhone notch */}
-      <nav className="fixed top-0 left-0 right-0 z-50 w-full border-b border-white/10 bg-background/20 backdrop-blur-md pt-[max(env(safe-area-inset-top),48px)]">
-        <div className="w-full max-w-7xl mx-auto flex flex-row h-16 md:h-20 items-center justify-between px-4 md:px-8">
-          <div className="flex items-center gap-3">
-            <img src={logoImage} alt="Fusion Logo" className="hidden md:block h-12 md:h-[5.25rem] w-auto" />
-          </div>
+    <div className={`fixed inset-0 flex flex-col bg-background transition-opacity duration-700 ${contentVisible ? 'opacity-100' : 'opacity-0'}`}>
+      {/* Islamic geometric pattern overlay - subtle */}
+      <div 
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23d4af37' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+        }}
+      />
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col items-center justify-center px-8 relative z-10">
+        {/* Logo */}
+        <div 
+          className={`mb-6 transition-all duration-700 ease-out ${
+            elementsVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`}
+        >
+          <img 
+            src={logoImage} 
+            alt="Fusion" 
+            className="w-64 md:w-80 h-auto"
+            data-testid="img-auth-logo"
+          />
+        </div>
+
+        {/* Tagline */}
+        <p 
+          className={`text-center text-lg md:text-xl text-foreground/70 mb-12 max-w-xs transition-all duration-700 delay-100 ease-out ${
+            elementsVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`}
+        >
+          Where Muslims Meet
+        </p>
+
+        {/* Auth buttons */}
+        <div 
+          className={`w-full max-w-sm flex flex-col gap-4 transition-all duration-700 delay-200 ease-out ${
+            elementsVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`}
+        >
           <Button 
-            variant="outline" 
-            className="border-primary text-primary hover:bg-primary/10 text-sm md:text-base"
+            size="lg" 
+            className="w-full h-14 text-base font-semibold rounded-full shadow-lg shadow-primary/25"
             asChild 
-            data-testid="button-login"
+            data-testid="button-create-account"
           >
-            <a href="/login">Sign In</a>
+            <Link href="/signup">Create Account</Link>
+          </Button>
+
+          <Button 
+            variant="ghost" 
+            size="lg"
+            className="w-full h-14 text-base text-foreground/80 hover:text-foreground hover:bg-transparent"
+            asChild
+            data-testid="button-sign-in"
+          >
+            <Link href="/login">Sign In</Link>
           </Button>
         </div>
-      </nav>
-      
-      {/* Hero Section - Dark Navy Background */}
-      <section className="relative overflow-hidden min-h-screen flex items-center justify-center">
-        {/* Hero content */}
-        <div className="container relative z-10 px-4 pt-32 md:pt-40 pb-20">
-            <div className="mx-auto max-w-4xl text-center">
-              <div className="mb-12 flex justify-center">
-                <img src={logoImage} alt="Fusion Logo" className="w-full max-w-2xl h-auto" data-testid="img-hero-logo" />
-              </div>
-              <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-6 py-2 backdrop-blur-sm">
-                <Star className="h-4 w-4 text-primary fill-primary" />
-                <span className="text-foreground text-sm font-medium">Trusted by Muslims worldwide</span>
-              </div>
-              <h1 className="mb-6 text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl font-serif text-foreground">
-                Where Muslims Meet
-              </h1>
-              <p className="mb-10 text-lg md:text-xl max-w-2xl mx-auto text-foreground/80 leading-relaxed">
-                Join thousands of Muslim singles finding meaningful connections through halal interactions. 
-                Verified profiles, chaperone support, and complete privacy.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button 
-                  size="lg" 
-                  className="text-base font-semibold shadow-lg shadow-primary/20" 
-                  asChild 
-                  data-testid="button-get-started"
-                >
-                  <a href="/signup">Get Started Free</a>
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline" 
-                  className="text-base border-foreground/30 text-foreground hover:bg-foreground/10 backdrop-blur-sm" 
-                  asChild
-                >
-                  <a href="#features">Learn More</a>
-                </Button>
-              </div>
-              
-              {/* Stats */}
-              <div className="mt-20 grid grid-cols-3 gap-6 md:gap-12">
-                {stats.map((stat, i) => (
-                  <div key={i} className="text-center">
-                    <div className="text-3xl md:text-5xl font-bold text-primary font-serif">
-                      <CountUpNumber end={stat.number} suffix={stat.suffix} />
-                    </div>
-                    <div className="text-sm md:text-base text-foreground/70 mt-2">{stat.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-      </section>
+      </div>
 
-      {/* Couple Image Section */}
-      <section className="pt-4 pb-8 relative">
-        <div className="container px-4">
-          <div className="max-w-4xl mx-auto">
-            <img 
-              src={coupleImage} 
-              alt="Muslim couple at mosque" 
-              className="w-full h-auto rounded-xl shadow-2xl"
-              data-testid="img-couple-feature"
-            />
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section - Elevated Blue Cards */}
-      <section id="features" className="pt-8 pb-24 relative">
-        <div className="container px-4 relative">
-          <div className="mx-auto max-w-3xl text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
-              Built for Halal Relationships
-            </h2>
-            <p className="text-lg md:text-xl text-foreground/70">
-              Every feature designed to respect Islamic values while making it easy to find your perfect match.
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-            {features.map((feature, i) => (
-              <div 
-                key={i} 
-                className="bg-gradient-to-br from-card to-background rounded-xl border border-foreground/10 p-8 hover-elevate transition-all duration-300"
-              >
-                <div className="h-14 w-14 rounded-lg bg-primary/15 border border-primary/30 flex items-center justify-center mb-6">
-                  <feature.icon className="h-7 w-7 text-primary" />
-                </div>
-                <h3 className="text-xl md:text-2xl font-semibold mb-3 text-foreground font-serif">{feature.title}</h3>
-                <p className="text-foreground/70 leading-relaxed">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-24 relative">
-        <div className="container px-4 relative">
-          <div className="mx-auto max-w-3xl text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
-              How It Works
-            </h2>
-            <p className="text-lg text-foreground/70">
-              Simple, respectful, and designed for serious marriage seekers
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">
-            {[
-              { step: "1", title: "Create Profile", desc: "Share your faith journey and what you're looking for" },
-              { step: "2", title: "Get Verified", desc: "Build trust with selfie verification and profile review" },
-              { step: "3", title: "Match & Connect", desc: "Swipe based on values, lifestyle, and compatibility" },
-              { step: "4", title: "Meet Halal", desc: "Chat with chaperone support and video calls" }
-            ].map((item, i) => (
-              <div key={i} className="text-center">
-                <div className="mb-4 mx-auto h-16 w-16 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center">
-                  <span className="text-2xl font-bold text-primary font-serif">{item.step}</span>
-                </div>
-                <h3 className="text-lg font-semibold mb-2 text-foreground">{item.title}</h3>
-                <p className="text-sm text-foreground/60">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section className="py-24 relative">
-        <div className="container px-4 relative">
-          <div className="mx-auto max-w-3xl text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
-              Simple, Transparent Pricing
-            </h2>
-            <p className="text-lg text-foreground/70">
-              Sign up for free, upgrade to connect with your matches
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Free Tier */}
-            <div className="bg-gradient-to-br from-card to-background rounded-xl border border-foreground/10 p-8">
-              <h3 className="text-2xl font-bold mb-2 text-foreground font-serif">Free</h3>
-              <div className="text-4xl font-bold text-foreground mb-6 font-serif">£0</div>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-foreground/70">Create your profile</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-foreground/70">Browse profiles</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-foreground/70">Swipe right and left</span>
-                </li>
-              </ul>
-              <Button 
-                variant="outline" 
-                className="w-full border-[#F8F4E3]/30 text-foreground hover:bg-[#F8F4E3]/10"
-                asChild
-                data-testid="button-get-started-free"
-              >
-                <a href="/signup">Get Started Free</a>
-              </Button>
-            </div>
-
-            {/* Premium Tier */}
-            <div className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl border-2 border-primary p-8 relative">
-              <div className="absolute top-0 right-8 -translate-y-1/2">
-                <div className="bg-primary text-black px-4 py-1 rounded-full text-sm font-semibold">
-                  MOST POPULAR
-                </div>
-              </div>
-              <h3 className="text-2xl font-bold mb-2 text-foreground font-serif">Premium</h3>
-              <div className="mb-6">
-                <span className="text-5xl font-bold text-primary font-serif">£9.99</span>
-                <span className="text-foreground/70 ml-2">/month</span>
-              </div>
-              <ul className="space-y-4 mb-8">
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-foreground">Everything in Free, plus:</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-foreground">View all your matches</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-foreground">Unlimited messaging</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-foreground">Chaperone support</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <span className="text-foreground">Full privacy controls</span>
-                </li>
-              </ul>
-              <Button 
-                className="w-full shadow-lg shadow-primary/20"
-                asChild
-                data-testid="button-upgrade-premium"
-              >
-                <a href="/signup">Upgrade to Premium</a>
-              </Button>
-              <p className="text-xs text-foreground/50 text-center mt-4">Cancel anytime</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-24 relative">
-        <div className="container px-4 relative">
-          <div className="mx-auto max-w-3xl text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
-              Real Love Stories
-            </h2>
-            <p className="text-lg text-foreground/70">
-              Thousands of Muslim couples have found their perfect match
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {testimonials.map((testimonial, i) => (
-              <div 
-                key={i} 
-                className="bg-gradient-to-br from-background to-card rounded-xl border border-foreground/10 p-8 hover-elevate"
-              >
-                <div className="flex gap-1 mb-4">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} className="h-5 w-5 text-primary fill-primary" />
-                  ))}
-                </div>
-                <p className="text-foreground/90 mb-6 text-lg leading-relaxed italic">
-                  "{testimonial.quote}"
-                </p>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-foreground">{testimonial.author}</p>
-                  </div>
-                  <div className="inline-flex items-center gap-2 rounded-full bg-secondary/20 border border-secondary/40 px-3 py-1">
-                    <CheckCircle2 className="h-4 w-4 text-secondary" />
-                    <span className="text-xs text-foreground/80 font-medium">{testimonial.badge}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="py-24 relative overflow-hidden">
-        <div className="container px-4 relative">
-          <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6 font-serif text-foreground">
-              Begin Your Journey Today
-            </h2>
-            <p className="text-lg mb-10 text-foreground/70 max-w-2xl mx-auto">
-              Join thousands of Muslim singles who are finding meaningful connections while respecting their faith and values.
-            </p>
-            <Button 
-              size="lg" 
-              className="text-lg px-10 py-6 h-auto font-semibold shadow-xl shadow-primary/30" 
-              asChild 
-              data-testid="button-join-now"
-            >
-              <a href="/signup">Join Now - It's Free</a>
-            </Button>
-            <p className="mt-6 text-sm text-foreground/50">
-              100% halal • Verified profiles
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-12 border-t border-foreground/10">
-        <div className="container px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <img src={logoImage} alt="Fusion" className="h-10 w-auto" />
-            </div>
-            <p className="text-sm text-foreground/50">
-              © 2025 Fusion. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+      {/* Footer with Terms & Privacy */}
+      <div 
+        className={`pb-8 pt-4 px-8 text-center transition-all duration-700 delay-300 ease-out ${
+          elementsVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+        }`}
+      >
+        <p className="text-xs text-foreground/40 leading-relaxed">
+          By continuing, you agree to our{' '}
+          <Link href="/terms" className="underline hover:text-foreground/60" data-testid="link-terms">
+            Terms of Service
+          </Link>
+          {' '}and{' '}
+          <Link href="/privacy" className="underline hover:text-foreground/60" data-testid="link-privacy">
+            Privacy Policy
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
