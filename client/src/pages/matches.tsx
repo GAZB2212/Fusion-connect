@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,11 +18,13 @@ import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useWebSocket } from "@/contexts/WebSocketContext";
 
 export default function Matches() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { subscribe } = useWebSocket();
   const [showUnmatchDialog, setShowUnmatchDialog] = useState(false);
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [selectedMatchName, setSelectedMatchName] = useState<string>("");
@@ -30,7 +32,18 @@ export default function Matches() {
   const { data: matches = [], isLoading, error } = useQuery<MatchWithProfiles[]>({
     queryKey: ["/api/matches"],
     retry: false,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   });
+
+  // Subscribe to real-time match updates via WebSocket
+  useEffect(() => {
+    const unsubscribe = subscribe('new_match', () => {
+      console.log('[Matches] Received new_match event, invalidating cache');
+      queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
+    });
+    return unsubscribe;
+  }, [subscribe]);
 
   // Check if error is subscription required (403)
   const requiresSubscription = error && (error as any).message?.includes("403");

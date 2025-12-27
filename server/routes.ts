@@ -2497,6 +2497,11 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
               isMatch = true;
               console.log(`[MATCH] ✅ Created match ${newMatch.id} between ${userId} and ${swipedId}`);
               
+              // Broadcast new match to both users via WebSocket for real-time updates
+              broadcastToUser(userId, { type: 'new_match', matchId: newMatch.id });
+              broadcastToUser(swipedId, { type: 'new_match', matchId: newMatch.id });
+              console.log(`[MATCH] Broadcasted new_match event to both users`);
+              
               // Create Sendbird channel for the match
               try {
                 // First ensure both users exist in Sendbird
