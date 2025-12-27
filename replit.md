@@ -120,11 +120,23 @@ The platform features a luxury aesthetic with a primary deep navy color, gold ac
 
 The application is designed to be wrapped with Capacitor for deployment to iOS and Android App Stores. Key considerations:
 
-### Push Notifications (Cross-Platform)
+### Push Notifications (Cross-Platform with Sendbird Integration)
 The app uses a unified push notification system (`client/src/lib/unifiedPushNotifications.ts`) that automatically detects the platform and uses the appropriate push service:
 - **Web:** Uses Web Push API with VAPID keys and service workers
-- **iOS (Capacitor):** Uses Apple Push Notification service (APNs)
-- **Android (Capacitor):** Uses Firebase Cloud Messaging (FCM)
+- **iOS (Capacitor):** Uses Apple Push Notification service (APNs) with @capacitor/push-notifications
+- **Android (Capacitor):** Uses Firebase Cloud Messaging (FCM) with @capacitor/push-notifications
+
+**Sendbird Push Integration:**
+- Device tokens are automatically registered with Sendbird when users grant notification permission
+- APNs tokens registered via `/v3/users/{userId}/push/apns` endpoint
+- FCM tokens registered via `/v3/users/{userId}/push/gcm` endpoint
+- Sendbird handles push notification delivery for chat messages
+- Notification taps deep-link to the relevant chat conversation
+
+**App Badge Updates:**
+- Badge count reflects unread Sendbird messages via `/api/push/unread-count` endpoint
+- Badge updates when viewing messages page and periodically (every 30 seconds)
+- Uses Capacitor Badge plugin when available for native badge updates
 
 Database table `push_tokens` stores tokens for all platforms with fields: type (web/apns/fcm), token, device info.
 
