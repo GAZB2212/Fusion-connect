@@ -25,6 +25,12 @@ export interface NotificationData {
 // Store the current device token for reference
 let currentDeviceToken: string | null = null;
 
+// Track if native listeners are already set up (to avoid duplicates)
+let nativeListenersInitialized = false;
+
+// Promise resolver for registration token
+let registrationResolver: ((token: PushToken | null) => void) | null = null;
+
 // ============================================
 // Web Push Implementation (for browsers)
 // ============================================
@@ -143,46 +149,90 @@ async function nativeRequestPermission(): Promise<NotificationPermissionStatus> 
   }
 }
 
-async function nativeRegister(): Promise<PushToken | null> {
-  if (!isCapacitorNative()) return null;
+// Set up registration listeners ONCE (must be called before register())
+async function setupRegistrationListeners(): Promise<void> {
+  if (nativeListenersInitialized) {
+    console.log('[Push] Registration listeners already initialized');
+    return;
+  }
   
-  return new Promise((resolve) => {
-    let resolved = false;
+  console.log('[Push] Setting up registration listeners BEFORE calling register()');
+  
+  // Listen for registration success - this fires AFTER register() is called
+  await PushNotifications.addListener('registration', (token: Token) => {
+    const platform = getPlatform();
+    currentDeviceToken = token.value;
     
-    // Listen for registration success
-    PushNotifications.addListener('registration', (token: Token) => {
-      if (resolved) return;
-      resolved = true;
-      
-      const platform = getPlatform();
-      currentDeviceToken = token.value;
-      console.log(`[Push] Received ${platform} device token:`, token.value.substring(0, 20) + '...');
-      
-      resolve({
+    // Log the full token for debugging (truncate for security)
+    const tokenPreview = token.value.length > 40 
+      ? token.value.substring(0, 20) + '...' + token.value.substring(token.value.length - 10)
+      : token.value;
+    console.log(`[Push] SUCCESS - Received ${platform} device token: ${tokenPreview}`);
+    console.log(`[Push] Token length: ${token.value.length} characters`);
+    
+    // Resolve any pending registration promise
+    if (registrationResolver) {
+      registrationResolver({
         type: platform === 'ios' ? 'apns' : 'fcm',
         token: token.value
       });
-    });
+      registrationResolver = null;
+    }
+  });
+  
+  // Listen for registration error
+  await PushNotifications.addListener('registrationError', (error: any) => {
+    console.error('[Push] REGISTRATION ERROR:', JSON.stringify(error, null, 2));
+    console.error('[Push] Error message:', error?.message || error?.error || 'Unknown error');
     
-    // Listen for registration error
-    PushNotifications.addListener('registrationError', (error: any) => {
-      if (resolved) return;
-      resolved = true;
-      console.error('Native push registration error:', error);
-      resolve(null);
-    });
+    // Resolve any pending registration promise with null
+    if (registrationResolver) {
+      registrationResolver(null);
+      registrationResolver = null;
+    }
+  });
+  
+  nativeListenersInitialized = true;
+  console.log('[Push] Registration listeners set up successfully');
+}
+
+async function nativeRegister(): Promise<PushToken | null> {
+  if (!isCapacitorNative()) {
+    console.log('[Push] Not running in Capacitor native environment');
+    return null;
+  }
+  
+  console.log('[Push] Starting native push registration...');
+  
+  // CRITICAL: Set up listeners BEFORE calling register()
+  await setupRegistrationListeners();
+  
+  return new Promise((resolve) => {
+    // Store resolver for the registration listener to call
+    registrationResolver = resolve;
     
-    // Register for push notifications
-    PushNotifications.register();
+    console.log('[Push] Calling PushNotifications.register()...');
     
-    // Timeout after 10 seconds
+    // Now call register - the token will be delivered to the 'registration' listener
+    PushNotifications.register()
+      .then(() => {
+        console.log('[Push] register() call completed, waiting for token via registration event...');
+      })
+      .catch((error) => {
+        console.error('[Push] register() call failed:', error);
+        registrationResolver = null;
+        resolve(null);
+      });
+    
+    // Timeout after 15 seconds (increased from 10)
     setTimeout(() => {
-      if (!resolved) {
-        resolved = true;
-        console.warn('[Push] Registration timed out');
+      if (registrationResolver === resolve) {
+        console.warn('[Push] Registration timed out after 15 seconds - no token received');
+        console.warn('[Push] This may indicate APNs/FCM is not properly configured');
+        registrationResolver = null;
         resolve(null);
       }
-    }, 10000);
+    }, 15000);
   });
 }
 
@@ -198,21 +248,40 @@ export function setNavigationCallback(callback: (matchId: string) => void): void
   navigationCallback = callback;
 }
 
+// Track if notification listeners are set up
+let notificationListenersInitialized = false;
+
 // Set up native notification listeners
-export function setupNativeNotificationListeners(
+export async function setupNativeNotificationListeners(
   onNotificationReceived?: (notification: NotificationData) => void,
   onNotificationTapped?: (notification: NotificationData) => void
-): void {
-  if (!isCapacitorNative()) return;
+): Promise<void> {
+  if (!isCapacitorNative()) {
+    console.log('[Push] Not native platform, skipping notification listeners');
+    return;
+  }
   
-  console.log('[Push] Setting up native notification listeners');
+  if (notificationListenersInitialized) {
+    console.log('[Push] Notification listeners already initialized');
+    return;
+  }
+  
+  console.log('[Push] Setting up native notification listeners...');
+  
+  // CRITICAL: Set up registration listeners FIRST before any register() calls
+  await setupRegistrationListeners();
   
   // Notification received while app is in foreground
-  PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
-    console.log('[Push] Notification received in foreground:', notification);
+  await PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
+    console.log('[Push] Notification received in foreground:', JSON.stringify(notification, null, 2));
     
     // Parse Sendbird push data
-    const sendbirdData = notification.data?.sendbird ? JSON.parse(notification.data.sendbird) : null;
+    let sendbirdData = null;
+    try {
+      sendbirdData = notification.data?.sendbird ? JSON.parse(notification.data.sendbird) : null;
+    } catch (e) {
+      console.log('[Push] Could not parse Sendbird data');
+    }
     const channelUrl = sendbirdData?.channel?.channel_url || notification.data?.channelUrl || notification.data?.matchId;
     
     onNotificationReceived?.({
@@ -227,12 +296,17 @@ export function setupNativeNotificationListeners(
   });
   
   // Notification tapped (app was in background or closed)
-  PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
-    console.log('[Push] Notification tapped:', action);
+  await PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
+    console.log('[Push] Notification tapped:', JSON.stringify(action, null, 2));
     
     // Parse Sendbird push data
     const notificationData = action.notification?.data;
-    const sendbirdData = notificationData?.sendbird ? JSON.parse(notificationData.sendbird) : null;
+    let sendbirdData = null;
+    try {
+      sendbirdData = notificationData?.sendbird ? JSON.parse(notificationData.sendbird) : null;
+    } catch (e) {
+      console.log('[Push] Could not parse Sendbird data');
+    }
     const channelUrl = sendbirdData?.channel?.channel_url || notificationData?.channelUrl || notificationData?.matchId;
     
     const parsedNotification: NotificationData = {
@@ -253,9 +327,13 @@ export function setupNativeNotificationListeners(
       navigationCallback(channelUrl);
     } else if (channelUrl) {
       // Fallback to direct location change
+      console.log('[Push] Using fallback navigation to:', channelUrl);
       window.location.href = `/messages/${channelUrl}`;
     }
   });
+  
+  notificationListenersInitialized = true;
+  console.log('[Push] All notification listeners set up successfully');
 }
 
 // ============================================
@@ -425,17 +503,19 @@ export async function initializePushNotifications(
   
   const platformInfo = getPlatformInfo();
   console.log(`[Push] Initializing push notifications for ${platformInfo.platform}`);
+  console.log(`[Push] Platform info:`, JSON.stringify(platformInfo, null, 2));
   
   // Set navigation callback
   if (onNavigateToChat) {
     setNavigationCallback(onNavigateToChat);
   }
   
-  // Set up native listeners if on Capacitor
+  // CRITICAL: Set up native listeners FIRST if on Capacitor (before any registration)
   if (platformInfo.isNative) {
-    setupNativeNotificationListeners(
+    console.log('[Push] Setting up native listeners BEFORE registration...');
+    await setupNativeNotificationListeners(
       (notification) => {
-        console.log('[Push] Foreground notification:', notification);
+        console.log('[Push] Foreground notification received:', notification);
         // Could show an in-app notification banner here
       },
       (notification) => {
@@ -443,6 +523,7 @@ export async function initializePushNotifications(
         // Navigation is handled in the listener
       }
     );
+    console.log('[Push] Native listeners setup complete');
   }
   
   // Check if permission already granted
@@ -450,31 +531,59 @@ export async function initializePushNotifications(
   console.log('[Push] Current permission status:', permission);
   
   if (permission === 'granted') {
+    console.log('[Push] Permission already granted, registering for push...');
     const token = await registerForPushNotifications(vapidPublicKey);
     if (token) {
+      console.log('[Push] Token received, saving to server...');
       await savePushTokenToServer(token);
       
       // Update badge count after registration
       const unreadCount = await getUnreadMessageCount();
       await updateBadgeCount(unreadCount);
+    } else {
+      console.warn('[Push] No token received from registration');
     }
+  } else if (permission === 'prompt') {
+    console.log('[Push] Permission not yet granted, user needs to enable notifications');
+  } else {
+    console.log('[Push] Permission denied, cannot register for push');
   }
 }
 
 // Enable push notifications (call when user wants to enable)
 export async function enablePushNotifications(vapidPublicKey?: string): Promise<boolean> {
   const supported = await isPushSupported();
-  if (!supported) return false;
+  if (!supported) {
+    console.log('[Push] Push not supported');
+    return false;
+  }
+  
+  console.log('[Push] Enabling push notifications...');
+  
+  // Set up listeners first if native (CRITICAL for Capacitor)
+  const platformInfo = getPlatformInfo();
+  if (platformInfo.isNative) {
+    console.log('[Push] Setting up native listeners before requesting permission...');
+    await setupNativeNotificationListeners();
+  }
   
   const permission = await requestNotificationPermission();
+  console.log('[Push] Permission result:', permission);
+  
   if (permission !== 'granted') {
     console.log('[Push] Notification permission denied');
     return false;
   }
   
+  console.log('[Push] Permission granted, registering...');
   const token = await registerForPushNotifications(vapidPublicKey);
-  if (!token) return false;
   
+  if (!token) {
+    console.warn('[Push] Failed to get push token');
+    return false;
+  }
+  
+  console.log('[Push] Got token, saving to server...');
   return savePushTokenToServer(token);
 }
 
@@ -491,11 +600,26 @@ export async function refreshPushToken(vapidPublicKey?: string): Promise<boolean
   const supported = await isPushSupported();
   if (!supported) return false;
   
+  console.log('[Push] Refreshing push token...');
+  
+  // Ensure listeners are set up first if native
+  const platformInfo = getPlatformInfo();
+  if (platformInfo.isNative) {
+    await setupNativeNotificationListeners();
+  }
+  
   const permission = await getNotificationPermission();
-  if (permission !== 'granted') return false;
+  if (permission !== 'granted') {
+    console.log('[Push] Permission not granted, cannot refresh token');
+    return false;
+  }
   
   const token = await registerForPushNotifications(vapidPublicKey);
-  if (!token) return false;
+  if (!token) {
+    console.warn('[Push] Failed to get token during refresh');
+    return false;
+  }
   
+  console.log('[Push] Token refreshed, saving to server...');
   return savePushTokenToServer(token);
 }
