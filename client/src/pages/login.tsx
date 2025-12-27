@@ -57,7 +57,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0E17] flex items-center justify-center px-4 islamic-pattern" style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-10">
