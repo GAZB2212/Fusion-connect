@@ -751,7 +751,12 @@ export default function Messages() {
         .fusion-chat .sendbird-channel-list__header,
         .fusion-chat .sendbird-group-channel-list__header,
         .fusion-chat .sendbird-channel-header,
-        .fusion-chat .sendbird-group-channel-header {
+        .fusion-chat .sendbird-group-channel-header,
+        .fusion-chat .sendbird-conversation__header,
+        .fusion-chat .sendbird-chat-header,
+        .fusion-chat .sendbird-ui-header,
+        .fusion-chat [class*="conversation__header"],
+        .fusion-chat [class*="chat-header"] {
           display: none !important;
         }
 
