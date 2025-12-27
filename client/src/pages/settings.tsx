@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { IOSHeader } from "@/components/ios-header";
 import {
   Select,
   SelectContent,
@@ -496,14 +497,12 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20 pt-14">
-      <div className="container max-w-2xl mx-auto py-8 px-4">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Settings</h1>
-          <p className="text-muted-foreground">
-            Manage your privacy and account preferences
-          </p>
-        </div>
+    <div className="min-h-screen pb-20">
+      <IOSHeader 
+        title="Settings"
+        subtitle="Manage your account and preferences"
+      />
+      <div className="container max-w-2xl mx-auto px-4 py-4">
 
         {/* My Profile Section */}
         <Card className="p-6 mb-6">

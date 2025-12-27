@@ -13,12 +13,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { MatchWithProfiles } from "@shared/schema";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useWebSocket } from "@/contexts/WebSocketContext";
+import { IOSHeader } from "@/components/ios-header";
+import { IOSSpinner } from "@/components/ios-spinner";
 
 export default function Matches() {
   const [, setLocation] = useLocation();
@@ -73,14 +74,10 @@ export default function Matches() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="container max-w-4xl mx-auto py-8 px-4">
-          <Skeleton className="h-8 w-48 mb-6" />
-          <div className="grid md:grid-cols-2 gap-4">
-            {[...Array(4)].map((_, i) => (
-              <Skeleton key={i} className="h-48" />
-            ))}
-          </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <IOSSpinner size="lg" className="text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading matches...</p>
         </div>
       </div>
     );
@@ -166,14 +163,12 @@ export default function Matches() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20 pt-14">
-      <div className="container max-w-4xl mx-auto py-8 px-4">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Your Matches</h1>
-          <p className="text-muted-foreground">
-            {matches.length} {matches.length === 1 ? 'person' : 'people'} you both liked
-          </p>
-        </div>
+    <div className="min-h-screen pb-20">
+      <IOSHeader 
+        title="Matches" 
+        subtitle={`${matches.length} ${matches.length === 1 ? 'person' : 'people'} you both liked`}
+      />
+      <div className="container max-w-4xl mx-auto px-4 py-4">
 
         {matches.length === 0 ? (
           <div className="text-center py-16">

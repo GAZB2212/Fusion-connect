@@ -2,12 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Heart, X, Sparkles, CheckCircle2 } from "lucide-react";
+import { Heart, X, Sparkles, CheckCircle2, Loader2 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import type { ProfileWithUser } from "@shared/schema";
+import { IOSHeader } from "@/components/ios-header";
+import { IOSSpinner } from "@/components/ios-spinner";
 
 interface SuggestionResult {
   profile: ProfileWithUser;
@@ -78,10 +80,10 @@ export default function Suggestions() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220]">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-[#F8F4E3]/70">Finding your best matches...</p>
+          <IOSSpinner size="lg" className="text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Finding your best matches...</p>
         </div>
       </div>
     );
@@ -109,20 +111,13 @@ export default function Suggestions() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] p-4 pb-20 pt-14">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="h-6 w-6 text-primary" />
-            <h1 className="text-3xl font-serif font-bold text-[#F8F4E3]">
-              Curated For You
-            </h1>
-          </div>
-          <p className="text-[#F8F4E3]/70">
-            Potential matches carefully selected by our team based on your values and preferences
-          </p>
-        </div>
+    <div className="min-h-screen pb-20">
+      <IOSHeader 
+        title="For You"
+        subtitle="Matches curated based on your values and preferences"
+        rightElement={<Sparkles className="h-6 w-6 text-primary" />}
+      />
+      <div className="max-w-4xl mx-auto px-4 py-4">
 
         {/* Suggestions Grid */}
         <div className="space-y-4">
