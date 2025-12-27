@@ -119,11 +119,11 @@ function CustomChannelPreview({ channel, onClick, isSelected, currentUserId, mat
       
       {/* Wali Badge - same size as avatar, positioned next to it */}
       {hasChaperone && (
-        <div className="relative flex-shrink-0 -ml-2">
+        <div className="relative flex-shrink-0 -ml-1">
           <img 
             src={waliBadgeImage} 
             alt="Wali Present" 
-            className="h-12 w-12 rounded-full object-cover shadow-lg"
+            className="h-14 w-14 object-contain"
           />
         </div>
       )}
