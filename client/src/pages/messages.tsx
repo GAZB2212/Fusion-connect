@@ -43,7 +43,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useRingtone } from "@/hooks/use-ringtone";
 import { getUnreadMessageCount, updateBadgeCount } from "@/lib/unifiedPushNotifications";
 import { IOSSpinner } from "@/components/ios-spinner";
-import waliBadgeImage from "@assets/Untitled_design-45_1766878749533.png";
 
 const SENDBIRD_APP_ID = import.meta.env.VITE_SENDBIRD_APP_ID || "A68E730B-8E56-4655-BCBD-A709F3162376";
 
@@ -116,17 +115,6 @@ function CustomChannelPreview({ channel, onClick, isSelected, currentUserId, mat
           </Avatar>
         </div>
       </div>
-      
-      {/* Wali Badge - same size as avatar */}
-      {hasChaperone && (
-        <div className="flex-shrink-0">
-          <img 
-            src={waliBadgeImage} 
-            alt="Wali Present" 
-            className="h-11 w-11 object-contain"
-          />
-        </div>
-      )}
       
       {/* Content - simplified */}
       <div className="flex-1 min-w-0">
