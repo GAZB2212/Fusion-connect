@@ -488,28 +488,31 @@ export default function Messages() {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           
-          {/* Profile Picture with Chaperone Indicator */}
+          {/* Profile Picture with Gold Ring and Chaperone Indicator */}
           <div 
             className="relative cursor-pointer"
             onClick={() => otherProfile && setLocation(`/match/${currentMatch?.id}`)}
           >
-            <Avatar className="h-10 w-10 ring-2 ring-primary/20">
-              <AvatarImage 
-                src={otherProfile?.photos?.[0]} 
-                alt={otherProfile?.displayName || 'User'} 
-                className="object-cover"
-              />
-              <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                {otherProfile?.displayName?.charAt(0)?.toUpperCase() || '?'}
-              </AvatarFallback>
-            </Avatar>
-            {/* Chaperone Indicator Dot */}
+            {/* Gold gradient ring container */}
+            <div className="h-12 w-12 rounded-full p-0.5 bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600">
+              <Avatar className="h-full w-full ring-2 ring-background">
+                <AvatarImage 
+                  src={otherProfile?.photos?.[otherProfile?.mainPhotoIndex || 0] || otherProfile?.photos?.[0]} 
+                  alt={otherProfile?.displayName || 'User'} 
+                  className="object-cover"
+                />
+                <AvatarFallback className="bg-amber-500/20 text-amber-400 font-semibold text-lg">
+                  {otherProfile?.displayName?.charAt(0)?.toUpperCase() || '?'}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+            {/* Chaperone Indicator - Gold Dot */}
             {hasActiveChaperone && (
               <div 
-                className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-primary flex items-center justify-center ring-2 ring-background"
+                className="absolute -bottom-0.5 -right-0.5 h-5 w-5 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center ring-2 ring-background shadow-lg"
                 title="Chaperone is present"
               >
-                <Users className="h-2.5 w-2.5 text-primary-foreground" />
+                <Users className="h-3 w-3 text-white" />
               </div>
             )}
           </div>
@@ -523,7 +526,7 @@ export default function Messages() {
               {otherProfile?.displayName?.split(' ')[0] || 'Chat'}
             </h1>
             {hasActiveChaperone && (
-              <p className="text-xs text-primary font-medium">Wali is present</p>
+              <p className="text-xs text-amber-500 font-medium">Wali is present</p>
             )}
           </div>
           
