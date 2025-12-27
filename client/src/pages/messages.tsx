@@ -6,7 +6,9 @@ import GroupChannelList from "@sendbird/uikit-react/GroupChannelList";
 import GroupChannel from "@sendbird/uikit-react/GroupChannel";
 import "@sendbird/uikit-react/dist/index.css";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Video, MoreVertical, ShieldOff, Flag, Trash2, Phone } from "lucide-react";
+import { ArrowLeft, Video, MoreVertical, ShieldOff, Flag, Trash2, Phone, Users } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import type { MatchWithProfiles, Chaperone } from "@shared/schema";
 import VideoCallComponent from "@/components/VideoCall";
 import { useVideoCall } from "@/contexts/VideoCallContext";
 import {
@@ -47,12 +49,6 @@ interface SendbirdTokenResponse {
   userId: string;
 }
 
-interface Match {
-  id: string;
-  user1Id: string;
-  user2Id: string;
-  matchedAt: string;
-}
 
 interface VideoCall {
   id: string;
@@ -120,13 +116,28 @@ export default function Messages() {
   }, [tokenError, tokenErrorDetails]);
 
   // Fetch all matches to find the current one
-  const { data: matches } = useQuery<Match[]>({
+  const { data: matches } = useQuery<MatchWithProfiles[]>({
     queryKey: ["/api/matches"],
     enabled: !!user,
   });
 
   // Find current match from the list
   const currentMatch = matches?.find(m => m.id === currentChannelUrl);
+  
+  // Get the other user's profile
+  const otherProfile = currentMatch 
+    ? (currentMatch.user1Id === user?.id ? currentMatch.user2Profile : currentMatch.user1Profile)
+    : null;
+
+  // Check if there's an active chaperone for this conversation
+  const { data: chaperones } = useQuery<Chaperone[]>({
+    queryKey: ["/api/chaperones"],
+    enabled: !!user,
+  });
+  
+  const hasActiveChaperone = chaperones?.some(c => 
+    c.isActive && c.accessType === 'live'
+  ) || false;
 
   // Get the other user's ID from the match
   const getOtherUserId = () => {
@@ -464,34 +475,73 @@ export default function Messages() {
 
   return (
     <div className="fixed inset-0 bottom-16 pt-14 flex flex-col bg-background overflow-hidden">
-      {/* Fixed Header - iOS style for list, compact for chat */}
+      {/* Premium Chat Header */}
       {currentChannelUrl ? (
-        <header className="flex-shrink-0 h-14 px-4 border-b border-border bg-background/80 backdrop-blur-xl flex items-center gap-3 z-10">
+        <header className="flex-shrink-0 h-16 px-3 border-b border-border bg-background/95 backdrop-blur-xl flex items-center gap-3 z-10">
           <Button
             variant="ghost"
             size="icon"
             onClick={handleBackToList}
             data-testid="button-back"
-            className="active:scale-95 transition-transform"
+            className="active:scale-95 transition-transform -ml-1"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-lg font-semibold text-foreground flex-1">Chat</h1>
+          
+          {/* Profile Picture with Chaperone Indicator */}
+          <div 
+            className="relative cursor-pointer"
+            onClick={() => otherProfile && setLocation(`/match/${currentMatch?.id}`)}
+          >
+            <Avatar className="h-10 w-10 ring-2 ring-primary/20">
+              <AvatarImage 
+                src={otherProfile?.photos?.[0]} 
+                alt={otherProfile?.displayName || 'User'} 
+                className="object-cover"
+              />
+              <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                {otherProfile?.displayName?.charAt(0)?.toUpperCase() || '?'}
+              </AvatarFallback>
+            </Avatar>
+            {/* Chaperone Indicator Dot */}
+            {hasActiveChaperone && (
+              <div 
+                className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-primary flex items-center justify-center ring-2 ring-background"
+                title="Chaperone is present"
+              >
+                <Users className="h-2.5 w-2.5 text-primary-foreground" />
+              </div>
+            )}
+          </div>
+          
+          {/* Name and Status */}
+          <div 
+            className="flex-1 min-w-0 cursor-pointer"
+            onClick={() => otherProfile && setLocation(`/match/${currentMatch?.id}`)}
+          >
+            <h1 className="text-base font-semibold text-foreground truncate">
+              {otherProfile?.displayName?.split(' ')[0] || 'Chat'}
+            </h1>
+            {hasActiveChaperone && (
+              <p className="text-xs text-primary font-medium">Wali is present</p>
+            )}
+          </div>
+          
           {currentMatch && (
-            <>
+            <div className="flex items-center gap-1">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => startCallMutation.mutate()}
                 disabled={startCallMutation.isPending}
                 data-testid="button-video-call"
-                className="active:scale-95 transition-transform"
+                className="active:scale-95 transition-transform h-9 w-9"
               >
                 <Video className="w-5 h-5" />
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" data-testid="button-chat-menu" className="active:scale-95 transition-transform">
+                  <Button variant="ghost" size="icon" data-testid="button-chat-menu" className="active:scale-95 transition-transform h-9 w-9">
                     <MoreVertical className="w-5 h-5" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -521,7 +571,7 @@ export default function Messages() {
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </>
+            </div>
           )}
         </header>
       ) : (
