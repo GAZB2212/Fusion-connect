@@ -38,6 +38,7 @@ import { apiRequest, queryClient, getApiUrl, getAuthToken } from "@/lib/queryCli
 import { useToast } from "@/hooks/use-toast";
 import { useRingtone } from "@/hooks/use-ringtone";
 import { getUnreadMessageCount, updateBadgeCount } from "@/lib/unifiedPushNotifications";
+import { IOSSpinner } from "@/components/ios-spinner";
 
 const SENDBIRD_APP_ID = import.meta.env.VITE_SENDBIRD_APP_ID || "A68E730B-8E56-4655-BCBD-A709F3162376";
 
@@ -454,7 +455,7 @@ export default function Messages() {
     return (
       <div className="fixed inset-0 bottom-16 flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <IOSSpinner size="lg" className="text-primary" />
           <p className="text-muted-foreground">Connecting...</p>
         </div>
       </div>
@@ -463,67 +464,72 @@ export default function Messages() {
 
   return (
     <div className="fixed inset-0 bottom-16 pt-14 flex flex-col bg-background overflow-hidden">
-      {/* Fixed Header */}
-      <header className="flex-shrink-0 h-14 px-4 border-b border-border bg-background flex items-center gap-3 z-10">
-        {currentChannelUrl && (
+      {/* Fixed Header - iOS style for list, compact for chat */}
+      {currentChannelUrl ? (
+        <header className="flex-shrink-0 h-14 px-4 border-b border-border bg-background/80 backdrop-blur-xl flex items-center gap-3 z-10">
           <Button
             variant="ghost"
             size="icon"
             onClick={handleBackToList}
             data-testid="button-back"
+            className="active:scale-95 transition-transform"
           >
             <ArrowLeft className="w-5 h-5" />
           </Button>
-        )}
-        <h1 className="text-lg font-semibold text-foreground flex-1">
-          {currentChannelUrl ? "Chat" : "Messages"}
-        </h1>
-        {currentChannelUrl && currentMatch && (
-          <>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => startCallMutation.mutate()}
-              disabled={startCallMutation.isPending}
-              data-testid="button-video-call"
-            >
-              <Video className="w-5 h-5" />
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" data-testid="button-chat-menu">
-                  <MoreVertical className="w-5 h-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem 
-                  onClick={() => setShowReportDialog(true)}
-                  data-testid="button-report-user"
-                >
-                  <Flag className="w-4 h-4 mr-2" />
-                  Report
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => setShowDeleteDialog(true)}
-                  data-testid="button-leave-chat"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Leave chat
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={() => setShowBlockDialog(true)}
-                  className="text-destructive focus:text-destructive"
-                  data-testid="button-block-user"
-                >
-                  <ShieldOff className="w-4 h-4 mr-2" />
-                  Block
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </>
-        )}
-      </header>
+          <h1 className="text-lg font-semibold text-foreground flex-1">Chat</h1>
+          {currentMatch && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => startCallMutation.mutate()}
+                disabled={startCallMutation.isPending}
+                data-testid="button-video-call"
+                className="active:scale-95 transition-transform"
+              >
+                <Video className="w-5 h-5" />
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" data-testid="button-chat-menu" className="active:scale-95 transition-transform">
+                    <MoreVertical className="w-5 h-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem 
+                    onClick={() => setShowReportDialog(true)}
+                    data-testid="button-report-user"
+                  >
+                    <Flag className="w-4 h-4 mr-2" />
+                    Report
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => setShowDeleteDialog(true)}
+                    data-testid="button-leave-chat"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Leave chat
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={() => setShowBlockDialog(true)}
+                    className="text-destructive focus:text-destructive"
+                    data-testid="button-block-user"
+                  >
+                    <ShieldOff className="w-4 h-4 mr-2" />
+                    Block
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          )}
+        </header>
+      ) : (
+        <header className="flex-shrink-0 px-4 pt-2 pb-4 bg-background/80 backdrop-blur-xl border-b border-border z-10">
+          <h1 className="text-3xl font-bold text-foreground">Messages</h1>
+          <p className="text-sm text-muted-foreground mt-1">Your conversations</p>
+        </header>
+      )}
 
       {/* Leave Chat Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
