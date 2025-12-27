@@ -8,7 +8,7 @@ import { Heart, X, MapPin, Search, Calendar, Crown, Play } from "lucide-react";
 import type { ProfileWithUser } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Skeleton } from "@/components/ui/skeleton";
+import { IOSSpinner } from "@/components/ios-spinner";
 import {
   Dialog,
   DialogContent,
@@ -127,10 +127,10 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen pb-20">
-        <div className="container max-w-md mx-auto py-8 px-4">
-          <Skeleton className="h-96 w-full rounded-2xl mb-4" />
-          <Skeleton className="h-12 w-full" />
+      <div className="min-h-screen flex items-center justify-center pb-20">
+        <div className="text-center">
+          <IOSSpinner size="lg" className="text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Finding profiles...</p>
         </div>
       </div>
     );

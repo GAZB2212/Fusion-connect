@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useWebSocket } from "@/contexts/WebSocketContext";
 import { IOSHeader } from "@/components/ios-header";
 import { IOSSpinner } from "@/components/ios-spinner";
+import { PullToRefresh } from "@/components/pull-to-refresh";
 
 export default function Matches() {
   const [, setLocation] = useLocation();
@@ -30,12 +31,16 @@ export default function Matches() {
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [selectedMatchName, setSelectedMatchName] = useState<string>("");
   
-  const { data: matches = [], isLoading, error } = useQuery<MatchWithProfiles[]>({
+  const { data: matches = [], isLoading, error, refetch } = useQuery<MatchWithProfiles[]>({
     queryKey: ["/api/matches"],
     retry: false,
     staleTime: 0,
     refetchOnWindowFocus: true,
   });
+
+  const handleRefresh = async () => {
+    await refetch();
+  };
 
   // Subscribe to real-time match updates via WebSocket
   useEffect(() => {
@@ -184,6 +189,7 @@ export default function Matches() {
             </Button>
           </div>
         ) : (
+          <PullToRefresh onRefresh={handleRefresh} className="h-full">
           <div className="grid md:grid-cols-2 gap-6">
             {matches.map((match) => {
               // Determine which profile is the other user
@@ -287,6 +293,7 @@ export default function Matches() {
               );
             })}
           </div>
+          </PullToRefresh>
         )}
       </div>
 
