@@ -491,7 +491,7 @@ export default function Messages() {
           {/* Profile Picture with Premium Gold Ring and Chaperone Indicator */}
           <div 
             className="relative cursor-pointer group"
-            onClick={() => otherProfile && setLocation(`/match/${currentMatch?.id}`)}
+            onClick={() => otherProfile && setLocation(`/matches/${currentMatch?.id}/profile`)}
           >
             {/* Outer glow effect */}
             <div className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400/50 via-yellow-500/50 to-amber-600/50 blur-md scale-110 group-hover:scale-125 transition-transform duration-300" />
@@ -525,7 +525,7 @@ export default function Messages() {
           {/* Name and Status */}
           <div 
             className="flex-1 min-w-0 cursor-pointer"
-            onClick={() => otherProfile && setLocation(`/match/${currentMatch?.id}`)}
+            onClick={() => otherProfile && setLocation(`/matches/${currentMatch?.id}/profile`)}
           >
             <h1 className="text-base font-semibold text-foreground truncate">
               {otherProfile?.displayName?.split(' ')[0] || 'Chat'}
