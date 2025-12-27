@@ -160,6 +160,7 @@ function Router() {
 
 function AppContent() {
   const { isAuthenticated } = useAuth();
+  const [, setLocation] = useLocation();
   const { data: profile } = useQuery<Profile>({
     queryKey: ["/api/profile"],
     enabled: isAuthenticated,
@@ -178,8 +179,14 @@ function AppContent() {
       const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
       try {
+        // Navigation callback for when a notification is tapped
+        const handleNavigateToChat = (matchId: string) => {
+          console.log('[Push] Navigating to chat from notification:', matchId);
+          setLocation(`/messages/${matchId}`);
+        };
+
         // Initialize unified push notifications (handles web and native automatically)
-        await initializePushNotifications(vapidKey);
+        await initializePushNotifications(vapidKey, handleNavigateToChat);
 
         // Request permission if not already granted (for web browser)
         // The unified service handles native permission requests internally
@@ -195,7 +202,7 @@ function AppContent() {
     };
 
     setupPushNotifications();
-  }, [isAuthenticated, profile?.isComplete, profile?.faceVerified]);
+  }, [isAuthenticated, profile?.isComplete, profile?.faceVerified, setLocation]);
 
   return (
     <>
