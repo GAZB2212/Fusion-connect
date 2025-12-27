@@ -452,7 +452,7 @@ export default function Home() {
 
         {/* Premium Action Buttons */}
         <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center gap-6 z-20">
-          {/* Pass Button - Elegant minimal design */}
+          {/* Pass Button */}
           <motion.button
             whileTap={{ scale: 0.92 }}
             whileHover={{ scale: 1.05 }}
@@ -470,28 +470,28 @@ export default function Home() {
           <motion.button
             whileTap={{ scale: 0.92 }}
             whileHover={{ scale: 1.05 }}
-            className="group relative h-12 w-12 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg flex items-center justify-center transition-all duration-300 hover:bg-white/20"
+            className="group relative h-14 w-14 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg flex items-center justify-center transition-all duration-300 hover:bg-white/20"
             onClick={(e) => {
               e.stopPropagation();
               setShowProfileModal(true);
             }}
             data-testid="button-view-profile"
           >
-            <User className="h-5 w-5 text-white/80 group-hover:text-white transition-colors" />
+            <User className="h-6 w-6 text-white/80 group-hover:text-white transition-colors" />
           </motion.button>
 
           {/* Like Button - Premium gold accent */}
           <motion.button
             whileTap={{ scale: 0.92 }}
             whileHover={{ scale: 1.05 }}
-            className="group relative h-16 w-16 rounded-2xl bg-gradient-to-br from-primary via-primary to-primary/80 shadow-[0_8px_32px_rgba(212,175,55,0.4)] flex items-center justify-center transition-all duration-300"
+            className="group relative h-14 w-14 rounded-2xl bg-gradient-to-br from-primary via-primary to-primary/80 shadow-[0_8px_32px_rgba(212,175,55,0.4)] flex items-center justify-center transition-all duration-300"
             onClick={(e) => {
               e.stopPropagation();
               handleSwipe("right");
             }}
             data-testid="button-like"
           >
-            <Heart className="h-7 w-7 text-primary-foreground" fill="currentColor" />
+            <Heart className="h-6 w-6 text-primary-foreground" fill="currentColor" />
             <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </motion.button>
         </div>
