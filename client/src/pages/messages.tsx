@@ -654,6 +654,7 @@ export default function Messages() {
             <div className={`flex-1 h-full bg-background ${currentChannelUrl ? 'block' : 'hidden md:block'}`}>
               {currentChannelUrl ? (
                 <GroupChannel
+                  key={currentChannelUrl}
                   channelUrl={currentChannelUrl}
                   onBackClick={handleBackToList}
                 />
