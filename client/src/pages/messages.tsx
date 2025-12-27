@@ -8,7 +8,9 @@ import "@sendbird/uikit-react/dist/index.css";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Video, MoreVertical, ShieldOff, Flag, Trash2, Phone, Users } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import type { MatchWithProfiles, Chaperone } from "@shared/schema";
+import type { GroupChannel as GroupChannelType } from "@sendbird/chat/groupChannel";
 import VideoCallComponent from "@/components/VideoCall";
 import { useVideoCall } from "@/contexts/VideoCallContext";
 import {
@@ -43,6 +45,94 @@ import { getUnreadMessageCount, updateBadgeCount } from "@/lib/unifiedPushNotifi
 import { IOSSpinner } from "@/components/ios-spinner";
 
 const SENDBIRD_APP_ID = import.meta.env.VITE_SENDBIRD_APP_ID || "A68E730B-8E56-4655-BCBD-A709F3162376";
+
+// Custom channel preview component with premium styling
+interface CustomChannelPreviewProps {
+  channel: GroupChannelType;
+  onClick: () => void;
+  isSelected: boolean;
+  currentUserId: string;
+}
+
+function CustomChannelPreview({ channel, onClick, isSelected, currentUserId }: CustomChannelPreviewProps) {
+  // Find the other user (not current user, and not a chaperone if we can identify them)
+  const members = channel.members || [];
+  const otherMembers = members.filter(m => m.userId !== currentUserId);
+  
+  // Get the main match (first non-current user)
+  const mainMatch = otherMembers[0];
+  
+  // Check if there's a chaperone (more than 2 members total means chaperone is present)
+  const hasChaperone = members.length > 2;
+  
+  // Get the last message
+  const lastMessage = channel.lastMessage;
+  const lastMessageText = lastMessage && 'message' in lastMessage ? lastMessage.message : '';
+  const lastMessageTime = lastMessage?.createdAt 
+    ? new Date(lastMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : '';
+  
+  // Unread count
+  const unreadCount = channel.unreadMessageCount || 0;
+
+  return (
+    <div 
+      className={`flex items-center gap-3 p-3 mx-2 my-1 rounded-xl cursor-pointer transition-all duration-200 hover:bg-muted/50 ${
+        isSelected ? 'bg-gradient-to-r from-amber-500/10 to-yellow-500/5 border border-amber-500/30' : ''
+      }`}
+      onClick={onClick}
+      data-testid={`channel-preview-${channel.url}`}
+    >
+      {/* Avatar with gold ring and optional Wali badge */}
+      <div className="relative flex-shrink-0">
+        {/* Gold glow effect */}
+        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400/40 via-yellow-500/40 to-amber-600/40 blur-md scale-105" />
+        {/* Gold ring container */}
+        <div className="relative h-12 w-12 rounded-full p-[2px] bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-600 shadow-lg shadow-amber-500/25">
+          <Avatar className="h-full w-full ring-2 ring-background/80">
+            <AvatarImage 
+              src={mainMatch?.profileUrl || mainMatch?.plainProfileUrl} 
+              alt={mainMatch?.nickname || 'User'} 
+              className="object-cover"
+            />
+            <AvatarFallback className="bg-gradient-to-br from-amber-500/30 to-amber-600/20 text-amber-400 font-semibold">
+              {mainMatch?.nickname?.charAt(0)?.toUpperCase() || '?'}
+            </AvatarFallback>
+          </Avatar>
+        </div>
+        {/* Wali Badge */}
+        {hasChaperone && (
+          <div 
+            className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-full bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 flex items-center gap-0.5 ring-2 ring-background shadow-lg shadow-amber-500/40"
+          >
+            <Users className="h-2 w-2 text-amber-950" />
+            <span className="text-[7px] font-bold text-amber-950 tracking-wide uppercase">Wali</span>
+          </div>
+        )}
+      </div>
+      
+      {/* Content */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="font-semibold text-foreground truncate text-sm">
+            {mainMatch?.nickname?.split(' ')[0] || channel.name || 'Chat'}
+          </h3>
+          <span className="text-xs text-muted-foreground flex-shrink-0">{lastMessageTime}</span>
+        </div>
+        <div className="flex items-center justify-between gap-2 mt-0.5">
+          <p className="text-xs text-muted-foreground truncate">
+            {lastMessageText || 'Start a conversation'}
+          </p>
+          {unreadCount > 0 && (
+            <span className="flex-shrink-0 min-w-5 h-5 px-1.5 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 text-amber-950 text-xs font-bold flex items-center justify-center">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface SendbirdTokenResponse {
   token: string;
@@ -713,6 +803,14 @@ export default function Messages() {
                 onChannelSelect={handleChannelSelect}
                 onChannelCreated={handleChannelSelect}
                 channelListQueryParams={{ includeEmpty: true }}
+                renderChannelPreview={(props) => (
+                  <CustomChannelPreview
+                    channel={props.channel}
+                    onClick={() => handleChannelSelect(props.channel)}
+                    isSelected={props.channel.url === currentChannelUrl}
+                    currentUserId={user?.id || ''}
+                  />
+                )}
               />
             </div>
 
