@@ -815,23 +815,37 @@ export default function Messages() {
           border: 1px solid rgba(251, 191, 36, 0.3) !important;
         }
 
-        /* Premium Gold Ring Avatars in Conversation List */
-        .fusion-chat .sendbird-avatar,
+        /* Clean single avatar display in channel list */
         .fusion-chat .sendbird-channel-preview__avatar {
-          width: 44px !important;
-          height: 44px !important;
-          min-width: 44px !important;
-          min-height: 44px !important;
+          width: 48px !important;
+          height: 48px !important;
+          min-width: 48px !important;
+          min-height: 48px !important;
           border-radius: 50% !important;
-          overflow: visible !important;
+          overflow: hidden !important;
           position: relative !important;
-          padding: 2px !important;
+          padding: 2.5px !important;
           background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706, #f59e0b) !important;
-          box-shadow: 0 0 12px rgba(245, 158, 11, 0.4), 0 0 4px rgba(217, 119, 6, 0.3) !important;
+          box-shadow: 0 0 12px rgba(245, 158, 11, 0.35), 0 0 4px rgba(217, 119, 6, 0.25) !important;
+        }
+        
+        /* Hide stacked multiple avatars - show only the first one */
+        .fusion-chat .sendbird-channel-preview__avatar .sendbird-avatar:not(:first-child) {
+          display: none !important;
+        }
+        
+        .fusion-chat .sendbird-channel-preview__avatar .sendbird-avatar {
+          width: 100% !important;
+          height: 100% !important;
+          min-width: 100% !important;
+          min-height: 100% !important;
+          position: relative !important;
+          background: transparent !important;
+          box-shadow: none !important;
+          padding: 0 !important;
         }
 
-        .fusion-chat .sendbird-avatar-img,
-        .fusion-chat .sendbird-channel-preview__avatar img {
+        .fusion-chat .sendbird-channel-preview__avatar .sendbird-avatar-img {
           width: 100% !important;
           height: 100% !important;
           object-fit: cover !important;
@@ -848,6 +862,7 @@ export default function Messages() {
           padding: 1.5px !important;
           background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706) !important;
           box-shadow: 0 0 8px rgba(245, 158, 11, 0.3) !important;
+          overflow: hidden !important;
         }
         
         .fusion-chat .sendbird-message-content__left__avatar .sendbird-avatar-img {
