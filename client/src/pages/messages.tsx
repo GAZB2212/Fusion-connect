@@ -372,9 +372,13 @@ export default function Messages() {
     if (user) {
       const hasBackfilled = sessionStorage.getItem('channels_backfilled');
       if (!hasBackfilled) {
+        const token = getAuthToken();
         fetch(getApiUrl('/api/dev/backfill-channels'), { 
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          },
           credentials: 'include'
         })
           .then(r => r.json())
@@ -392,90 +396,10 @@ export default function Messages() {
     }
   }, [tokenData]);
 
-  // Ensure Sendbird channel exists when navigating to a match
-  const [isEnsuringChannel, setIsEnsuringChannel] = useState(false);
-  const [ensuredMatchId, setEnsuredMatchId] = useState<string | null>(null);
-  const [ensureAttempts, setEnsureAttempts] = useState(0);
-  
+  // Set channel URL directly from matchId - Sendbird SDK handles channel access
   useEffect(() => {
-    // Skip if no matchId or user
-    if (!matchId || !user) return;
-    
-    // Skip if we already ensured this matchId successfully
-    if (ensuredMatchId === matchId) return;
-    
-    // Skip if already in progress
-    if (isEnsuringChannel) return;
-    
-    // Limit retry attempts to prevent infinite loops
-    if (ensureAttempts >= 2) {
-      console.error('[Messages] Max ensure attempts reached for:', matchId);
-      toast({
-        title: "Connection error",
-        description: "Could not open conversation after multiple attempts.",
-        variant: "destructive",
-      });
-      setLocation("/messages");
-      return;
-    }
-    
-    setIsEnsuringChannel(true);
-    setEnsureAttempts(prev => prev + 1);
-    
-    const token = getAuthToken();
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-    
-    fetch(getApiUrl(`/api/sendbird/ensure-channel/${matchId}`), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-      },
-      credentials: 'include',
-      signal: controller.signal,
-    })
-      .then(res => {
-        clearTimeout(timeoutId);
-        if (!res.ok) {
-          throw new Error('Failed to ensure channel');
-        }
-        return res.json();
-      })
-      .then(data => {
-        console.log('[Messages] Channel ensured:', data);
-        setEnsuredMatchId(matchId);
-        setCurrentChannelUrl(data.channelUrl || matchId);
-        setEnsureAttempts(0); // Reset attempts on success
-      })
-      .catch(err => {
-        clearTimeout(timeoutId);
-        console.error('[Messages] Error ensuring channel:', err);
-        // Don't redirect on first failure - let the retry logic handle it
-        if (ensureAttempts >= 1) {
-          toast({
-            title: "Connection error",
-            description: "Could not open conversation. Please try again.",
-            variant: "destructive",
-          });
-          setLocation("/messages");
-        }
-      })
-      .finally(() => {
-        setIsEnsuringChannel(false);
-      });
-      
-    return () => {
-      clearTimeout(timeoutId);
-      controller.abort();
-    };
-  }, [matchId, user?.id, ensuredMatchId, isEnsuringChannel, ensureAttempts]);
-  
-  // Reset ensure state when matchId changes
-  useEffect(() => {
-    if (!matchId) {
-      setEnsuredMatchId(null);
-      setEnsureAttempts(0);
+    if (matchId) {
+      setCurrentChannelUrl(matchId);
     }
   }, [matchId]);
 
@@ -513,12 +437,12 @@ export default function Messages() {
     );
   }
 
-  if (tokenLoading || !sendbirdToken || isEnsuringChannel) {
+  if (tokenLoading || !sendbirdToken) {
     return (
       <div className="fixed inset-0 bottom-16 flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted-foreground">{isEnsuringChannel ? "Opening conversation..." : "Connecting..."}</p>
+          <p className="text-muted-foreground">Connecting...</p>
         </div>
       </div>
     );
