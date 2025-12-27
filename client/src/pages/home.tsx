@@ -34,7 +34,7 @@ export default function Home() {
   const [isDragging, setIsDragging] = useState(false);
   const [showAnimation, setShowAnimation] = useState<'like' | 'pass' | null>(null);
   const [showVideoModal, setShowVideoModal] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [isProfileExpanded, setIsProfileExpanded] = useState(false);
 
   const { data: profiles = [], isLoading } = useQuery<ProfileWithUser[]>({
     queryKey: ["/api/discover"],
@@ -67,6 +67,7 @@ export default function Home() {
       }
       setCurrentIndex((prev) => prev + 1);
       setCurrentPhotoIndex(0);
+      setIsProfileExpanded(false);
       queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
     },
     onError: (error) => {
@@ -473,7 +474,7 @@ export default function Home() {
             className="group relative h-14 w-14 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg flex items-center justify-center transition-all duration-300 hover:bg-white/20"
             onClick={(e) => {
               e.stopPropagation();
-              setShowProfileModal(true);
+              setIsProfileExpanded(!isProfileExpanded);
             }}
             data-testid="button-view-profile"
           >
@@ -543,156 +544,154 @@ export default function Home() {
         </DialogContent>
       </Dialog>
 
-      {/* Full Profile Modal */}
-      <Dialog open={showProfileModal} onOpenChange={setShowProfileModal}>
-        <DialogContent className="max-w-lg max-h-[90vh] p-0 overflow-hidden bg-card border-primary/20">
-          <DialogHeader className="sr-only">
-            <DialogTitle>View Profile</DialogTitle>
-            <DialogDescription>Full profile details for {currentProfile?.displayName}</DialogDescription>
-          </DialogHeader>
-          <ScrollArea className="max-h-[90vh]">
-            {currentProfile && (
-              <div className="pb-6">
-                {/* Profile Photo */}
-                <div className="relative aspect-[3/4] w-full">
-                  <img
-                    src={photos[0]}
-                    alt={displayName}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                  <div className="absolute bottom-4 left-4 right-4 text-white">
-                    <div className="flex items-center gap-2 mb-2">
-                      {currentProfile.isVerified && (
-                        <Badge className="bg-emerald-500/90 text-white border-0 gap-1 px-2 py-0.5">
-                          <ShieldCheck className="h-3 w-3" />
-                          Verified
-                        </Badge>
-                      )}
-                    </div>
-                    <h2 className="text-3xl font-bold">{displayName}, {age}</h2>
-                    {currentProfile.location && (
-                      <p className="flex items-center gap-1 text-white/80 mt-1">
-                        <MapPin className="h-4 w-4" />
-                        {currentProfile.location}
-                      </p>
+      {/* Expanded Profile Sheet - slides up from bottom */}
+      <AnimatePresence>
+        {isProfileExpanded && currentProfile && (
+          <motion.div
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="fixed inset-x-0 bottom-0 top-[35%] bg-card rounded-t-3xl z-50 shadow-2xl"
+          >
+            {/* Handle bar */}
+            <div 
+              className="flex justify-center pt-3 pb-2 cursor-pointer"
+              onClick={() => setIsProfileExpanded(false)}
+            >
+              <div className="w-12 h-1.5 rounded-full bg-muted-foreground/30" />
+            </div>
+            
+            <ScrollArea className="h-[calc(100%-60px)] px-5">
+              <div className="pb-32">
+                {/* Name and verification */}
+                <div className="flex items-center gap-2 mb-4">
+                  <h2 className="text-2xl font-bold">{displayName}, {age}</h2>
+                  {currentProfile.isVerified && (
+                    <ShieldCheck className="h-5 w-5 text-emerald-500" />
+                  )}
+                </div>
+
+                {/* Location */}
+                {currentProfile.location && (
+                  <p className="flex items-center gap-1 text-muted-foreground mb-4">
+                    <MapPin className="h-4 w-4" />
+                    {currentProfile.location}
+                  </p>
+                )}
+
+                {/* Bio */}
+                {currentProfile.bio && (
+                  <div className="mb-6">
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-2">About Me</h3>
+                    <p className="text-foreground">{currentProfile.bio}</p>
+                  </div>
+                )}
+
+                {/* Profile Prompts */}
+                {currentProfile.profilePrompts && (currentProfile.profilePrompts as ProfilePromptAnswer[]).length > 0 && (
+                  <div className="space-y-3 mb-6">
+                    {(currentProfile.profilePrompts as ProfilePromptAnswer[]).map((prompt, idx) => {
+                      const promptConfig = getPromptById(prompt.promptId);
+                      return (
+                        <div key={idx} className="bg-muted/50 rounded-xl p-4">
+                          <p className="text-xs text-muted-foreground mb-1">{promptConfig?.prompt || 'About me...'}</p>
+                          <p className="text-foreground font-medium">{prompt.answer}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Basic Info */}
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3">Basic Info</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {currentProfile.height && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Ruler className="h-4 w-4 text-primary" />
+                        <span>{currentProfile.height} {currentProfile.heightUnit || 'cm'}</span>
+                      </div>
+                    )}
+                    {currentProfile.profession && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Briefcase className="h-4 w-4 text-primary" />
+                        <span>{currentProfile.profession}</span>
+                      </div>
+                    )}
+                    {currentProfile.education && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <GraduationCap className="h-4 w-4 text-primary" />
+                        <span>{currentProfile.education}</span>
+                      </div>
+                    )}
+                    {currentProfile.hasChildren !== null && currentProfile.hasChildren !== undefined && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Baby className="h-4 w-4 text-primary" />
+                        <span>{currentProfile.hasChildren ? 'Has children' : 'No children'}</span>
+                      </div>
                     )}
                   </div>
                 </div>
 
-                {/* Profile Details */}
-                <div className="p-4 space-y-6">
-                  {/* Bio */}
-                  {currentProfile.bio && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-muted-foreground mb-2">About Me</h3>
-                      <p className="text-foreground">{currentProfile.bio}</p>
-                    </div>
-                  )}
-
-                  {/* Profile Prompts */}
-                  {currentProfile.profilePrompts && (currentProfile.profilePrompts as ProfilePromptAnswer[]).length > 0 && (
-                    <div className="space-y-3">
-                      {(currentProfile.profilePrompts as ProfilePromptAnswer[]).map((prompt, idx) => {
-                        const promptConfig = getPromptById(prompt.promptId);
-                        return (
-                          <div key={idx} className="bg-muted/50 rounded-xl p-4">
-                            <p className="text-xs text-muted-foreground mb-1">{promptConfig?.prompt || 'About me...'}</p>
-                            <p className="text-foreground font-medium">{prompt.answer}</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {/* Basic Info */}
-                  <div>
-                    <h3 className="text-sm font-semibold text-muted-foreground mb-3">Basic Info</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                      {currentProfile.height && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Ruler className="h-4 w-4 text-primary" />
-                          <span>{currentProfile.height} {currentProfile.heightUnit || 'cm'}</span>
-                        </div>
-                      )}
-                      {currentProfile.profession && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Briefcase className="h-4 w-4 text-primary" />
-                          <span>{currentProfile.profession}</span>
-                        </div>
-                      )}
-                      {currentProfile.education && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <GraduationCap className="h-4 w-4 text-primary" />
-                          <span>{currentProfile.education}</span>
-                        </div>
-                      )}
-                      {currentProfile.hasChildren !== null && currentProfile.hasChildren !== undefined && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Baby className="h-4 w-4 text-primary" />
-                          <span>{currentProfile.hasChildren ? 'Has children' : 'No children'}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Religious Info */}
-                  <div>
-                    <h3 className="text-sm font-semibold text-muted-foreground mb-3">Religious Background</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {currentProfile.sect && currentProfile.sect !== 'No preference' && (
-                        <Badge variant="outline" className="bg-primary/10 border-primary/30">
-                          {currentProfile.sect}
-                        </Badge>
-                      )}
-                      {currentProfile.religiousPractice && (
-                        <Badge variant="outline" className="bg-primary/10 border-primary/30">
-                          {currentProfile.religiousPractice}
-                        </Badge>
-                      )}
-                      {currentProfile.prayerFrequency && (
-                        <Badge variant="outline" className="bg-primary/10 border-primary/30">
-                          Prays {String(currentProfile.prayerFrequency).toLowerCase()}
-                        </Badge>
-                      )}
-                      {currentProfile.bornMuslim !== null && currentProfile.bornMuslim !== undefined && (
-                        <Badge variant="outline" className="bg-primary/10 border-primary/30">
-                          {currentProfile.bornMuslim ? 'Born Muslim' : 'Revert'}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-3 pt-4">
-                    <Button 
-                      variant="outline" 
-                      className="flex-1"
-                      onClick={() => {
-                        setShowProfileModal(false);
-                        handleSwipe("left");
-                      }}
-                    >
-                      <X className="h-4 w-4 mr-2" />
-                      Pass
-                    </Button>
-                    <Button 
-                      className="flex-1 bg-gradient-to-r from-primary to-primary/80"
-                      onClick={() => {
-                        setShowProfileModal(false);
-                        handleSwipe("right");
-                      }}
-                    >
-                      <Heart className="h-4 w-4 mr-2" fill="currentColor" />
-                      Like
-                    </Button>
+                {/* Religious Info */}
+                <div className="mb-6">
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3">Religious Background</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {currentProfile.sect && currentProfile.sect !== 'No preference' && (
+                      <Badge variant="outline" className="bg-primary/10 border-primary/30">
+                        {currentProfile.sect}
+                      </Badge>
+                    )}
+                    {currentProfile.religiousPractice && (
+                      <Badge variant="outline" className="bg-primary/10 border-primary/30">
+                        {currentProfile.religiousPractice}
+                      </Badge>
+                    )}
+                    {currentProfile.prayerFrequency && (
+                      <Badge variant="outline" className="bg-primary/10 border-primary/30">
+                        Prays {String(currentProfile.prayerFrequency).toLowerCase()}
+                      </Badge>
+                    )}
+                    {currentProfile.bornMuslim !== null && currentProfile.bornMuslim !== undefined && (
+                      <Badge variant="outline" className="bg-primary/10 border-primary/30">
+                        {currentProfile.bornMuslim ? 'Born Muslim' : 'Revert'}
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </div>
-            )}
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
+            </ScrollArea>
+
+            {/* Fixed Action Buttons at bottom */}
+            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-card via-card to-transparent pt-8">
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => {
+                    setIsProfileExpanded(false);
+                    handleSwipe("left");
+                  }}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Pass
+                </Button>
+                <Button 
+                  className="flex-1 bg-gradient-to-r from-primary to-primary/80"
+                  onClick={() => {
+                    setIsProfileExpanded(false);
+                    handleSwipe("right");
+                  }}
+                >
+                  <Heart className="h-4 w-4 mr-2" fill="currentColor" />
+                  Like
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
