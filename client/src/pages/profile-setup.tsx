@@ -112,6 +112,7 @@ export default function ProfileSetup() {
       phoneVerified: false,
       faceVerified: false,
       useNickname: false,
+      waliInvolvement: "",
     },
   });
 
@@ -152,6 +153,7 @@ export default function ProfileSetup() {
         phoneVerified: existingProfile.phoneVerified || false,
         faceVerified: false, // Reset face verification
         useNickname: existingProfile.useNickname || false,
+        waliInvolvement: existingProfile.waliInvolvement || "",
       });
 
       // Set state variables
@@ -1210,6 +1212,33 @@ export default function ProfileSetup() {
                             <SelectItem value="Marriage">Marriage</SelectItem>
                             <SelectItem value="Friendship">Friendship</SelectItem>
                             <SelectItem value="Networking">Networking</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="waliInvolvement"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Wali (Guardian) Involvement</FormLabel>
+                        <FormDescription>
+                          Would you like a guardian involved in your matchmaking journey?
+                        </FormDescription>
+                        <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                          <FormControl>
+                            <SelectTrigger data-testid="select-wali-involvement">
+                              <SelectValue placeholder="Select your preference" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="max-h-[40vh] overflow-y-auto">
+                            <SelectItem value="essential">Essential - I want my wali involved</SelectItem>
+                            <SelectItem value="preferred">Preferred - Would appreciate it</SelectItem>
+                            <SelectItem value="flexible">Flexible - Open to it</SelectItem>
+                            <SelectItem value="not_needed">Not needed at this time</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage />
