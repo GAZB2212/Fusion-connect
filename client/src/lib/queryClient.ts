@@ -47,6 +47,22 @@ export function getApiUrl(path: string): string {
   return `${API_BASE_URL}${normalizedPath}`;
 }
 
+// Helper to get WebSocket URL for mobile app support
+export function getWebSocketUrl(path: string = '/ws'): string {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  
+  // If VITE_API_URL is set (for Capacitor mobile app), use it
+  if (API_BASE_URL) {
+    // Convert http(s):// to ws(s)://
+    const wsBaseUrl = API_BASE_URL.replace(/^http/, 'ws');
+    return `${wsBaseUrl}${normalizedPath}`;
+  }
+  
+  // For web, use current host with appropriate protocol
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${protocol}//${window.location.host}${normalizedPath}`;
+}
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;

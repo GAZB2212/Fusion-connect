@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { getWebSocketUrl } from '@/lib/queryClient';
 
 interface WebSocketContextType {
   isConnected: boolean;
@@ -29,9 +30,8 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Create WebSocket connection
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    // Create WebSocket connection using production URL for Capacitor apps
+    const wsUrl = getWebSocketUrl('/ws');
     
     console.log('Connecting to WebSocket:', wsUrl);
     const ws = new WebSocket(wsUrl);
