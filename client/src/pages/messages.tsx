@@ -851,6 +851,41 @@ export default function Messages() {
           background: hsl(var(--muted)) !important;
           color: hsl(var(--foreground)) !important;
         }
+
+        /* Add bottom padding for mobile navigation bar */
+        .fusion-chat .sendbird-conversation__footer,
+        .fusion-chat .sendbird-message-input-wrapper {
+          padding-bottom: 16px !important;
+          margin-bottom: env(safe-area-inset-bottom, 0px) !important;
+        }
+
+        /* Show send button on mobile */
+        .fusion-chat .sendbird-message-input--send,
+        .fusion-chat .sendbird-iconbutton--send,
+        .fusion-chat [class*="message-input--send"],
+        .fusion-chat .sendbird-message-input-wrapper__message-input--send {
+          display: flex !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          width: 32px !important;
+          height: 32px !important;
+          min-width: 32px !important;
+          min-height: 32px !important;
+          margin-left: 8px !important;
+          background: hsl(var(--primary)) !important;
+          border-radius: 50% !important;
+          align-items: center !important;
+          justify-content: center !important;
+        }
+
+        .fusion-chat .sendbird-message-input--send svg,
+        .fusion-chat .sendbird-iconbutton--send svg,
+        .fusion-chat [class*="message-input--send"] svg {
+          width: 18px !important;
+          height: 18px !important;
+          color: hsl(var(--primary-foreground)) !important;
+          fill: hsl(var(--primary-foreground)) !important;
+        }
       `}</style>
 
       {/* Video Call Overlay - Debug log */}
