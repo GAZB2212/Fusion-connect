@@ -444,30 +444,36 @@ export default function Home() {
           )}
         </div>
 
-        {/* Action Buttons - Floating */}
-        <div className="absolute bottom-4 left-4 right-4 flex justify-center gap-6 z-20">
-          <Button
-            size="icon"
-            className="h-16 w-16 rounded-full bg-white shadow-2xl hover:bg-gray-100 active:scale-90 transition-all duration-200"
+        {/* Premium Action Buttons */}
+        <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center gap-8 z-20">
+          {/* Pass Button - Elegant minimal design */}
+          <motion.button
+            whileTap={{ scale: 0.92 }}
+            whileHover={{ scale: 1.05 }}
+            className="group relative h-14 w-14 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg flex items-center justify-center transition-all duration-300 hover:bg-white/20"
             onClick={(e) => {
               e.stopPropagation();
               handleSwipe("left");
             }}
             data-testid="button-pass"
           >
-            <X className="h-8 w-8 text-gray-600" strokeWidth={2.5} />
-          </Button>
-          <Button
-            size="icon"
-            className="h-20 w-20 rounded-full bg-primary shadow-2xl hover:bg-primary/90 active:scale-90 transition-all duration-200"
+            <X className="h-6 w-6 text-white/80 group-hover:text-white transition-colors" strokeWidth={2} />
+          </motion.button>
+
+          {/* Like Button - Premium gold accent */}
+          <motion.button
+            whileTap={{ scale: 0.92 }}
+            whileHover={{ scale: 1.05 }}
+            className="group relative h-16 w-16 rounded-2xl bg-gradient-to-br from-primary via-primary to-primary/80 shadow-[0_8px_32px_rgba(212,175,55,0.4)] flex items-center justify-center transition-all duration-300"
             onClick={(e) => {
               e.stopPropagation();
               handleSwipe("right");
             }}
             data-testid="button-like"
           >
-            <Heart className="h-10 w-10 text-primary-foreground" fill="currentColor" />
-          </Button>
+            <Heart className="h-7 w-7 text-primary-foreground" fill="currentColor" />
+            <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          </motion.button>
         </div>
       </div>
 
