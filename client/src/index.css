@@ -424,6 +424,26 @@
     }
   }
 
+  /* iOS Spinner Animation */
+  @keyframes ios-spinner {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0.15;
+    }
+  }
+
+  /* iOS-style tap animation */
+  .ios-tap {
+    transition: transform 0.1s ease-out, opacity 0.1s ease-out;
+  }
+  
+  .ios-tap:active {
+    transform: scale(0.97);
+    opacity: 0.7;
+  }
+
   /* Golden Shimmer Effect */
   @keyframes shimmer {
     0%, 100% {
