@@ -413,4 +413,173 @@ export class SendbirdService {
       return [];
     }
   }
+
+  // Register APNs push token for iOS
+  static async registerApnsPushToken(userId: string, deviceToken: string): Promise<any> {
+    if (!isConfigured) {
+      console.warn('[Sendbird] Skipping APNs token registration - not configured');
+      return null;
+    }
+    
+    try {
+      const response = await fetch(`${baseUrl}/users/${encodeURIComponent(userId)}/push/apns`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Api-Token': apiToken!
+        },
+        body: JSON.stringify({
+          apns_device_token: deviceToken,
+          push_sound: 'default'
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error('[Sendbird] APNs token registration failed:', data);
+        throw new Error(data.message || 'Failed to register APNs token');
+      }
+      
+      console.log(`[Sendbird] Registered APNs token for user: ${userId}`);
+      return data;
+    } catch (error) {
+      console.error('[Sendbird] Error registering APNs token:', error);
+      throw error;
+    }
+  }
+
+  // Register FCM push token for Android
+  static async registerFcmPushToken(userId: string, registrationToken: string): Promise<any> {
+    if (!isConfigured) {
+      console.warn('[Sendbird] Skipping FCM token registration - not configured');
+      return null;
+    }
+    
+    try {
+      const response = await fetch(`${baseUrl}/users/${encodeURIComponent(userId)}/push/gcm`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Api-Token': apiToken!
+        },
+        body: JSON.stringify({
+          gcm_reg_token: registrationToken,
+          push_sound: 'default'
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error('[Sendbird] FCM token registration failed:', data);
+        throw new Error(data.message || 'Failed to register FCM token');
+      }
+      
+      console.log(`[Sendbird] Registered FCM token for user: ${userId}`);
+      return data;
+    } catch (error) {
+      console.error('[Sendbird] Error registering FCM token:', error);
+      throw error;
+    }
+  }
+
+  // Unregister APNs push token
+  static async unregisterApnsPushToken(userId: string, deviceToken: string): Promise<void> {
+    if (!isConfigured) return;
+    
+    try {
+      const response = await fetch(`${baseUrl}/users/${encodeURIComponent(userId)}/push/apns/${encodeURIComponent(deviceToken)}`, {
+        method: 'DELETE',
+        headers: {
+          'Api-Token': apiToken!
+        }
+      });
+      
+      if (!response.ok) {
+        const data = await response.json();
+        console.error('[Sendbird] APNs token unregistration failed:', data);
+      } else {
+        console.log(`[Sendbird] Unregistered APNs token for user: ${userId}`);
+      }
+    } catch (error) {
+      console.error('[Sendbird] Error unregistering APNs token:', error);
+    }
+  }
+
+  // Unregister FCM push token
+  static async unregisterFcmPushToken(userId: string, registrationToken: string): Promise<void> {
+    if (!isConfigured) return;
+    
+    try {
+      const response = await fetch(`${baseUrl}/users/${encodeURIComponent(userId)}/push/gcm/${encodeURIComponent(registrationToken)}`, {
+        method: 'DELETE',
+        headers: {
+          'Api-Token': apiToken!
+        }
+      });
+      
+      if (!response.ok) {
+        const data = await response.json();
+        console.error('[Sendbird] FCM token unregistration failed:', data);
+      } else {
+        console.log(`[Sendbird] Unregistered FCM token for user: ${userId}`);
+      }
+    } catch (error) {
+      console.error('[Sendbird] Error unregistering FCM token:', error);
+    }
+  }
+
+  // Get total unread message count for a user
+  static async getUnreadMessageCount(userId: string): Promise<number> {
+    if (!isConfigured) return 0;
+    
+    try {
+      const response = await fetch(`${baseUrl}/users/${encodeURIComponent(userId)}/unread_message_count`, {
+        method: 'GET',
+        headers: {
+          'Api-Token': apiToken!
+        }
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error('[Sendbird] Get unread count failed:', data);
+        return 0;
+      }
+      
+      return data.unread_count || 0;
+    } catch (error) {
+      console.error('[Sendbird] Error getting unread count:', error);
+      return 0;
+    }
+  }
+
+  // Update user push preferences
+  static async updatePushPreferences(userId: string, enabled: boolean): Promise<void> {
+    if (!isConfigured) return;
+    
+    try {
+      const response = await fetch(`${baseUrl}/users/${encodeURIComponent(userId)}/push_preference`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Api-Token': apiToken!
+        },
+        body: JSON.stringify({
+          push_trigger_option: enabled ? 'all' : 'off'
+        })
+      });
+      
+      if (!response.ok) {
+        const data = await response.json();
+        console.error('[Sendbird] Update push preferences failed:', data);
+      } else {
+        console.log(`[Sendbird] Updated push preferences for user ${userId}: ${enabled ? 'enabled' : 'disabled'}`);
+      }
+    } catch (error) {
+      console.error('[Sendbird] Error updating push preferences:', error);
+    }
+  }
 }
