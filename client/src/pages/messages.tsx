@@ -123,7 +123,7 @@ function CustomChannelPreview({ channel, onClick, isSelected, currentUserId, mat
           <img 
             src={waliBadgeImage} 
             alt="Wali Present" 
-            className="h-12 w-12 object-contain"
+            className="h-11 w-11 object-contain"
           />
         </div>
       )}
