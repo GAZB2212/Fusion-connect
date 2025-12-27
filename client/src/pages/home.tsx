@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, X, MapPin, Play, ChevronLeft, ChevronRight, ShieldCheck, Users, Sparkles } from "lucide-react";
+import { Heart, X, MapPin, Play, ChevronLeft, ChevronRight, ShieldCheck, Users, Sparkles, Moon, Star } from "lucide-react";
 import type { ProfileWithUser } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -172,15 +172,44 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-primary/20 backdrop-blur-sm pointer-events-none z-50"
+              className="fixed inset-0 bg-gradient-to-b from-primary/30 via-primary/20 to-primary/30 backdrop-blur-md pointer-events-none z-50"
             />
+            {/* Decorative Stars */}
+            {[...Array(8)].map((_, i) => (
+              <motion.div
+                key={i}
+                initial={{ scale: 0, opacity: 0, x: 0, y: 0 }}
+                animate={{ 
+                  scale: [0, 1, 0.8], 
+                  opacity: [0, 1, 0],
+                  x: Math.cos((i / 8) * Math.PI * 2) * 120,
+                  y: Math.sin((i / 8) * Math.PI * 2) * 120,
+                }}
+                transition={{ duration: 1, delay: i * 0.05 }}
+                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
+              >
+                <Star className="h-6 w-6 text-primary fill-primary" />
+              </motion.div>
+            ))}
+            {/* Main Heart with Crescent */}
             <motion.div
               initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: [0, 1.3, 1], opacity: [0, 1, 1, 0] }}
-              transition={{ duration: 0.8 }}
-              className="fixed inset-0 flex items-center justify-center pointer-events-none z-50"
+              animate={{ scale: [0, 1.2, 1], opacity: [0, 1, 1, 0] }}
+              transition={{ duration: 1 }}
+              className="fixed inset-0 flex flex-col items-center justify-center pointer-events-none z-50"
             >
-              <Heart className="h-48 w-48 text-primary fill-primary filter drop-shadow-[0_0_60px_rgba(212,175,55,0.9)]" />
+              <div className="relative">
+                <Moon className="h-32 w-32 text-primary fill-primary filter drop-shadow-[0_0_40px_rgba(212,175,55,0.8)] -rotate-45" />
+                <Star className="absolute -top-4 -right-4 h-12 w-12 text-primary fill-primary filter drop-shadow-[0_0_20px_rgba(212,175,55,0.8)]" />
+              </div>
+              <motion.p 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: [0, 1, 1, 0], y: [10, 0, 0, -10] }}
+                transition={{ duration: 1, delay: 0.2 }}
+                className="text-2xl font-bold text-primary mt-4 drop-shadow-lg"
+              >
+                Mashallah!
+              </motion.p>
             </motion.div>
           </>
         )}
@@ -190,7 +219,7 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/40 backdrop-blur-md pointer-events-none z-50"
+              className="fixed inset-0 bg-black/50 backdrop-blur-md pointer-events-none z-50"
             />
             <motion.div
               initial={{ scale: 0, opacity: 0 }}
@@ -198,7 +227,7 @@ export default function Home() {
               transition={{ duration: 0.8 }}
               className="fixed inset-0 flex items-center justify-center pointer-events-none z-50"
             >
-              <X className="h-48 w-48 text-white filter drop-shadow-[0_0_60px_rgba(255,255,255,0.8)]" strokeWidth={3} />
+              <X className="h-40 w-40 text-white/80 filter drop-shadow-[0_0_40px_rgba(255,255,255,0.6)]" strokeWidth={3} />
             </motion.div>
           </>
         )}
@@ -385,7 +414,7 @@ export default function Home() {
             )}
             {currentProfile.prayerFrequency && (
               <Badge variant="outline" className="bg-white/10 text-white border-white/30 backdrop-blur-sm">
-                {currentProfile.prayerFrequency}
+                {String(currentProfile.prayerFrequency)}
               </Badge>
             )}
           </div>
