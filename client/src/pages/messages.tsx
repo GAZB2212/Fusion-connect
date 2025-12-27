@@ -488,31 +488,36 @@ export default function Messages() {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           
-          {/* Profile Picture with Gold Ring and Chaperone Indicator */}
+          {/* Profile Picture with Premium Gold Ring and Chaperone Indicator */}
           <div 
-            className="relative cursor-pointer"
+            className="relative cursor-pointer group"
             onClick={() => otherProfile && setLocation(`/match/${currentMatch?.id}`)}
           >
-            {/* Gold gradient ring container */}
-            <div className="h-12 w-12 rounded-full p-0.5 bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600">
-              <Avatar className="h-full w-full ring-2 ring-background">
+            {/* Outer glow effect */}
+            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400/50 via-yellow-500/50 to-amber-600/50 blur-md scale-110 group-hover:scale-125 transition-transform duration-300" />
+            {/* Premium gold gradient ring container with shimmer */}
+            <div className="relative h-12 w-12 rounded-full p-[2.5px] bg-gradient-to-br from-amber-300 via-yellow-400 via-amber-500 to-yellow-600 shadow-lg shadow-amber-500/30">
+              {/* Inner shine highlight */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-white/20 to-transparent pointer-events-none" />
+              <Avatar className="h-full w-full ring-2 ring-background/80">
                 <AvatarImage 
                   src={otherProfile?.photos?.[otherProfile?.mainPhotoIndex || 0] || otherProfile?.photos?.[0]} 
                   alt={otherProfile?.displayName || 'User'} 
                   className="object-cover"
                 />
-                <AvatarFallback className="bg-amber-500/20 text-amber-400 font-semibold text-lg">
+                <AvatarFallback className="bg-gradient-to-br from-amber-500/30 to-amber-600/20 text-amber-400 font-semibold text-lg">
                   {otherProfile?.displayName?.charAt(0)?.toUpperCase() || '?'}
                 </AvatarFallback>
               </Avatar>
             </div>
-            {/* Chaperone Indicator - Gold Dot */}
+            {/* Premium Wali Badge */}
             {hasActiveChaperone && (
               <div 
-                className="absolute -bottom-0.5 -right-0.5 h-5 w-5 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center ring-2 ring-background shadow-lg"
-                title="Chaperone is present"
+                className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-full bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 flex items-center gap-0.5 ring-2 ring-background shadow-lg shadow-amber-500/40"
+                title="Wali is present"
               >
-                <Users className="h-3 w-3 text-white" />
+                <Users className="h-2.5 w-2.5 text-amber-950" />
+                <span className="text-[8px] font-bold text-amber-950 tracking-wide uppercase">Wali</span>
               </div>
             )}
           </div>
@@ -526,7 +531,9 @@ export default function Messages() {
               {otherProfile?.displayName?.split(' ')[0] || 'Chat'}
             </h1>
             {hasActiveChaperone && (
-              <p className="text-xs text-amber-500 font-medium">Wali is present</p>
+              <p className="text-xs font-semibold bg-gradient-to-r from-amber-400 to-yellow-500 bg-clip-text text-transparent">
+                Wali is present
+              </p>
             )}
           </div>
           
@@ -791,23 +798,36 @@ export default function Messages() {
           width: calc(100% - 16px) !important;
           max-width: calc(100% - 16px) !important;
           background: transparent !important;
-          border-radius: 8px !important;
+          border-radius: 12px !important;
           margin: 4px 8px !important;
+          transition: all 0.2s ease !important;
         }
 
         .fusion-chat .sendbird-channel-preview:hover {
           background: hsl(var(--muted)) !important;
+          transform: translateX(2px) !important;
+        }
+        
+        /* Premium selected channel state */
+        .fusion-chat .sendbird-channel-preview--active,
+        .fusion-chat .sendbird-channel-preview--selected {
+          background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05)) !important;
+          border: 1px solid rgba(251, 191, 36, 0.3) !important;
         }
 
-        /* Ensure avatars display properly */
+        /* Premium Gold Ring Avatars in Conversation List */
         .fusion-chat .sendbird-avatar,
         .fusion-chat .sendbird-channel-preview__avatar {
-          width: 40px !important;
-          height: 40px !important;
-          min-width: 40px !important;
-          min-height: 40px !important;
+          width: 44px !important;
+          height: 44px !important;
+          min-width: 44px !important;
+          min-height: 44px !important;
           border-radius: 50% !important;
-          overflow: hidden !important;
+          overflow: visible !important;
+          position: relative !important;
+          padding: 2px !important;
+          background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706, #f59e0b) !important;
+          box-shadow: 0 0 12px rgba(245, 158, 11, 0.4), 0 0 4px rgba(217, 119, 6, 0.3) !important;
         }
 
         .fusion-chat .sendbird-avatar-img,
@@ -816,14 +836,22 @@ export default function Messages() {
           height: 100% !important;
           object-fit: cover !important;
           border-radius: 50% !important;
+          border: 2px solid hsl(var(--background)) !important;
         }
 
-        /* Message avatars */
+        /* Message avatars - smaller with subtle gold ring */
         .fusion-chat .sendbird-message-content__left__avatar .sendbird-avatar {
-          width: 28px !important;
-          height: 28px !important;
-          min-width: 28px !important;
-          min-height: 28px !important;
+          width: 32px !important;
+          height: 32px !important;
+          min-width: 32px !important;
+          min-height: 32px !important;
+          padding: 1.5px !important;
+          background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706) !important;
+          box-shadow: 0 0 8px rgba(245, 158, 11, 0.3) !important;
+        }
+        
+        .fusion-chat .sendbird-message-content__left__avatar .sendbird-avatar-img {
+          border: 1.5px solid hsl(var(--background)) !important;
         }
 
         .fusion-chat .sendbird-conversation,
@@ -919,11 +947,6 @@ export default function Messages() {
           border-radius: 12px !important;
         }
 
-        .fusion-chat .sendbird-message-content--outgoing .sendbird-text-message-item-body {
-          background: hsl(var(--primary)) !important;
-          color: hsl(var(--primary-foreground)) !important;
-        }
-
         .fusion-chat .sendbird-message-content--incoming .sendbird-text-message-item-body {
           background: hsl(var(--muted)) !important;
           color: hsl(var(--foreground)) !important;
@@ -936,7 +959,7 @@ export default function Messages() {
           margin-bottom: env(safe-area-inset-bottom, 0px) !important;
         }
 
-        /* Show send button on mobile */
+        /* Premium Gold Send Button */
         .fusion-chat .sendbird-message-input--send,
         .fusion-chat .sendbird-iconbutton--send,
         .fusion-chat [class*="message-input--send"],
@@ -944,15 +967,23 @@ export default function Messages() {
           display: flex !important;
           visibility: visible !important;
           opacity: 1 !important;
-          width: 32px !important;
-          height: 32px !important;
-          min-width: 32px !important;
-          min-height: 32px !important;
+          width: 36px !important;
+          height: 36px !important;
+          min-width: 36px !important;
+          min-height: 36px !important;
           margin-left: 8px !important;
-          background: hsl(var(--primary)) !important;
+          background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706) !important;
           border-radius: 50% !important;
           align-items: center !important;
           justify-content: center !important;
+          box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+          transition: all 0.2s ease !important;
+        }
+        
+        .fusion-chat .sendbird-message-input--send:hover,
+        .fusion-chat .sendbird-iconbutton--send:hover {
+          transform: scale(1.05) !important;
+          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
         }
 
         .fusion-chat .sendbird-message-input--send svg,
@@ -960,8 +991,15 @@ export default function Messages() {
         .fusion-chat [class*="message-input--send"] svg {
           width: 18px !important;
           height: 18px !important;
+          color: hsl(220 30% 12%) !important;
+          fill: hsl(220 30% 12%) !important;
+        }
+        
+        /* Premium outgoing message bubbles with subtle gold accent */
+        .fusion-chat .sendbird-message-content--outgoing .sendbird-text-message-item-body {
+          background: linear-gradient(135deg, hsl(var(--primary)), hsl(45 62% 48%)) !important;
           color: hsl(var(--primary-foreground)) !important;
-          fill: hsl(var(--primary-foreground)) !important;
+          box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2) !important;
         }
       `}</style>
 
