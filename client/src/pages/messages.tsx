@@ -396,11 +396,10 @@ export default function Messages() {
     }
   }, [tokenData]);
 
-  // Set channel URL directly from matchId - Sendbird SDK handles channel access
+  // Always sync currentChannelUrl with the URL matchId parameter
   useEffect(() => {
-    if (matchId) {
-      setCurrentChannelUrl(matchId);
-    }
+    // matchId can be undefined (list view) or a string (chat view)
+    setCurrentChannelUrl(matchId || null);
   }, [matchId]);
 
   const handleChannelSelect = (channel: any) => {
