@@ -43,6 +43,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useRingtone } from "@/hooks/use-ringtone";
 import { getUnreadMessageCount, updateBadgeCount } from "@/lib/unifiedPushNotifications";
 import { IOSSpinner } from "@/components/ios-spinner";
+import waliBadgeImage from "@assets/Gold_\"Wali\"_badge_with_Islamic_design_1766878269204.png";
 
 const SENDBIRD_APP_ID = import.meta.env.VITE_SENDBIRD_APP_ID || "A68E730B-8E56-4655-BCBD-A709F3162376";
 
@@ -52,12 +53,13 @@ interface CustomChannelPreviewProps {
   onClick: () => void;
   isSelected: boolean;
   currentUserId: string;
+  matches?: MatchWithProfiles[];
 }
 
-function CustomChannelPreview({ channel, onClick, isSelected, currentUserId }: CustomChannelPreviewProps) {
+function CustomChannelPreview({ channel, onClick, isSelected, currentUserId, matches }: CustomChannelPreviewProps) {
   // Find the other user (not current user, and not a chaperone if we can identify them)
   const members = channel.members || [];
-  const otherMembers = members.filter(m => m.userId !== currentUserId);
+  const otherMembers = members.filter((m: { userId: string }) => m.userId !== currentUserId);
   
   // Get the main match (first non-current user)
   const mainMatch = otherMembers[0];
@@ -65,15 +67,28 @@ function CustomChannelPreview({ channel, onClick, isSelected, currentUserId }: C
   // Check if there's a chaperone (more than 2 members total means chaperone is present)
   const hasChaperone = members.length > 2;
   
-  // Get the last message
-  const lastMessage = channel.lastMessage;
-  const lastMessageText = lastMessage && 'message' in lastMessage ? lastMessage.message : '';
-  const lastMessageTime = lastMessage?.createdAt 
-    ? new Date(lastMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    : '';
+  // Try to find the actual profile photo from matches data
+  // Channel URL format is typically "match_<matchId>" or similar
+  const matchIdFromChannel = channel.url?.replace('match_', '');
+  const matchData = matches?.find(m => 
+    String(m.id) === matchIdFromChannel || 
+    channel.url?.includes(String(m.id))
+  );
   
-  // Unread count
-  const unreadCount = channel.unreadMessageCount || 0;
+  // Get the other user's profile from match data
+  const otherUserProfile = matchData?.user1Id === currentUserId 
+    ? matchData?.user2Profile 
+    : matchData?.user1Profile;
+  
+  // Use actual profile photo if available, otherwise fall back to Sendbird profile
+  const profilePhoto = otherUserProfile?.photos?.[0] || 
+                       (mainMatch as { profileUrl?: string; plainProfileUrl?: string })?.profileUrl || 
+                       (mainMatch as { plainProfileUrl?: string })?.plainProfileUrl;
+  
+  const displayName = otherUserProfile?.displayName?.split(' ')[0] || 
+                      (mainMatch as { nickname?: string })?.nickname?.split(' ')[0] || 
+                      channel.name || 
+                      'Chat';
 
   return (
     <div 
@@ -83,7 +98,7 @@ function CustomChannelPreview({ channel, onClick, isSelected, currentUserId }: C
       onClick={onClick}
       data-testid={`channel-preview-${channel.url}`}
     >
-      {/* Avatar with gold ring and optional Wali badge */}
+      {/* Avatar with gold ring */}
       <div className="relative flex-shrink-0">
         {/* Gold glow effect */}
         <div className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400/40 via-yellow-500/40 to-amber-600/40 blur-md scale-105" />
@@ -91,44 +106,36 @@ function CustomChannelPreview({ channel, onClick, isSelected, currentUserId }: C
         <div className="relative h-12 w-12 rounded-full p-[2px] bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-600 shadow-lg shadow-amber-500/25">
           <Avatar className="h-full w-full ring-2 ring-background/80">
             <AvatarImage 
-              src={mainMatch?.profileUrl || mainMatch?.plainProfileUrl} 
-              alt={mainMatch?.nickname || 'User'} 
+              src={profilePhoto} 
+              alt={displayName} 
               className="object-cover"
             />
             <AvatarFallback className="bg-gradient-to-br from-amber-500/30 to-amber-600/20 text-amber-400 font-semibold">
-              {mainMatch?.nickname?.charAt(0)?.toUpperCase() || '?'}
+              {displayName.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         </div>
-        {/* Wali Badge */}
-        {hasChaperone && (
-          <div 
-            className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-full bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 flex items-center gap-0.5 ring-2 ring-background shadow-lg shadow-amber-500/40"
-          >
-            <Users className="h-2 w-2 text-amber-950" />
-            <span className="text-[7px] font-bold text-amber-950 tracking-wide uppercase">Wali</span>
-          </div>
-        )}
       </div>
       
-      {/* Content */}
+      {/* Wali Badge - same size as avatar */}
+      {hasChaperone && (
+        <div className="flex-shrink-0">
+          <img 
+            src={waliBadgeImage} 
+            alt="Wali Present" 
+            className="h-12 w-12 object-contain"
+          />
+        </div>
+      )}
+      
+      {/* Content - simplified */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between gap-2">
-          <h3 className="font-semibold text-foreground truncate text-sm">
-            {mainMatch?.nickname?.split(' ')[0] || channel.name || 'Chat'}
-          </h3>
-          <span className="text-xs text-muted-foreground flex-shrink-0">{lastMessageTime}</span>
-        </div>
-        <div className="flex items-center justify-between gap-2 mt-0.5">
-          <p className="text-xs text-muted-foreground truncate">
-            {lastMessageText || 'Start a conversation'}
-          </p>
-          {unreadCount > 0 && (
-            <span className="flex-shrink-0 min-w-5 h-5 px-1.5 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 text-amber-950 text-xs font-bold flex items-center justify-center">
-              {unreadCount > 99 ? '99+' : unreadCount}
-            </span>
-          )}
-        </div>
+        <h3 className="font-semibold text-foreground truncate text-sm">
+          {displayName}
+        </h3>
+        <p className="text-xs text-amber-500 font-medium mt-0.5">
+          Chat now
+        </p>
       </div>
     </div>
   );
@@ -809,6 +816,7 @@ export default function Messages() {
                     onClick={() => handleChannelSelect(props.channel)}
                     isSelected={props.channel.url === currentChannelUrl}
                     currentUserId={user?.id || ''}
+                    matches={matches}
                   />
                 )}
               />
