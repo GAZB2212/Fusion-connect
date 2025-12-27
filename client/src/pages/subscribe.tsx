@@ -309,7 +309,7 @@ export default function Subscribe() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] golden-shimmer">
+    <div className="min-h-screen flex items-center justify-center p-4 pt-14 bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] golden-shimmer">
       <Card className="w-full max-w-2xl bg-[#0A0E17] border-white/10">
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold text-[#F8F4E3] font-serif mb-2">

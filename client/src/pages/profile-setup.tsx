@@ -520,7 +520,7 @@ export default function ProfileSetup() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-14">
       {/* Header with Logout */}
       <div className="border-b bg-card">
         <div className="container max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">

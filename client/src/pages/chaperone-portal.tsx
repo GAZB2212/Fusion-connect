@@ -90,7 +90,7 @@ export default function ChaperonePortal() {
 
   if (!chaperoneData) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4 pt-14">
         <Card className="w-full max-w-md p-6">
           <div className="text-center mb-6">
             <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">

@@ -280,7 +280,7 @@ export default function Verification() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 pt-14">
       <Card className="max-w-2xl w-full p-8">
         <div className="space-y-6">
           <div className="text-center">

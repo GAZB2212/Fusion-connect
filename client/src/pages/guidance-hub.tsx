@@ -219,7 +219,7 @@ export default function GuidanceHub() {
 
   if (selectedArticle) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pt-14">
         <header className="sticky top-0 z-10 bg-background border-b p-4">
           <div className="flex items-center gap-3 max-w-2xl mx-auto">
             <Button
@@ -290,7 +290,7 @@ export default function GuidanceHub() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-14">
       <header className="sticky top-0 z-10 bg-background border-b p-4">
         <div className="flex items-center gap-3 max-w-2xl mx-auto">
           <Button

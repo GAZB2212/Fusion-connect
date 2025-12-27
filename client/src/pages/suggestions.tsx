@@ -109,7 +109,7 @@ export default function Suggestions() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] p-4 pb-20">
+    <div className="min-h-screen bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] p-4 pb-20 pt-14">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-6">

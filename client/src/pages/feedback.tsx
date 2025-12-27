@@ -107,7 +107,7 @@ export default function Feedback() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-4 pt-14">
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex items-center gap-3">
           <Button
