@@ -2421,6 +2421,7 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
     deleteCached(`suggestions:${userId}`);
 
     let isMatch = false;
+    let matchId: string | null = null;
 
     // If this is a right swipe, check for mutual match
     if (direction === "right") {
@@ -2465,6 +2466,7 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
         if (existingMatch) {
           console.log(`[SWIPE] Match already exists: ${existingMatch.id}`);
           isMatch = true;
+          matchId = existingMatch.id;
         } else {
           // Check if at least one user has an active subscription
           // Matches can only be created if at least one user is a premium subscriber
@@ -2495,6 +2497,7 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
                 user2Id: swipedId,
               }).returning();
               isMatch = true;
+              matchId = newMatch.id;
               console.log(`[MATCH] ✅ Created match ${newMatch.id} between ${userId} and ${swipedId}`);
               
               // Broadcast new match to both users via WebSocket for real-time updates
@@ -2576,7 +2579,7 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
       }
     }
 
-    res.json({ success: true, isMatch });
+    res.json({ success: true, isMatch, matchId });
   });
 
   // Get matches

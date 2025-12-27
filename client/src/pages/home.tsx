@@ -45,17 +45,21 @@ export default function Home() {
     staleTime: 0,
   });
 
-  const swipeMutation = useMutation<{ success: boolean; isMatch: boolean }, Error, { profileId: string; direction: "right" | "left" }>({
+  const swipeMutation = useMutation<{ success: boolean; isMatch: boolean; matchId: string | null }, Error, { profileId: string; direction: "right" | "left" }>({
     mutationFn: async ({ profileId, direction }) => {
       const result = await apiRequest("POST", "/api/swipe", { swipedId: profileId, direction });
-      return result as unknown as { success: boolean; isMatch: boolean };
+      return result as unknown as { success: boolean; isMatch: boolean; matchId: string | null };
     },
     onSuccess: (data, variables) => {
-      if (data.isMatch) {
+      if (data.isMatch && data.matchId) {
         toast({
           title: "It's a Match!",
-          description: "You both liked each other! Start a conversation now.",
+          description: "You both liked each other! Opening conversation...",
         });
+        queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
+        setTimeout(() => {
+          setLocation(`/messages/${data.matchId}`);
+        }, 1200);
       } else if (variables.direction === "right" && !subscriptionStatus?.hasActiveSubscription) {
         setShowSubscribeDialog(true);
       }
