@@ -199,6 +199,9 @@ export function detectContentType(base64String: string): string {
  * @returns Buffer of the file contents
  */
 export async function getObjectFromR2(key: string): Promise<Buffer> {
+  console.log(`[R2 Get] Attempting to fetch object with key: ${key}`);
+  console.log(`[R2 Get] Using bucket: ${BUCKET_NAME}`);
+  
   try {
     const command = new GetObjectCommand({
       Bucket: BUCKET_NAME,
@@ -208,6 +211,7 @@ export async function getObjectFromR2(key: string): Promise<Buffer> {
     const response = await r2Client.send(command);
     
     if (!response.Body) {
+      console.error(`[R2 Get] No body in response for key: ${key}`);
       throw new Error("No body in R2 response");
     }
 
@@ -217,10 +221,18 @@ export async function getObjectFromR2(key: string): Promise<Buffer> {
       chunks.push(Buffer.from(chunk));
     }
     
-    return Buffer.concat(chunks);
-  } catch (error) {
-    console.error('[R2 Get] Failed to get object:', error);
-    throw new Error('Failed to get object from storage');
+    const buffer = Buffer.concat(chunks);
+    console.log(`[R2 Get] Successfully fetched object, size: ${buffer.length} bytes`);
+    return buffer;
+  } catch (error: any) {
+    console.error(`[R2 Get] Failed to get object with key "${key}":`, error.message);
+    console.error(`[R2 Get] Error name: ${error.name}, Code: ${error.Code || 'N/A'}`);
+    
+    if (error.name === 'NoSuchKey' || error.Code === 'NoSuchKey') {
+      throw new Error(`Object not found in storage: ${key}`);
+    }
+    
+    throw new Error(`Failed to get object from storage: ${error.message}`);
   }
 }
 
@@ -230,19 +242,49 @@ export async function getObjectFromR2(key: string): Promise<Buffer> {
  * @returns Buffer of the image
  */
 export async function getImageBufferFromR2Url(photoUrl: string): Promise<Buffer> {
+  console.log(`[R2 getImageBufferFromR2Url] Processing URL: ${photoUrl.substring(0, 100)}...`);
+  
   // Extract the file key from the URL
   let fileKey: string;
   
+  // Handle relative URL: /api/images/profile/userId/filename.jpg
   if (photoUrl.startsWith('/api/images/')) {
     fileKey = photoUrl.replace('/api/images/', '');
-  } else if (photoUrl.startsWith('data:image/')) {
-    // It's a base64 string, convert directly
+    console.log(`[R2 getImageBufferFromR2Url] Relative URL format, extracted key: ${fileKey}`);
+  } 
+  // Handle base64 data URL
+  else if (photoUrl.startsWith('data:image/')) {
+    console.log(`[R2 getImageBufferFromR2Url] Base64 data URL detected, converting directly`);
     return base64ToBuffer(photoUrl);
-  } else {
-    // Legacy format or external URL - try to extract key
+  } 
+  // Handle absolute URL with /api/images/ in path (e.g., https://domain.com/api/images/profile/...)
+  else if (photoUrl.includes('/api/images/')) {
+    const apiImagesIndex = photoUrl.indexOf('/api/images/');
+    fileKey = photoUrl.substring(apiImagesIndex + '/api/images/'.length);
+    console.log(`[R2 getImageBufferFromR2Url] Absolute URL with /api/images/, extracted key: ${fileKey}`);
+  }
+  // Handle direct HTTPS URLs (external images) - fetch via HTTP
+  else if (photoUrl.startsWith('https://')) {
+    console.log(`[R2 getImageBufferFromR2Url] External HTTPS URL detected, fetching via HTTP`);
+    try {
+      const response = await fetch(photoUrl);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+      }
+      const arrayBuffer = await response.arrayBuffer();
+      return Buffer.from(arrayBuffer);
+    } catch (error: any) {
+      console.error(`[R2 getImageBufferFromR2Url] Failed to fetch external URL:`, error.message);
+      throw new Error(`Failed to fetch image from external URL: ${error.message}`);
+    }
+  }
+  // Legacy format - try to extract key from URL path
+  else {
     const urlParts = photoUrl.split('/');
     fileKey = urlParts.slice(3).join('/');
+    console.log(`[R2 getImageBufferFromR2Url] Legacy format, extracted key: ${fileKey}`);
   }
   
+  console.log(`[R2 getImageBufferFromR2Url] Fetching from R2 with key: ${fileKey}`);
   return getObjectFromR2(fileKey);
 }
