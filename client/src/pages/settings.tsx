@@ -462,6 +462,18 @@ export default function Settings() {
     setEditPhotos(editPhotos.filter((_, i) => i !== index));
   };
 
+  const setAsMainPhoto = (index: number) => {
+    if (index === 0 || index >= editPhotos.length) return;
+    const newPhotos = [...editPhotos];
+    const [photo] = newPhotos.splice(index, 1);
+    newPhotos.unshift(photo);
+    setEditPhotos(newPhotos);
+    toast({
+      title: "Main photo updated",
+      description: "This photo is now your main profile picture.",
+    });
+  };
+
   const toggleEditEthnicity = (ethnicity: string) => {
     if (selectedEthnicities.includes(ethnicity)) {
       setSelectedEthnicities(selectedEthnicities.filter(e => e !== ethnicity));
@@ -636,20 +648,20 @@ export default function Settings() {
 
         {/* Edit Profile Dialog */}
         <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Edit Profile</DialogTitle>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+            <DialogHeader className="pb-4 border-b border-border">
+              <DialogTitle className="text-xl">Edit Profile</DialogTitle>
               <DialogDescription>
                 Update your profile information
               </DialogDescription>
             </DialogHeader>
 
-            <Tabs defaultValue="basic" className="mt-4">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="basic">Basic</TabsTrigger>
-                <TabsTrigger value="photos">Photos</TabsTrigger>
-                <TabsTrigger value="video">Video</TabsTrigger>
-                <TabsTrigger value="details">Details</TabsTrigger>
+            <Tabs defaultValue="basic" className="mt-6">
+              <TabsList className="grid w-full grid-cols-4 h-11">
+                <TabsTrigger value="basic" className="text-sm">Basic</TabsTrigger>
+                <TabsTrigger value="photos" className="text-sm">Photos</TabsTrigger>
+                <TabsTrigger value="video" className="text-sm">Video</TabsTrigger>
+                <TabsTrigger value="details" className="text-sm">Details</TabsTrigger>
               </TabsList>
 
               <TabsContent value="basic" className="space-y-4 mt-4">
@@ -745,43 +757,63 @@ export default function Settings() {
                 </div>
               </TabsContent>
 
-              <TabsContent value="photos" className="space-y-4 mt-4">
-                <p className="text-sm text-muted-foreground">
-                  Upload 3-6 clear photos. Your first photo will be your main profile photo.
-                </p>
-                <div className="grid grid-cols-3 gap-3">
+              <TabsContent value="photos" className="space-y-6 mt-4">
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Upload 3-6 clear photos. Tap any photo to set it as your main profile picture.
+                  </p>
+                  {editPhotos.length < 3 && (
+                    <p className="text-sm text-destructive font-medium">
+                      Please upload at least 3 photos
+                    </p>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-3 gap-4">
                   {[...Array(6)].map((_, index) => (
-                    <div key={index} className="relative aspect-square">
+                    <div key={index} className="relative aspect-[3/4]">
                       {editPhotos[index] ? (
-                        <div className="relative h-full group">
+                        <div className="relative h-full group rounded-xl overflow-hidden border-2 border-border">
+                          {index === 0 && (
+                            <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-primary/90 to-primary/70 text-primary-foreground text-xs font-semibold text-center py-1.5">
+                              Main Photo
+                            </div>
+                          )}
                           <img
                             src={editPhotos[index]}
                             alt={`Photo ${index + 1}`}
-                            className="h-full w-full object-cover rounded-lg"
+                            className="h-full w-full object-cover cursor-pointer"
+                            onClick={() => index > 0 && setAsMainPhoto(index)}
+                            data-testid={`photo-${index}`}
                           />
                           <Button
                             type="button"
                             variant="destructive"
                             size="icon"
-                            className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => removeEditPhoto(index)}
+                            className="absolute bottom-2 right-2 h-7 w-7 opacity-80 hover:opacity-100"
+                            onClick={(e) => { e.stopPropagation(); removeEditPhoto(index); }}
                             data-testid={`button-remove-edit-photo-${index}`}
                           >
-                            <X className="h-3 w-3" />
+                            <X className="h-4 w-4" />
                           </Button>
-                          {index === 0 && (
-                            <Badge className="absolute bottom-1 left-1 text-xs">
-                              Main
-                            </Badge>
+                          {index > 0 && (
+                            <div 
+                              className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                              onClick={() => setAsMainPhoto(index)}
+                            >
+                              <span className="text-white text-xs font-medium bg-black/60 px-3 py-1.5 rounded-full">
+                                Set as Main
+                              </span>
+                            </div>
                           )}
                         </div>
                       ) : (
                         <label
                           htmlFor={`edit-photo-upload-${index}`}
-                          className="flex flex-col items-center justify-center h-full border-2 border-dashed rounded-lg cursor-pointer hover-elevate"
+                          className="flex flex-col items-center justify-center h-full border-2 border-dashed border-muted-foreground/30 rounded-xl cursor-pointer hover:border-muted-foreground/60 hover:bg-muted/30 transition-colors"
                         >
-                          <Upload className="h-5 w-5 text-muted-foreground mb-1" />
-                          <span className="text-xs text-muted-foreground">Upload</span>
+                          <Upload className="h-6 w-6 text-muted-foreground mb-2" />
+                          <span className="text-xs text-muted-foreground font-medium">Upload</span>
                           <input
                             type="file"
                             accept="image/*"
@@ -794,11 +826,6 @@ export default function Settings() {
                     </div>
                   ))}
                 </div>
-                {editPhotos.length < 3 && (
-                  <p className="text-sm text-destructive">
-                    Please have at least 3 photos
-                  </p>
-                )}
               </TabsContent>
 
               <TabsContent value="video" className="space-y-4 mt-4">
