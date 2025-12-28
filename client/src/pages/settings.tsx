@@ -567,7 +567,7 @@ export default function Settings() {
                 </h3>
                 <p className="text-sm text-muted-foreground flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
-                  {profile?.age} years old
+                  {profile?.age} {t('profile.yearsOld', 'years old')}
                   {profile?.height && (
                     <>
                       <span className="mx-1">-</span>
@@ -622,7 +622,7 @@ export default function Settings() {
           {/* Photo Gallery Preview */}
           {profile?.photos && profile.photos.length > 1 && (
             <div className="mt-4">
-              <p className="text-sm text-muted-foreground mb-2">Your Photos ({profile.photos.length}/6)</p>
+              <p className="text-sm text-muted-foreground mb-2">{t('profile.yourPhotos', 'Your Photos')} ({profile.photos.length}/6)</p>
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {profile.photos.map((photo, index) => (
                   <div 
@@ -636,7 +636,7 @@ export default function Settings() {
                     />
                     {index === 0 && (
                       <div className="absolute bottom-0 left-0 right-0 bg-primary/80 text-primary-foreground text-[10px] text-center py-0.5">
-                        Main
+                        {t('profile.main', 'Main')}
                       </div>
                     )}
                   </div>
@@ -650,37 +650,37 @@ export default function Settings() {
         <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6">
             <DialogHeader className="pb-4 border-b border-border">
-              <DialogTitle className="text-xl">Edit Profile</DialogTitle>
+              <DialogTitle className="text-xl">{t('profile.editProfile')}</DialogTitle>
               <DialogDescription>
-                Update your profile information
+                {t('profile.updateInfo', 'Update your profile information')}
               </DialogDescription>
             </DialogHeader>
 
             <Tabs defaultValue="basic" className="mt-6">
               <TabsList className="grid w-full grid-cols-4 h-11">
-                <TabsTrigger value="basic" className="text-sm">Basic</TabsTrigger>
-                <TabsTrigger value="photos" className="text-sm">Photos</TabsTrigger>
-                <TabsTrigger value="video" className="text-sm">Video</TabsTrigger>
-                <TabsTrigger value="details" className="text-sm">Details</TabsTrigger>
+                <TabsTrigger value="basic" className="text-sm">{t('profile.basicTab', 'Basic')}</TabsTrigger>
+                <TabsTrigger value="photos" className="text-sm">{t('profile.photosTab', 'Photos')}</TabsTrigger>
+                <TabsTrigger value="video" className="text-sm">{t('profile.videoTab', 'Video')}</TabsTrigger>
+                <TabsTrigger value="details" className="text-sm">{t('profile.detailsTab', 'Details')}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="basic" className="space-y-4 mt-4">
                 <div>
-                  <Label>Display Name</Label>
+                  <Label>{t('profile.displayName', 'Display Name')}</Label>
                   <Input
                     value={editingProfile.displayName || ""}
                     onChange={(e) => setEditingProfile({ ...editingProfile, displayName: e.target.value })}
-                    placeholder="Your name"
+                    placeholder={t('profile.yourName', 'Your name')}
                     data-testid="input-edit-name"
                   />
                 </div>
 
                 <div>
-                  <Label>Bio</Label>
+                  <Label>{t('profile.bio', 'Bio')}</Label>
                   <Textarea
                     value={editingProfile.bio || ""}
                     onChange={(e) => setEditingProfile({ ...editingProfile, bio: e.target.value })}
-                    placeholder="Tell others about yourself..."
+                    placeholder={t('profile.bioPlaceholder', 'Tell others about yourself...')}
                     rows={3}
                     data-testid="input-edit-bio"
                   />
@@ -688,7 +688,7 @@ export default function Settings() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>Age</Label>
+                    <Label>{t('profile.age')}</Label>
                     <Input
                       type="number"
                       value={editingProfile.age || ""}
@@ -697,13 +697,13 @@ export default function Settings() {
                     />
                   </div>
                   <div>
-                    <Label>Height</Label>
+                    <Label>{t('profile.height', 'Height')}</Label>
                     <Select
                       value={editingProfile.height?.toString() || ""}
                       onValueChange={(value) => setEditingProfile({ ...editingProfile, height: parseInt(value) })}
                     >
                       <SelectTrigger data-testid="select-edit-height">
-                        <SelectValue placeholder="Select height" />
+                        <SelectValue placeholder={t('profile.selectHeight', 'Select height')} />
                       </SelectTrigger>
                       <SelectContent className="max-h-[40vh]">
                         {HEIGHT_OPTIONS_CM.map((option) => (
@@ -717,33 +717,33 @@ export default function Settings() {
                 </div>
 
                 <div>
-                  <Label>Location</Label>
+                  <Label>{t('profile.location')}</Label>
                   <Input
                     value={editingProfile.location || ""}
                     onChange={(e) => setEditingProfile({ ...editingProfile, location: e.target.value })}
-                    placeholder="City, Country"
+                    placeholder={t('profile.locationPlaceholder', 'City, Country')}
                     data-testid="input-edit-location"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label>Occupation</Label>
+                    <Label>{t('profile.occupation')}</Label>
                     <Input
                       value={editingProfile.occupation || ""}
                       onChange={(e) => setEditingProfile({ ...editingProfile, occupation: e.target.value })}
-                      placeholder="Your occupation"
+                      placeholder={t('profile.occupationPlaceholder', 'Your occupation')}
                       data-testid="input-edit-occupation"
                     />
                   </div>
                   <div>
-                    <Label>Education</Label>
+                    <Label>{t('profile.education')}</Label>
                     <Select
                       value={editingProfile.education || ""}
                       onValueChange={(value) => setEditingProfile({ ...editingProfile, education: value })}
                     >
                       <SelectTrigger data-testid="select-edit-education">
-                        <SelectValue placeholder="Select education" />
+                        <SelectValue placeholder={t('profile.selectEducation', 'Select education')} />
                       </SelectTrigger>
                       <SelectContent className="max-h-[40vh]">
                         {EDUCATION_OPTIONS.map((option) => (
@@ -760,11 +760,11 @@ export default function Settings() {
               <TabsContent value="photos" className="space-y-6 mt-4">
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">
-                    Upload 3-6 clear photos. Tap any photo to set it as your main profile picture.
+                    {t('profile.photoInstructions', 'Upload 3-6 clear photos. Tap any photo to set it as your main profile picture.')}
                   </p>
                   {editPhotos.length < 3 && (
                     <p className="text-sm text-destructive font-medium">
-                      Please upload at least 3 photos
+                      {t('profile.photoMinimum', 'Please upload at least 3 photos')}
                     </p>
                   )}
                 </div>
@@ -776,7 +776,7 @@ export default function Settings() {
                         <div className="relative h-full group rounded-xl overflow-hidden border-2 border-border">
                           {index === 0 && (
                             <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-primary/90 to-primary/70 text-primary-foreground text-xs font-semibold text-center py-1.5">
-                              Main Photo
+                              {t('profile.mainPhoto', 'Main Photo')}
                             </div>
                           )}
                           <img
@@ -802,7 +802,7 @@ export default function Settings() {
                               onClick={() => setAsMainPhoto(index)}
                             >
                               <span className="text-white text-xs font-medium bg-black/60 px-3 py-1.5 rounded-full">
-                                Set as Main
+                                {t('profile.setAsMain', 'Set as Main')}
                               </span>
                             </div>
                           )}
@@ -813,7 +813,7 @@ export default function Settings() {
                           className="flex flex-col items-center justify-center h-full border-2 border-dashed border-muted-foreground/30 rounded-xl cursor-pointer hover:border-muted-foreground/60 hover:bg-muted/30 transition-colors"
                         >
                           <Upload className="h-6 w-6 text-muted-foreground mb-2" />
-                          <span className="text-xs text-muted-foreground font-medium">Upload</span>
+                          <span className="text-xs text-muted-foreground font-medium">{t('profile.upload', 'Upload')}</span>
                           <input
                             type="file"
                             accept="image/*"
@@ -967,7 +967,7 @@ export default function Settings() {
                 </div>
 
                 <div>
-                  <Label className="mb-2 block">Ethnicity</Label>
+                  <Label className="mb-2 block">{t('profile.ethnicity', 'Ethnicity')}</Label>
                   <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto border rounded-lg p-3">
                     {ETHNICITY_OPTIONS.map((ethnicity) => (
                       <Badge
@@ -991,14 +991,14 @@ export default function Settings() {
                 onClick={() => setProfileDialogOpen(false)}
                 data-testid="button-cancel-edit"
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button
                 onClick={saveProfile}
                 disabled={updateProfileMutation.isPending}
                 data-testid="button-save-profile"
               >
-                {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
+                {updateProfileMutation.isPending ? t('common.saving', 'Saving...') : t('common.saveChanges', 'Save Changes')}
               </Button>
             </div>
           </DialogContent>
@@ -1037,15 +1037,15 @@ export default function Settings() {
         <Card className="p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
             <Eye className="h-5 w-5" />
-            Privacy Settings
+            {t('settings.privacy')}
           </h2>
 
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Photo Visibility</Label>
+                <Label>{t('privacy.photoVisibility')}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Blur your photos until you match
+                  {t('privacy.photoVisibilityDesc')}
                 </p>
               </div>
               <Switch
@@ -1063,9 +1063,9 @@ export default function Settings() {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Use Nickname</Label>
+                <Label>{t('privacy.useNickname')}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Show only your first name to others
+                  {t('privacy.useNicknameDesc')}
                 </p>
               </div>
               <Switch
@@ -1083,9 +1083,9 @@ export default function Settings() {
 
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label>Profile Visibility</Label>
+                <Label>{t('privacy.profileVisibility')}</Label>
                 <p className="text-sm text-muted-foreground">
-                  Hide your profile from others
+                  {t('privacy.profileVisibilityDesc')}
                 </p>
               </div>
               <Switch
@@ -1106,54 +1106,54 @@ export default function Settings() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold flex items-center gap-2">
               <Shield className="h-5 w-5" />
-              Chaperone (Wali)
+              {t('chaperone.title')} ({t('chaperone.wali')})
             </h2>
 
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm" data-testid="button-add-chaperone">
                   <UserPlus className="h-4 w-4 mr-2" />
-                  Add Chaperone
+                  {t('chaperone.addChaperone')}
                 </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>Add Chaperone</DialogTitle>
+                  <DialogTitle>{t('chaperone.addChaperone')}</DialogTitle>
                   <DialogDescription>
-                    Add a family member or guardian to view your conversations
+                    {t('chaperone.addDesc')}
                   </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-4 pt-4">
                   <div>
-                    <Label>Name</Label>
+                    <Label>{t('chaperone.name')}</Label>
                     <Input
                       value={chaperoneName}
                       onChange={(e) => setChaperoneName(e.target.value)}
-                      placeholder="Chaperone's name"
+                      placeholder={t('chaperone.namePlaceholder')}
                       data-testid="input-chaperone-name"
                     />
                   </div>
                   <div>
-                    <Label>Email</Label>
+                    <Label>{t('chaperone.email')}</Label>
                     <Input
                       type="email"
                       value={chaperoneEmail}
                       onChange={(e) => setChaperoneEmail(e.target.value)}
-                      placeholder="chaperone@example.com"
+                      placeholder={t('chaperone.emailPlaceholder')}
                       data-testid="input-chaperone-email"
                     />
                   </div>
                   <div>
-                    <Label>Relationship</Label>
+                    <Label>{t('chaperone.relationship')}</Label>
                     <Input
                       value={relationshipType}
                       onChange={(e) => setRelationshipType(e.target.value)}
-                      placeholder="e.g., Father, Mother, Guardian"
+                      placeholder={t('chaperone.relationshipPlaceholder')}
                       data-testid="input-relationship"
                     />
                   </div>
                   <div className="space-y-3">
-                    <Label>Access Type</Label>
+                    <Label>{t('chaperone.accessType')}</Label>
                     <div className="space-y-2">
                       <label 
                         className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${accessType === 'live' ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}
@@ -1168,9 +1168,9 @@ export default function Settings() {
                           className="mt-1"
                         />
                         <div>
-                          <p className="font-medium">Live Access</p>
+                          <p className="font-medium">{t('chaperone.liveAccess')}</p>
                           <p className="text-sm text-muted-foreground">
-                            Chaperone joins conversations and can see and send messages in real-time
+                            {t('chaperone.liveAccessDesc')}
                           </p>
                         </div>
                       </label>
@@ -1187,9 +1187,9 @@ export default function Settings() {
                           className="mt-1"
                         />
                         <div>
-                          <p className="font-medium">Report Only</p>
+                          <p className="font-medium">{t('chaperone.reportOnly')}</p>
                           <p className="text-sm text-muted-foreground">
-                            Chaperone receives periodic email summaries of your conversations
+                            {t('chaperone.reportOnlyDesc')}
                           </p>
                         </div>
                       </label>
@@ -1201,7 +1201,7 @@ export default function Settings() {
                     className="w-full"
                     data-testid="button-submit-chaperone"
                   >
-                    Add Chaperone
+                    {t('chaperone.addChaperone')}
                   </Button>
                 </div>
               </DialogContent>
@@ -1210,7 +1210,7 @@ export default function Settings() {
 
           {chaperones.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No chaperones added. Add a chaperone to involve family in your conversations.
+              {t('chaperone.noChaperones')}
             </p>
           ) : (
             <div className="space-y-3">
@@ -1224,8 +1224,8 @@ export default function Settings() {
                   if (chaperoneAccessLink) {
                     navigator.clipboard.writeText(chaperoneAccessLink);
                     toast({
-                      title: "Link Copied",
-                      description: "Share this link with your chaperone so they can access conversations.",
+                      title: t('chaperone.linkCopied'),
+                      description: t('chaperone.linkCopiedDesc'),
                     });
                   }
                 };
@@ -1241,7 +1241,7 @@ export default function Settings() {
                         <div className="flex items-center gap-2">
                           <p className="font-medium">{chaperone.chaperoneName}</p>
                           <span className={`text-xs px-2 py-0.5 rounded-full ${isLiveAccess ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'}`}>
-                            {isLiveAccess ? 'Live Access' : 'Report Only'}
+                            {isLiveAccess ? t('chaperone.liveAccess') : t('chaperone.reportOnly')}
                           </span>
                         </div>
                         <p className="text-sm text-muted-foreground">
@@ -1255,7 +1255,7 @@ export default function Settings() {
                         onClick={() => removeChaperoneMutation.mutate(chaperone.id)}
                         data-testid={`button-remove-${chaperone.id}`}
                       >
-                        Remove
+                        {t('common.delete')}
                       </Button>
                     </div>
                     
@@ -1263,7 +1263,7 @@ export default function Settings() {
                       <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
                         <Link className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs text-muted-foreground mb-1">Chaperone Access Link</p>
+                          <p className="text-xs text-muted-foreground mb-1">{t('chaperone.accessLink')}</p>
                           <p className="text-xs font-mono truncate">{chaperoneAccessLink}</p>
                         </div>
                         <Button
@@ -1280,7 +1280,7 @@ export default function Settings() {
                     {!isLiveAccess && (
                       <div className="p-3 bg-muted/50 rounded-lg">
                         <p className="text-xs text-muted-foreground">
-                          {chaperone.chaperoneName} will receive email summaries of your conversations.
+                          {t('chaperone.reportSummaryNote', { name: chaperone.chaperoneName })}
                         </p>
                       </div>
                     )}
