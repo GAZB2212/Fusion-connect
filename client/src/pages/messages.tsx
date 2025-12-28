@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useRoute, useLocation } from "wouter";
+import { useLocation } from "wouter";
 import SendbirdProvider from "@sendbird/uikit-react/SendbirdProvider";
 import GroupChannelList from "@sendbird/uikit-react/GroupChannelList";
 import GroupChannel from "@sendbird/uikit-react/GroupChannel";
@@ -147,11 +147,10 @@ interface VideoCall {
 
 export default function Messages() {
   const { user } = useAuth();
-  const [matchRoute, params] = useRoute("/messages/:matchId");
-  const [listRoute] = useRoute("/messages");
-  const [, setLocation] = useLocation();
-  // Only use matchId if we're on the specific match route, not the list route
-  const matchId = matchRoute ? params?.matchId : undefined;
+  const [location, setLocation] = useLocation();
+  // Parse matchId directly from URL - only if there's a path segment after /messages/
+  const urlParts = location.split('/');
+  const matchId = urlParts[1] === 'messages' && urlParts[2] ? urlParts[2] : undefined;
   const { toast } = useToast();
 
   const [sendbirdToken, setSendbirdToken] = useState<string | null>(null);
