@@ -562,10 +562,40 @@ export default function Home() {
               <div className="w-12 h-1.5 rounded-full bg-muted-foreground/30" />
             </div>
             
-            <ScrollArea className="h-[calc(100%-60px)] px-5">
+            <ScrollArea className="h-[calc(100%-60px)]">
               <div className="pb-32">
+                {/* Photo Gallery */}
+                {photos.length > 0 && (
+                  <div className="relative mb-4">
+                    <div className="flex overflow-x-auto gap-2 px-5 py-2 snap-x snap-mandatory scrollbar-hide">
+                      {photos.map((photo, idx) => (
+                        <div 
+                          key={idx} 
+                          className="flex-shrink-0 w-[200px] aspect-[3/4] rounded-xl overflow-hidden snap-center"
+                        >
+                          <img
+                            src={photo}
+                            alt={`${displayName} photo ${idx + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    {photos.length > 1 && (
+                      <div className="flex justify-center gap-1 mt-2">
+                        {photos.map((_, idx) => (
+                          <div 
+                            key={idx}
+                            className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30"
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* Name and verification */}
-                <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-2 mb-4 px-5">
                   <h2 className="text-2xl font-bold">{displayName}, {age}</h2>
                   {currentProfile.isVerified && (
                     <ShieldCheck className="h-5 w-5 text-emerald-500" />
@@ -574,7 +604,7 @@ export default function Home() {
 
                 {/* Location */}
                 {currentProfile.location && (
-                  <p className="flex items-center gap-1 text-muted-foreground mb-4">
+                  <p className="flex items-center gap-1 text-muted-foreground mb-4 px-5">
                     <MapPin className="h-4 w-4" />
                     {currentProfile.location}
                   </p>
@@ -582,7 +612,7 @@ export default function Home() {
 
                 {/* Bio */}
                 {currentProfile.bio && (
-                  <div className="mb-6">
+                  <div className="mb-6 px-5">
                     <h3 className="text-sm font-semibold text-muted-foreground mb-2">About Me</h3>
                     <p className="text-foreground">{currentProfile.bio}</p>
                   </div>
@@ -590,7 +620,7 @@ export default function Home() {
 
                 {/* Profile Prompts */}
                 {currentProfile.profilePrompts && (currentProfile.profilePrompts as ProfilePromptAnswer[]).length > 0 && (
-                  <div className="space-y-3 mb-6">
+                  <div className="space-y-3 mb-6 px-5">
                     {(currentProfile.profilePrompts as ProfilePromptAnswer[]).map((prompt, idx) => {
                       const promptConfig = getPromptById(prompt.promptId);
                       return (
@@ -604,7 +634,7 @@ export default function Home() {
                 )}
 
                 {/* Basic Info */}
-                <div className="mb-6">
+                <div className="mb-6 px-5">
                   <h3 className="text-sm font-semibold text-muted-foreground mb-3">Basic Info</h3>
                   <div className="grid grid-cols-2 gap-3">
                     {currentProfile.height && (
@@ -635,7 +665,7 @@ export default function Home() {
                 </div>
 
                 {/* Religious Info */}
-                <div className="mb-6">
+                <div className="mb-6 px-5">
                   <h3 className="text-sm font-semibold text-muted-foreground mb-3">Religious Background</h3>
                   <div className="flex flex-wrap gap-2">
                     {currentProfile.sect && currentProfile.sect !== 'No preference' && (
