@@ -77,6 +77,13 @@ The platform features a luxury aesthetic with a primary deep navy color, gold ac
   - Categories: Navigating Connections, Healthy Communication, Focus & Intention
   - Topics include handling rejection, managing expectations, boundaries, patience, and respectful communication
   - Accessible from Settings page
+- **Multi-Language Support (i18n):** Full internationalization for the global Muslim community:
+  - Supported languages: English, Arabic (العربية), Urdu (اردو)
+  - RTL (right-to-left) layout support for Arabic and Urdu
+  - Language picker in Settings page
+  - Messenger interface fully translated including placeholder text
+  - Uses react-i18next with automatic browser language detection
+  - Language preference saved to localStorage for persistence
 - **App Store Compliance Features:**
   - User reporting system with multiple reason categories
   - User blocking functionality
