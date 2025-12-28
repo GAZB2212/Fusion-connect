@@ -1,0 +1,146 @@
+{
+  "common": {
+    "loading": "جارٍ التحميل...",
+    "error": "حدث خطأ",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "back": "رجوع",
+    "next": "التالي",
+    "submit": "إرسال",
+    "confirm": "تأكيد",
+    "close": "إغلاق",
+    "search": "بحث",
+    "retry": "حاول مرة أخرى"
+  },
+  "nav": {
+    "discover": "اكتشف",
+    "matches": "التطابقات",
+    "messages": "الرسائل",
+    "profile": "الملف الشخصي"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "signup": "إنشاء حساب",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "loginWithReplit": "المتابعة عبر Replit"
+  },
+  "discover": {
+    "title": "اكتشف",
+    "noMoreProfiles": "لا توجد ملفات أخرى",
+    "viewProfile": "عرض الملف الشخصي",
+    "like": "إعجاب",
+    "pass": "تمرير",
+    "itsAMatch": "تم التطابق!",
+    "startChatting": "ابدأ المحادثة",
+    "keepSwiping": "استمر في التصفح"
+  },
+  "matches": {
+    "title": "تطابقاتك",
+    "noMatches": "لا توجد تطابقات بعد",
+    "chatNow": "محادثة الآن",
+    "unmatch": "إلغاء التطابق",
+    "report": "إبلاغ"
+  },
+  "messages": {
+    "title": "الرسائل",
+    "yourConversations": "محادثاتك",
+    "noConversations": "لا توجد محادثات بعد",
+    "selectConversation": "اختر محادثة",
+    "typeHere": "اكتب هنا......",
+    "send": "إرسال",
+    "videoCall": "مكالمة فيديو",
+    "voiceCall": "مكالمة صوتية",
+    "addChaperone": "إضافة محرم",
+    "removeChaperone": "إزالة المحرم",
+    "chaperoneAdded": "تمت إضافة المحرم إلى هذه المحادثة",
+    "chaperoneRemoved": "تمت إزالة المحرم من هذه المحادثة"
+  },
+  "profile": {
+    "title": "الملف الشخصي",
+    "editProfile": "تعديل الملف",
+    "settings": "الإعدادات",
+    "about": "نبذة عني",
+    "lookingFor": "أبحث عن",
+    "basics": "المعلومات الأساسية",
+    "age": "العمر",
+    "location": "الموقع",
+    "education": "التعليم",
+    "occupation": "المهنة",
+    "religiosity": "التدين",
+    "prayerFrequency": "المواظبة على الصلاة",
+    "diet": "النظام الغذائي",
+    "maritalStatus": "الحالة الاجتماعية",
+    "photos": "الصور"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "account": "الحساب",
+    "notifications": "الإشعارات",
+    "privacy": "الخصوصية",
+    "language": "اللغة",
+    "selectLanguage": "اختر اللغة",
+    "darkMode": "الوضع الداكن",
+    "deleteAccount": "حذف الحساب",
+    "logOut": "تسجيل الخروج",
+    "termsOfService": "شروط الخدمة",
+    "privacyPolicy": "سياسة الخصوصية",
+    "contactUs": "اتصل بنا",
+    "feedback": "إرسال ملاحظات",
+    "guidanceHub": "مركز الإرشاد"
+  },
+  "subscription": {
+    "title": "الاشتراك",
+    "premium": "بريميوم",
+    "unlock": "افتح جميع المميزات",
+    "subscribe": "اشترك الآن",
+    "currentPlan": "الخطة الحالية",
+    "features": "المميزات المتضمنة"
+  },
+  "videoCall": {
+    "calling": "جارٍ الاتصال...",
+    "incomingCall": "مكالمة واردة",
+    "accept": "قبول",
+    "decline": "رفض",
+    "endCall": "إنهاء المكالمة",
+    "mute": "كتم الصوت",
+    "unmute": "إلغاء الكتم",
+    "cameraOn": "تشغيل الكاميرا",
+    "cameraOff": "إيقاف الكاميرا"
+  },
+  "chaperone": {
+    "title": "المحرم",
+    "addChaperone": "إضافة محرم",
+    "inviteChaperone": "دعوة محرم",
+    "chaperoneInfo": "يمكن للمحرم مراقبة محادثاتك لضمان اتباع الإرشادات الإسلامية.",
+    "pendingInvites": "الدعوات المعلقة",
+    "activeChaperones": "المحارم النشطون"
+  },
+  "report": {
+    "title": "الإبلاغ عن مستخدم",
+    "reason": "سبب الإبلاغ",
+    "description": "الوصف",
+    "submit": "إرسال البلاغ",
+    "inappropriate": "محتوى غير لائق",
+    "harassment": "تحرش",
+    "spam": "رسائل مزعجة",
+    "fake": "ملف شخصي مزيف",
+    "other": "أخرى"
+  },
+  "guidance": {
+    "title": "مركز الإرشاد",
+    "islamicGuidelines": "الإرشادات الإسلامية",
+    "marriageAdvice": "نصائح الزواج",
+    "faq": "الأسئلة الشائعة"
+  },
+  "sendbird": {
+    "placeholder": "اكتب هنا......",
+    "placeholderDisabled": "اكتب هنا......",
+    "placeholderMuted": "اكتب هنا......",
+    "noChannel": "لا توجد محادثات"
+  }
+}

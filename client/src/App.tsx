@@ -10,6 +10,7 @@ import type { Profile } from "@shared/schema";
 import { initializePushNotifications } from "@/lib/unifiedPushNotifications";
 import { VideoCallProvider } from "@/contexts/VideoCallContext";
 import { WebSocketProvider } from "@/contexts/WebSocketContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import Landing from "@/pages/landing";
 import Launch from "@/pages/launch";
 import AdminQR from "@/pages/admin-qr";
@@ -215,14 +216,16 @@ function AppContent() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <WebSocketProvider>
-          <VideoCallProvider>
-            <Toaster />
-            <AppContent />
-          </VideoCallProvider>
-        </WebSocketProvider>
-      </TooltipProvider>
+      <LanguageProvider>
+        <TooltipProvider>
+          <WebSocketProvider>
+            <VideoCallProvider>
+              <Toaster />
+              <AppContent />
+            </VideoCallProvider>
+          </WebSocketProvider>
+        </TooltipProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }

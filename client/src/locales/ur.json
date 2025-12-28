@@ -1,0 +1,146 @@
+{
+  "common": {
+    "loading": "لوڈ ہو رہا ہے...",
+    "error": "ایک خرابی پیش آئی",
+    "save": "محفوظ کریں",
+    "cancel": "منسوخ",
+    "delete": "حذف کریں",
+    "edit": "ترمیم",
+    "back": "واپس",
+    "next": "اگلا",
+    "submit": "جمع کرائیں",
+    "confirm": "تصدیق",
+    "close": "بند کریں",
+    "search": "تلاش",
+    "retry": "دوبارہ کوشش کریں"
+  },
+  "nav": {
+    "discover": "دریافت کریں",
+    "matches": "میچز",
+    "messages": "پیغامات",
+    "profile": "پروفائل"
+  },
+  "auth": {
+    "login": "لاگ ان",
+    "logout": "لاگ آؤٹ",
+    "signup": "سائن اپ",
+    "email": "ای میل",
+    "password": "پاس ورڈ",
+    "forgotPassword": "پاس ورڈ بھول گئے؟",
+    "loginWithReplit": "Replit کے ساتھ جاری رکھیں"
+  },
+  "discover": {
+    "title": "دریافت کریں",
+    "noMoreProfiles": "مزید پروفائلز نہیں",
+    "viewProfile": "پروفائل دیکھیں",
+    "like": "پسند",
+    "pass": "پاس",
+    "itsAMatch": "میچ ہو گیا!",
+    "startChatting": "بات چیت شروع کریں",
+    "keepSwiping": "سوائپ کرتے رہیں"
+  },
+  "matches": {
+    "title": "آپ کے میچز",
+    "noMatches": "ابھی کوئی میچ نہیں",
+    "chatNow": "ابھی بات کریں",
+    "unmatch": "میچ ختم کریں",
+    "report": "رپورٹ کریں"
+  },
+  "messages": {
+    "title": "پیغامات",
+    "yourConversations": "آپ کی گفتگو",
+    "noConversations": "ابھی کوئی گفتگو نہیں",
+    "selectConversation": "گفتگو منتخب کریں",
+    "typeHere": "یہاں لکھیں......",
+    "send": "بھیجیں",
+    "videoCall": "ویڈیو کال",
+    "voiceCall": "وائس کال",
+    "addChaperone": "محرم شامل کریں",
+    "removeChaperone": "محرم ہٹائیں",
+    "chaperoneAdded": "اس گفتگو میں محرم شامل کر دیا گیا",
+    "chaperoneRemoved": "اس گفتگو سے محرم ہٹا دیا گیا"
+  },
+  "profile": {
+    "title": "پروفائل",
+    "editProfile": "پروفائل میں ترمیم",
+    "settings": "ترتیبات",
+    "about": "میرے بارے میں",
+    "lookingFor": "تلاش میں",
+    "basics": "بنیادی معلومات",
+    "age": "عمر",
+    "location": "مقام",
+    "education": "تعلیم",
+    "occupation": "پیشہ",
+    "religiosity": "مذہبی رجحان",
+    "prayerFrequency": "نماز کی پابندی",
+    "diet": "غذا",
+    "maritalStatus": "ازدواجی حیثیت",
+    "photos": "تصاویر"
+  },
+  "settings": {
+    "title": "ترتیبات",
+    "account": "اکاؤنٹ",
+    "notifications": "اطلاعات",
+    "privacy": "رازداری",
+    "language": "زبان",
+    "selectLanguage": "زبان منتخب کریں",
+    "darkMode": "ڈارک موڈ",
+    "deleteAccount": "اکاؤنٹ حذف کریں",
+    "logOut": "لاگ آؤٹ",
+    "termsOfService": "سروس کی شرائط",
+    "privacyPolicy": "رازداری کی پالیسی",
+    "contactUs": "ہم سے رابطہ کریں",
+    "feedback": "رائے بھیجیں",
+    "guidanceHub": "رہنمائی مرکز"
+  },
+  "subscription": {
+    "title": "سبسکرپشن",
+    "premium": "پریمیم",
+    "unlock": "تمام خصوصیات کھولیں",
+    "subscribe": "ابھی سبسکرائب کریں",
+    "currentPlan": "موجودہ پلان",
+    "features": "شامل خصوصیات"
+  },
+  "videoCall": {
+    "calling": "کال ہو رہی ہے...",
+    "incomingCall": "آنے والی کال",
+    "accept": "قبول کریں",
+    "decline": "مسترد کریں",
+    "endCall": "کال ختم کریں",
+    "mute": "خاموش",
+    "unmute": "آواز چالو",
+    "cameraOn": "کیمرہ آن",
+    "cameraOff": "کیمرہ آف"
+  },
+  "chaperone": {
+    "title": "محرم",
+    "addChaperone": "محرم شامل کریں",
+    "inviteChaperone": "محرم کو دعوت دیں",
+    "chaperoneInfo": "محرم آپ کی گفتگو دیکھ سکتا ہے تاکہ اسلامی رہنما اصولوں کی پابندی یقینی بنائی جا سکے۔",
+    "pendingInvites": "زیر التواء دعوتیں",
+    "activeChaperones": "فعال محرم"
+  },
+  "report": {
+    "title": "صارف کی رپورٹ",
+    "reason": "رپورٹ کی وجہ",
+    "description": "تفصیل",
+    "submit": "رپورٹ جمع کرائیں",
+    "inappropriate": "نامناسب مواد",
+    "harassment": "ہراساں کرنا",
+    "spam": "سپیم",
+    "fake": "جعلی پروفائل",
+    "other": "دیگر"
+  },
+  "guidance": {
+    "title": "رہنمائی مرکز",
+    "islamicGuidelines": "اسلامی رہنمائی",
+    "marriageAdvice": "شادی کے مشورے",
+    "faq": "عمومی سوالات"
+  },
+  "sendbird": {
+    "placeholder": "یہاں لکھیں......",
+    "placeholderDisabled": "یہاں لکھیں......",
+    "placeholderMuted": "یہاں لکھیں......",
+    "noChannel": "کوئی چیٹ دستیاب نہیں"
+  }
+}

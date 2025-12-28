@@ -1,0 +1,146 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "confirm": "Confirm",
+    "close": "Close",
+    "search": "Search",
+    "retry": "Try Again"
+  },
+  "nav": {
+    "discover": "Discover",
+    "matches": "Matches",
+    "messages": "Messages",
+    "profile": "Profile"
+  },
+  "auth": {
+    "login": "Log In",
+    "logout": "Log Out",
+    "signup": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot Password?",
+    "loginWithReplit": "Continue with Replit"
+  },
+  "discover": {
+    "title": "Discover",
+    "noMoreProfiles": "No more profiles to show",
+    "viewProfile": "View Profile",
+    "like": "Like",
+    "pass": "Pass",
+    "itsAMatch": "It's a Match!",
+    "startChatting": "Start Chatting",
+    "keepSwiping": "Keep Swiping"
+  },
+  "matches": {
+    "title": "Your Matches",
+    "noMatches": "No matches yet",
+    "chatNow": "Chat now",
+    "unmatch": "Unmatch",
+    "report": "Report"
+  },
+  "messages": {
+    "title": "Messages",
+    "yourConversations": "Your conversations",
+    "noConversations": "No conversations yet",
+    "selectConversation": "Select a conversation",
+    "typeHere": "type here......",
+    "send": "Send",
+    "videoCall": "Video Call",
+    "voiceCall": "Voice Call",
+    "addChaperone": "Add Chaperone",
+    "removeChaperone": "Remove Chaperone",
+    "chaperoneAdded": "Chaperone added to this conversation",
+    "chaperoneRemoved": "Chaperone removed from this conversation"
+  },
+  "profile": {
+    "title": "Profile",
+    "editProfile": "Edit Profile",
+    "settings": "Settings",
+    "about": "About Me",
+    "lookingFor": "Looking For",
+    "basics": "Basics",
+    "age": "Age",
+    "location": "Location",
+    "education": "Education",
+    "occupation": "Occupation",
+    "religiosity": "Religiosity",
+    "prayerFrequency": "Prayer Frequency",
+    "diet": "Diet",
+    "maritalStatus": "Marital Status",
+    "photos": "Photos"
+  },
+  "settings": {
+    "title": "Settings",
+    "account": "Account",
+    "notifications": "Notifications",
+    "privacy": "Privacy",
+    "language": "Language",
+    "selectLanguage": "Select Language",
+    "darkMode": "Dark Mode",
+    "deleteAccount": "Delete Account",
+    "logOut": "Log Out",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "contactUs": "Contact Us",
+    "feedback": "Send Feedback",
+    "guidanceHub": "Guidance Hub"
+  },
+  "subscription": {
+    "title": "Subscribe",
+    "premium": "Premium",
+    "unlock": "Unlock all features",
+    "subscribe": "Subscribe Now",
+    "currentPlan": "Current Plan",
+    "features": "Features included"
+  },
+  "videoCall": {
+    "calling": "Calling...",
+    "incomingCall": "Incoming Call",
+    "accept": "Accept",
+    "decline": "Decline",
+    "endCall": "End Call",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "cameraOn": "Camera On",
+    "cameraOff": "Camera Off"
+  },
+  "chaperone": {
+    "title": "Chaperone",
+    "addChaperone": "Add Chaperone",
+    "inviteChaperone": "Invite a Chaperone",
+    "chaperoneInfo": "A chaperone can view your conversations to ensure Islamic guidelines are followed.",
+    "pendingInvites": "Pending Invites",
+    "activeChaperones": "Active Chaperones"
+  },
+  "report": {
+    "title": "Report User",
+    "reason": "Reason for report",
+    "description": "Description",
+    "submit": "Submit Report",
+    "inappropriate": "Inappropriate content",
+    "harassment": "Harassment",
+    "spam": "Spam",
+    "fake": "Fake profile",
+    "other": "Other"
+  },
+  "guidance": {
+    "title": "Guidance Hub",
+    "islamicGuidelines": "Islamic Guidelines",
+    "marriageAdvice": "Marriage Advice",
+    "faq": "FAQ"
+  },
+  "sendbird": {
+    "placeholder": "type here......",
+    "placeholderDisabled": "type here......",
+    "placeholderMuted": "type here......",
+    "noChannel": "No Chats Available"
+  }
+}
