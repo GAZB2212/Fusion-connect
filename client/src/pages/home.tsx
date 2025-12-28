@@ -365,7 +365,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 25%, rgba(0,0,0,0.1) 50%, transparent 100%)' }} />
 
         {/* Profile Info Overlay */}
-        <div className="absolute bottom-24 left-0 right-0 px-5 text-white z-10">
+        <div className="absolute bottom-36 left-0 right-0 px-5 text-white z-10">
           {/* Verification Badges */}
           <div className="flex items-center gap-2 mb-3">
             {currentProfile.isVerified && (
@@ -452,7 +452,7 @@ export default function Home() {
         </div>
 
         {/* Premium Action Buttons */}
-        <div className="absolute bottom-6 left-0 right-0 flex justify-center items-center gap-6 z-20">
+        <div className="absolute bottom-20 left-0 right-0 flex justify-center items-center gap-6 z-20">
           {/* Pass Button */}
           <motion.button
             whileTap={{ scale: 0.92 }}
