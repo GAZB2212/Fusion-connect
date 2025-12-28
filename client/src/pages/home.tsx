@@ -21,6 +21,92 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { getPromptById, type ProfilePromptAnswer } from "@/lib/islamicPrompts";
 
+// Photo Carousel component for expanded profile view
+function ProfilePhotoCarousel({ photos, displayName }: { photos: string[]; displayName: string }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStart === null) return;
+    const touchEnd = e.changedTouches[0].clientX;
+    const diff = touchStart - touchEnd;
+    
+    if (Math.abs(diff) > 50) {
+      if (diff > 0 && activeIndex < photos.length - 1) {
+        setActiveIndex(prev => prev + 1);
+      } else if (diff < 0 && activeIndex > 0) {
+        setActiveIndex(prev => prev - 1);
+      }
+    }
+    setTouchStart(null);
+  };
+
+  return (
+    <div className="relative mb-4 px-5">
+      <div 
+        className="relative w-full aspect-[4/5] rounded-xl overflow-hidden"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={activeIndex}
+            src={photos[activeIndex]}
+            alt={`${displayName} photo ${activeIndex + 1}`}
+            className="w-full h-full object-cover"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.2 }}
+          />
+        </AnimatePresence>
+        
+        {/* Navigation arrows */}
+        {photos.length > 1 && (
+          <>
+            {activeIndex > 0 && (
+              <button
+                onClick={() => setActiveIndex(prev => prev - 1)}
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center"
+              >
+                <ChevronLeft className="h-5 w-5 text-white" />
+              </button>
+            )}
+            {activeIndex < photos.length - 1 && (
+              <button
+                onClick={() => setActiveIndex(prev => prev + 1)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center"
+              >
+                <ChevronRight className="h-5 w-5 text-white" />
+              </button>
+            )}
+          </>
+        )}
+      </div>
+      
+      {/* Dots indicator */}
+      {photos.length > 1 && (
+        <div className="flex justify-center gap-1.5 mt-3">
+          {photos.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setActiveIndex(idx)}
+              className={cn(
+                "w-2 h-2 rounded-full transition-colors",
+                idx === activeIndex ? "bg-primary" : "bg-muted-foreground/30"
+              )}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Home() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -552,7 +638,15 @@ export default function Home() {
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed inset-x-0 bottom-0 top-[35%] bg-card rounded-t-3xl z-50 shadow-2xl"
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.5 }}
+            onDragEnd={(_, info) => {
+              if (info.offset.y > 100 || info.velocity.y > 500) {
+                setIsProfileExpanded(false);
+              }
+            }}
+            className="fixed inset-x-0 bottom-0 top-[35%] bg-card rounded-t-3xl z-50 shadow-2xl touch-pan-x"
           >
             {/* Handle bar */}
             <div 
@@ -564,34 +658,9 @@ export default function Home() {
             
             <ScrollArea className="h-[calc(100%-60px)]">
               <div className="pb-32">
-                {/* Photo Gallery */}
+                {/* Photo Carousel */}
                 {photos.length > 0 && (
-                  <div className="relative mb-4">
-                    <div className="flex overflow-x-auto gap-2 px-5 py-2 snap-x snap-mandatory scrollbar-hide">
-                      {photos.map((photo, idx) => (
-                        <div 
-                          key={idx} 
-                          className="flex-shrink-0 w-[200px] aspect-[3/4] rounded-xl overflow-hidden snap-center"
-                        >
-                          <img
-                            src={photo}
-                            alt={`${displayName} photo ${idx + 1}`}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                    {photos.length > 1 && (
-                      <div className="flex justify-center gap-1 mt-2">
-                        {photos.map((_, idx) => (
-                          <div 
-                            key={idx}
-                            className="w-1.5 h-1.5 rounded-full bg-muted-foreground/30"
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <ProfilePhotoCarousel photos={photos} displayName={displayName} />
                 )}
 
                 {/* Name and verification */}
