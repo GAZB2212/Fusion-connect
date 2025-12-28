@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,10 @@ export default function MatchProfile() {
   const { matchId } = useParams<{ matchId: string }>();
   const [, setLocation] = useLocation();
   const { user } = useAuth();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const { data: matches = [], isLoading } = useQuery<MatchWithProfiles[]>({
     queryKey: ["/api/matches"],

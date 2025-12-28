@@ -29,6 +29,10 @@ export default function Subscribe() {
   const [trialDays, setTrialDays] = useState(0);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     // Check subscription status first
     apiRequest("GET", "/api/subscription-status")
       .then((res) => res.json())

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -58,6 +58,10 @@ export default function Feedback() {
   const [, setLocation] = useLocation();
   const [selectedRating, setSelectedRating] = useState<number | undefined>();
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const form = useForm<FeedbackFormData>({
     resolver: zodResolver(feedbackSchema),

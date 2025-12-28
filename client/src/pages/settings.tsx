@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
@@ -109,6 +109,10 @@ export default function Settings() {
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const [showVideoRecorder, setShowVideoRecorder] = useState(false);
   const [editVideoUrl, setEditVideoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // Fetch user profile
   const { data: profile } = useQuery<Profile>({
