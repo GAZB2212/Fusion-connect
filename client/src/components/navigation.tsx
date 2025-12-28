@@ -3,17 +3,19 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useVideoCall } from "@/contexts/VideoCallContext";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 export function BottomNav() {
   const [location, setLocation] = useLocation();
   const { isCallActive } = useVideoCall();
+  const { t } = useTranslation();
 
   const navItems = [
-    { icon: Heart, label: "Discover", path: "/", testId: "nav-discover" },
-    { icon: Sparkles, label: "For You", path: "/suggestions", testId: "nav-suggestions" },
-    { icon: Users, label: "Matches", path: "/matches", testId: "nav-matches" },
-    { icon: MessageSquare, label: "Messages", path: "/messages", testId: "nav-messages" },
-    { icon: SettingsIcon, label: "Settings", path: "/settings", testId: "nav-settings" },
+    { icon: Heart, label: t('nav.discover'), path: "/", testId: "nav-discover" },
+    { icon: Sparkles, label: t('nav.forYou', 'For You'), path: "/suggestions", testId: "nav-suggestions" },
+    { icon: Users, label: t('nav.matches'), path: "/matches", testId: "nav-matches" },
+    { icon: MessageSquare, label: t('nav.messages'), path: "/messages", testId: "nav-messages" },
+    { icon: SettingsIcon, label: t('nav.settings', 'Settings'), path: "/settings", testId: "nav-settings" },
   ];
 
   return (

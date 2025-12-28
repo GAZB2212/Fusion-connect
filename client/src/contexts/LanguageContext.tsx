@@ -30,8 +30,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, [i18n.language]);
 
   useEffect(() => {
-    const dir = isRTL(language) ? 'rtl' : 'ltr';
-    document.documentElement.setAttribute('dir', dir);
+    // Only set the language attribute, not the direction
+    // Navigation and layout stay LTR, only content text uses RTL where needed
     document.documentElement.setAttribute('lang', language);
   }, [language]);
 

@@ -16,8 +16,10 @@
   },
   "nav": {
     "discover": "اكتشف",
+    "forYou": "لك",
     "matches": "التطابقات",
     "messages": "الرسائل",
+    "settings": "الإعدادات",
     "profile": "الملف الشخصي"
   },
   "auth": {
@@ -79,6 +81,8 @@
   },
   "settings": {
     "title": "الإعدادات",
+    "manageAccount": "إدارة حسابك وتفضيلاتك",
+    "myProfile": "ملفي الشخصي",
     "account": "الحساب",
     "notifications": "الإشعارات",
     "privacy": "الخصوصية",
@@ -91,7 +95,10 @@
     "privacyPolicy": "سياسة الخصوصية",
     "contactUs": "اتصل بنا",
     "feedback": "إرسال ملاحظات",
-    "guidanceHub": "مركز الإرشاد"
+    "guidanceHub": "مركز الإرشاد",
+    "subscription": "الاشتراك",
+    "manageSubscription": "إدارة الاشتراك",
+    "chaperone": "إعدادات المحرم"
   },
   "subscription": {
     "title": "الاشتراك",

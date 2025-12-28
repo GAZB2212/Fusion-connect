@@ -16,8 +16,10 @@
   },
   "nav": {
     "discover": "Discover",
+    "forYou": "For You",
     "matches": "Matches",
     "messages": "Messages",
+    "settings": "Settings",
     "profile": "Profile"
   },
   "auth": {
@@ -79,6 +81,8 @@
   },
   "settings": {
     "title": "Settings",
+    "manageAccount": "Manage your account and preferences",
+    "myProfile": "My Profile",
     "account": "Account",
     "notifications": "Notifications",
     "privacy": "Privacy",
@@ -91,7 +95,10 @@
     "privacyPolicy": "Privacy Policy",
     "contactUs": "Contact Us",
     "feedback": "Send Feedback",
-    "guidanceHub": "Guidance Hub"
+    "guidanceHub": "Guidance Hub",
+    "subscription": "Subscription",
+    "manageSubscription": "Manage Subscription",
+    "chaperone": "Chaperone Settings"
   },
   "subscription": {
     "title": "Subscribe",

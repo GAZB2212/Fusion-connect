@@ -16,8 +16,10 @@
   },
   "nav": {
     "discover": "دریافت کریں",
+    "forYou": "آپ کے لیے",
     "matches": "میچز",
     "messages": "پیغامات",
+    "settings": "ترتیبات",
     "profile": "پروفائل"
   },
   "auth": {
@@ -79,6 +81,8 @@
   },
   "settings": {
     "title": "ترتیبات",
+    "manageAccount": "اپنے اکاؤنٹ اور ترجیحات کا نظم کریں",
+    "myProfile": "میرا پروفائل",
     "account": "اکاؤنٹ",
     "notifications": "اطلاعات",
     "privacy": "رازداری",
@@ -91,7 +95,10 @@
     "privacyPolicy": "رازداری کی پالیسی",
     "contactUs": "ہم سے رابطہ کریں",
     "feedback": "رائے بھیجیں",
-    "guidanceHub": "رہنمائی مرکز"
+    "guidanceHub": "رہنمائی مرکز",
+    "subscription": "سبسکرپشن",
+    "manageSubscription": "سبسکرپشن کا نظم کریں",
+    "chaperone": "محرم کی ترتیبات"
   },
   "subscription": {
     "title": "سبسکرپشن",

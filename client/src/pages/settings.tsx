@@ -520,8 +520,8 @@ export default function Settings() {
   return (
     <div className="min-h-screen pb-20">
       <IOSHeader 
-        title="Settings"
-        subtitle="Manage your account and preferences"
+        title={t('settings.title')}
+        subtitle={t('settings.manageAccount', 'Manage your account and preferences')}
       />
       <div className="container max-w-2xl mx-auto px-4 py-4">
 
@@ -530,7 +530,7 @@ export default function Settings() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold flex items-center gap-2">
               <User className="h-5 w-5" />
-              My Profile
+              {t('settings.myProfile', 'My Profile')}
             </h2>
             <Button 
               variant="outline" 
@@ -539,7 +539,7 @@ export default function Settings() {
               data-testid="button-edit-profile"
             >
               <Edit3 className="h-4 w-4 mr-2" />
-              Edit Profile
+              {t('profile.editProfile')}
             </Button>
           </div>
 
