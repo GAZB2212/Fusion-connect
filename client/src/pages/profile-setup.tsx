@@ -541,7 +541,7 @@ export default function ProfileSetup() {
         </div>
       </div>
 
-      <div className="container max-w-2xl mx-auto px-4 py-12">
+      <div className="container max-w-2xl mx-auto px-4 py-12 pb-32">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold mb-2">
             {isFastOnboardingComplete ? "Complete Your Profile" : "Create Your Profile"}
@@ -746,38 +746,43 @@ export default function ProfileSetup() {
                       {[...Array(6)].map((_, index) => (
                         <div key={index} className="relative aspect-square">
                           {photos[index] ? (
-                            <div className="relative h-full group">
+                            <div className="relative h-full group rounded-xl overflow-hidden border-2 border-border">
+                              {index === 0 && (
+                                <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-primary/90 to-primary/70 text-primary-foreground text-xs font-semibold text-center py-1.5">
+                                  Verification Selfie
+                                </div>
+                              )}
                               <img
                                 src={photos[index]}
                                 alt={`Photo ${index + 1}`}
-                                className="h-full w-full object-cover rounded-lg"
+                                className="h-full w-full object-cover"
                               />
                               <Button
                                 type="button"
                                 variant="destructive"
-                                size="sm"
-                                className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                size="icon"
+                                className="absolute bottom-2 right-2 h-7 w-7 opacity-80 hover:opacity-100"
                                 onClick={() => removePhoto(index)}
                                 data-testid={`button-remove-photo-${index}`}
                               >
                                 ×
                               </Button>
-                              {index === 0 && (
-                                <Badge className="absolute bottom-2 left-2 text-xs">
-                                  Main
-                                </Badge>
-                              )}
                             </div>
                           ) : (
                             <label
                               htmlFor={`photo-upload-${index}`}
-                              className="flex flex-col items-center justify-center h-full border-2 border-dashed rounded-lg cursor-pointer hover-elevate"
+                              className="flex flex-col items-center justify-center h-full border-2 border-dashed border-muted-foreground/30 rounded-xl cursor-pointer hover:border-muted-foreground/60 hover:bg-muted/30 transition-colors"
                               data-testid={`label-upload-photo-${index}`}
                             >
-                              <Upload className="h-6 w-6 text-muted-foreground mb-1" />
-                              <span className="text-xs text-muted-foreground">
-                                Upload
+                              <Upload className="h-6 w-6 text-muted-foreground mb-2" />
+                              <span className="text-xs text-muted-foreground font-medium">
+                                {index === 0 ? "Selfie" : "Upload"}
                               </span>
+                              {index === 0 && (
+                                <span className="text-[10px] text-muted-foreground/70 text-center px-2 mt-1">
+                                  Close-up face
+                                </span>
+                              )}
                               <input
                                 type="file"
                                 accept="image/*"
