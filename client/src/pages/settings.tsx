@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -45,7 +47,8 @@ import {
   Mail,
   Video,
   Play,
-  BookOpen
+  BookOpen,
+  Globe
 } from "lucide-react";
 import { VideoRecorder } from "@/components/video-recorder";
 import type { Profile, Chaperone } from "@shared/schema";
@@ -82,6 +85,8 @@ export default function Settings() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const { t } = useTranslation();
+  const { language, setLanguage, languages } = useLanguage();
   const [chaperoneName, setChaperoneName] = useState("");
   const [chaperoneEmail, setChaperoneEmail] = useState("");
   const [relationshipType, setRelationshipType] = useState("");
@@ -971,6 +976,35 @@ export default function Settings() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Language Settings */}
+        <Card className="p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+            <Globe className="h-5 w-5" />
+            {t('settings.language')}
+          </h2>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>{t('settings.selectLanguage')}</Label>
+              <Select value={language} onValueChange={(value) => setLanguage(value as any)}>
+                <SelectTrigger data-testid="select-language">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {languages.map((lang) => (
+                    <SelectItem key={lang.code} value={lang.code} data-testid={`option-language-${lang.code}`}>
+                      <span className="flex items-center gap-2">
+                        <span>{lang.nativeName}</span>
+                        <span className="text-muted-foreground">({lang.name})</span>
+                      </span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </Card>
 
         {/* Privacy Settings */}
         <Card className="p-6 mb-6">

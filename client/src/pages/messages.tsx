@@ -4,6 +4,7 @@ import { useLocation } from "wouter";
 import SendbirdProvider from "@sendbird/uikit-react/SendbirdProvider";
 import GroupChannelList from "@sendbird/uikit-react/GroupChannelList";
 import GroupChannel from "@sendbird/uikit-react/GroupChannel";
+import { useTranslation } from "react-i18next";
 import "@sendbird/uikit-react/dist/index.css";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Video, MoreVertical, ShieldOff, Flag, Trash2, Phone, Users } from "lucide-react";
@@ -148,6 +149,7 @@ interface VideoCall {
 export default function Messages() {
   const { user } = useAuth();
   const [location, setLocation] = useLocation();
+  const { t } = useTranslation();
   // Parse matchId directly from URL - only if there's a path segment after /messages/
   const urlParts = location.split('/');
   const matchId = urlParts[1] === 'messages' && urlParts[2] ? urlParts[2] : undefined;
@@ -791,10 +793,10 @@ export default function Messages() {
           accessToken={sendbirdToken}
           theme="dark"
           stringSet={{
-            MESSAGE_INPUT__PLACE_HOLDER: "type here......",
-            MESSAGE_INPUT__PLACE_HOLDER__DISABLED: "type here......",
-            MESSAGE_INPUT__PLACE_HOLDER__MUTED: "type here......",
-            PLACE_HOLDER__NO_CHANNEL: "No Chats Available",
+            MESSAGE_INPUT__PLACE_HOLDER: t('sendbird.placeholder'),
+            MESSAGE_INPUT__PLACE_HOLDER__DISABLED: t('sendbird.placeholderDisabled'),
+            MESSAGE_INPUT__PLACE_HOLDER__MUTED: t('sendbird.placeholderMuted'),
+            PLACE_HOLDER__NO_CHANNEL: t('sendbird.noChannel'),
           }}
         >
           <div className="h-full flex fusion-chat">
