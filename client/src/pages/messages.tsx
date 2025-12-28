@@ -147,9 +147,11 @@ interface VideoCall {
 
 export default function Messages() {
   const { user } = useAuth();
-  const [, params] = useRoute("/messages/:matchId");
+  const [matchRoute, params] = useRoute("/messages/:matchId");
+  const [listRoute] = useRoute("/messages");
   const [, setLocation] = useLocation();
-  const matchId = params?.matchId;
+  // Only use matchId if we're on the specific match route, not the list route
+  const matchId = matchRoute ? params?.matchId : undefined;
   const { toast } = useToast();
 
   const [sendbirdToken, setSendbirdToken] = useState<string | null>(null);
