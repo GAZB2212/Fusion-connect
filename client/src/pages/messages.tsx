@@ -791,9 +791,9 @@ export default function Messages() {
           accessToken={sendbirdToken}
           theme="dark"
           stringSet={{
-            MESSAGE_INPUT__PLACE_HOLDER: "",
-            MESSAGE_INPUT__PLACE_HOLDER__DISABLED: "",
-            MESSAGE_INPUT__PLACE_HOLDER__MUTED: "",
+            MESSAGE_INPUT__PLACE_HOLDER: "type here......",
+            MESSAGE_INPUT__PLACE_HOLDER__DISABLED: "type here......",
+            MESSAGE_INPUT__PLACE_HOLDER__MUTED: "type here......",
             PLACE_HOLDER__NO_CHANNEL: "No Chats Available",
           }}
         >
@@ -1074,40 +1074,39 @@ export default function Messages() {
           margin-bottom: env(safe-area-inset-bottom, 0px) !important;
         }
 
-        /* Premium Gold Send Button */
+        /* Ghosted Send Button */
         .fusion-chat .sendbird-message-input--send,
         .fusion-chat .sendbird-iconbutton--send,
         .fusion-chat [class*="message-input--send"],
         .fusion-chat .sendbird-message-input-wrapper__message-input--send {
           display: flex !important;
           visibility: visible !important;
-          opacity: 1 !important;
+          opacity: 0.5 !important;
           width: 36px !important;
           height: 36px !important;
           min-width: 36px !important;
           min-height: 36px !important;
           margin-left: 8px !important;
-          background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706) !important;
+          background: transparent !important;
           border-radius: 50% !important;
           align-items: center !important;
           justify-content: center !important;
-          box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
-          transition: all 0.2s ease !important;
+          box-shadow: none !important;
+          transition: opacity 0.2s ease !important;
         }
         
         .fusion-chat .sendbird-message-input--send:hover,
         .fusion-chat .sendbird-iconbutton--send:hover {
-          transform: scale(1.05) !important;
-          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+          opacity: 0.8 !important;
         }
 
         .fusion-chat .sendbird-message-input--send svg,
         .fusion-chat .sendbird-iconbutton--send svg,
         .fusion-chat [class*="message-input--send"] svg {
-          width: 18px !important;
-          height: 18px !important;
-          color: hsl(220 30% 12%) !important;
-          fill: hsl(220 30% 12%) !important;
+          width: 20px !important;
+          height: 20px !important;
+          color: hsl(var(--muted-foreground)) !important;
+          fill: hsl(var(--muted-foreground)) !important;
         }
         
         /* Premium outgoing message bubbles with subtle gold accent */
