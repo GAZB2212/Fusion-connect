@@ -495,11 +495,16 @@ export default function Messages() {
     }
   }, [tokenData]);
 
-  // Always sync currentChannelUrl with the URL matchId parameter
+  // Always sync currentChannelUrl with the URL - depends on location directly
   useEffect(() => {
-    // matchId can be undefined (list view) or a string (chat view)
-    setCurrentChannelUrl(matchId || null);
-  }, [matchId]);
+    // If we're at exactly /messages (no match ID), clear the channel
+    if (location === '/messages' || location === '/messages/') {
+      setCurrentChannelUrl(null);
+    } else if (matchId) {
+      // Only set channel if we have a valid matchId
+      setCurrentChannelUrl(matchId);
+    }
+  }, [location, matchId]);
 
   // Update app badge count when entering/leaving messages page
   useEffect(() => {
