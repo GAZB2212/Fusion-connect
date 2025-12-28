@@ -654,14 +654,14 @@ export default function Messages() {
                     data-testid="button-report-user"
                   >
                     <Flag className="w-4 h-4 mr-2" />
-                    Report
+                    {t('report.title', 'Report')}
                   </DropdownMenuItem>
                   <DropdownMenuItem 
                     onClick={() => setShowDeleteDialog(true)}
                     data-testid="button-leave-chat"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
-                    Leave chat
+                    {t('messages.leaveChat', 'Leave chat')}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
@@ -670,7 +670,7 @@ export default function Messages() {
                     data-testid="button-block-user"
                   >
                     <ShieldOff className="w-4 h-4 mr-2" />
-                    Block
+                    {t('messages.block', 'Block')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -679,8 +679,8 @@ export default function Messages() {
         </header>
       ) : (
         <header className="flex-shrink-0 px-4 pt-2 pb-4 bg-background/80 backdrop-blur-xl border-b border-border z-10">
-          <h1 className="text-3xl font-bold text-foreground">Messages</h1>
-          <p className="text-sm text-muted-foreground mt-1">Your conversations</p>
+          <h1 className="text-3xl font-bold text-foreground">{t('messages.title')}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('messages.yourConversations')}</p>
         </header>
       )}
 
@@ -688,14 +688,14 @@ export default function Messages() {
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Leave this chat?</DialogTitle>
+            <DialogTitle>{t('messages.leaveChatTitle', 'Leave this chat?')}</DialogTitle>
             <DialogDescription>
-              This will remove the conversation and unmatch you from this person. You can match with them again in the future.
+              {t('messages.leaveChatDesc', 'This will remove the conversation and unmatch you from this person. You can match with them again in the future.')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button 
               variant="destructive" 
@@ -703,7 +703,7 @@ export default function Messages() {
               disabled={deleteChatMutation.isPending}
               data-testid="button-confirm-leave"
             >
-              {deleteChatMutation.isPending ? "Leaving..." : "Leave"}
+              {deleteChatMutation.isPending ? t('messages.leaving', 'Leaving...') : t('messages.leave', 'Leave')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -713,14 +713,14 @@ export default function Messages() {
       <Dialog open={showBlockDialog} onOpenChange={setShowBlockDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Block this person?</DialogTitle>
+            <DialogTitle>{t('messages.blockTitle', 'Block this person?')}</DialogTitle>
             <DialogDescription>
-              They won't be able to message you anymore, and you won't see them in your matches. This action cannot be undone.
+              {t('messages.blockDesc', "They won't be able to message you anymore, and you won't see them in your matches. This action cannot be undone.")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setShowBlockDialog(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button 
               variant="destructive" 
@@ -728,7 +728,7 @@ export default function Messages() {
               disabled={blockMutation.isPending}
               data-testid="button-confirm-block"
             >
-              {blockMutation.isPending ? "Blocking..." : "Block"}
+              {blockMutation.isPending ? t('messages.blocking', 'Blocking...') : t('messages.block', 'Block')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -738,32 +738,32 @@ export default function Messages() {
       <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Report inappropriate behavior</DialogTitle>
+            <DialogTitle>{t('report.title', 'Report inappropriate behavior')}</DialogTitle>
             <DialogDescription>
-              Help us keep the community safe. Your report will be reviewed by our team.
+              {t('report.description', 'Help us keep the community safe. Your report will be reviewed by our team.')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="report-reason">Reason</Label>
+              <Label htmlFor="report-reason">{t('report.reason')}</Label>
               <Select value={reportReason} onValueChange={setReportReason}>
                 <SelectTrigger id="report-reason" data-testid="select-report-reason">
-                  <SelectValue placeholder="Select a reason" />
+                  <SelectValue placeholder={t('report.selectReason', 'Select a reason')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="harassment">Harassment</SelectItem>
-                  <SelectItem value="inappropriate_content">Inappropriate content</SelectItem>
-                  <SelectItem value="fake_profile">Fake profile</SelectItem>
-                  <SelectItem value="spam">Spam</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="harassment">{t('report.harassment')}</SelectItem>
+                  <SelectItem value="inappropriate_content">{t('report.inappropriate')}</SelectItem>
+                  <SelectItem value="fake_profile">{t('report.fake')}</SelectItem>
+                  <SelectItem value="spam">{t('report.spam')}</SelectItem>
+                  <SelectItem value="other">{t('report.other')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="report-details">Additional details (optional)</Label>
+              <Label htmlFor="report-details">{t('report.additionalDetails', 'Additional details (optional)')}</Label>
               <Textarea
                 id="report-details"
-                placeholder="Describe what happened..."
+                placeholder={t('report.describePlaceholder', 'Describe what happened...')}
                 value={reportDetails}
                 onChange={(e) => setReportDetails(e.target.value)}
                 data-testid="input-report-details"
@@ -772,14 +772,14 @@ export default function Messages() {
           </div>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setShowReportDialog(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button 
               onClick={() => reportMutation.mutate()}
               disabled={reportMutation.isPending || !reportReason}
               data-testid="button-submit-report"
             >
-              {reportMutation.isPending ? "Submitting..." : "Submit Report"}
+              {reportMutation.isPending ? t('report.submitting', 'Submitting...') : t('report.submit')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -828,7 +828,7 @@ export default function Messages() {
                 />
               ) : (
                 <div className="h-full flex items-center justify-center text-muted-foreground">
-                  <p>Select a conversation</p>
+                  <p>{t('messages.selectConversation')}</p>
                 </div>
               )}
             </div>

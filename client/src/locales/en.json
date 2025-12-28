@@ -60,7 +60,16 @@
     "addChaperone": "Add Chaperone",
     "removeChaperone": "Remove Chaperone",
     "chaperoneAdded": "Chaperone added to this conversation",
-    "chaperoneRemoved": "Chaperone removed from this conversation"
+    "chaperoneRemoved": "Chaperone removed from this conversation",
+    "leaveChat": "Leave chat",
+    "leaveChatTitle": "Leave this chat?",
+    "leaveChatDesc": "This will remove the conversation and unmatch you from this person. You can match with them again in the future.",
+    "leaving": "Leaving...",
+    "leave": "Leave",
+    "block": "Block",
+    "blockTitle": "Block this person?",
+    "blockDesc": "They won't be able to message you anymore, and you won't see them in your matches. This action cannot be undone.",
+    "blocking": "Blocking..."
   },
   "profile": {
     "title": "Profile",
@@ -128,15 +137,19 @@
     "activeChaperones": "Active Chaperones"
   },
   "report": {
-    "title": "Report User",
-    "reason": "Reason for report",
-    "description": "Description",
+    "title": "Report inappropriate behavior",
+    "reason": "Reason",
+    "description": "Help us keep the community safe. Your report will be reviewed by our team.",
     "submit": "Submit Report",
     "inappropriate": "Inappropriate content",
     "harassment": "Harassment",
     "spam": "Spam",
     "fake": "Fake profile",
-    "other": "Other"
+    "other": "Other",
+    "selectReason": "Select a reason",
+    "additionalDetails": "Additional details (optional)",
+    "describePlaceholder": "Describe what happened...",
+    "submitting": "Submitting..."
   },
   "guidance": {
     "title": "Guidance Hub",
