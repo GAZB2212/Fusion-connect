@@ -127,23 +127,18 @@ function CustomChannelPreview({ channel, onClick, isSelected, currentUserId, mat
       onClick={onClick}
       data-testid={`channel-preview-${channel.url}`}
     >
-      {/* Avatar with gold ring - larger size like WhatsApp */}
+      {/* Avatar - larger size like WhatsApp */}
       <div className="relative flex-shrink-0">
-        {/* Gold glow effect */}
-        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400/30 via-yellow-500/30 to-amber-600/30 blur-md scale-110" />
-        {/* Gold ring container - 56px avatar */}
-        <div className="relative h-14 w-14 rounded-full p-[2.5px] bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-600 shadow-lg shadow-amber-500/20">
-          <Avatar className="h-full w-full ring-2 ring-background/80">
-            <AvatarImage 
-              src={profilePhoto} 
-              alt={displayName} 
-              className="object-cover"
-            />
-            <AvatarFallback className="bg-gradient-to-br from-amber-500/30 to-amber-600/20 text-amber-400 font-semibold text-lg">
-              {displayName.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-        </div>
+        <Avatar className="h-14 w-14">
+          <AvatarImage 
+            src={profilePhoto} 
+            alt={displayName} 
+            className="object-cover"
+          />
+          <AvatarFallback className="bg-muted text-muted-foreground font-semibold text-lg">
+            {displayName.charAt(0).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
       </div>
       
       {/* Content - WhatsApp style with message preview */}
@@ -757,36 +752,29 @@ export default function Messages() {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           
-          {/* Profile Picture with Premium Gold Ring and Chaperone Indicator */}
+          {/* Profile Picture with Chaperone Indicator */}
           <div 
             className="relative cursor-pointer group"
             onClick={() => otherProfile && setLocation(`/matches/${currentMatch?.id}/profile`)}
           >
-            {/* Outer glow effect */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400/50 via-yellow-500/50 to-amber-600/50 blur-md scale-110 group-hover:scale-125 transition-transform duration-300" />
-            {/* Premium gold gradient ring container with shimmer */}
-            <div className="relative h-12 w-12 rounded-full p-[2.5px] bg-gradient-to-br from-amber-300 via-yellow-400 via-amber-500 to-yellow-600 shadow-lg shadow-amber-500/30">
-              {/* Inner shine highlight */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-transparent via-white/20 to-transparent pointer-events-none" />
-              <Avatar className="h-full w-full ring-2 ring-background/80">
-                <AvatarImage 
-                  src={otherProfile?.photos?.[otherProfile?.mainPhotoIndex || 0] || otherProfile?.photos?.[0]} 
-                  alt={otherProfile?.displayName || 'User'} 
-                  className="object-cover"
-                />
-                <AvatarFallback className="bg-gradient-to-br from-amber-500/30 to-amber-600/20 text-amber-400 font-semibold text-lg">
-                  {otherProfile?.displayName?.charAt(0)?.toUpperCase() || '?'}
-                </AvatarFallback>
-              </Avatar>
-            </div>
-            {/* Premium Wali Badge */}
+            <Avatar className="h-11 w-11">
+              <AvatarImage 
+                src={otherProfile?.photos?.[otherProfile?.mainPhotoIndex || 0] || otherProfile?.photos?.[0]} 
+                alt={otherProfile?.displayName || 'User'} 
+                className="object-cover"
+              />
+              <AvatarFallback className="bg-muted text-muted-foreground font-semibold text-lg">
+                {otherProfile?.displayName?.charAt(0)?.toUpperCase() || '?'}
+              </AvatarFallback>
+            </Avatar>
+            {/* Wali Badge */}
             {hasActiveChaperone && (
               <div 
-                className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-full bg-gradient-to-br from-amber-400 via-yellow-500 to-amber-600 flex items-center gap-0.5 ring-2 ring-background shadow-lg shadow-amber-500/40"
+                className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-full bg-amber-500 flex items-center gap-0.5 ring-2 ring-background"
                 title="Wali is present"
               >
-                <Users className="h-2.5 w-2.5 text-amber-950" />
-                <span className="text-[8px] font-bold text-amber-950 tracking-wide uppercase">Wali</span>
+                <Users className="h-2.5 w-2.5 text-black" />
+                <span className="text-[8px] font-bold text-black tracking-wide uppercase">Wali</span>
               </div>
             )}
           </div>
@@ -1117,9 +1105,9 @@ export default function Messages() {
           border-radius: 50% !important;
           overflow: hidden !important;
           position: relative !important;
-          padding: 2.5px !important;
-          background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706, #f59e0b) !important;
-          box-shadow: 0 0 12px rgba(245, 158, 11, 0.35), 0 0 4px rgba(217, 119, 6, 0.25) !important;
+          padding: 0 !important;
+          background: transparent !important;
+          box-shadow: none !important;
         }
         
         /* Hide stacked multiple avatars - show only the first one */
@@ -1146,20 +1134,20 @@ export default function Messages() {
           border: 2px solid hsl(var(--background)) !important;
         }
 
-        /* Message avatars - smaller with subtle gold ring */
+        /* Message avatars - clean styling */
         .fusion-chat .sendbird-message-content__left__avatar .sendbird-avatar {
           width: 32px !important;
           height: 32px !important;
           min-width: 32px !important;
           min-height: 32px !important;
-          padding: 1.5px !important;
-          background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706) !important;
-          box-shadow: 0 0 8px rgba(245, 158, 11, 0.3) !important;
+          padding: 0 !important;
+          background: transparent !important;
+          box-shadow: none !important;
           overflow: hidden !important;
         }
         
         .fusion-chat .sendbird-message-content__left__avatar .sendbird-avatar-img {
-          border: 1.5px solid hsl(var(--background)) !important;
+          border: none !important;
         }
 
         .fusion-chat .sendbird-conversation,
