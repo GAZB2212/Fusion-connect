@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import type { ProfileWithUser } from "@shared/schema";
 import { IOSHeader } from "@/components/ios-header";
+import { haptic } from "@/lib/haptics";
 
 interface ForYouPick {
   id: string;
@@ -62,6 +63,7 @@ export default function Suggestions() {
 
   const handleSwipe = async (pick: ForYouPick, direction: "right" | "left") => {
     setSwipingId(pick.profile.userId);
+    haptic.medium();
 
     try {
       if (pick.id) {
@@ -78,6 +80,7 @@ export default function Suggestions() {
       const result = await response.json();
 
       if (result.isMatch) {
+        haptic.success();
         toast({
           title: "It's a Match!",
           description: "You both liked each other!",

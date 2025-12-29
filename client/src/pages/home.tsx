@@ -19,6 +19,7 @@ import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { getPromptById, type ProfilePromptAnswer } from "@/lib/islamicPrompts";
+import { haptic } from "@/lib/haptics";
 
 // Photo Carousel component for expanded profile view
 function ProfilePhotoCarousel({ photos, displayName }: { photos: string[]; displayName: string }) {
@@ -139,6 +140,7 @@ export default function Home() {
     },
     onSuccess: (data, variables) => {
       if (data.isMatch && data.matchId) {
+        haptic.success();
         toast({
           title: "It's a Match!",
           description: "You both liked each other! Opening conversation...",
@@ -166,6 +168,7 @@ export default function Home() {
 
   const handleSwipe = (direction: "right" | "left") => {
     if (currentProfile) {
+      haptic.medium();
       setShowAnimation(direction === "right" ? 'like' : 'pass');
       setTimeout(() => setShowAnimation(null), 800);
       swipeMutation.mutate({ profileId: currentProfile.userId, direction });

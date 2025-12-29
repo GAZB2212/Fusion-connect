@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useVideoCall } from "@/contexts/VideoCallContext";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import { haptic } from "@/lib/haptics";
 
 export function BottomNav() {
   const [location, setLocation] = useLocation();
@@ -41,7 +42,10 @@ export function BottomNav() {
                   "transition-all duration-150 active:scale-95",
                   isActive ? 'text-primary' : 'text-muted-foreground'
                 )}
-                onClick={() => setLocation(item.path)}
+                onClick={() => {
+                  haptic.light();
+                  setLocation(item.path);
+                }}
                 data-testid={item.testId}
               >
                 <item.icon className={cn("h-6 w-6", isActive && 'fill-primary')} />

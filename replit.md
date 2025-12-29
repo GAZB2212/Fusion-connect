@@ -1,17 +1,7 @@
 # Fusion - Luxury Muslim Matchmaking Platform
 
 ## Overview
-Fusion is a premium Muslim matchmaking platform designed to help Muslim singles find meaningful connections in a halal, respectful way. It emphasizes Islamic values, privacy, and safety, while offering modern features like profile discovery, matching, messaging, and chaperone support. The platform aims to provide a luxury experience for users seeking serious relationships.
-
-**App Store Preparation:** The platform is ready for iOS App Store submission via web app wrapping (Capacitor/Cordova). All App Store compliance features have been fully implemented and tested:
-- ✅ User reporting system with multiple reason categories
-- ✅ User blocking functionality with profile removal
-- ✅ Privacy Policy page (comprehensive data handling details)
-- ✅ Terms of Service page (subscription terms, age requirements)
-- ✅ Age verification (18+) during signup with required checkbox
-- ✅ Delete Account functionality (permanent data deletion)
-- ✅ Manage Subscription (Stripe Customer Portal integration)
-- ✅ Clear subscription terms and cancellation information
+Fusion is a premium Muslim matchmaking platform designed to help Muslim singles find meaningful connections in a halal, respectful way. It emphasizes Islamic values, privacy, and safety, while offering modern features like profile discovery, matching, and messaging. The platform aims to provide a luxury experience for users seeking serious relationships and is prepared for iOS App Store submission, including comprehensive compliance features.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -19,159 +9,56 @@ Preferred communication style: Simple, everyday language.
 ## System Architecture
 
 ### UI/UX Decisions
-The platform features a luxury aesthetic with a primary deep navy color, gold accents, and emerald green for success states. Design elements include a golden crescent moon logo, subtle Islamic geometric patterns, and elegant typography (Handel Gothic for headers, Inter for body text). The UI is mobile-optimized and inspired by apps like Hinge and Bumble, adapted for Muslim cultural sensitivity. An AI-powered face verification system is integrated to ensure profile authenticity.
+The platform features a luxury aesthetic with a deep navy primary color, gold accents, and emerald green for success states. Design incorporates a golden crescent moon logo, subtle Islamic geometric patterns, elegant typography (Handel Gothic for headers, Inter for body text), and is mobile-optimized. An AI-powered face verification system is integrated for profile authenticity.
 
 ### Technical Implementations
-**Frontend:** Built with React 18, TypeScript, Wouter for routing, TanStack Query for data fetching, Vite as a build tool, shadcn/ui for components, and Tailwind CSS for styling.
-**Backend:** Developed with Node.js, Express.js, and TypeScript. It uses Drizzle ORM for PostgreSQL interactions and Passport.js with a custom local strategy for authentication.
-**Authentication:** Dual authentication system supporting both web and mobile apps:
-  - **Web:** Cookie-based sessions via Passport Local Strategy with bcrypt for password hashing and PostgreSQL for session storage (SameSite=None, Secure=true for cross-origin support)
-  - **Mobile (Capacitor):** JWT token-based authentication stored in localStorage, sent via Authorization header. Tokens are generated on login/signup and cleared on logout.
-  - A comprehensive AI Face Verification system, using OpenAI Vision API (GPT-4o), ensures identity verification by comparing uploaded profile photos with live selfies. The system uses lenient AI prompts to accept normal selfies while detecting obvious stock photos, watermarks, and screenshots. Detailed logging tracks all verification attempts.
-**Photo Storage:** Cloudflare R2 object storage integration for profile photos with zero egress fees, global CDN distribution, and custom domain (www.fusioncouples.com) for professional URLs. AWS SDK v3 handles S3-compatible uploads with automatic content type detection and multipart support.
-**Content Moderation:** Multi-layered protection system:
-  - OpenAI Moderation API for detecting sexual content, harassment, violence, and hate speech
-  - Custom scam pattern detection for financial requests, external platform redirects, and suspicious URLs
-  - Explicit content filtering using regex patterns for sexual solicitation and inappropriate language
-  - Bot behavior detection through repetitive message analysis
-  - Tiered rate limiting: New accounts (5 msgs/day), unverified accounts (20-50 msgs/day), verified users (100 msgs/day)
-**Profile System:** Features a detailed 5-step profile setup including basic info, Islamic values (sects, practice levels), profession, interests (100+ categorized), and a bio. Profiles include a comprehensive badge system for premium status, activity, profession, and photo verification.
-**Subscription System:** Implements a modern premium subscription model (£9.99/month) via Stripe Checkout Sessions API with custom UI mode. Uses fixed Price ID for consistent billing. Features include:
-  - Automatic customer creation and management
-  - Custom embedded payment form using Stripe Payment Element
-  - Webhook handlers for subscription lifecycle (created, updated, deleted, payment failures)
-  - Dev mode bypass for testing without real payments
-  - Free users can browse and swipe, but viewing matches and sending messages requires a subscription
-  - Matches are only created if at least one user has an active subscription
+**Frontend:** React 18, TypeScript, Wouter, TanStack Query, Vite, shadcn/ui, Tailwind CSS.
+**Backend:** Node.js, Express.js, TypeScript, Drizzle ORM (PostgreSQL), Passport.js (local strategy).
+**Authentication:** Dual system: Cookie-based sessions for web; JWT for mobile (Capacitor).
+**AI Face Verification:** OpenAI Vision API (GPT-4o) compares profile photos with live selfies, logging all attempts.
+**Photo Storage:** Cloudflare R2 for profile photos, utilizing AWS SDK v3 for S3-compatible uploads.
+**Content Moderation:** Multi-layered system including OpenAI Moderation API, custom scam pattern detection, explicit content filtering, bot behavior detection, and tiered rate limiting.
+**Profile System:** Detailed 5-step setup covering basic info, Islamic values, profession, interests, and bio, with a comprehensive badge system.
+**Subscription System:** Stripe Checkout Sessions API for premium subscriptions (£9.99/month), featuring automatic customer management, embedded payment forms, and webhook handlers. Free users can browse, but matches and messaging require a subscription.
 **Matching Algorithm:** A match is created if both users swipe right AND at least one user has an active subscription.
-**For You AI Matching System:** An enhanced daily curated matching experience:
-  - Daily pick limit of 8 profiles per user (resets at midnight)
-  - Values-based compatibility scoring (150 points max) prioritizing Islamic values:
-    - Islamic Values (50 pts): Sect compatibility, prayer frequency, halal lifestyle, religiosity
-    - Family Values (30 pts): Wali involvement preference, children preference, relationship goals
-    - Lifestyle & Interests (35 pts): Shared interests, personality trait overlap
-    - Preferences Match (35 pts): Age preferences, location proximity, education
-  - Machine learning from user actions: tracks liked/passed traits to improve future recommendations
-  - Premium gold styling for high-compatibility matches (85%+)
-  - Countdown timer showing time until next daily refresh
-  - Database tables: `for_you_matches` (stores daily picks with scores/reasons/actions), `user_match_preferences` (learned trait preferences)
-**Video Calling:** Real-time video calling powered by Agora RTC SDK. Matched users can initiate video calls from the messages page with full camera/mic controls, call duration tracking, and secure token-based authentication. Call history is stored in the database.
-
-### Feature Specifications
-- **Profile Management:** Detailed user profiles, photo uploads, and comprehensive demographic and religious information.
-- **Discovery & Swiping:** Users can discover potential matches and perform swipe actions.
-- **Messaging:** Real-time secure messaging between matched users powered by WebSockets, with instant message delivery and call records for video calls.
-- **Video Calling:** Real-time video calls with camera/mic controls, call duration tracking, call history, and branded Fusion logo overlay.
-- **Chaperone Support (Wali):** Full real-time guardian access to conversations for traditional courtship:
-  - Users can add chaperones (father, mother, guardian, etc.) from Settings
-  - **Access Type Control:** Users choose between 'Live Access' (real-time conversation participation) or 'Report Only' (email summaries)
-  - Live access chaperones are automatically added to all existing and future match conversations via Sendbird
-  - Live access chaperones receive a shareable access link to access the Chaperone Portal
-  - Chaperones can view and participate in conversations in real-time (live access only)
-  - System messages announce when chaperones join or leave conversations
-  - Token-based authentication for chaperone portal access
-- **Face Verification & Anti-Fraud System:** Comprehensive AI-driven protection against fake profiles, bots, and scammers:
-  - **Enhanced Photo Verification:** AI detects stock photos, watermarks, screenshots, and professional modeling shots
-  - **Mandatory Verification:** Face verification required before users can swipe or match
-  - **Message Content Moderation:** Real-time filtering of explicit sexual content and scam patterns using OpenAI Moderation API
-  - **Bot Detection:** Pattern recognition for mass messaging, copy-paste behavior, and suspicious activities
-  - **Rate Limiting:** Tiered message limits based on account age and verification status (5-100 msgs/day)
-  - **Scam Pattern Detection:** Blocks requests for money transfers, external platform redirects, and financial schemes
-- **Subscription Tiers:** Free and premium tiers with distinct feature sets.
-- **Profile Setup:** Traditional step-by-step profile creation with form-based input:
-  - 8 steps covering basic info, photos, Islamic values, profession, interests, partner preferences, bio, and video intro
-  - Location detection with geocoding support
-  - AI-powered bio enhancement option
-  - Photo upload with main photo selection
-  - *Note: AI Fast Onboarding with voice input is disabled but code remains for potential future use*
-- **Guidance Hub:** Emotional support center with 8 articles for users navigating the matching journey:
-  - Categories: Navigating Connections, Healthy Communication, Focus & Intention
-  - Topics include handling rejection, managing expectations, boundaries, patience, and respectful communication
-  - Accessible from Settings page
-- **Multi-Language Support (i18n):** Full internationalization for the global Muslim community:
-  - Supported languages: English, Arabic (العربية), Urdu (اردو)
-  - RTL (right-to-left) layout support for Arabic and Urdu
-  - Language picker in Settings page
-  - Messenger interface fully translated including placeholder text
-  - Uses react-i18next with automatic browser language detection
-  - Language preference saved to localStorage for persistence
-- **App Store Compliance Features:**
-  - User reporting system with multiple reason categories
-  - User blocking functionality
-  - Privacy Policy and Terms of Service pages
-  - Age verification (18+) during registration
-  - Delete account functionality
-  - Manage subscription options
+**For You AI Matching System:** Daily curated picks (8 profiles) based on a values-based compatibility score (max 150 points) prioritizing Islamic values, family values, lifestyle, and preferences. Machine learning refines recommendations.
+**Video Calling:** Agora RTC SDK for real-time video calls between matched users, with camera/mic controls and call history.
+**Chaperone Support (Wali):** Real-time guardian access to conversations with "Live Access" (participation) or "Report Only" (email summaries) options. Chaperones access via a secure portal with token-based authentication.
+**Anti-Fraud System:** Combines enhanced photo verification (AI detects stock photos, etc.), mandatory face verification before matching, real-time message content moderation, bot detection, and tiered rate limiting.
+**Guidance Hub:** Emotional support center with articles on navigating relationships.
+**Multi-Language Support (i18n):** Full internationalization for English, Arabic, and Urdu, including RTL layout support and react-i18next.
+**Haptic Feedback:** Native haptic feedback for interactive elements on iOS/Android via @capacitor/haptics.
+**App Store Compliance:** Features like user reporting, blocking, privacy policy, terms of service, age verification, and account deletion.
 
 ### System Design Choices
-- **Full-stack TypeScript:** Ensures type safety across the entire application.
-- **RESTful API:** Clearly defined endpoints for various functionalities.
-- **WebSocket Infrastructure:** Real-time messaging and call notifications using ws package with Express integration. Supports 1000+ concurrent users with automatic reconnection and event broadcasting for messages, incoming calls, and call status updates.
-- **PostgreSQL Database:** Used for data persistence, including user profiles, swipes, matches, messages, chaperones, and session storage.
-- **Serverless PostgreSQL (Neon):** Utilized for efficient and scalable database connections.
-- **Session-based Authentication:** Secure, HTTP-only cookies for user sessions.
+- **Full-stack TypeScript:** Type safety across the application.
+- **RESTful API:** Clearly defined endpoints.
+- **WebSocket Infrastructure:** Real-time messaging and call notifications with `ws` package, supporting 1000+ concurrent users.
+- **PostgreSQL Database:** Primary data persistence, utilizing Neon for serverless scalability.
+- **Session-based Authentication:** Secure, HTTP-only cookies for web sessions.
+- **Capacitor Mobile App Deployment:** Designed for wrapping with Capacitor for iOS and Android, leveraging unified push notifications (Web Push, APNs, FCM with Sendbird integration) and platform detection.
 
 ## External Dependencies
 
-*   **Cloudflare R2:** S3-compatible object storage for profile photos with zero egress fees and global CDN.
-*   **Agora RTC SDK:** Real-time video calling with token-based authentication and channel management.
-*   **OpenAI Vision API (GPT-4o):** For advanced facial recognition and identity verification.
-*   **Stripe:** For handling premium subscriptions and payments.
-*   **PostgreSQL (Neon Serverless):** The primary database for all application data.
-*   **Passport.js:** For authentication (local strategy).
-*   **Connect-pg-simple:** For PostgreSQL-based Express session storage.
+*   **Cloudflare R2:** Object storage for profile photos.
+*   **Agora RTC SDK:** Real-time video calling.
+*   **OpenAI Vision API (GPT-4o):** AI facial recognition and identity verification.
+*   **Stripe:** Payment and subscription management.
+*   **PostgreSQL (Neon Serverless):** Database.
+*   **Passport.js:** Authentication.
+*   **Connect-pg-simple:** PostgreSQL session storage.
 *   **React 18:** Frontend library.
-*   **Wouter:** Lightweight client-side router.
+*   **Wouter:** Client-side routing.
 *   **TanStack Query:** Server state management.
 *   **Vite:** Build tool.
-*   **shadcn/ui & Radix UI:** UI component libraries.
-*   **Tailwind CSS:** Styling framework.
-*   **Lucide React:** Icon library.
-*   **Node.js & Express.js:** Backend runtime and framework.
-*   **Drizzle ORM:** Database queries and schema management.
+*   **shadcn/ui & Radix UI:** UI components.
+*   **Tailwind CSS:** Styling.
+*   **Lucide React:** Icons.
+*   **Node.js & Express.js:** Backend.
+*   **Drizzle ORM:** Database queries.
 *   **bcrypt:** Password hashing.
-*   **date-fns:** Date utility library.
+*   **date-fns:** Date utilities.
 *   **nanoid:** Unique ID generation.
 *   **Zod & drizzle-zod:** Schema validation.
-
-## Capacitor Mobile App Deployment
-
-The application is designed to be wrapped with Capacitor for deployment to iOS and Android App Stores. Key considerations:
-
-### Push Notifications (Cross-Platform with Sendbird Integration)
-The app uses a unified push notification system (`client/src/lib/unifiedPushNotifications.ts`) that automatically detects the platform and uses the appropriate push service:
-- **Web:** Uses Web Push API with VAPID keys and service workers
-- **iOS (Capacitor):** Uses Apple Push Notification service (APNs) with @capacitor/push-notifications
-- **Android (Capacitor):** Uses Firebase Cloud Messaging (FCM) with @capacitor/push-notifications
-
-**Sendbird Push Integration:**
-- Device tokens are automatically registered with Sendbird when users grant notification permission
-- APNs tokens registered via `/v3/users/{userId}/push/apns` endpoint
-- FCM tokens registered via `/v3/users/{userId}/push/gcm` endpoint
-- Sendbird handles push notification delivery for chat messages
-- Notification taps deep-link to the relevant chat conversation
-
-**App Badge Updates:**
-- Badge count reflects unread Sendbird messages via `/api/push/unread-count` endpoint
-- Badge updates when viewing messages page and periodically (every 30 seconds)
-- Uses Capacitor Badge plugin when available for native badge updates
-
-Database table `push_tokens` stores tokens for all platforms with fields: type (web/apns/fcm), token, device info.
-
-### Platform Detection
-Utility at `client/src/lib/platform.ts` detects whether the app is running in a web browser or as a native Capacitor app.
-
-### Capacitor Setup Requirements
-To deploy as a native app:
-1. Install Capacitor: `npm install @capacitor/core @capacitor/cli`
-2. Initialize: `npx cap init`
-3. Add platforms: `npx cap add ios` and/or `npx cap add android`
-4. Install push plugin: `npm install @capacitor/push-notifications`
-5. Configure iOS: Requires Apple Developer account ($99/year), APNs certificate, and provisioning profile
-6. Configure Android: Requires Firebase project with google-services.json
-
-### Deployment Advantages
-- Web content updates deploy instantly without App Store review
-- Backend changes are immediate
-- Only native code changes require App Store resubmission
-- Single codebase serves web, iOS, and Android
+*   **Capacitor:** Mobile app wrapping.
+*   **Sendbird:** (Implicitly used for chat/push notifications, based on push notification details).
