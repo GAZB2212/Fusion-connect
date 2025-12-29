@@ -8,7 +8,7 @@ import useSendbirdStateContext from "@sendbird/uikit-react/useSendbirdStateConte
 import { useTranslation } from "react-i18next";
 import "@sendbird/uikit-react/dist/index.css";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Video, MoreVertical, ShieldOff, Flag, Trash2, Phone, Users, Mic, X, Send, Pause, Play } from "lucide-react";
+import { ArrowLeft, Video, MoreVertical, ShieldOff, Flag, Trash2, Phone, Users, Mic, X, Send, Pause, Play, Loader2 } from "lucide-react";
 import { useVoiceRecorder, formatDuration } from "@/hooks/use-voice-recorder";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -45,7 +45,6 @@ import { apiRequest, queryClient, getApiUrl, getAuthToken } from "@/lib/queryCli
 import { useToast } from "@/hooks/use-toast";
 import { useRingtone } from "@/hooks/use-ringtone";
 import { getUnreadMessageCount, updateBadgeCount } from "@/lib/unifiedPushNotifications";
-import { IOSSpinner } from "@/components/ios-spinner";
 
 const SENDBIRD_APP_ID = import.meta.env.VITE_SENDBIRD_APP_ID || "A68E730B-8E56-4655-BCBD-A709F3162376";
 
@@ -729,8 +728,8 @@ export default function Messages() {
   if (tokenLoading || !sendbirdToken) {
     return (
       <div className="fixed inset-0 bottom-16 flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <IOSSpinner size="lg" className="text-primary" />
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Connecting...</p>
         </div>
       </div>
