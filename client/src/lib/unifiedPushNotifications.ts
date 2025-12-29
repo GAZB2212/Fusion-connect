@@ -2,7 +2,7 @@
 // Works with both Web Push (browsers) and Native Push (Capacitor iOS/Android)
 
 import { PushNotifications, Token, PushNotificationSchema, ActionPerformed } from '@capacitor/push-notifications';
-import { isCapacitorNative, getPlatform, getPlatformInfo } from './platform';
+import { isCapacitorNative, getPlatform, getPlatformInfo, type Platform } from './platform';
 import { getApiUrl, getAuthToken } from './queryClient';
 
 export type NotificationPermissionStatus = 'granted' | 'denied' | 'prompt' | 'unknown';
@@ -202,7 +202,24 @@ async function nativeRegister(): Promise<PushToken | null> {
     return null;
   }
   
+  const platform = getPlatform();
   console.log('[Push] Starting native push registration...');
+  console.log(`[Push] Platform: ${platform}`);
+  console.log('[Push] Checking Capacitor environment...');
+  
+  // Log Capacitor info for debugging
+  const capacitor = (window as any).Capacitor;
+  console.log('[Push] Capacitor.isNativePlatform():', capacitor?.isNativePlatform?.());
+  console.log('[Push] Capacitor.getPlatform():', capacitor?.getPlatform?.());
+  console.log('[Push] PushNotifications plugin available:', !!PushNotifications);
+  
+  // Check if we have the plugin
+  try {
+    const plugins = capacitor?.Plugins;
+    console.log('[Push] Available plugins:', Object.keys(plugins || {}).join(', '));
+  } catch (e) {
+    console.log('[Push] Could not list plugins');
+  }
   
   // CRITICAL: Set up listeners BEFORE calling register()
   await setupRegistrationListeners();
@@ -212,27 +229,56 @@ async function nativeRegister(): Promise<PushToken | null> {
     registrationResolver = resolve;
     
     console.log('[Push] Calling PushNotifications.register()...');
+    console.log('[Push] IMPORTANT: On iOS, ensure the following in Xcode:');
+    console.log('[Push]   1. Push Notifications capability is added');
+    console.log('[Push]   2. Background Modes > Remote notifications is enabled');
+    console.log('[Push]   3. App.entitlements has aps-environment set');
+    console.log('[Push]   4. APNs key (.p8) is configured in Apple Developer Portal');
     
     // Now call register - the token will be delivered to the 'registration' listener
     PushNotifications.register()
       .then(() => {
-        console.log('[Push] register() call completed, waiting for token via registration event...');
+        console.log('[Push] register() call completed successfully');
+        console.log('[Push] Waiting for token via "registration" event listener...');
+        console.log('[Push] If no token appears within 15 seconds, check Xcode configuration');
       })
       .catch((error) => {
-        console.error('[Push] register() call failed:', error);
+        console.error('[Push] register() call FAILED with error:', error);
+        console.error('[Push] Error details:', JSON.stringify(error, null, 2));
+        
+        // Common iOS errors
+        if (platform === 'ios') {
+          console.error('[Push] iOS Registration Troubleshooting:');
+          console.error('[Push]   - Ensure Push Notification capability is enabled in Xcode');
+          console.error('[Push]   - Check App.entitlements file exists and has aps-environment');
+          console.error('[Push]   - Verify provisioning profile includes push notifications');
+          console.error('[Push]   - Test on a real device (simulator does not support push)');
+        }
+        
         registrationResolver = null;
         resolve(null);
       });
     
-    // Timeout after 15 seconds (increased from 10)
+    // Timeout after 20 seconds
     setTimeout(() => {
       if (registrationResolver === resolve) {
-        console.warn('[Push] Registration timed out after 15 seconds - no token received');
-        console.warn('[Push] This may indicate APNs/FCM is not properly configured');
+        console.warn('[Push] ⚠️ Registration timed out after 20 seconds - no token received');
+        console.warn('[Push] This typically means APNs/FCM is not properly configured');
+        
+        if (platform === 'ios') {
+          console.warn('[Push] iOS Configuration Checklist:');
+          console.warn('[Push]   ✓ Are you testing on a REAL device? (Required for push)');
+          console.warn('[Push]   ✓ Is Push Notifications capability added in Xcode?');
+          console.warn('[Push]   ✓ Is Background Modes > Remote notifications enabled?');
+          console.warn('[Push]   ✓ Does App.entitlements have aps-environment?');
+          console.warn('[Push]   ✓ Is the provisioning profile updated with push capability?');
+          console.warn('[Push]   ✓ Is an APNs key (.p8) or certificate configured?');
+        }
+        
         registrationResolver = null;
         resolve(null);
       }
-    }, 15000);
+    }, 20000);
   });
 }
 
@@ -622,4 +668,121 @@ export async function refreshPushToken(vapidPublicKey?: string): Promise<boolean
   
   console.log('[Push] Token refreshed, saving to server...');
   return savePushTokenToServer(token);
+}
+
+// Diagnostic function to help debug push notification issues
+export async function diagnosePushNotifications(): Promise<{
+  platform: Platform;
+  isNative: boolean;
+  isSupported: boolean;
+  permission: NotificationPermissionStatus;
+  hasToken: boolean;
+  tokenType: string | null;
+  capacitorInfo: Record<string, any>;
+  issues: string[];
+  recommendations: string[];
+}> {
+  const platformInfo = getPlatformInfo();
+  const supported = await isPushSupported();
+  const permission = await getNotificationPermission();
+  
+  const capacitor = (window as any).Capacitor;
+  const capacitorInfo: Record<string, any> = {
+    isNativePlatform: capacitor?.isNativePlatform?.() ?? false,
+    getPlatform: capacitor?.getPlatform?.() ?? 'unknown',
+    availablePlugins: [],
+  };
+  
+  try {
+    capacitorInfo.availablePlugins = Object.keys(capacitor?.Plugins || {});
+  } catch (e) {
+    capacitorInfo.availablePlugins = ['error getting plugins'];
+  }
+  
+  const issues: string[] = [];
+  const recommendations: string[] = [];
+  
+  // Check for common issues
+  if (platformInfo.isIOS) {
+    if (permission !== 'granted') {
+      issues.push('Notification permission not granted');
+      recommendations.push('Request notification permission from the user');
+    }
+    
+    if (!currentDeviceToken) {
+      issues.push('No device token received from APNs');
+      recommendations.push('Check Xcode Push Notifications capability is enabled');
+      recommendations.push('Verify App.entitlements has aps-environment set');
+      recommendations.push('Ensure provisioning profile includes push capability');
+      recommendations.push('Test on a real iOS device (simulator cannot receive push)');
+      recommendations.push('Check APNs key (.p8) is uploaded to Apple Developer Portal');
+    }
+    
+    if (!capacitorInfo.availablePlugins.includes('PushNotifications')) {
+      issues.push('PushNotifications plugin not detected');
+      recommendations.push('Run: npm install @capacitor/push-notifications');
+      recommendations.push('Run: npx cap sync ios');
+    }
+  }
+  
+  if (platformInfo.isAndroid) {
+    if (!currentDeviceToken) {
+      issues.push('No FCM token received');
+      recommendations.push('Check google-services.json is in android/app/');
+      recommendations.push('Verify Firebase project is configured');
+    }
+  }
+  
+  if (platformInfo.isWeb && !supported) {
+    issues.push('Web Push not supported in this browser');
+    recommendations.push('Use a modern browser that supports Web Push API');
+  }
+  
+  const result = {
+    platform: platformInfo.platform,
+    isNative: platformInfo.isNative,
+    isSupported: supported,
+    permission,
+    hasToken: !!currentDeviceToken,
+    tokenType: currentDeviceToken ? (platformInfo.isIOS ? 'apns' : platformInfo.isAndroid ? 'fcm' : 'web') : null,
+    capacitorInfo,
+    issues,
+    recommendations
+  };
+  
+  console.log('[Push Diagnostics]', JSON.stringify(result, null, 2));
+  return result;
+}
+
+// Get current device token (for debugging)
+export function getCurrentDeviceToken(): string | null {
+  return currentDeviceToken;
+}
+
+// Force retry registration (for debugging)
+export async function forceRetryRegistration(vapidPublicKey?: string): Promise<PushToken | null> {
+  console.log('[Push] Force retrying registration...');
+  
+  // Reset listeners to allow re-registration
+  nativeListenersInitialized = false;
+  notificationListenersInitialized = false;
+  registrationResolver = null;
+  
+  const platformInfo = getPlatformInfo();
+  
+  if (platformInfo.isNative) {
+    // Remove all existing listeners first
+    try {
+      await PushNotifications.removeAllListeners();
+      console.log('[Push] Removed all existing listeners');
+    } catch (e) {
+      console.log('[Push] Could not remove listeners:', e);
+    }
+    
+    // Set up fresh listeners
+    await setupNativeNotificationListeners();
+  }
+  
+  // Try registration again
+  return registerForPushNotifications(vapidPublicKey);
 }

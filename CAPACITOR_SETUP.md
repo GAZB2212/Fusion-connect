@@ -183,10 +183,78 @@ Keep the `server.url` in capacitor.config.ts pointing to your Replit URL. This a
 
 ## Troubleshooting
 
-### Push Notifications Not Working
-- Ensure APNs certificate is properly configured
-- Check that the app has notification permissions
-- Verify the push token is being saved to the server
+### Push Notifications Not Working on iOS
+
+**If `PushNotifications.register()` doesn't return a token:**
+
+1. **Check Xcode Capabilities**
+   - Open your project in Xcode
+   - Select your app target
+   - Go to "Signing & Capabilities"
+   - Click "+ Capability" and add "Push Notifications"
+   - Add "Background Modes" and check "Remote notifications"
+
+2. **Verify App.entitlements**
+   Your `ios/App/App/App.entitlements` should contain:
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+   <plist version="1.0">
+   <dict>
+       <key>aps-environment</key>
+       <string>development</string>
+   </dict>
+   </plist>
+   ```
+   For production builds, change `development` to `production`.
+
+3. **Check Info.plist**
+   Ensure `ios/App/App/Info.plist` has:
+   ```xml
+   <key>UIBackgroundModes</key>
+   <array>
+       <string>remote-notification</string>
+   </array>
+   ```
+
+4. **APNs Key Configuration**
+   - Go to Apple Developer Portal > Keys
+   - Create an APNs Key (.p8 file) if you don't have one
+   - Download the .p8 file (you can only download it once!)
+   - Note your Key ID and Team ID
+   - Upload the .p8 key to Firebase Console and Sendbird Dashboard
+
+5. **Provisioning Profile**
+   - Ensure your provisioning profile includes Push Notification capability
+   - In Xcode, select your development team
+   - Let Xcode manage signing or update your profile manually
+
+6. **Test on Real Device**
+   - Push notifications do NOT work in the iOS Simulator
+   - You MUST test on a real iPhone/iPad
+
+7. **Debug with Console Logs**
+   The app will print detailed logs starting with `[Push]`:
+   - Check for `[Push] SUCCESS - Received ios device token`
+   - If you see `[Push] Registration timed out`, APNs is not configured correctly
+   - Use Safari's Web Inspector to view logs from the iOS app
+
+8. **Sync After Changes**
+   After any configuration changes:
+   ```bash
+   npx cap sync ios
+   npx cap open ios
+   ```
+   Then rebuild in Xcode.
+
+### Common iOS Push Errors
+
+| Error | Cause | Solution |
+|-------|-------|----------|
+| No token received | Missing capabilities | Add Push Notifications capability in Xcode |
+| Registration timeout | APNs not configured | Check entitlements and provisioning |
+| Token received but no notifications | Server not sending | Verify token is saved to backend |
+| Notifications work in dev, not prod | Wrong aps-environment | Change entitlements to "production" |
 
 ### Camera/Photos Not Working
 - Check Info.plist permissions are added
