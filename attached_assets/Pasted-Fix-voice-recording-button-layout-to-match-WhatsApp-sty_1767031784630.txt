@@ -1,0 +1,61 @@
+Fix voice recording button layout to match WhatsApp style
+The voice recording button (mic icon) needs to be properly positioned alongside the message input field, similar to WhatsApp's layout where the mic button sits at the right edge of the input area.
+Current problem:
+The voice button uses absolute positioning which doesn't properly align with the message input field. The layout should be: [Attach] [Text Input] [Mic/Send].
+What needs to be fixed in client/src/pages/messages.tsx:
+
+Change the message input wrapper structure:
+
+The input area should be a flexbox container
+Contains: attachment button (left), text field (center, flex-grow), voice/send button (right)
+
+
+Remove absolute positioning from voice button:
+
+Current CSS has: position: absolute; bottom: 28px; right: 8px;
+Should be: part of the flex layout, no absolute positioning
+
+
+Update the CSS:
+
+css/* Message input container - flex layout */
+.fusion-chat .sendbird-message-input-wrapper {
+  display: flex !important;
+  align-items: flex-end !important;
+  gap: 8px !important;
+  padding: 8px 12px !important;
+  width: 100% !important;
+}
+
+/* Text field takes remaining space */
+.fusion-chat .sendbird-message-input-text-field {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+/* Voice button - inline, not absolute */
+.voice-mic-button {
+  position: relative !important; /* NOT absolute */
+  width: 40px !important;
+  height: 40px !important;
+  flex-shrink: 0 !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+Ensure send button and voice button share the same space:
+
+When typing, hide mic button and show send button
+When empty, show mic button and hide send button
+Both should occupy the same flex position (right side)
+
+
+
+Expected result:
+Layout should be: [📎 Attach] [____________Text Input____________] [🎤 Mic]
+Just like WhatsApp where all elements are in a single row, properly aligned at the bottom.
+
+The key issue is the position: absolute on the voice button. It needs to be position: relative and part of the flex layout.

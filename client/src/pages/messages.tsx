@@ -1280,6 +1280,15 @@ export default function Messages() {
         .fusion-chat .sendbird-message-input-wrapper {
           padding-bottom: 16px !important;
           margin-bottom: env(safe-area-inset-bottom, 0px) !important;
+          position: relative !important;
+        }
+        
+        /* Message input container - flex layout with space for mic */
+        .fusion-chat .sendbird-message-input-wrapper {
+          display: flex !important;
+          align-items: flex-end !important;
+          gap: 8px !important;
+          padding-right: 52px !important;
         }
 
         /* Ghosted Send Button */
@@ -1369,14 +1378,14 @@ export default function Messages() {
           box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2) !important;
         }
 
-        /* Voice Recording Button - Far right like WhatsApp */
+        /* Voice Recording Button - Positioned in the input area */
         .voice-mic-button {
           position: absolute !important;
           bottom: 24px !important;
-          right: 8px !important;
+          right: 12px !important;
           z-index: 100 !important;
-          width: 36px !important;
-          height: 36px !important;
+          width: 40px !important;
+          height: 40px !important;
           border-radius: 50% !important;
           background: transparent !important;
           color: hsl(var(--muted-foreground)) !important;
@@ -1385,6 +1394,7 @@ export default function Messages() {
           justify-content: center !important;
           transition: all 0.15s ease !important;
           padding: 0 !important;
+          flex-shrink: 0 !important;
         }
         
         .voice-mic-button:hover {
@@ -1438,7 +1448,7 @@ export default function Messages() {
         @media (max-width: 768px) {
           .voice-mic-button {
             bottom: 24px !important;
-            right: 8px !important;
+            right: 12px !important;
           }
           
           .voice-recording-overlay.recording-active {
