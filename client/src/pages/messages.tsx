@@ -1369,17 +1369,17 @@ export default function Messages() {
           box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2) !important;
         }
 
-        /* Voice Recording Button - Below input on left side like WhatsApp */
+        /* Voice Recording Button - Far right like WhatsApp */
         .voice-mic-button {
           position: absolute !important;
-          bottom: -32px !important;
-          left: 12px !important;
+          bottom: 14px !important;
+          right: 12px !important;
           z-index: 100 !important;
-          width: 28px !important;
-          height: 28px !important;
+          width: 36px !important;
+          height: 36px !important;
           border-radius: 50% !important;
           background: transparent !important;
-          color: #f59e0b !important;
+          color: hsl(var(--muted-foreground)) !important;
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
@@ -1388,14 +1388,14 @@ export default function Messages() {
         }
         
         .voice-mic-button:hover {
-          background: rgba(245, 158, 11, 0.1) !important;
-          color: #fbbf24 !important;
+          background: hsl(var(--muted)) !important;
+          color: hsl(var(--foreground)) !important;
         }
         
         .voice-mic-button svg {
           color: inherit !important;
-          width: 18px !important;
-          height: 18px !important;
+          width: 22px !important;
+          height: 22px !important;
         }
         
         /* Voice Recording Active Overlay */
@@ -1437,8 +1437,8 @@ export default function Messages() {
         /* Mobile adjustments for voice button */
         @media (max-width: 768px) {
           .voice-mic-button {
-            bottom: -30px !important;
-            left: 8px !important;
+            bottom: 16px !important;
+            right: 8px !important;
           }
           
           .voice-recording-overlay.recording-active {
@@ -1446,6 +1446,11 @@ export default function Messages() {
             left: 12px !important;
             right: 12px !important;
           }
+        }
+        
+        /* Add padding to input area for mic button */
+        .fusion-chat .sendbird-message-input-wrapper {
+          padding-right: 50px !important;
         }
       `}</style>
 
