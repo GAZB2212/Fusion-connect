@@ -1369,14 +1369,14 @@ export default function Messages() {
           box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2) !important;
         }
 
-        /* Voice Recording Button - WhatsApp style, next to attachment button */
+        /* Voice Recording Button - Below input on left side like WhatsApp */
         .voice-mic-button {
           position: absolute !important;
-          bottom: 14px !important;
-          left: 52px !important;
+          bottom: -32px !important;
+          left: 12px !important;
           z-index: 100 !important;
-          width: 36px !important;
-          height: 36px !important;
+          width: 28px !important;
+          height: 28px !important;
           border-radius: 50% !important;
           background: transparent !important;
           color: #f59e0b !important;
@@ -1384,6 +1384,7 @@ export default function Messages() {
           align-items: center !important;
           justify-content: center !important;
           transition: all 0.15s ease !important;
+          padding: 0 !important;
         }
         
         .voice-mic-button:hover {
@@ -1393,8 +1394,8 @@ export default function Messages() {
         
         .voice-mic-button svg {
           color: inherit !important;
-          width: 22px !important;
-          height: 22px !important;
+          width: 18px !important;
+          height: 18px !important;
         }
         
         /* Voice Recording Active Overlay */
@@ -1436,8 +1437,8 @@ export default function Messages() {
         /* Mobile adjustments for voice button */
         @media (max-width: 768px) {
           .voice-mic-button {
-            bottom: 18px !important;
-            right: 12px !important;
+            bottom: -30px !important;
+            left: 8px !important;
           }
           
           .voice-recording-overlay.recording-active {
