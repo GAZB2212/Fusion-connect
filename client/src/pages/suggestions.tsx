@@ -33,7 +33,7 @@ export default function Suggestions() {
   const [swipingId, setSwipingId] = useState<string | null>(null);
   const [timeUntilReset, setTimeUntilReset] = useState<string>("");
 
-  const { data, isLoading } = useQuery<SuggestionsResponse>({
+  const { data, isLoading, isError } = useQuery<SuggestionsResponse>({
     queryKey: ["/api/suggestions"],
   });
 
@@ -135,7 +135,33 @@ export default function Suggestions() {
     );
   }
 
-  const picks = data?.picks || [];
+  if (isError) {
+    return (
+      <div className="fixed inset-0 bottom-16 flex items-center justify-center bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] p-4">
+        <Card className="bg-gradient-to-br from-[#0A0E17] to-[#0E1220] border-red-500/20 max-w-md shadow-xl">
+          <CardContent className="p-8 text-center">
+            <div className="relative inline-block mb-6">
+              <X className="h-16 w-16 text-red-400 mx-auto" />
+            </div>
+            <h2 className="text-2xl font-serif font-bold text-[#F8F4E3] mb-2">
+              Unable to Load Picks
+            </h2>
+            <p className="text-[#F8F4E3]/70 mb-6">
+              We couldn't load your personalized matches. Please try again.
+            </p>
+            <Button 
+              onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/suggestions"] })} 
+              data-testid="button-retry-suggestions"
+            >
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const picks = Array.isArray(data?.picks) ? data.picks : [];
   const remainingPicks = picks.filter(p => !p.userAction);
 
   if (!picks.length || remainingPicks.length === 0) {
@@ -201,9 +227,11 @@ export default function Suggestions() {
         <div className="space-y-6">
           {remainingPicks.map((pick) => {
             const profile = pick.profile;
-            const mainPhoto = profile.photos?.[profile.mainPhotoIndex || 0];
+            if (!profile) return null;
+            const photos = Array.isArray(profile.photos) ? profile.photos : [];
+            const mainPhoto = photos[profile.mainPhotoIndex || 0];
             const isSwiping = swipingId === profile.userId;
-            const isHighMatch = pick.compatibilityScore >= 85;
+            const isHighMatch = (pick.compatibilityScore || 0) >= 85;
 
             return (
               <Card
@@ -242,7 +270,7 @@ export default function Suggestions() {
                         ) : null}
                         <div className="w-full h-full bg-[#0E1220] items-center justify-center" style={{ display: mainPhoto ? 'none' : 'flex' }}>
                           <span className="text-4xl text-[#F8F4E3]/30">
-                            {profile.displayName.charAt(0)}
+                            {profile?.displayName?.charAt(0) || '?'}
                           </span>
                         </div>
                         
@@ -301,7 +329,7 @@ export default function Suggestions() {
                         </div>
                       </div>
 
-                      {pick.matchReasons.length > 0 && (
+                      {Array.isArray(pick.matchReasons) && pick.matchReasons.length > 0 && (
                         <div className="mb-6">
                           <h3 className="text-sm font-semibold text-[#F8F4E3]/80 mb-2 flex items-center gap-1">
                             <Sparkles className={`h-4 w-4 ${isHighMatch ? "text-amber-400" : "text-primary"}`} />
