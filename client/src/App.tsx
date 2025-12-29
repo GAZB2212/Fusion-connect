@@ -5,9 +5,15 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { Profile } from "@shared/schema";
-import { initializePushNotifications } from "@/lib/unifiedPushNotifications";
+import { 
+  initializeEarly, 
+  registerTokenWithBackend, 
+  setNavigationCallback,
+  initializePushNotifications 
+} from "@/lib/unifiedPushNotifications";
+import { isCapacitorNative } from "@/lib/platform";
 import { VideoCallProvider } from "@/contexts/VideoCallContext";
 import { WebSocketProvider } from "@/contexts/WebSocketContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
@@ -167,42 +173,102 @@ function AppContent() {
     enabled: isAuthenticated,
     retry: false,
   });
+  
+  // Track if we've done early push init
+  const earlyInitDone = useRef(false);
+  // Track if we've registered token with backend
+  const tokenRegistered = useRef(false);
 
-  // Initialize push notifications when user is authenticated with complete profile
-  // Uses unified push service that works on both web and native (Capacitor)
+  // STEP 1: Initialize push notifications EARLY on app launch (before login)
+  // This sets up listeners and requests permission to get the device token
   useEffect(() => {
-    const setupPushNotifications = async () => {
+    const earlyInit = async () => {
+      if (earlyInitDone.current) return;
+      earlyInitDone.current = true;
+      
+      // Only do early init for native apps
+      if (!isCapacitorNative()) {
+        console.log('[Push] Web platform - skipping early init, will use standard flow');
+        return;
+      }
+      
+      console.log('[Push] App launch - starting early push notification init...');
+      
+      // Set navigation callback early
+      setNavigationCallback((matchId: string) => {
+        console.log('[Push] Navigating to chat from notification:', matchId);
+        setLocation(`/messages/${matchId}`);
+      });
+      
+      try {
+        // Initialize early - this requests permission and gets APNs/FCM token
+        const token = await initializeEarly();
+        if (token) {
+          console.log('[Push] Early init successful - token ready for backend registration');
+        } else {
+          console.warn('[Push] Early init completed but no token obtained');
+        }
+      } catch (error) {
+        console.error('[Push] Early init failed:', error);
+      }
+    };
+    
+    earlyInit();
+  }, [setLocation]);
+
+  // STEP 2: Register token with backend when user is authenticated
+  useEffect(() => {
+    const registerToken = async () => {
+      // Only register if user is fully authenticated
       if (!isAuthenticated || !profile?.isComplete || !profile?.faceVerified) {
         return;
       }
-
-      // VAPID key only needed for web push, native uses FCM/APNs
-      const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
-
-      try {
-        // Navigation callback for when a notification is tapped
-        const handleNavigateToChat = (matchId: string) => {
-          console.log('[Push] Navigating to chat from notification:', matchId);
-          setLocation(`/messages/${matchId}`);
-        };
-
-        // Initialize unified push notifications (handles web and native automatically)
-        await initializePushNotifications(vapidKey, handleNavigateToChat);
-
-        // Request permission if not already granted (for web browser)
-        // The unified service handles native permission requests internally
-        const { getNotificationPermission, enablePushNotifications } = await import('@/lib/unifiedPushNotifications');
-        const permission = await getNotificationPermission();
-        
-        if (permission === 'prompt') {
-          await enablePushNotifications(vapidKey);
+      
+      // Don't re-register if already done this session
+      if (tokenRegistered.current) {
+        return;
+      }
+      tokenRegistered.current = true;
+      
+      console.log('[Push] User authenticated - registering push token with backend...');
+      
+      // For native apps, use the pending token from early init
+      if (isCapacitorNative()) {
+        try {
+          const success = await registerTokenWithBackend();
+          if (success) {
+            console.log('[Push] Token registered with backend successfully');
+          } else {
+            console.warn('[Push] Failed to register token with backend');
+          }
+        } catch (error) {
+          console.error('[Push] Token registration error:', error);
         }
-      } catch (error) {
-        console.error('Failed to setup push notifications:', error);
+      } else {
+        // For web, use the standard initialization flow
+        const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+        
+        try {
+          const handleNavigateToChat = (matchId: string) => {
+            console.log('[Push] Navigating to chat from notification:', matchId);
+            setLocation(`/messages/${matchId}`);
+          };
+
+          await initializePushNotifications(vapidKey, handleNavigateToChat);
+
+          const { getNotificationPermission, enablePushNotifications } = await import('@/lib/unifiedPushNotifications');
+          const permission = await getNotificationPermission();
+          
+          if (permission === 'prompt') {
+            await enablePushNotifications(vapidKey);
+          }
+        } catch (error) {
+          console.error('[Push] Web push setup failed:', error);
+        }
       }
     };
 
-    setupPushNotifications();
+    registerToken();
   }, [isAuthenticated, profile?.isComplete, profile?.faceVerified, setLocation]);
 
   return (
