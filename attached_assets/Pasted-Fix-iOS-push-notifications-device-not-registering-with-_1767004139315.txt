@@ -1,0 +1,57 @@
+Fix iOS push notifications - device not registering with APNs
+Push notification permissions are granted on iOS, but the app is not successfully registering with Apple Push Notification service (APNs) to receive a device token. This means no notifications can be received.
+The Problem:
+The usePushNotifications hook and unifiedPushNotifications.ts service exist but aren't properly initializing and registering on app startup.
+What needs to be fixed:
+
+Ensure push notifications initialize on app launch:
+
+In client/src/App.tsx, call pushNotificationService.initialize() immediately when the app loads
+This should happen BEFORE user login, so registration occurs as early as possible
+
+
+Fix the registration flow in unifiedPushNotifications.ts:
+
+Verify PushNotifications.register() is being called after requestPermissions() succeeds
+Ensure event listeners for 'registration', 'registrationError', 'pushNotificationReceived', and 'pushNotificationActionPerformed' are set up BEFORE calling register()
+Add comprehensive error logging at each step
+
+
+Register device token with Sendbird:
+
+When the 'registration' event fires with a token, immediately register it with Sendbird using the Sendbird SDK
+Use: sendbird.registerPushTokenForCurrentUser(token, isPushEnabled)
+Store the token locally and in your backend database
+
+
+Handle token on user login:
+
+If user logs in and a token already exists locally, register it with Sendbird for that user
+If no token exists, request permissions and register
+
+
+Add proper error handling:
+
+Log all errors from APNs registration
+Show user-friendly error messages
+Handle the case where permissions are denied
+
+
+Test the registration flow:
+
+Add console logs showing each step of registration
+Log the device token when received
+Confirm Sendbird registration succeeds
+
+
+
+Expected behavior:
+When the app launches on iOS, it should automatically request notification permissions (if not already granted), register with APNs to get a device token, and register that token with Sendbird so messages trigger push notifications.
+Current files to fix:
+
+client/src/lib/unifiedPushNotifications.ts - Core registration logic
+client/src/hooks/usePushNotifications.ts - React hook
+client/src/App.tsx - Initialize on app startup
+Any Sendbird integration code
+
+Make sure the flow works on native iOS (not just web), uses Capacitor's @capacitor/push-notifications plugin, and properly integrates with Sendbird's push notification system.

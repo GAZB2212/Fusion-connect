@@ -1,5 +1,10 @@
 // Unified Push Notification Service
 // Works with both Web Push (browsers) and Native Push (Capacitor iOS/Android)
+// 
+// INITIALIZATION FLOW:
+// 1. Call initializeEarly() on app launch (before login) to set up listeners and request permission
+// 2. Call registerWithBackend() after user logs in to save token to backend and Sendbird
+// 3. Token is cached locally so it persists across sessions
 
 import { PushNotifications, Token, PushNotificationSchema, ActionPerformed } from '@capacitor/push-notifications';
 import { isCapacitorNative, getPlatform, getPlatformInfo, type Platform } from './platform';
@@ -30,6 +35,50 @@ let nativeListenersInitialized = false;
 
 // Promise resolver for registration token
 let registrationResolver: ((token: PushToken | null) => void) | null = null;
+
+// Track initialization state
+let earlyInitComplete = false;
+let pendingToken: PushToken | null = null;
+
+// Local storage key for caching token
+const TOKEN_STORAGE_KEY = 'fusion_push_token';
+const TOKEN_TYPE_STORAGE_KEY = 'fusion_push_token_type';
+
+// Get cached token from localStorage
+function getCachedToken(): PushToken | null {
+  try {
+    const token = localStorage.getItem(TOKEN_STORAGE_KEY);
+    const type = localStorage.getItem(TOKEN_TYPE_STORAGE_KEY) as 'web' | 'fcm' | 'apns' | null;
+    if (token && type) {
+      console.log('[Push] Retrieved cached token from localStorage');
+      return { type, token };
+    }
+  } catch (e) {
+    console.log('[Push] Could not read cached token');
+  }
+  return null;
+}
+
+// Cache token to localStorage
+function cacheToken(token: PushToken): void {
+  try {
+    localStorage.setItem(TOKEN_STORAGE_KEY, token.token);
+    localStorage.setItem(TOKEN_TYPE_STORAGE_KEY, token.type);
+    console.log('[Push] Token cached to localStorage');
+  } catch (e) {
+    console.log('[Push] Could not cache token');
+  }
+}
+
+// Clear cached token
+function clearCachedToken(): void {
+  try {
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    localStorage.removeItem(TOKEN_TYPE_STORAGE_KEY);
+  } catch (e) {
+    // Ignore
+  }
+}
 
 // ============================================
 // Web Push Implementation (for browsers)
@@ -534,6 +583,161 @@ export async function updateBadgeCount(count: number): Promise<void> {
   } catch (error) {
     console.error('[Push] Error updating badge:', error);
   }
+}
+
+// ============================================
+// EARLY INITIALIZATION (Call BEFORE user login)
+// ============================================
+
+/**
+ * Initialize push notifications early on app launch.
+ * This should be called BEFORE user login to ensure:
+ * 1. Event listeners are set up
+ * 2. Permission is requested
+ * 3. Device token is obtained from APNs/FCM
+ * 
+ * The token will be cached locally and registered with backend when user logs in.
+ */
+export async function initializeEarly(): Promise<PushToken | null> {
+  const platformInfo = getPlatformInfo();
+  
+  console.log('[Push] ========================================');
+  console.log('[Push] EARLY INITIALIZATION STARTING');
+  console.log('[Push] ========================================');
+  console.log(`[Push] Platform: ${platformInfo.platform}`);
+  console.log(`[Push] Is Native: ${platformInfo.isNative}`);
+  console.log(`[Push] Is iOS: ${platformInfo.isIOS}`);
+  console.log(`[Push] Is Android: ${platformInfo.isAndroid}`);
+  
+  // Check if already initialized
+  if (earlyInitComplete && pendingToken) {
+    console.log('[Push] Already initialized, returning cached token');
+    return pendingToken;
+  }
+  
+  // Check for cached token first
+  const cachedToken = getCachedToken();
+  if (cachedToken) {
+    console.log('[Push] Found cached token, will use it');
+    currentDeviceToken = cachedToken.token;
+    pendingToken = cachedToken;
+    // Don't return yet - still set up listeners
+  }
+  
+  const supported = await isPushSupported();
+  if (!supported) {
+    console.log('[Push] Push notifications not supported on this platform');
+    return null;
+  }
+  
+  // STEP 1: Set up event listeners FIRST (critical for iOS)
+  if (platformInfo.isNative) {
+    console.log('[Push] STEP 1: Setting up native event listeners...');
+    await setupNativeNotificationListeners();
+    console.log('[Push] Event listeners ready');
+  }
+  
+  // STEP 2: Check/request permission
+  console.log('[Push] STEP 2: Checking notification permission...');
+  let permission = await getNotificationPermission();
+  console.log(`[Push] Current permission: ${permission}`);
+  
+  if (permission === 'prompt') {
+    console.log('[Push] Requesting notification permission...');
+    permission = await requestNotificationPermission();
+    console.log(`[Push] Permission result: ${permission}`);
+  }
+  
+  if (permission !== 'granted') {
+    console.warn('[Push] Permission not granted, cannot register');
+    return null;
+  }
+  
+  // STEP 3: Register with APNs/FCM to get device token
+  console.log('[Push] STEP 3: Registering with APNs/FCM...');
+  console.log('[Push] Calling PushNotifications.register() - token will arrive via event listener');
+  
+  const token = await nativeRegister();
+  
+  if (token) {
+    console.log('[Push] ✅ SUCCESS - Got device token!');
+    console.log(`[Push] Token type: ${token.type}`);
+    console.log(`[Push] Token preview: ${token.token.substring(0, 20)}...`);
+    
+    // Cache the token
+    cacheToken(token);
+    pendingToken = token;
+    currentDeviceToken = token.token;
+  } else {
+    console.error('[Push] ❌ FAILED - No token received from APNs/FCM');
+    console.error('[Push] Check the iOS Configuration Checklist above');
+  }
+  
+  earlyInitComplete = true;
+  console.log('[Push] ========================================');
+  console.log('[Push] EARLY INITIALIZATION COMPLETE');
+  console.log('[Push] ========================================');
+  
+  return token;
+}
+
+/**
+ * Register the pending token with backend after user logs in.
+ * This should be called after successful user authentication.
+ */
+export async function registerTokenWithBackend(): Promise<boolean> {
+  // First check for a pending token from early init
+  let token = pendingToken;
+  
+  // If no pending token, try to get cached token
+  if (!token) {
+    token = getCachedToken();
+    console.log('[Push] No pending token, using cached token');
+  }
+  
+  // If still no token, try to register now
+  if (!token && isCapacitorNative()) {
+    console.log('[Push] No token available, attempting registration...');
+    await setupNativeNotificationListeners();
+    token = await nativeRegister();
+    if (token) {
+      cacheToken(token);
+      pendingToken = token;
+    }
+  }
+  
+  if (!token) {
+    console.warn('[Push] No push token available to register with backend');
+    return false;
+  }
+  
+  console.log('[Push] Registering token with backend...');
+  const success = await savePushTokenToServer(token);
+  
+  if (success) {
+    console.log('[Push] ✅ Token registered with backend and Sendbird');
+    // Update badge count
+    const unreadCount = await getUnreadMessageCount();
+    await updateBadgeCount(unreadCount);
+  } else {
+    console.error('[Push] ❌ Failed to register token with backend');
+  }
+  
+  return success;
+}
+
+/**
+ * Check if we have a pending token ready to register
+ */
+export function hasPendingToken(): boolean {
+  return !!pendingToken || !!getCachedToken();
+}
+
+/**
+ * Get the pending token without registering it
+ */
+export function getPendingToken(): PushToken | null {
+  return pendingToken || getCachedToken();
 }
 
 // Initialize push notifications (call on app load after user is authenticated)
