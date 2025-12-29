@@ -1177,25 +1177,16 @@ export default function Messages() {
           box-sizing: border-box !important;
         }
 
-        .fusion-chat .sendbird-message-input {
-          flex-shrink: 0 !important;
-          width: 100% !important;
-          max-width: 100% !important;
-          box-sizing: border-box !important;
-          background: transparent !important;
-          border: none !important;
-          padding: 8px 12px !important;
-        }
-
+        /* Text input field - taller like WhatsApp */
         .fusion-chat .sendbird-message-input-text-field {
-          width: 100% !important;
-          max-width: 100% !important;
+          flex: 1 !important;
+          min-width: 0 !important;
           box-sizing: border-box !important;
           background: hsl(var(--muted)) !important;
           border: 1px solid hsl(var(--border)) !important;
-          border-radius: 20px !important;
+          border-radius: 22px !important;
           color: hsl(var(--foreground)) !important;
-          min-height: 40px !important;
+          min-height: 44px !important;
           max-height: 120px !important;
           font-size: 15px !important;
           padding: 10px 16px !important;
@@ -1205,12 +1196,6 @@ export default function Messages() {
           overflow-wrap: break-word !important;
           overflow-x: hidden !important;
           overflow-y: auto !important;
-        }
-
-        .fusion-chat .sendbird-message-input-wrapper {
-          width: 100% !important;
-          max-width: 100% !important;
-          overflow: hidden !important;
         }
 
         .fusion-chat .sendbird-message-input-text-field::placeholder,
@@ -1275,20 +1260,36 @@ export default function Messages() {
           color: hsl(var(--foreground)) !important;
         }
 
-        /* Add bottom padding for mobile navigation bar */
-        .fusion-chat .sendbird-conversation__footer,
-        .fusion-chat .sendbird-message-input-wrapper {
+        /* Conversation footer - the input area container */
+        .fusion-chat .sendbird-conversation__footer {
+          position: relative !important;
+          padding: 8px 12px !important;
           padding-bottom: 16px !important;
           margin-bottom: env(safe-area-inset-bottom, 0px) !important;
-          position: relative !important;
+          background: hsl(var(--background)) !important;
         }
         
-        /* Message input container - flex layout with space for mic */
+        /* Message input wrapper - horizontal flex layout like WhatsApp */
         .fusion-chat .sendbird-message-input-wrapper {
           display: flex !important;
-          align-items: flex-end !important;
+          flex-direction: row !important;
+          align-items: center !important;
           gap: 8px !important;
-          padding-right: 52px !important;
+          width: 100% !important;
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+        
+        /* Message input area - contains attach + text field */
+        .fusion-chat .sendbird-message-input {
+          display: flex !important;
+          flex-direction: row !important;
+          align-items: center !important;
+          flex: 1 !important;
+          gap: 8px !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          min-width: 0 !important;
         }
 
         /* Ghosted Send Button */
@@ -1378,14 +1379,14 @@ export default function Messages() {
           box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2) !important;
         }
 
-        /* Voice Recording Button - Positioned in the input area */
+        /* Voice Recording Button - Inline with input like WhatsApp */
         .voice-mic-button {
           position: absolute !important;
-          bottom: 24px !important;
+          bottom: 20px !important;
           right: 12px !important;
           z-index: 100 !important;
-          width: 40px !important;
-          height: 40px !important;
+          width: 44px !important;
+          height: 44px !important;
           border-radius: 50% !important;
           background: transparent !important;
           color: hsl(var(--muted-foreground)) !important;
@@ -1404,8 +1405,13 @@ export default function Messages() {
         
         .voice-mic-button svg {
           color: inherit !important;
-          width: 22px !important;
-          height: 22px !important;
+          width: 24px !important;
+          height: 24px !important;
+        }
+        
+        /* Make room for mic button on the right */
+        .fusion-chat .sendbird-conversation__footer {
+          padding-right: 64px !important;
         }
         
         /* Voice Recording Active Overlay */
@@ -1447,7 +1453,7 @@ export default function Messages() {
         /* Mobile adjustments for voice button */
         @media (max-width: 768px) {
           .voice-mic-button {
-            bottom: 24px !important;
+            bottom: 20px !important;
             right: 12px !important;
           }
           
