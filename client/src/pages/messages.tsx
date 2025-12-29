@@ -666,7 +666,7 @@ export default function Messages() {
                 data-testid="button-video-call"
                 className="active:scale-95 transition-transform h-10 w-10"
               >
-                <Video className="w-7 h-7 text-amber-500" />
+                <Video className="w-8 h-8 text-amber-500" />
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
