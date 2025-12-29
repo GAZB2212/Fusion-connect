@@ -1162,6 +1162,51 @@ export default function Messages() {
           fill: hsl(var(--muted-foreground)) !important;
         }
         
+        /* Hide emoji reactions - keyboard has emojis */
+        .fusion-chat .sendbird-emoji-reactions,
+        .fusion-chat .sendbird-message-content__middle__emoji-container,
+        .fusion-chat [class*="emoji-reactions"],
+        .fusion-chat [class*="emoji-container"],
+        .fusion-chat .sendbird-context-menu [class*="emoji"],
+        .fusion-chat .sendbird-emoji-reaction-add-button {
+          display: none !important;
+        }
+        
+        /* Clean up message hover menu - minimal and subtle */
+        .fusion-chat .sendbird-message-content-menu,
+        .fusion-chat .sendbird-message-item-menu,
+        .fusion-chat [class*="message-content-menu"],
+        .fusion-chat [class*="message-item-menu"] {
+          background: hsl(var(--card)) !important;
+          border: 1px solid hsl(var(--border)) !important;
+          border-radius: 8px !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+          padding: 4px !important;
+        }
+        
+        /* Hide the emoji button in message menu */
+        .fusion-chat .sendbird-message-content-menu__emoji-reactions,
+        .fusion-chat [class*="message-content-menu__emoji"],
+        .fusion-chat .sendbird-context-menu__emoji-button,
+        .fusion-chat [class*="reaction-button"] {
+          display: none !important;
+        }
+        
+        /* Style message menu items */
+        .fusion-chat .sendbird-context-menu-item,
+        .fusion-chat [class*="context-menu-item"] {
+          color: hsl(var(--foreground)) !important;
+          background: transparent !important;
+          border-radius: 6px !important;
+          padding: 8px 12px !important;
+          font-size: 14px !important;
+        }
+        
+        .fusion-chat .sendbird-context-menu-item:hover,
+        .fusion-chat [class*="context-menu-item"]:hover {
+          background: hsl(var(--muted)) !important;
+        }
+
         /* Premium outgoing message bubbles with subtle gold accent */
         .fusion-chat .sendbird-message-content--outgoing .sendbird-text-message-item-body {
           background: linear-gradient(135deg, hsl(var(--primary)), hsl(45 62% 48%)) !important;
