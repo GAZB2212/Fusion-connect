@@ -803,6 +803,7 @@ export default function Messages() {
             {/* Channel List */}
             <div className={`w-full md:w-80 md:flex-shrink-0 md:border-r border-border h-full bg-background ${currentChannelUrl ? 'hidden md:block' : 'block'}`}>
               <GroupChannelList
+                disableAutoSelect
                 onChannelSelect={handleChannelSelect}
                 onChannelCreated={handleChannelSelect}
                 channelListQueryParams={{ includeEmpty: true }}
