@@ -1372,8 +1372,8 @@ export default function Messages() {
         /* Voice Recording Button - Far right like WhatsApp */
         .voice-mic-button {
           position: absolute !important;
-          bottom: 14px !important;
-          right: 12px !important;
+          bottom: 8px !important;
+          right: 8px !important;
           z-index: 100 !important;
           width: 36px !important;
           height: 36px !important;
@@ -1437,7 +1437,7 @@ export default function Messages() {
         /* Mobile adjustments for voice button */
         @media (max-width: 768px) {
           .voice-mic-button {
-            bottom: 16px !important;
+            bottom: 8px !important;
             right: 8px !important;
           }
           
@@ -1446,11 +1446,6 @@ export default function Messages() {
             left: 12px !important;
             right: 12px !important;
           }
-        }
-        
-        /* Add padding to input area for mic button */
-        .fusion-chat .sendbird-message-input-wrapper {
-          padding-right: 50px !important;
         }
       `}</style>
 
