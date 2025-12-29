@@ -13,7 +13,7 @@ export function IOSSpinner({ size = "md", className }: IOSSpinnerProps) {
   };
 
   return (
-    <div className={cn("relative block", sizeClasses[size], className)} data-testid="ios-spinner">
+    <div className={cn("relative", sizeClasses[size], className)} data-testid="ios-spinner">
       <div className="absolute inset-0">
         {[...Array(12)].map((_, i) => (
           <div

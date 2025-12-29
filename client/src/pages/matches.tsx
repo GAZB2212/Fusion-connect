@@ -80,8 +80,8 @@ export default function Matches() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center justify-center gap-4">
-          <IOSSpinner size="lg" className="text-primary" />
+        <div className="text-center">
+          <IOSSpinner size="lg" className="text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Loading matches...</p>
         </div>
       </div>
