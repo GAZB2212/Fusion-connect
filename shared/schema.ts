@@ -551,6 +551,37 @@ export const insertEarlySignupSchema = createInsertSchema(earlySignups).omit({
 export type EarlySignup = typeof earlySignups.$inferSelect;
 export type InsertEarlySignup = z.infer<typeof insertEarlySignupSchema>;
 
+// For You Matches - Track AI-curated daily matches and user actions
+export const forYouMatches = pgTable("for_you_matches", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  matchedUserId: varchar("matched_user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  compatibilityScore: integer("compatibility_score").notNull(), // 0-100
+  matchReasons: jsonb("match_reasons").notNull().default(sql`'[]'::jsonb`), // Array of reason strings
+  shownAt: timestamp("shown_at").defaultNow(),
+  userAction: varchar("user_action", { length: 20 }), // 'liked', 'passed', 'matched', null if no action
+  actionAt: timestamp("action_at"),
+  forDate: timestamp("for_date").notNull().defaultNow(), // The day this pick was generated for
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("fym_user_idx").on(table.userId),
+  index("fym_matched_user_idx").on(table.matchedUserId),
+  index("fym_for_date_idx").on(table.forDate),
+]);
+
+// User Match Preferences - Learn user preferences over time
+export const userMatchPreferences = pgTable("user_match_preferences", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }).unique(),
+  preferenceWeights: jsonb("preference_weights").notNull().default(sql`'{}'::jsonb`), // Which factors matter most
+  likedTraits: jsonb("liked_traits").notNull().default(sql`'{}'::jsonb`), // Traits of people they liked
+  passedTraits: jsonb("passed_traits").notNull().default(sql`'{}'::jsonb`), // Traits of people they passed
+  updatedAt: timestamp("updated_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("ump_user_idx").on(table.userId),
+]);
+
 // User Feedback table
 export const userFeedback = pgTable("user_feedback", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -570,6 +601,10 @@ export const insertUserFeedbackSchema = createInsertSchema(userFeedback, {
 
 export type UserFeedback = typeof userFeedback.$inferSelect;
 export type InsertUserFeedback = z.infer<typeof insertUserFeedbackSchema>;
+
+// For You Matches types
+export type ForYouMatch = typeof forYouMatches.$inferSelect;
+export type UserMatchPreference = typeof userMatchPreferences.$inferSelect;
 
 // Extended types for API responses
 export type ProfileWithUser = Profile & {

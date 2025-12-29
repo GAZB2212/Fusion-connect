@@ -1,0 +1,131 @@
+Enhance "For You" AI matching to surface high-quality, values-based matches
+The "For You" tab currently uses AI to show matches users might not normally see, but it needs to be more intelligent and explain WHY matches were selected to make it feel valuable rather than random.
+Goals:
+
+Surface people who are highly compatible based on Islamic values, not just location/looks
+Show users WHY the AI picked each person for them
+Create a curated, premium experience (not just random profiles)
+Make it clearly different from the Discover tab (which shows everyone nearby)
+
+What needs to be implemented:
+1. Enhanced Matching Algorithm
+Weight these factors heavily in "For You" recommendations:
+
+Practice level compatibility (if both pray 5x daily, both prioritize Fajr, etc.)
+Sect compatibility (matching or compatible sects)
+Family values alignment (views on family involvement, wali, chaperones)
+Life goals (marriage timeline, career ambitions, where to settle)
+Lifestyle compatibility (halal dating approach, modesty preferences)
+Shared interests from profile prompts
+De-prioritize: Just looks or just proximity (that's what Discover is for)
+
+2. Match Explanation Cards
+For each profile in "For You", show why the AI picked them:
+typescriptinterface MatchReason {
+  title: string;
+  reasons: string[];
+  compatibilityScore: number;
+}
+
+// Example display:
+"Why we matched you"
+✨ 94% Compatible
+- Both prioritize Fajr prayer
+- Similar views on halal dating
+- You both value family involvement
+- Shared interest: Community service
+3. Curated Daily Picks
+
+Limit to 5-10 high-quality matches per day
+Reset daily at midnight
+Show "New picks available" notification
+Don't show infinite scroll (creates FOMO and value)
+
+4. Learning System
+Track user behavior to improve recommendations:
+
+When user likes/matches with a For You pick → Learn what worked
+When user passes → Learn what didn't resonate
+Store preferences: user_preferences table with weighted factors
+Adjust algorithm over time per user
+
+5. Visual Differentiation
+Make "For You" feel premium:
+
+Gold/special accent color for For You profiles
+"✨ AI Matched" badge
+Subtle animation when card appears
+Different card style than Discover tab
+
+6. Backend Implementation
+Create endpoint: GET /api/for-you-matches
+typescript// Scoring algorithm
+const calculateCompatibility = (user, candidate) => {
+  let score = 0;
+  
+  // Practice level match (weight: 30%)
+  if (user.prayerFrequency === candidate.prayerFrequency) score += 30;
+  
+  // Values alignment (weight: 25%)
+  if (similarFamilyValues(user, candidate)) score += 25;
+  
+  // Life goals (weight: 20%)
+  if (compatibleLifeGoals(user, candidate)) score += 20;
+  
+  // Shared interests (weight: 15%)
+  score += sharedInterestsScore(user, candidate);
+  
+  // Personality compatibility (weight: 10%)
+  score += personalityScore(user, candidate);
+  
+  return score;
+};
+
+// Only show matches with >75% compatibility
+// Max 10 per day
+// Exclude already seen/matched/passed
+7. Profile Prompt Integration
+Use answers to Islamic prompts for matching:
+
+"My favorite Surah is..."
+"The Islamic value I live by..."
+"My ideal Eid celebration..."
+"I'm looking for someone who..."
+
+Match on similar answers or complementary responses.
+8. Database Schema Updates
+Add tables for:
+sql-- Store why each match was made
+CREATE TABLE for_you_matches (
+  user_id,
+  matched_user_id,
+  compatibility_score,
+  match_reasons JSONB, -- Array of reason strings
+  shown_at TIMESTAMP,
+  user_action ('liked', 'passed', 'matched')
+);
+
+-- Track user preferences learned over time
+CREATE TABLE user_match_preferences (
+  user_id,
+  preference_weights JSONB, -- Which factors matter most to this user
+  updated_at TIMESTAMP
+);
+9. A/B Test Opportunity
+Consider testing:
+
+"For You" vs "AI Matched" vs "Smart Picks" (naming)
+Showing compatibility score vs hiding it
+5 picks/day vs 10 picks/day
+Showing reasons upfront vs revealing on tap
+
+Expected outcome:
+"For You" tab becomes a valuable, differentiated feature that helps users find compatible matches they'd otherwise miss, especially highlighting values-based compatibility over superficial factors. Users should feel like the AI "gets them" and trust the recommendations.
+Current files to update:
+
+Matching algorithm/API endpoint
+client/src/pages/home.tsx (For You tab UI)
+Database schema for match tracking
+Profile data structure to capture compatibility factors
+
+Make "For You" feel like a premium, curated experience that respects Islamic values and priorities substance over surface-level attraction.
