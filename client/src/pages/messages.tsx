@@ -90,41 +90,80 @@ function CustomChannelPreview({ channel, onClick, isSelected, currentUserId, mat
                       channel.name || 
                       'Chat';
 
+  // Get last message info
+  const lastMessage = channel.lastMessage;
+  const lastMessageText = lastMessage 
+    ? (lastMessage as any).message || (lastMessage as any).name || 'Sent a file'
+    : 'Start chatting';
+  
+  // Format timestamp like WhatsApp
+  const formatTimestamp = (timestamp: number | null) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else if (diffDays === 1) {
+      return 'Yesterday';
+    } else if (diffDays < 7) {
+      return date.toLocaleDateString([], { weekday: 'short' });
+    } else {
+      return date.toLocaleDateString([], { day: '2-digit', month: '2-digit', year: '2-digit' });
+    }
+  };
+  
+  const timestamp = lastMessage?.createdAt ? formatTimestamp(lastMessage.createdAt) : '';
+  const unreadCount = channel.unreadMessageCount || 0;
+
   return (
     <div 
-      className={`flex items-center gap-3 p-3 mx-2 my-1 rounded-xl cursor-pointer transition-all duration-200 hover:bg-muted/50 ${
-        isSelected ? 'bg-gradient-to-r from-amber-500/10 to-yellow-500/5 border border-amber-500/30' : ''
+      className={`flex items-center gap-4 px-4 py-3 cursor-pointer transition-all duration-200 hover:bg-muted/50 border-b border-border/30 ${
+        isSelected ? 'bg-gradient-to-r from-amber-500/10 to-yellow-500/5' : ''
       }`}
       onClick={onClick}
       data-testid={`channel-preview-${channel.url}`}
     >
-      {/* Avatar with gold ring */}
+      {/* Avatar with gold ring - larger size like WhatsApp */}
       <div className="relative flex-shrink-0">
         {/* Gold glow effect */}
-        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400/40 via-yellow-500/40 to-amber-600/40 blur-md scale-105" />
-        {/* Gold ring container */}
-        <div className="relative h-12 w-12 rounded-full p-[2px] bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-600 shadow-lg shadow-amber-500/25">
+        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-400/30 via-yellow-500/30 to-amber-600/30 blur-md scale-110" />
+        {/* Gold ring container - 56px avatar */}
+        <div className="relative h-14 w-14 rounded-full p-[2.5px] bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-600 shadow-lg shadow-amber-500/20">
           <Avatar className="h-full w-full ring-2 ring-background/80">
             <AvatarImage 
               src={profilePhoto} 
               alt={displayName} 
               className="object-cover"
             />
-            <AvatarFallback className="bg-gradient-to-br from-amber-500/30 to-amber-600/20 text-amber-400 font-semibold">
+            <AvatarFallback className="bg-gradient-to-br from-amber-500/30 to-amber-600/20 text-amber-400 font-semibold text-lg">
               {displayName.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         </div>
       </div>
       
-      {/* Content - simplified */}
-      <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-foreground truncate text-sm">
-          {displayName}
-        </h3>
-        <p className="text-xs text-amber-500 font-medium mt-0.5">
-          Chat now
-        </p>
+      {/* Content - WhatsApp style with message preview */}
+      <div className="flex-1 min-w-0 py-1">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="font-semibold text-foreground truncate text-base">
+            {displayName}
+          </h3>
+          <span className={`text-xs flex-shrink-0 ${unreadCount > 0 ? 'text-amber-500 font-medium' : 'text-muted-foreground'}`}>
+            {timestamp}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-2 mt-1">
+          <p className="text-sm text-muted-foreground truncate flex-1">
+            {lastMessageText}
+          </p>
+          {unreadCount > 0 && (
+            <span className="flex-shrink-0 min-w-5 h-5 rounded-full bg-amber-500 text-background text-xs font-semibold flex items-center justify-center px-1.5">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
