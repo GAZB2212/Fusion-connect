@@ -217,8 +217,8 @@ export default function Home() {
   if (isLoading) {
     return (
       <div className="fixed inset-0 bottom-16 flex items-center justify-center bg-background">
-        <div className="text-center">
-          <IOSSpinner size="lg" className="text-primary mx-auto mb-4" />
+        <div className="flex flex-col items-center justify-center gap-4">
+          <IOSSpinner size="lg" className="text-primary" />
           <p className="text-muted-foreground">Finding profiles...</p>
         </div>
       </div>

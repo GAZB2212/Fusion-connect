@@ -81,8 +81,8 @@ export default function Suggestions() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <IOSSpinner size="lg" className="text-primary mx-auto mb-4" />
+        <div className="flex flex-col items-center justify-center gap-4">
+          <IOSSpinner size="lg" className="text-primary" />
           <p className="text-muted-foreground">Finding your best matches...</p>
         </div>
       </div>
