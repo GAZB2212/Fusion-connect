@@ -1091,6 +1091,14 @@ export default function Messages() {
           color: hsl(var(--muted-foreground)) !important;
           opacity: 0.6 !important;
           font-size: 15px !important;
+          padding-left: 0 !important;
+          text-indent: 0 !important;
+        }
+        
+        /* Fix contenteditable placeholder alignment */
+        .fusion-chat .sendbird-message-input-text-field[data-placeholder]::before {
+          padding-left: 0 !important;
+          left: 16px !important;
         }
 
         .fusion-chat .sendbird-text-message-item-body {
