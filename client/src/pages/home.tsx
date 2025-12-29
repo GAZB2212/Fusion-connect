@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, X, MapPin, Play, ChevronLeft, ChevronRight, ShieldCheck, Users, Sparkles, Moon, Star, User, Ruler, Briefcase, GraduationCap, Baby, Loader2 } from "lucide-react";
+import { Heart, X, MapPin, Play, ChevronLeft, ChevronRight, ShieldCheck, Users, Sparkles, Moon, Star, User, Ruler, Briefcase, GraduationCap, Baby, Loader2, Info } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { ProfileWithUser } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -121,6 +121,15 @@ export default function Home() {
   const [showAnimation, setShowAnimation] = useState<'like' | 'pass' | null>(null);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [isProfileExpanded, setIsProfileExpanded] = useState(false);
+  
+  // First-time swipe hints
+  const [hasSwipedOnce, setHasSwipedOnce] = useState(
+    localStorage.getItem('hasSwipedBefore') === 'true'
+  );
+  const [showFirstTimeTip, setShowFirstTimeTip] = useState(
+    !localStorage.getItem('hasSeenSwipeTip')
+  );
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const { data: profiles = [], isLoading } = useQuery<ProfileWithUser[]>({
     queryKey: ["/api/discover"],
@@ -168,13 +177,19 @@ export default function Home() {
 
   const handleSwipe = (direction: "right" | "left") => {
     if (currentProfile) {
+      // Mark first swipe
+      if (!hasSwipedOnce) {
+        setHasSwipedOnce(true);
+        localStorage.setItem('hasSwipedBefore', 'true');
+      }
+      
       haptic.medium();
       setShowAnimation(direction === "right" ? 'like' : 'pass');
       setTimeout(() => setShowAnimation(null), 800);
       swipeMutation.mutate({ profileId: currentProfile.userId, direction });
     }
   };
-
+  
   const handleTouchStart = (e: React.TouchEvent) => {
     const touch = e.touches[0];
     setDragStart({ x: touch.clientX, y: touch.clientY });
@@ -215,6 +230,21 @@ export default function Home() {
   };
 
   const currentProfile = profiles[currentIndex];
+
+  // Card entry animation
+  useEffect(() => {
+    const card = cardRef.current;
+    if (card && currentProfile?.id) {
+      card.style.transform = 'scale(0.97) translateY(15px)';
+      card.style.opacity = '0';
+      
+      requestAnimationFrame(() => {
+        card.style.transition = 'all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        card.style.transform = 'scale(1) translateY(0)';
+        card.style.opacity = '1';
+      });
+    }
+  }, [currentProfile?.id]);
 
   if (isLoading) {
     return (
@@ -328,9 +358,35 @@ export default function Home() {
         )}
       </AnimatePresence>
 
+      {/* First-Time Swipe Tooltip */}
+      {showFirstTimeTip && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute top-20 left-1/2 -translate-x-1/2 z-40"
+          style={{ top: 'calc(env(safe-area-inset-top) + 3rem)' }}
+        >
+          <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-white px-5 py-2.5 rounded-full shadow-xl flex items-center gap-3">
+            <span className="text-sm font-semibold">Swipe the photo to browse</span>
+            <button 
+              onClick={() => {
+                setShowFirstTimeTip(false);
+                localStorage.setItem('hasSeenSwipeTip', 'true');
+              }}
+              className="hover:bg-white/20 rounded-full p-1 transition"
+              aria-label="Dismiss tip"
+              data-testid="button-dismiss-tip"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </motion.div>
+      )}
+
       {/* Full Screen Profile Card */}
       <div 
-        className="absolute inset-0 bottom-0"
+        ref={cardRef}
+        className="absolute inset-0 bottom-0 cursor-grab active:cursor-grabbing"
         style={cardStyle}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -449,11 +505,41 @@ export default function Home() {
           )}
         </AnimatePresence>
 
+        {/* Ghosted Swipe Arrows - First time only */}
+        {!hasSwipedOnce && (
+          <>
+            {/* Left arrow */}
+            <div className="absolute left-6 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+              <ChevronLeft 
+                className="w-14 h-14 text-white/40 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] animate-pulse" 
+                strokeWidth={2.5} 
+              />
+            </div>
+            
+            {/* Right arrow */}
+            <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+              <ChevronRight 
+                className="w-14 h-14 text-white/40 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] animate-pulse" 
+                strokeWidth={2.5} 
+              />
+            </div>
+            
+            {/* Swipe hint text */}
+            <div className="absolute bottom-44 left-0 right-0 text-center pointer-events-none z-10">
+              <div className="inline-block bg-black/50 backdrop-blur-sm px-5 py-2 rounded-full">
+                <p className="text-white text-sm font-medium animate-pulse">
+                  ← Swipe to browse →
+                </p>
+              </div>
+            </div>
+          </>
+        )}
+
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 25%, rgba(0,0,0,0.1) 50%, transparent 100%)' }} />
 
         {/* Profile Info Overlay */}
-        <div className="absolute bottom-36 left-0 right-0 px-5 text-white z-10">
+        <div className="absolute bottom-24 left-0 right-0 px-5 text-white z-10">
           {/* Verification Badges */}
           <div className="flex items-center gap-2 mb-3">
             {currentProfile.isVerified && (
@@ -539,50 +625,46 @@ export default function Home() {
           )}
         </div>
 
-        {/* Premium Action Buttons */}
-        <div className="absolute bottom-20 left-0 right-0 flex justify-center items-center gap-6 z-20">
-          {/* Pass Button */}
-          <motion.button
-            whileTap={{ scale: 0.92 }}
-            whileHover={{ scale: 1.05 }}
-            className="group relative h-14 w-14 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg flex items-center justify-center transition-all duration-300 hover:bg-white/20"
+        {/* Compact Action Buttons - positioned at very bottom */}
+        <div className="absolute bottom-5 left-0 right-0 flex justify-center items-center gap-4 px-4 z-20">
+          {/* Pass button - small, ghosted */}
+          <button 
             onClick={(e) => {
               e.stopPropagation();
               handleSwipe("left");
             }}
+            className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 hover:scale-110 active:scale-95 transition-all duration-200"
+            aria-label="Pass"
             data-testid="button-pass"
           >
-            <X className="h-6 w-6 text-white/80 group-hover:text-white transition-colors" strokeWidth={2} />
-          </motion.button>
-
-          {/* View Profile Button */}
-          <motion.button
-            whileTap={{ scale: 0.92 }}
-            whileHover={{ scale: 1.05 }}
-            className="group relative h-14 w-14 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg flex items-center justify-center transition-all duration-300 hover:bg-white/20"
+            <X className="w-5 h-5 text-white/70" strokeWidth={2.5} />
+          </button>
+          
+          {/* Info button - small, ghosted */}
+          <button 
             onClick={(e) => {
               e.stopPropagation();
               setIsProfileExpanded(!isProfileExpanded);
             }}
+            className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 hover:scale-110 active:scale-95 transition-all duration-200"
+            aria-label="More info"
             data-testid="button-view-profile"
           >
-            <User className="h-6 w-6 text-white/80 group-hover:text-white transition-colors" />
-          </motion.button>
-
-          {/* Like Button - Premium gold accent */}
-          <motion.button
-            whileTap={{ scale: 0.92 }}
-            whileHover={{ scale: 1.05 }}
-            className="group relative h-14 w-14 rounded-2xl bg-gradient-to-br from-primary via-primary to-primary/80 shadow-[0_8px_32px_rgba(212,175,55,0.4)] flex items-center justify-center transition-all duration-300"
+            <Info className="w-5 h-5 text-white/70" strokeWidth={2.5} />
+          </button>
+          
+          {/* Like button - slightly bigger with gold accent */}
+          <button 
             onClick={(e) => {
               e.stopPropagation();
               handleSwipe("right");
             }}
+            className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-200 shadow-lg shadow-amber-500/30"
+            aria-label="Like"
             data-testid="button-like"
           >
-            <Heart className="h-6 w-6 text-primary-foreground" fill="currentColor" />
-            <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          </motion.button>
+            <Heart className="w-6 h-6 text-white" strokeWidth={2.5} fill="white" />
+          </button>
         </div>
       </div>
 

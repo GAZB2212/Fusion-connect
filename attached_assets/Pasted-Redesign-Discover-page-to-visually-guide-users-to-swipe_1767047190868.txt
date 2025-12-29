@@ -1,0 +1,288 @@
+Redesign Discover page to visually guide users to swipe instead of tap buttons
+The Discover page has working swipe functionality, but the large prominent buttons make users think they need to tap instead of swipe. Redesign the UI to make swiping the obvious primary interaction, while keeping buttons as a secondary backup option.
+CRITICAL: Keep all existing profile information (name, age, location, badges) in their current positions. ONLY change the buttons and add swipe hints.
+Goal:
+Match the visual design pattern of Tinder/Bumble where the profile photo dominates and users naturally try to swipe it, with buttons being small and secondary.
+Changes needed in client/src/pages/home.tsx (Discover tab):
+1. What to KEEP (Don't Change These)
+✅ Profile photo - Keep full-screen, centered
+✅ Name and age (e.g., "Omar, 30") - Keep current size and position
+✅ "Nikkah Ready" badge - Keep current size and position
+✅ Location (📍 Manchester, UK) - Keep current size and position
+✅ Practice badges ("Sunni", "Five times daily") - Keep current size and position
+✅ All other profile details - Keep exactly as they are
+✅ Gradient overlay at bottom - Keep for text readability
+DO NOT move or resize any profile information. These should remain prominent and readable.
+2. Add Ghosted Swipe Arrows (First Profile Only)
+Show animated arrows on the first profile that disappear after first swipe:
+jsx// At top of component
+const [hasSwipedOnce, setHasSwipedOnce] = useState(
+  localStorage.getItem('hasSwipedBefore') === 'true'
+);
+
+// Inside the profile card render, ABOVE the profile info
+{!hasSwipedOnce && (
+  <div className="swipe-tutorial">
+    {/* Left arrow */}
+    <div className="absolute left-6 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+      <ChevronLeft 
+        className="w-16 h-16 text-white opacity-40 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] animate-pulse" 
+        strokeWidth={3} 
+      />
+    </div>
+    
+    {/* Right arrow */}
+    <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+      <ChevronRight 
+        className="w-16 h-16 text-white opacity-40 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] animate-pulse" 
+        strokeWidth={3} 
+      />
+    </div>
+    
+    {/* Swipe hint text - position ABOVE the profile info section */}
+    <div className="absolute bottom-32 left-0 right-0 text-center pointer-events-none z-10">
+      <div className="inline-block bg-black/50 backdrop-blur-sm px-6 py-2 rounded-full">
+        <p className="text-white text-sm font-medium animate-pulse">
+          ← Swipe to browse →
+        </p>
+      </div>
+    </div>
+  </div>
+)}
+
+// After any swipe action completes
+const handleSwipeComplete = (action) => {
+  if (!hasSwipedOnce) {
+    setHasSwipedOnce(true);
+    localStorage.setItem('hasSwipedBefore', 'true');
+  }
+  // ... rest of swipe logic
+};
+```
+
+**Important:** Position the swipe hint text (`bottom-32`) so it appears ABOVE the profile info section, not overlapping with name/badges.
+
+### 3. **Shrink and Reposition the Action Buttons**
+
+The three buttons (Pass, Info, Like) should move to the VERY BOTTOM, BELOW all profile information.
+
+**Current layout:**
+```
+Photo
+Name/Age/Location/Badges
+[Large Buttons]  ← Current position
+```
+
+**New layout:**
+```
+Photo
+Name/Age/Location/Badges
+[Space]
+[Tiny Buttons]  ← New position (much lower, much smaller)
+Replace the current button section with:
+jsx{/* Action buttons - positioned at absolute bottom, below ALL profile info */}
+<div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-4 z-20">
+  {/* Pass button - small, ghosted */}
+  <button 
+    onClick={handlePass}
+    className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 hover:scale-110 active:scale-95 transition-all duration-200"
+    aria-label="Pass"
+  >
+    <X className="w-6 h-6 text-white/70" strokeWidth={2.5} />
+  </button>
+  
+  {/* Info button - small, ghosted */}
+  <button 
+    onClick={handleInfo}
+    className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white/20 hover:scale-110 active:scale-95 transition-all duration-200"
+    aria-label="More info"
+  >
+    <Info className="w-6 h-6 text-white/70" strokeWidth={2.5} />
+  </button>
+  
+  {/* Like button - slightly bigger with gold accent */}
+  <button 
+    onClick={handleLike}
+    className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-200 shadow-lg shadow-amber-500/30"
+    aria-label="Like"
+  >
+    <Heart className="w-7 h-7 text-white" strokeWidth={2.5} fill="white" />
+  </button>
+</div>
+Key changes:
+
+bottom-4 (very bottom, below profile info)
+Much smaller: 14x14 for pass/info, 16x16 for like
+Semi-transparent backgrounds (bg-white/10)
+No text labels, just icons
+Like button slightly emphasized with gold gradient
+All buttons significantly less visually prominent than before
+
+4. Make Card Look More Swipeable
+Update the profile card styling to suggest it's draggable:
+jsx<div 
+  ref={cardRef}
+  className="profile-card relative w-full h-full rounded-2xl overflow-hidden shadow-2xl cursor-grab active:cursor-grabbing"
+  style={{
+    transform: `rotate(${rotation}deg) translateX(${translateX}px)`,
+    transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+  }}
+  onMouseDown={handleDragStart}
+  onMouseMove={handleDragMove}
+  onMouseUp={handleDragEnd}
+  onTouchStart={handleDragStart}
+  onTouchMove={handleDragMove}
+  onTouchEnd={handleDragEnd}
+>
+  {/* Profile content */}
+</div>
+5. Enhanced Swipe Feedback Icons
+Make sure the existing swipe feedback icons are large and obvious when swiping:
+jsx{/* Left swipe indicator (Pass) - appears when swiping left */}
+<div 
+  className="absolute inset-0 flex items-center justify-center pointer-events-none z-5"
+  style={{ opacity: leftSwipeOpacity }}
+>
+  <div className="rotate-12">
+    <X className="w-32 h-32 text-red-500 drop-shadow-2xl" strokeWidth={4} />
+  </div>
+</div>
+
+{/* Right swipe indicator (Like) - appears when swiping right */}
+<div 
+  className="absolute inset-0 flex items-center justify-center pointer-events-none z-5"
+  style={{ opacity: rightSwipeOpacity }}
+>
+  <div className="-rotate-12">
+    <Heart className="w-32 h-32 text-amber-400 drop-shadow-2xl" strokeWidth={4} fill="currentColor" />
+  </div>
+</div>
+These should fade in progressively as the user drags the card (opacity based on swipe distance).
+6. First-Time Tooltip
+Add a dismissible tooltip that appears on the very first profile ever:
+jsxconst [showFirstTimeTip, setShowFirstTimeTip] = useState(
+  !localStorage.getItem('hasSeenSwipeTip')
+);
+
+{showFirstTimeTip && (
+  <div className="absolute top-20 left-1/2 -translate-x-1/2 z-30 animate-bounce">
+    <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-white px-6 py-3 rounded-full shadow-xl flex items-center gap-3">
+      <span className="text-sm font-semibold">👆 Swipe the photo to browse profiles</span>
+      <button 
+        onClick={() => {
+          setShowFirstTimeTip(false);
+          localStorage.setItem('hasSeenSwipeTip', 'true');
+        }}
+        className="hover:bg-white/20 rounded-full p-1 transition"
+        aria-label="Dismiss tip"
+      >
+        <X className="w-4 h-4" />
+      </button>
+    </div>
+  </div>
+)}
+7. Card Entry Animation
+Add subtle animation when card appears to suggest it's moveable:
+jsx// When new profile loads
+useEffect(() => {
+  const card = cardRef.current;
+  if (card) {
+    // Reset and animate entrance
+    card.style.transform = 'scale(0.95) translateY(20px)';
+    card.style.opacity = '0';
+    
+    requestAnimationFrame(() => {
+      card.style.transition = 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      card.style.transform = 'scale(1) translateY(0)';
+      card.style.opacity = '1';
+    });
+  }
+}, [currentProfile?.id]);
+```
+
+### 8. **Visual Hierarchy - Final Layout**
+
+The complete visual hierarchy from top to bottom should be:
+```
+┌─────────────────────────────────┐
+│                                 │
+│    [Large Profile Photo]        │  ← 1. DOMINANT
+│                                 │
+│         [Ghosted arrows]        │  ← 2. HINTS (first time only)
+│                                 │
+│  ← Swipe to browse →           │  ← 3. HINT TEXT (first time)
+│                                 │
+│  🌟 Nikkah Ready                │  ← 4. BADGES (keep current)
+│  Omar, 30                       │  ← 5. NAME/AGE (keep current)
+│  📍 Manchester, UK              │  ← 6. LOCATION (keep current)
+│  [Sunni] [Five times daily]    │  ← 7. PRACTICES (keep current)
+│                                 │
+│                                 │
+│      [X]  [i]  [♥]             │  ← 8. BUTTONS (new: tiny, bottom)
+└─────────────────────────────────┘
+9. Import Required Icons
+Make sure you have these imports at the top of the file:
+typescriptimport { Heart, X, Info, ChevronLeft, ChevronRight } from 'lucide-react';
+10. Keep All Existing Functionality
+DO NOT change these (they already work):
+
+✅ Swipe gesture detection
+✅ Card rotation on drag
+✅ Haptic feedback
+✅ Match modal
+✅ Button click handlers
+✅ Profile data display
+
+ONLY change the visual presentation:
+
+Button size (smaller)
+Button position (lower)
+Button styling (more transparent)
+Add arrows (first time)
+Add tooltip (first time)
+
+11. Responsive Considerations
+Make sure buttons have enough padding from screen edge on mobile:
+jsx// On smaller screens, ensure touch targets are adequate
+<div className="absolute bottom-4 left-0 right-0 flex justify-center items-center gap-4 px-4 z-20">
+  {/* buttons */}
+</div>
+Buttons should be at least 44x44px for touch accessibility (14 = 56px with proper sizing).
+12. Testing Checklist
+After implementation, verify:
+
+ First profile shows ghosted arrows
+ Arrows disappear after first swipe
+ Profile info (name, age, location, badges) unchanged
+ Buttons are much smaller and at very bottom
+ Buttons don't overlap with profile info
+ Swipe gestures still work perfectly
+ Large X and Heart icons appear when swiping
+ Haptic feedback triggers on swipe
+ First-time tooltip appears and is dismissible
+ Card has grab cursor
+ Card animates smoothly on entrance
+
+Expected Result:
+Before:
+
+Large buttons compete with profile info
+Users think "I need to tap these buttons"
+Swipe functionality hidden
+
+After:
+
+Profile photo and info dominate
+Ghosted arrows hint at swipe gesture
+Tiny backup buttons at very bottom
+Users instinctively try to swipe
+Professional, modern look matching Tinder/Bumble
+
+Visual priority order:
+
+Profile photo (hero element)
+Profile information (name, age, location, badges) - keep prominent
+Swipe hints (arrows, text) - subtle, first time only
+Action buttons - small, transparent, backup method
+
+The profile should feel like a physical card you can grab and swipe, not a form with buttons to click.
