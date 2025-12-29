@@ -123,7 +123,7 @@ export default function Suggestions() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220]">
+      <div className="fixed inset-0 bottom-16 flex items-center justify-center bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220]">
         <div className="text-center">
           <div className="relative">
             <Sparkles className="h-12 w-12 text-amber-400 mx-auto mb-4 animate-pulse" />
@@ -140,7 +140,7 @@ export default function Suggestions() {
 
   if (!picks.length || remainingPicks.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] p-4">
+      <div className="fixed inset-0 bottom-16 flex items-center justify-center bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] p-4">
         <Card className="bg-gradient-to-br from-[#0A0E17] to-[#0E1220] border-amber-500/20 max-w-md shadow-xl shadow-amber-500/5">
           <CardContent className="p-8 text-center">
             <div className="relative inline-block mb-6">
@@ -169,14 +169,14 @@ export default function Suggestions() {
   }
 
   return (
-    <div className="min-h-screen pb-20 bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220]">
+    <div className="fixed inset-0 bottom-16 overflow-y-auto bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220]">
       <IOSHeader 
         title="For You"
         subtitle="AI-curated matches based on your values"
         rightElement={<Crown className="h-6 w-6 text-amber-400" />}
       />
       
-      <div className="max-w-4xl mx-auto px-4 py-4">
+      <div className="max-w-4xl mx-auto px-4 py-4 pb-8">
         <div className="flex items-center justify-between mb-6 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-amber-500/10 border border-amber-500/20">
           <div className="flex items-center gap-3">
             <div className="relative">
