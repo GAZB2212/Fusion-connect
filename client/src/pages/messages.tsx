@@ -919,12 +919,23 @@ export default function Messages() {
           display: none !important;
         }
 
-        /* Hide the upload/attachment button */
+        /* Style the attachment/upload button with gold accent */
         .fusion-chat .sendbird-message-input--attach,
         .fusion-chat .sendbird-iconbutton--attach,
-        .fusion-chat [class*="message-input--attach"],
+        .fusion-chat [class*="message-input--attach"] {
+          color: #f59e0b !important;
+          opacity: 0.8 !important;
+          transition: all 0.2s ease !important;
+        }
+        
+        .fusion-chat .sendbird-message-input--attach:hover,
+        .fusion-chat .sendbird-iconbutton--attach:hover {
+          color: #fbbf24 !important;
+          opacity: 1 !important;
+        }
+        
         .fusion-chat .sendbird-message-input-wrapper__tools {
-          display: none !important;
+          background: transparent !important;
         }
 
         /* Hide the leave channel and other default menu options */
