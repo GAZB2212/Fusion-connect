@@ -501,8 +501,8 @@ export default function Home() {
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 25%, rgba(0,0,0,0.1) 50%, transparent 100%)' }} />
 
-        {/* Profile Info Overlay */}
-        <div className="absolute bottom-24 left-0 right-0 px-5 text-white z-10">
+        {/* Profile Info Overlay - positioned above buttons and bottom nav */}
+        <div className="absolute bottom-40 left-0 right-0 px-5 text-white z-10">
           {/* Verification Badges */}
           <div className="flex items-center gap-2 mb-3">
             {currentProfile.isVerified && (
@@ -588,8 +588,8 @@ export default function Home() {
           )}
         </div>
 
-        {/* Compact Action Buttons - positioned at very bottom */}
-        <div className="absolute bottom-5 left-0 right-0 flex justify-center items-center gap-4 px-4 z-20">
+        {/* Compact Action Buttons - positioned above bottom nav */}
+        <div className="absolute bottom-20 left-0 right-0 flex justify-center items-center gap-4 px-4 z-20">
           {/* Pass button - small, ghosted */}
           <button 
             onClick={(e) => {
