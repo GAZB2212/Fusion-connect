@@ -44,6 +44,17 @@ The platform features a luxury aesthetic with a primary deep navy color, gold ac
   - Free users can browse and swipe, but viewing matches and sending messages requires a subscription
   - Matches are only created if at least one user has an active subscription
 **Matching Algorithm:** A match is created if both users swipe right AND at least one user has an active subscription.
+**For You AI Matching System:** An enhanced daily curated matching experience:
+  - Daily pick limit of 8 profiles per user (resets at midnight)
+  - Values-based compatibility scoring (150 points max) prioritizing Islamic values:
+    - Islamic Values (50 pts): Sect compatibility, prayer frequency, halal lifestyle, religiosity
+    - Family Values (30 pts): Wali involvement preference, children preference, relationship goals
+    - Lifestyle & Interests (35 pts): Shared interests, personality trait overlap
+    - Preferences Match (35 pts): Age preferences, location proximity, education
+  - Machine learning from user actions: tracks liked/passed traits to improve future recommendations
+  - Premium gold styling for high-compatibility matches (85%+)
+  - Countdown timer showing time until next daily refresh
+  - Database tables: `for_you_matches` (stores daily picks with scores/reasons/actions), `user_match_preferences` (learned trait preferences)
 **Video Calling:** Real-time video calling powered by Agora RTC SDK. Matched users can initiate video calls from the messages page with full camera/mic controls, call duration tracking, and secure token-based authentication. Call history is stored in the database.
 
 ### Feature Specifications
