@@ -33,6 +33,8 @@ import {
   earlySignups,
   userFeedback,
   onboardingConversations,
+  forYouMatches,
+  userMatchPreferences,
   insertProfileSchema,
   insertMessageSchema,
   insertChaperoneSchema,
@@ -52,9 +54,11 @@ import {
   type MatchWithProfiles,
   type MessageWithSender,
   type EarlySignup,
+  type ForYouMatch,
+  type UserMatchPreference,
 } from "@shared/schema";
 import OpenAI from "openai";
-import { eq, and, or, ne, notInArray, desc, sql, lt } from "drizzle-orm";
+import { eq, and, or, ne, notInArray, desc, sql, lt, gte, isNull } from "drizzle-orm";
 import { sendVideoCallNotification } from "./pushNotifications";
 import { getCached, setCached, deleteCached } from "./caching";
 
@@ -2200,19 +2204,63 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
     res.json(result.slice(0, 20));
   });
 
-  // AI-Powered Suggestions endpoint - get compatible profiles with compatibility scores
+  // AI-Powered "For You" Suggestions endpoint - enhanced matching with daily limits and learning
   app.get("/api/suggestions", isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;
+    const DAILY_PICK_LIMIT = 8; // 5-10 picks per day, using 8 as sweet spot
 
     try {
-      // Check cache first (5-minute TTL) - massive performance boost
-      const cacheKey = `suggestions:${userId}`;
-      const cached = getCached<any[]>(cacheKey);
-      if (cached) {
-        return res.json(cached);
+      // Get today's date at midnight for daily reset
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Check if we already have today's picks stored
+      const existingTodayPicks = await db
+        .select()
+        .from(forYouMatches)
+        .where(
+          and(
+            eq(forYouMatches.userId, userId),
+            gte(forYouMatches.forDate, today)
+          )
+        );
+
+      // If we already have today's picks, return them (with profile data)
+      if (existingTodayPicks.length > 0) {
+        // Get the profile data for each pick
+        const pickUserIds = existingTodayPicks.map(p => p.matchedUserId);
+        const pickProfiles = await db
+          .select({ profile: profiles, user: users })
+          .from(profiles)
+          .innerJoin(users, eq(profiles.userId, users.id))
+          .where(sql`${profiles.userId} = ANY(${pickUserIds})`);
+
+        const profileMap = new Map(pickProfiles.map(p => [p.profile.userId, p]));
+
+        const result = existingTodayPicks
+          .map(pick => {
+            const profileData = profileMap.get(pick.matchedUserId);
+            if (!profileData) return null;
+            return {
+              id: pick.id,
+              profile: { ...profileWithAbsoluteUrls(profileData.profile), user: profileData.user },
+              compatibilityScore: pick.compatibilityScore,
+              matchReasons: pick.matchReasons as string[],
+              userAction: pick.userAction,
+              isForYouPick: true,
+            };
+          })
+          .filter(Boolean);
+
+        return res.json({
+          picks: result,
+          dailyLimit: DAILY_PICK_LIMIT,
+          picksRemaining: result.filter((p: any) => !p.userAction).length,
+          resetTime: new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString(),
+        });
       }
 
-      // Get user's profile
+      // Generate new picks for today
       const [userProfile] = await db
         .select()
         .from(profiles)
@@ -2222,6 +2270,13 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
       if (!userProfile) {
         return res.status(400).json({ message: "Please complete your profile first" });
       }
+
+      // Get user's learned preferences (if any)
+      const [userPrefs] = await db
+        .select()
+        .from(userMatchPreferences)
+        .where(eq(userMatchPreferences.userId, userId))
+        .limit(1);
 
       // Get IDs of already swiped profiles
       const alreadySwiped = await db
@@ -2239,12 +2294,9 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
 
       const blockedByMeIds = blockedByMe.map((b) => b.blockedId);
 
-      // Get all potential matches (opposite gender, not self, not swiped, not blocked, active profiles)
+      // Get potential matches
       const potentialMatches = await db
-        .select({
-          profile: profiles,
-          user: users,
-        })
+        .select({ profile: profiles, user: users })
         .from(profiles)
         .innerJoin(users, eq(profiles.userId, users.id))
         .where(
@@ -2257,100 +2309,95 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
             blockedByMeIds.length > 0 ? notInArray(profiles.userId, blockedByMeIds) : undefined
           )
         )
-        .limit(50);
+        .limit(100);
 
-      // Calculate compatibility score for each profile
+      // Enhanced compatibility scoring with Islamic values focus
       const profilesWithScores = potentialMatches.map(({ profile, user }) => {
         let totalScore = 0;
-        let maxScore = 0;
+        const maxScore = 150; // Total possible points
         const matchReasons: string[] = [];
+        const traitData: Record<string, any> = {}; // For learning
 
-        // 1. Islamic Values Compatibility (30 points max)
-        maxScore += 30;
+        // 1. ISLAMIC VALUES (50 points max) - Primary focus
+        // Sect compatibility (20 points)
         if (userProfile.sect && profile.sect) {
+          traitData.sect = profile.sect;
           if (userProfile.sect === profile.sect) {
-            totalScore += 15;
-            matchReasons.push(`Same Islamic sect: ${profile.sect}`);
-          } else if (userProfile.sect.includes('Sunni') && profile.sect.includes('Sunni')) {
-            totalScore += 10;
-            matchReasons.push('Both follow Sunni tradition');
-          } else if (userProfile.sect.includes('Shia') && profile.sect.includes('Shia')) {
-            totalScore += 10;
-            matchReasons.push('Both follow Shia tradition');
-          }
-        }
-
-        if (userProfile.religiosity && profile.religiosity) {
-          if (userProfile.religiosity === profile.religiosity) {
-            totalScore += 10;
-            matchReasons.push(`Similar religious outlook: ${profile.religiosity}`);
-          } else if (
-            (userProfile.religiosity.includes('Very') && profile.religiosity.includes('Moderately')) ||
-            (userProfile.religiosity.includes('Moderately') && profile.religiosity.includes('Very'))
-          ) {
-            totalScore += 5;
-          }
-        }
-
-        if (userProfile.religiousPractice && profile.religiousPractice) {
-          if (userProfile.religiousPractice === profile.religiousPractice) {
-            totalScore += 5;
-            matchReasons.push(`Similar practice level`);
-          }
-        }
-
-        // 2. Shared Interests (25 points max)
-        maxScore += 25;
-        const userInterests = userProfile.interests || [];
-        const profileInterests = profile.interests || [];
-        const sharedInterests = userInterests.filter(i => profileInterests.includes(i));
-        
-        if (sharedInterests.length > 0) {
-          const interestScore = Math.min(25, sharedInterests.length * 5);
-          totalScore += interestScore;
-          if (sharedInterests.length >= 5) {
-            matchReasons.push(`${sharedInterests.length} shared interests including ${sharedInterests.slice(0, 3).join(', ')}`);
-          } else if (sharedInterests.length >= 2) {
-            matchReasons.push(`Shared interests: ${sharedInterests.join(', ')}`);
-          }
-        }
-
-        // 3. Age Preferences Match (20 points max)
-        maxScore += 20;
-        const partnerPrefs = userProfile.partnerPreferences as any;
-        if (partnerPrefs && partnerPrefs.ageMin && partnerPrefs.ageMax && profile.age) {
-          if (profile.age >= partnerPrefs.ageMin && profile.age <= partnerPrefs.ageMax) {
             totalScore += 20;
-            matchReasons.push('Age matches your preferences');
+            matchReasons.push(`Same Islamic tradition: ${profile.sect}`);
           } else if (
-            (profile.age >= partnerPrefs.ageMin - 2 && profile.age <= partnerPrefs.ageMax + 2)
+            (userProfile.sect.includes('Sunni') && profile.sect.includes('Sunni')) ||
+            (userProfile.sect.includes('Shia') && profile.sect.includes('Shia'))
           ) {
-            totalScore += 10;
-          }
-        } else {
-          // Default score if no preferences set
-          totalScore += 10;
-        }
-
-        // 4. Education & Profession Alignment (15 points max)
-        maxScore += 15;
-        if (userProfile.education && profile.education) {
-          if (userProfile.education === profile.education) {
-            totalScore += 10;
-            matchReasons.push(`Similar education level`);
+            totalScore += 12;
+            matchReasons.push('Similar Islamic background');
           }
         }
 
-        if (userProfile.profession && profile.profession) {
-          if (userProfile.profession === profile.profession) {
+        // Prayer frequency compatibility (15 points)
+        if (userProfile.prayerFrequency && profile.prayerFrequency) {
+          traitData.prayerFrequency = profile.prayerFrequency;
+          const prayerLevels: Record<string, number> = {
+            'Five times daily': 5,
+            'Most prayers': 4,
+            'Sometimes': 3,
+            'Occasionally': 2,
+            'Rarely': 1,
+            'Jummah only': 2,
+          };
+          const userLevel = prayerLevels[userProfile.prayerFrequency] || 3;
+          const profileLevel = prayerLevels[profile.prayerFrequency] || 3;
+          const diff = Math.abs(userLevel - profileLevel);
+          
+          if (diff === 0) {
+            totalScore += 15;
+            matchReasons.push(`Similar prayer practice`);
+          } else if (diff === 1) {
+            totalScore += 10;
+          } else if (diff === 2) {
             totalScore += 5;
-            matchReasons.push(`Works in similar field`);
           }
         }
 
-        // 5. Life Goals & Values (10 points max)
-        maxScore += 10;
+        // Halal lifestyle importance (10 points)
+        if (userProfile.halalImportance && profile.halalImportance) {
+          traitData.halalImportance = profile.halalImportance;
+          if (userProfile.halalImportance === profile.halalImportance) {
+            totalScore += 10;
+            matchReasons.push('Aligned on halal lifestyle');
+          } else {
+            totalScore += 4;
+          }
+        }
+
+        // Religiosity level (5 points)
+        if (userProfile.religiosity && profile.religiosity) {
+          traitData.religiosity = profile.religiosity;
+          if (userProfile.religiosity === profile.religiosity) {
+            totalScore += 5;
+          } else if (
+            (userProfile.religiosity.includes('Very') && profile.religiosity.includes('Moderate')) ||
+            (userProfile.religiosity.includes('Moderate') && profile.religiosity.includes('Very'))
+          ) {
+            totalScore += 3;
+          }
+        }
+
+        // 2. FAMILY VALUES (30 points max)
+        // Wali involvement preference (15 points)
+        if (userProfile.waliInvolvement && profile.waliInvolvement) {
+          traitData.waliInvolvement = profile.waliInvolvement;
+          if (userProfile.waliInvolvement === profile.waliInvolvement) {
+            totalScore += 15;
+            matchReasons.push('Same approach to family involvement');
+          } else {
+            totalScore += 5;
+          }
+        }
+
+        // Children preference (10 points)
         if (userProfile.wantsChildren && profile.wantsChildren) {
+          traitData.wantsChildren = profile.wantsChildren;
           if (userProfile.wantsChildren === profile.wantsChildren) {
             totalScore += 10;
             if (userProfile.wantsChildren === 'Yes') {
@@ -2359,28 +2406,247 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
           }
         }
 
-        // Calculate final percentage score
-        const compatibilityScore = Math.round((totalScore / maxScore) * 100);
+        // Looking for same thing (5 points)
+        if (userProfile.lookingFor && profile.lookingFor) {
+          traitData.lookingFor = profile.lookingFor;
+          if (userProfile.lookingFor === profile.lookingFor) {
+            totalScore += 5;
+            matchReasons.push(`Both looking for ${profile.lookingFor.toLowerCase()}`);
+          }
+        }
+
+        // 3. LIFESTYLE & INTERESTS (35 points max)
+        // Shared interests (20 points)
+        const userInterests = userProfile.interests || [];
+        const profileInterests = profile.interests || [];
+        const sharedInterests = userInterests.filter(i => profileInterests.includes(i));
+        traitData.interests = profileInterests;
+        
+        if (sharedInterests.length > 0) {
+          const interestScore = Math.min(20, sharedInterests.length * 4);
+          totalScore += interestScore;
+          if (sharedInterests.length >= 3) {
+            matchReasons.push(`${sharedInterests.length} shared interests`);
+          }
+        }
+
+        // Personality traits overlap (15 points)
+        const userTraits = userProfile.personalityTraits || [];
+        const profileTraits = profile.personalityTraits || [];
+        const sharedTraits = userTraits.filter(t => profileTraits.includes(t));
+        traitData.personalityTraits = profileTraits;
+        
+        if (sharedTraits.length > 0) {
+          totalScore += Math.min(15, sharedTraits.length * 5);
+          if (sharedTraits.length >= 2) {
+            matchReasons.push(`Compatible personalities`);
+          }
+        }
+
+        // 4. PREFERENCES MATCH (35 points max)
+        // Age within preference (15 points)
+        const partnerPrefs = userProfile.partnerPreferences as any;
+        if (partnerPrefs?.ageMin && partnerPrefs?.ageMax && profile.age) {
+          traitData.age = profile.age;
+          if (profile.age >= partnerPrefs.ageMin && profile.age <= partnerPrefs.ageMax) {
+            totalScore += 15;
+          } else if (profile.age >= partnerPrefs.ageMin - 3 && profile.age <= partnerPrefs.ageMax + 3) {
+            totalScore += 8;
+          }
+        } else {
+          totalScore += 8; // Default partial score
+        }
+
+        // Location proximity bonus (10 points)
+        if (userProfile.location && profile.location) {
+          traitData.location = profile.location;
+          const userCity = userProfile.location.split(',')[0].trim().toLowerCase();
+          const profileCity = profile.location.split(',')[0].trim().toLowerCase();
+          if (userCity === profileCity) {
+            totalScore += 10;
+            matchReasons.push(`Also in ${profile.location.split(',')[0]}`);
+          } else if (userProfile.location.toLowerCase().includes(profile.location.split(',').pop()?.trim().toLowerCase() || '')) {
+            totalScore += 5;
+          }
+        }
+
+        // Education compatibility (10 points)
+        if (userProfile.education && profile.education) {
+          traitData.education = profile.education;
+          if (userProfile.education === profile.education) {
+            totalScore += 10;
+            matchReasons.push('Similar education background');
+          } else {
+            totalScore += 4;
+          }
+        }
+
+        // Apply learned preference boosts (if user has preference data)
+        let learnedBoost = 0;
+        if (userPrefs) {
+          const likedTraits = userPrefs.likedTraits as Record<string, Record<string, number>> || {};
+          // Boost score based on traits they've liked before
+          for (const [key, value] of Object.entries(traitData)) {
+            if (likedTraits[key]?.[String(value)]) {
+              learnedBoost += likedTraits[key][String(value)] * 2;
+            }
+          }
+        }
+
+        const rawScore = totalScore + Math.min(learnedBoost, 20); // Cap learned boost at 20
+        const compatibilityScore = Math.min(100, Math.round((rawScore / maxScore) * 100));
 
         return {
           profile: { ...profileWithAbsoluteUrls(profile), user },
           compatibilityScore,
-          matchReasons: matchReasons.slice(0, 3), // Top 3 reasons
+          matchReasons: matchReasons.slice(0, 4),
+          traitData,
         };
       });
 
-      // Sort by compatibility score (highest first) and take top 10
-      const topSuggestions = profilesWithScores
+      // Sort by compatibility score and take top picks for today
+      const topPicks = profilesWithScores
         .sort((a, b) => b.compatibilityScore - a.compatibilityScore)
-        .slice(0, 10);
+        .slice(0, DAILY_PICK_LIMIT);
 
-      // Cache for 5 minutes (300 seconds) - reduces 2.2s load to instant
-      setCached(cacheKey, topSuggestions, 300);
+      // Store today's picks in the database
+      if (topPicks.length > 0) {
+        await db.insert(forYouMatches).values(
+          topPicks.map(pick => ({
+            userId,
+            matchedUserId: pick.profile.userId,
+            compatibilityScore: pick.compatibilityScore,
+            matchReasons: pick.matchReasons,
+            forDate: today,
+          }))
+        );
+      }
 
-      res.json(topSuggestions);
+      // Get the IDs for the response
+      const insertedPicks = await db
+        .select()
+        .from(forYouMatches)
+        .where(
+          and(
+            eq(forYouMatches.userId, userId),
+            gte(forYouMatches.forDate, today)
+          )
+        );
+
+      const result = topPicks.map((pick, idx) => ({
+        id: insertedPicks[idx]?.id,
+        profile: pick.profile,
+        compatibilityScore: pick.compatibilityScore,
+        matchReasons: pick.matchReasons,
+        userAction: null,
+        isForYouPick: true,
+      }));
+
+      res.json({
+        picks: result,
+        dailyLimit: DAILY_PICK_LIMIT,
+        picksRemaining: result.length,
+        resetTime: new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString(),
+      });
     } catch (error: any) {
       console.error('Error fetching suggestions:', error);
       res.status(500).json({ message: "Failed to fetch suggestions" });
+    }
+  });
+
+  // Record action on For You pick (for learning)
+  app.post("/api/suggestions/:pickId/action", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+    const { pickId } = req.params;
+    const { action } = req.body; // 'liked' or 'passed'
+
+    try {
+      // Get the pick
+      const [pick] = await db
+        .select()
+        .from(forYouMatches)
+        .where(
+          and(
+            eq(forYouMatches.id, pickId),
+            eq(forYouMatches.userId, userId)
+          )
+        )
+        .limit(1);
+
+      if (!pick) {
+        return res.status(404).json({ message: "Pick not found" });
+      }
+
+      // Update the pick with the action
+      await db
+        .update(forYouMatches)
+        .set({
+          userAction: action,
+          actionAt: new Date(),
+        })
+        .where(eq(forYouMatches.id, pickId));
+
+      // Get the matched user's profile for learning
+      const [matchedProfile] = await db
+        .select()
+        .from(profiles)
+        .where(eq(profiles.userId, pick.matchedUserId))
+        .limit(1);
+
+      if (matchedProfile) {
+        // Update user's match preferences for learning
+        const [existingPrefs] = await db
+          .select()
+          .from(userMatchPreferences)
+          .where(eq(userMatchPreferences.userId, userId))
+          .limit(1);
+
+        const traitKeys = ['sect', 'prayerFrequency', 'halalImportance', 'religiosity', 
+                          'waliInvolvement', 'wantsChildren', 'education'];
+        
+        if (existingPrefs) {
+          const likedTraits = (existingPrefs.likedTraits as Record<string, Record<string, number>>) || {};
+          const passedTraits = (existingPrefs.passedTraits as Record<string, Record<string, number>>) || {};
+          const targetTraits = action === 'liked' ? likedTraits : passedTraits;
+
+          for (const key of traitKeys) {
+            const value = (matchedProfile as any)[key];
+            if (value) {
+              if (!targetTraits[key]) targetTraits[key] = {};
+              targetTraits[key][String(value)] = (targetTraits[key][String(value)] || 0) + 1;
+            }
+          }
+
+          await db
+            .update(userMatchPreferences)
+            .set({
+              likedTraits: action === 'liked' ? targetTraits : likedTraits,
+              passedTraits: action === 'passed' ? targetTraits : passedTraits,
+              updatedAt: new Date(),
+            })
+            .where(eq(userMatchPreferences.userId, userId));
+        } else {
+          const newTraits: Record<string, Record<string, number>> = {};
+          for (const key of traitKeys) {
+            const value = (matchedProfile as any)[key];
+            if (value) {
+              newTraits[key] = { [String(value)]: 1 };
+            }
+          }
+
+          await db.insert(userMatchPreferences).values({
+            userId,
+            likedTraits: action === 'liked' ? newTraits : {},
+            passedTraits: action === 'passed' ? newTraits : {},
+            preferenceWeights: {},
+          });
+        }
+      }
+
+      res.json({ success: true, action });
+    } catch (error: any) {
+      console.error('Error recording pick action:', error);
+      res.status(500).json({ message: "Failed to record action" });
     }
   });
 
