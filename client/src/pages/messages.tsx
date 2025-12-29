@@ -1,13 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import SendbirdProvider from "@sendbird/uikit-react/SendbirdProvider";
 import GroupChannelList from "@sendbird/uikit-react/GroupChannelList";
 import GroupChannel from "@sendbird/uikit-react/GroupChannel";
+import useSendbirdStateContext from "@sendbird/uikit-react/useSendbirdStateContext";
 import { useTranslation } from "react-i18next";
 import "@sendbird/uikit-react/dist/index.css";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Video, MoreVertical, ShieldOff, Flag, Trash2, Phone, Users } from "lucide-react";
+import { ArrowLeft, Video, MoreVertical, ShieldOff, Flag, Trash2, Phone, Users, Mic, X, Send, Pause, Play } from "lucide-react";
+import { useVoiceRecorder, formatDuration } from "@/hooks/use-voice-recorder";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import type { MatchWithProfiles, Chaperone } from "@shared/schema";
@@ -174,6 +176,141 @@ interface SendbirdTokenResponse {
   userId: string;
 }
 
+// Voice Recording Overlay Component
+interface VoiceRecordingOverlayProps {
+  channelUrl: string;
+  onRecordingComplete?: () => void;
+}
+
+function VoiceRecordingOverlay({ channelUrl, onRecordingComplete }: VoiceRecordingOverlayProps) {
+  const { t } = useTranslation();
+  const { stores } = useSendbirdStateContext();
+  const sdk = stores?.sdkStore?.sdk;
+  const {
+    isRecording,
+    isPaused,
+    duration,
+    error,
+    startRecording,
+    stopRecording,
+    cancelRecording,
+    pauseRecording,
+    resumeRecording,
+  } = useVoiceRecorder();
+
+  const sendVoiceNote = useCallback(async (audioBlob: Blob, recordingDuration: number) => {
+    if (!sdk || !channelUrl) {
+      console.error('[VoiceRecording] SDK or channel not available');
+      return;
+    }
+
+    try {
+      const channel = await sdk.groupChannel.getChannel(channelUrl);
+      
+      // Create file from blob with proper extension
+      const mimeType = audioBlob.type || 'audio/webm';
+      const extension = mimeType.includes('mp4') ? 'm4a' : mimeType.includes('wav') ? 'wav' : 'webm';
+      const fileName = `voice_note_${Date.now()}.${extension}`;
+      const file = new File([audioBlob], fileName, { type: mimeType });
+
+      // Send as file message with voice note metadata
+      const params = {
+        file,
+        fileName,
+        mimeType,
+        customType: 'voice_note',
+        data: JSON.stringify({ duration: recordingDuration }),
+      };
+
+      await channel.sendFileMessage(params);
+      onRecordingComplete?.();
+    } catch (err) {
+      console.error('[VoiceRecording] Error sending voice note:', err);
+    }
+  }, [sdk, channelUrl, onRecordingComplete]);
+
+  const handleMicClick = async () => {
+    if (!isRecording) {
+      await startRecording();
+    }
+  };
+
+  const handleStop = async () => {
+    const blob = await stopRecording();
+    if (blob && duration > 0) {
+      await sendVoiceNote(blob, duration);
+    }
+  };
+
+  const handleCancel = () => {
+    cancelRecording();
+  };
+
+  if (error) {
+    return (
+      <div className="voice-recording-overlay flex items-center gap-2 text-destructive text-sm">
+        <span className="truncate">{error}</span>
+        <Button size="icon" variant="ghost" onClick={handleCancel} className="flex-shrink-0">
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    );
+  }
+
+  if (isRecording) {
+    return (
+      <div className="voice-recording-overlay recording-active">
+        <Button 
+          size="icon" 
+          variant="ghost" 
+          onClick={handleCancel}
+          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+          data-testid="button-cancel-voice-recording"
+        >
+          <X className="h-5 w-5" />
+        </Button>
+
+        <div className="flex items-center gap-2 flex-1 justify-center">
+          <div className={`w-2.5 h-2.5 rounded-full ${isPaused ? 'bg-amber-500' : 'bg-red-500 animate-pulse'}`} />
+          <span className="text-base font-mono font-medium text-foreground min-w-[50px]">
+            {formatDuration(duration)}
+          </span>
+          
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={isPaused ? resumeRecording : pauseRecording}
+            className="text-muted-foreground h-8 w-8"
+            data-testid="button-pause-resume-voice"
+          >
+            {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+          </Button>
+        </div>
+
+        <Button 
+          size="icon" 
+          onClick={handleStop}
+          className="bg-gradient-to-r from-amber-500 to-yellow-500 text-black hover:from-amber-600 hover:to-yellow-600 rounded-full h-9 w-9"
+          data-testid="button-send-voice-note"
+        >
+          <Send className="h-4 w-4" />
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <Button
+      size="icon"
+      variant="ghost"
+      onClick={handleMicClick}
+      className="voice-mic-button text-amber-500 hover:text-amber-400 hover:bg-amber-500/10"
+      data-testid="button-start-voice-recording"
+    >
+      <Mic className="h-5 w-5" />
+    </Button>
+  );
+}
 
 interface VideoCall {
   id: string;
@@ -859,13 +996,16 @@ export default function Messages() {
             </div>
 
             {/* Conversation */}
-            <div className={`flex-1 h-full bg-background ${currentChannelUrl ? 'block' : 'hidden md:block'}`}>
+            <div className={`flex-1 h-full bg-background relative ${currentChannelUrl ? 'block' : 'hidden md:block'}`}>
               {currentChannelUrl ? (
-                <GroupChannel
-                  key={currentChannelUrl}
-                  channelUrl={currentChannelUrl}
-                  onBackClick={handleBackToList}
-                />
+                <>
+                  <GroupChannel
+                    key={currentChannelUrl}
+                    channelUrl={currentChannelUrl}
+                    onBackClick={handleBackToList}
+                  />
+                  <VoiceRecordingOverlay channelUrl={currentChannelUrl} />
+                </>
               ) : (
                 <div className="h-full flex items-center justify-center text-muted-foreground">
                   <p>{t('messages.selectConversation')}</p>
@@ -1240,6 +1380,66 @@ export default function Messages() {
           background: linear-gradient(135deg, hsl(var(--primary)), hsl(45 62% 48%)) !important;
           color: hsl(var(--primary-foreground)) !important;
           box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2) !important;
+        }
+
+        /* Voice Recording Button - positioned next to send button */
+        .voice-mic-button {
+          position: absolute !important;
+          bottom: 18px !important;
+          right: 56px !important;
+          z-index: 100 !important;
+          width: 36px !important;
+          height: 36px !important;
+        }
+        
+        /* Voice Recording Active Overlay */
+        .voice-recording-overlay.recording-active {
+          position: absolute !important;
+          bottom: 8px !important;
+          left: 8px !important;
+          right: 8px !important;
+          height: 52px !important;
+          background: hsl(var(--background) / 0.98) !important;
+          backdrop-filter: blur(8px) !important;
+          border: 1px solid hsl(var(--border)) !important;
+          border-radius: 26px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          padding: 0 12px !important;
+          z-index: 1000 !important;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+        }
+        
+        /* Voice Note Message Styling */
+        .fusion-chat .sendbird-file-message-item-body[data-sb-custom-type="voice_note"],
+        .fusion-chat [class*="file-message"][data-sb-custom-type="voice_note"] {
+          background: linear-gradient(135deg, #f59e0b, #eab308) !important;
+          border-radius: 20px !important;
+          padding: 8px 16px !important;
+          min-width: 160px !important;
+        }
+        
+        /* Audio player styling for voice notes */
+        .fusion-chat audio {
+          width: 100% !important;
+          max-width: 200px !important;
+          height: 32px !important;
+          border-radius: 16px !important;
+        }
+        
+        /* Mobile adjustments for voice button */
+        @media (max-width: 768px) {
+          .voice-mic-button {
+            bottom: 22px !important;
+            right: 52px !important;
+          }
+          
+          .voice-recording-overlay.recording-active {
+            bottom: 12px !important;
+            left: 12px !important;
+            right: 12px !important;
+          }
         }
       `}</style>
 
