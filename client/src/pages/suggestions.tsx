@@ -2,43 +2,84 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, X, Sparkles, CheckCircle2, Loader2 } from "lucide-react";
+import { Heart, X, Sparkles, CheckCircle2, Loader2, Clock, Crown } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import type { ProfileWithUser } from "@shared/schema";
 import { IOSHeader } from "@/components/ios-header";
 
-interface SuggestionResult {
+interface ForYouPick {
+  id: string;
   profile: ProfileWithUser;
   compatibilityScore: number;
   matchReasons: string[];
+  userAction: string | null;
+  isForYouPick: boolean;
+}
+
+interface SuggestionsResponse {
+  picks: ForYouPick[];
+  dailyLimit: number;
+  picksRemaining: number;
+  resetTime: string;
 }
 
 export default function Suggestions() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [swipingId, setSwipingId] = useState<string | null>(null);
+  const [timeUntilReset, setTimeUntilReset] = useState<string>("");
 
-  const { data: suggestions, isLoading } = useQuery<SuggestionResult[]>({
+  const { data, isLoading } = useQuery<SuggestionsResponse>({
     queryKey: ["/api/suggestions"],
   });
 
-  const handleSwipe = async (profileId: string, direction: "right" | "left") => {
-    setSwipingId(profileId);
+  useEffect(() => {
+    if (!data?.resetTime) return;
+
+    const updateCountdown = () => {
+      const now = new Date();
+      const reset = new Date(data.resetTime);
+      const diff = reset.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        setTimeUntilReset("Refreshing...");
+        queryClient.invalidateQueries({ queryKey: ["/api/suggestions"] });
+        return;
+      }
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      setTimeUntilReset(`${hours}h ${minutes}m`);
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 60000);
+    return () => clearInterval(interval);
+  }, [data?.resetTime]);
+
+  const handleSwipe = async (pick: ForYouPick, direction: "right" | "left") => {
+    setSwipingId(pick.profile.userId);
 
     try {
+      if (pick.id) {
+        await apiRequest("POST", `/api/suggestions/${pick.id}/action`, {
+          action: direction === "right" ? "liked" : "passed",
+        });
+      }
+
       const response = await apiRequest("POST", "/api/swipe", {
-        swipedId: profileId,
+        swipedId: pick.profile.userId,
         direction,
       });
 
-      const data = await response.json();
+      const result = await response.json();
 
-      if (data.isMatch) {
+      if (result.isMatch) {
         toast({
-          title: "It's a Match! 🎉",
+          title: "It's a Match!",
           description: "You both liked each other!",
         });
         setLocation("/matches");
@@ -52,7 +93,6 @@ export default function Suggestions() {
         });
       }
 
-      // Refetch suggestions
       queryClient.invalidateQueries({ queryKey: ["/api/suggestions"] });
     } catch (error: any) {
       toast({
@@ -66,42 +106,58 @@ export default function Suggestions() {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-emerald-400";
-    if (score >= 60) return "text-primary";
+    if (score >= 85) return "text-amber-400";
+    if (score >= 70) return "text-emerald-400";
+    if (score >= 50) return "text-primary";
     return "text-[#F8F4E3]/70";
   };
 
-  const getScoreBadgeVariant = (score: number) => {
-    if (score >= 80) return "default";
-    if (score >= 60) return "secondary";
-    return "outline";
+  const getScoreGradient = (score: number) => {
+    if (score >= 85) return "from-amber-500 via-yellow-400 to-amber-600";
+    if (score >= 70) return "from-emerald-500 to-teal-400";
+    return "from-primary to-primary/80";
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220]">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Finding your best matches...</p>
+          <div className="relative">
+            <Sparkles className="h-12 w-12 text-amber-400 mx-auto mb-4 animate-pulse" />
+            <div className="absolute inset-0 blur-xl bg-amber-400/20 rounded-full" />
+          </div>
+          <p className="text-[#F8F4E3]/70 font-serif">Curating your daily picks...</p>
         </div>
       </div>
     );
   }
 
-  if (!suggestions || suggestions.length === 0) {
+  const picks = data?.picks || [];
+  const remainingPicks = picks.filter(p => !p.userAction);
+
+  if (!picks.length || remainingPicks.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] p-4">
-        <Card className="bg-[#0A0E17] border-white/10 max-w-md">
+        <Card className="bg-gradient-to-br from-[#0A0E17] to-[#0E1220] border-amber-500/20 max-w-md shadow-xl shadow-amber-500/5">
           <CardContent className="p-8 text-center">
-            <Sparkles className="h-16 w-16 text-primary mx-auto mb-4" />
+            <div className="relative inline-block mb-6">
+              <Crown className="h-16 w-16 text-amber-400 mx-auto" />
+              <div className="absolute inset-0 blur-2xl bg-amber-400/30 rounded-full" />
+            </div>
             <h2 className="text-2xl font-serif font-bold text-[#F8F4E3] mb-2">
-              No Suggestions Yet
+              Daily Picks Complete
             </h2>
-            <p className="text-[#F8F4E3]/70 mb-6">
-              We're still reviewing profiles to find your best matches. Check back soon!
+            <p className="text-[#F8F4E3]/70 mb-4">
+              You've reviewed all your curated matches for today.
             </p>
+            {timeUntilReset && (
+              <div className="flex items-center justify-center gap-2 text-amber-400 mb-6">
+                <Clock className="h-5 w-5" />
+                <span className="font-medium">New picks in {timeUntilReset}</span>
+              </div>
+            )}
             <Button onClick={() => setLocation("/")} data-testid="button-go-discover">
-              Start Discovering
+              Discover More Profiles
             </Button>
           </CardContent>
         </Card>
@@ -110,30 +166,62 @@ export default function Suggestions() {
   }
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-20 bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220]">
       <IOSHeader 
         title="For You"
-        subtitle="Matches curated based on your values and preferences"
-        rightElement={<Sparkles className="h-6 w-6 text-primary" />}
+        subtitle="AI-curated matches based on your values"
+        rightElement={<Crown className="h-6 w-6 text-amber-400" />}
       />
+      
       <div className="max-w-4xl mx-auto px-4 py-4">
+        <div className="flex items-center justify-between mb-6 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-amber-500/10 border border-amber-500/20">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Sparkles className="h-6 w-6 text-amber-400" />
+              <div className="absolute inset-0 blur-lg bg-amber-400/30 rounded-full" />
+            </div>
+            <div>
+              <p className="text-[#F8F4E3] font-medium">Today's Picks</p>
+              <p className="text-[#F8F4E3]/60 text-sm">
+                {remainingPicks.length} of {data?.dailyLimit} remaining
+              </p>
+            </div>
+          </div>
+          {timeUntilReset && (
+            <div className="flex items-center gap-2 text-[#F8F4E3]/60 text-sm">
+              <Clock className="h-4 w-4" />
+              <span>Resets in {timeUntilReset}</span>
+            </div>
+          )}
+        </div>
 
-        {/* Suggestions Grid */}
-        <div className="space-y-4">
-          {suggestions.map((suggestion) => {
-            const profile = suggestion.profile;
-            const mainPhoto = profile.photos[profile.mainPhotoIndex || 0];
+        <div className="space-y-6">
+          {remainingPicks.map((pick) => {
+            const profile = pick.profile;
+            const mainPhoto = profile.photos?.[profile.mainPhotoIndex || 0];
             const isSwiping = swipingId === profile.userId;
+            const isHighMatch = pick.compatibilityScore >= 85;
 
             return (
               <Card
-                key={profile.id}
-                className="bg-[#0A0E17]/80 border-white/10 backdrop-blur-sm overflow-hidden hover-elevate"
+                key={pick.id}
+                className={`overflow-hidden hover-elevate transition-all duration-300 ${
+                  isHighMatch 
+                    ? "bg-gradient-to-br from-[#0A0E17] to-[#0E1220] border-amber-500/30 shadow-lg shadow-amber-500/10" 
+                    : "bg-[#0A0E17]/80 border-white/10"
+                }`}
                 data-testid={`suggestion-card-${profile.userId}`}
               >
+                {isHighMatch && (
+                  <div className="bg-gradient-to-r from-amber-500/20 via-yellow-400/10 to-amber-500/20 px-4 py-2 border-b border-amber-500/20">
+                    <div className="flex items-center gap-2 text-amber-400">
+                      <Crown className="h-4 w-4" />
+                      <span className="text-sm font-medium">Exceptional Match</span>
+                    </div>
+                  </div>
+                )}
                 <CardContent className="p-0">
                   <div className="md:flex">
-                    {/* Photo Section */}
                     <div className="md:w-1/3 relative">
                       <div className="aspect-[3/4] md:aspect-square relative overflow-hidden">
                         {mainPhoto ? (
@@ -155,18 +243,20 @@ export default function Suggestions() {
                           </span>
                         </div>
                         
-                        {/* Compatibility Score Badge */}
                         <div className="absolute top-3 left-3">
                           <Badge
-                            variant={getScoreBadgeVariant(suggestion.compatibilityScore)}
-                            className="bg-black/60 backdrop-blur-sm border-primary/50"
+                            className={`backdrop-blur-sm border-0 ${
+                              isHighMatch 
+                                ? "bg-gradient-to-r from-amber-500/90 to-yellow-500/90 text-black font-medium" 
+                                : "bg-black/60 border-primary/50"
+                            }`}
                           >
+                            {isHighMatch && <Crown className="h-3 w-3 mr-1" />}
                             <Sparkles className="h-3 w-3 mr-1" />
-                            {suggestion.compatibilityScore}% Match
+                            {pick.compatibilityScore}% Match
                           </Badge>
                         </div>
 
-                        {/* Verified Badge */}
                         {profile.faceVerified && (
                           <div className="absolute top-3 right-3">
                             <Badge variant="default" className="bg-emerald-600/80 backdrop-blur-sm">
@@ -178,9 +268,7 @@ export default function Suggestions() {
                       </div>
                     </div>
 
-                    {/* Info Section */}
                     <div className="md:w-2/3 p-6">
-                      {/* Name & Basic Info */}
                       <div className="mb-4">
                         <h2 className="text-2xl font-serif font-bold text-[#F8F4E3] mb-1">
                           {profile.displayName}, {profile.age}
@@ -195,36 +283,34 @@ export default function Suggestions() {
                         )}
                       </div>
 
-                      {/* Compatibility Score */}
                       <div className="mb-4">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className={`text-3xl font-bold ${getScoreColor(suggestion.compatibilityScore)}`}>
-                            {suggestion.compatibilityScore}%
+                          <span className={`text-3xl font-bold ${getScoreColor(pick.compatibilityScore)}`}>
+                            {pick.compatibilityScore}%
                           </span>
                           <span className="text-[#F8F4E3]/70">Compatible</span>
                         </div>
                         <div className="w-full bg-[#0E1220] rounded-full h-2">
                           <div
-                            className="bg-gradient-to-r from-primary to-emerald-500 h-2 rounded-full transition-all"
-                            style={{ width: `${suggestion.compatibilityScore}%` }}
+                            className={`bg-gradient-to-r ${getScoreGradient(pick.compatibilityScore)} h-2 rounded-full transition-all`}
+                            style={{ width: `${pick.compatibilityScore}%` }}
                           />
                         </div>
                       </div>
 
-                      {/* Match Reasons */}
-                      {suggestion.matchReasons.length > 0 && (
+                      {pick.matchReasons.length > 0 && (
                         <div className="mb-6">
                           <h3 className="text-sm font-semibold text-[#F8F4E3]/80 mb-2 flex items-center gap-1">
-                            <Sparkles className="h-4 w-4 text-primary" />
+                            <Sparkles className={`h-4 w-4 ${isHighMatch ? "text-amber-400" : "text-primary"}`} />
                             Why you might connect:
                           </h3>
                           <div className="space-y-2">
-                            {suggestion.matchReasons.map((reason, idx) => (
+                            {pick.matchReasons.map((reason, idx) => (
                               <div
                                 key={idx}
                                 className="flex items-start gap-2 text-sm text-[#F8F4E3]/70"
                               >
-                                <CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                                <CheckCircle2 className={`h-4 w-4 flex-shrink-0 mt-0.5 ${isHighMatch ? "text-amber-400" : "text-primary"}`} />
                                 <span>{reason}</span>
                               </div>
                             ))}
@@ -232,7 +318,6 @@ export default function Suggestions() {
                         </div>
                       )}
 
-                      {/* Bio Preview */}
                       {profile.bio && (
                         <div className="mb-6">
                           <p className="text-[#F8F4E3]/70 text-sm line-clamp-3">
@@ -241,12 +326,11 @@ export default function Suggestions() {
                         </div>
                       )}
 
-                      {/* Action Buttons */}
                       <div className="flex gap-3">
                         <Button
                           variant="outline"
                           size="lg"
-                          onClick={() => handleSwipe(profile.userId, "left")}
+                          onClick={() => handleSwipe(pick, "left")}
                           disabled={isSwiping}
                           className="flex-1"
                           data-testid={`button-pass-${profile.userId}`}
@@ -262,9 +346,13 @@ export default function Suggestions() {
                         </Button>
                         <Button
                           size="lg"
-                          onClick={() => handleSwipe(profile.userId, "right")}
+                          onClick={() => handleSwipe(pick, "right")}
                           disabled={isSwiping}
-                          className="flex-1 bg-gradient-to-r from-primary to-primary/80"
+                          className={`flex-1 ${
+                            isHighMatch 
+                              ? "bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-black" 
+                              : "bg-gradient-to-r from-primary to-primary/80"
+                          }`}
                           data-testid={`button-like-${profile.userId}`}
                         >
                           {isSwiping ? (
