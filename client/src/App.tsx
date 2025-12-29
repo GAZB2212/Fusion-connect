@@ -40,7 +40,7 @@ import ChaperonePortal from "@/pages/chaperone-portal";
 import GuidanceHub from "@/pages/guidance-hub";
 import NotFound from "@/pages/not-found";
 import { BottomNav } from "@/components/navigation";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Loader2 } from "lucide-react";
 
 function Router() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -69,10 +69,9 @@ function Router() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="space-y-4 w-full max-w-md px-4">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-64 w-full" />
-          <Skeleton className="h-12 w-full" />
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
