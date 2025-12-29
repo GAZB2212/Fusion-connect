@@ -161,10 +161,10 @@ export default function Suggestions() {
     );
   }
 
-  const picks = Array.isArray(data?.picks) ? data.picks : [];
-  const remainingPicks = picks.filter(p => !p.userAction);
+  const picks = (data && Array.isArray(data.picks)) ? data.picks : [];
+  const remainingPicks = Array.isArray(picks) ? picks.filter(p => p && !p.userAction) : [];
 
-  if (!picks.length || remainingPicks.length === 0) {
+  if (!data || !Array.isArray(picks) || picks.length === 0 || remainingPicks.length === 0) {
     return (
       <div className="fixed inset-0 bottom-16 flex items-center justify-center bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] p-4">
         <Card className="bg-gradient-to-br from-[#0A0E17] to-[#0E1220] border-amber-500/20 max-w-md shadow-xl shadow-amber-500/5">
