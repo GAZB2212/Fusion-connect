@@ -1372,8 +1372,7 @@ export default function Messages() {
         /* Voice Recording Button - Far right like WhatsApp */
         .voice-mic-button {
           position: absolute !important;
-          top: 50% !important;
-          transform: translateY(-50%) !important;
+          bottom: 18px !important;
           right: 8px !important;
           z-index: 100 !important;
           width: 36px !important;
@@ -1438,8 +1437,7 @@ export default function Messages() {
         /* Mobile adjustments for voice button */
         @media (max-width: 768px) {
           .voice-mic-button {
-            top: 50% !important;
-            transform: translateY(-50%) !important;
+            bottom: 18px !important;
             right: 8px !important;
           }
           
