@@ -126,9 +126,6 @@ export default function Home() {
   const [hasSwipedOnce, setHasSwipedOnce] = useState(
     localStorage.getItem('hasSwipedBefore') === 'true'
   );
-  const [showFirstTimeTip, setShowFirstTimeTip] = useState(
-    !localStorage.getItem('hasSeenSwipeTip')
-  );
   const cardRef = useRef<HTMLDivElement>(null);
 
   const { data: profiles = [], isLoading } = useQuery<ProfileWithUser[]>({
@@ -358,31 +355,6 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* First-Time Swipe Tooltip */}
-      {showFirstTimeTip && (
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="absolute top-20 left-1/2 -translate-x-1/2 z-40"
-          style={{ top: 'calc(env(safe-area-inset-top) + 3rem)' }}
-        >
-          <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-white px-5 py-2.5 rounded-full shadow-xl flex items-center gap-3">
-            <span className="text-sm font-semibold">Swipe the photo to browse</span>
-            <button 
-              onClick={() => {
-                setShowFirstTimeTip(false);
-                localStorage.setItem('hasSeenSwipeTip', 'true');
-              }}
-              className="hover:bg-white/20 rounded-full p-1 transition"
-              aria-label="Dismiss tip"
-              data-testid="button-dismiss-tip"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </motion.div>
-      )}
-
       {/* Full Screen Profile Card */}
       <div 
         ref={cardRef}
@@ -522,15 +494,6 @@ export default function Home() {
                 className="w-14 h-14 text-white/40 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] animate-pulse" 
                 strokeWidth={2.5} 
               />
-            </div>
-            
-            {/* Swipe hint text */}
-            <div className="absolute bottom-44 left-0 right-0 text-center pointer-events-none z-10">
-              <div className="inline-block bg-black/50 backdrop-blur-sm px-5 py-2 rounded-full">
-                <p className="text-white text-sm font-medium animate-pulse">
-                  ← Swipe to browse →
-                </p>
-              </div>
             </div>
           </>
         )}
