@@ -677,9 +677,9 @@ export default function Messages() {
                 onClick={() => startCallMutation.mutate()}
                 disabled={startCallMutation.isPending}
                 data-testid="button-video-call"
-                className="active:scale-95 transition-transform h-9 w-9"
+                className="active:scale-95 transition-transform h-10 w-10"
               >
-                <Video className="w-5 h-5" />
+                <Video className="w-7 h-7 text-amber-500" />
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
