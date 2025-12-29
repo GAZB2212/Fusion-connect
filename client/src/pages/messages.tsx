@@ -1093,29 +1093,27 @@ export default function Messages() {
           font-size: 15px !important;
         }
         
-        /* Fix contenteditable placeholder alignment - Sendbird uses ::before pseudo-element */
-        .fusion-chat .sendbird-message-input-text-field::before,
-        .fusion-chat .sendbird-message-input-text-field[data-placeholder]::before,
-        .fusion-chat [class*="message-input-text-field"]::before {
-          position: relative !important;
-          left: 0 !important;
+        /* Fix Sendbird placeholder - it renders as a separate element */
+        .fusion-chat .sendbird-message-input__place-holder,
+        .fusion-chat [class*="message-input__place-holder"],
+        .fusion-chat [class*="place-holder"] {
+          left: 16px !important;
+          right: auto !important;
           padding-left: 0 !important;
           margin-left: 0 !important;
-          text-indent: 0 !important;
+          transform: none !important;
         }
         
-        /* Target the quill editor placeholder if used */
+        /* Quill editor placeholder */
         .fusion-chat .ql-editor.ql-blank::before {
           left: 16px !important;
-          right: 16px !important;
           padding-left: 0 !important;
+          font-style: normal !important;
         }
         
-        /* Force inner text alignment */
-        .fusion-chat .sendbird-message-input-text-field > *,
-        .fusion-chat .sendbird-message-input-text-field span {
-          padding-left: 0 !important;
-          margin-left: 0 !important;
+        /* Ensure text field has proper inner padding */
+        .fusion-chat .sendbird-message-input-text-field .ql-editor {
+          padding: 0 !important;
         }
 
         .fusion-chat .sendbird-text-message-item-body {
