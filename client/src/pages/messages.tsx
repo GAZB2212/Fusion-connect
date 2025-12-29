@@ -1091,14 +1091,31 @@ export default function Messages() {
           color: hsl(var(--muted-foreground)) !important;
           opacity: 0.6 !important;
           font-size: 15px !important;
+        }
+        
+        /* Fix contenteditable placeholder alignment - Sendbird uses ::before pseudo-element */
+        .fusion-chat .sendbird-message-input-text-field::before,
+        .fusion-chat .sendbird-message-input-text-field[data-placeholder]::before,
+        .fusion-chat [class*="message-input-text-field"]::before {
+          position: relative !important;
+          left: 0 !important;
           padding-left: 0 !important;
+          margin-left: 0 !important;
           text-indent: 0 !important;
         }
         
-        /* Fix contenteditable placeholder alignment */
-        .fusion-chat .sendbird-message-input-text-field[data-placeholder]::before {
-          padding-left: 0 !important;
+        /* Target the quill editor placeholder if used */
+        .fusion-chat .ql-editor.ql-blank::before {
           left: 16px !important;
+          right: 16px !important;
+          padding-left: 0 !important;
+        }
+        
+        /* Force inner text alignment */
+        .fusion-chat .sendbird-message-input-text-field > *,
+        .fusion-chat .sendbird-message-input-text-field span {
+          padding-left: 0 !important;
+          margin-left: 0 !important;
         }
 
         .fusion-chat .sendbird-text-message-item-body {
