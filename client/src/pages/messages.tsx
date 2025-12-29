@@ -1101,7 +1101,7 @@ export default function Messages() {
         .fusion-chat [class*="input__placeholder"],
         .fusion-chat [class*="message-input"] [class*="placeholder"] {
           left: 16px !important;
-          padding-left: 36px !important;
+          padding-left: 18px !important;
           margin-left: 0 !important;
           transform: none !important;
           position: absolute !important;
@@ -1110,7 +1110,7 @@ export default function Messages() {
         /* Quill editor placeholder */
         .fusion-chat .ql-editor.ql-blank::before {
           left: 16px !important;
-          padding-left: 36px !important;
+          padding-left: 18px !important;
           font-style: normal !important;
         }
         
