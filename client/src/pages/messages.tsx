@@ -1093,27 +1093,32 @@ export default function Messages() {
           font-size: 15px !important;
         }
         
-        /* Fix Sendbird placeholder - move it right to align with cursor */
+        /* Fix Sendbird placeholder - target ALL possible placeholder elements */
+        .fusion-chat .sendbird-message-input-text-field__placeholder,
+        .fusion-chat .sendbird-message-input__placeholder,
         .fusion-chat .sendbird-message-input__place-holder,
-        .fusion-chat [class*="message-input__place-holder"],
-        .fusion-chat [class*="place-holder"] {
-          left: 52px !important;
-          right: auto !important;
-          padding-left: 0 !important;
+        .fusion-chat [class*="text-field__placeholder"],
+        .fusion-chat [class*="input__placeholder"],
+        .fusion-chat [class*="message-input"] [class*="placeholder"] {
+          left: 16px !important;
+          padding-left: 36px !important;
           margin-left: 0 !important;
           transform: none !important;
+          position: absolute !important;
         }
         
         /* Quill editor placeholder */
         .fusion-chat .ql-editor.ql-blank::before {
-          left: 52px !important;
-          padding-left: 0 !important;
+          left: 16px !important;
+          padding-left: 36px !important;
           font-style: normal !important;
         }
         
-        /* Ensure text field has proper inner padding */
-        .fusion-chat .sendbird-message-input-text-field .ql-editor {
-          padding: 0 !important;
+        /* Ensure the input wrapper doesn't offset */
+        .fusion-chat .sendbird-message-input-text-field .ql-editor,
+        .fusion-chat .sendbird-message-input-text-field > div {
+          padding-left: 0 !important;
+          margin-left: 0 !important;
         }
 
         .fusion-chat .sendbird-text-message-item-body {
