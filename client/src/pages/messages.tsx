@@ -1093,11 +1093,11 @@ export default function Messages() {
           font-size: 15px !important;
         }
         
-        /* Fix Sendbird placeholder - it renders as a separate element */
+        /* Fix Sendbird placeholder - move it right to align with cursor */
         .fusion-chat .sendbird-message-input__place-holder,
         .fusion-chat [class*="message-input__place-holder"],
         .fusion-chat [class*="place-holder"] {
-          left: 16px !important;
+          left: 52px !important;
           right: auto !important;
           padding-left: 0 !important;
           margin-left: 0 !important;
@@ -1106,7 +1106,7 @@ export default function Messages() {
         
         /* Quill editor placeholder */
         .fusion-chat .ql-editor.ql-blank::before {
-          left: 16px !important;
+          left: 52px !important;
           padding-left: 0 !important;
           font-style: normal !important;
         }
