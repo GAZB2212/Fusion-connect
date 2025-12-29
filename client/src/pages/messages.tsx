@@ -1382,14 +1382,32 @@ export default function Messages() {
           box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2) !important;
         }
 
-        /* Voice Recording Button - positioned next to send button */
+        /* Voice Recording Button - WhatsApp style, next to attachment button */
         .voice-mic-button {
           position: absolute !important;
-          bottom: 18px !important;
-          right: 56px !important;
+          bottom: 14px !important;
+          left: 52px !important;
           z-index: 100 !important;
           width: 36px !important;
           height: 36px !important;
+          border-radius: 50% !important;
+          background: transparent !important;
+          color: #f59e0b !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          transition: all 0.15s ease !important;
+        }
+        
+        .voice-mic-button:hover {
+          background: rgba(245, 158, 11, 0.1) !important;
+          color: #fbbf24 !important;
+        }
+        
+        .voice-mic-button svg {
+          color: inherit !important;
+          width: 22px !important;
+          height: 22px !important;
         }
         
         /* Voice Recording Active Overlay */
@@ -1398,11 +1416,11 @@ export default function Messages() {
           bottom: 8px !important;
           left: 8px !important;
           right: 8px !important;
-          height: 52px !important;
+          height: 56px !important;
           background: hsl(var(--background) / 0.98) !important;
           backdrop-filter: blur(8px) !important;
           border: 1px solid hsl(var(--border)) !important;
-          border-radius: 26px !important;
+          border-radius: 28px !important;
           display: flex !important;
           align-items: center !important;
           justify-content: space-between !important;
@@ -1431,8 +1449,8 @@ export default function Messages() {
         /* Mobile adjustments for voice button */
         @media (max-width: 768px) {
           .voice-mic-button {
-            bottom: 22px !important;
-            right: 52px !important;
+            bottom: 18px !important;
+            right: 12px !important;
           }
           
           .voice-recording-overlay.recording-active {
