@@ -3,12 +3,11 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, X, MapPin, Play, ChevronLeft, ChevronRight, ShieldCheck, Users, Sparkles, Moon, Star, User, Ruler, Briefcase, GraduationCap, Baby } from "lucide-react";
+import { Heart, X, MapPin, Play, ChevronLeft, ChevronRight, ShieldCheck, Users, Sparkles, Moon, Star, User, Ruler, Briefcase, GraduationCap, Baby, Loader2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { ProfileWithUser } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { IOSSpinner } from "@/components/ios-spinner";
 import {
   Dialog,
   DialogContent,
@@ -218,7 +217,7 @@ export default function Home() {
     return (
       <div className="fixed inset-0 bottom-16 flex items-center justify-center bg-background">
         <div className="text-center">
-          <IOSSpinner size="lg" className="text-primary mx-auto mb-4" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Finding profiles...</p>
         </div>
       </div>

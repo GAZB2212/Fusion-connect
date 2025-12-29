@@ -9,7 +9,6 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import type { ProfileWithUser } from "@shared/schema";
 import { IOSHeader } from "@/components/ios-header";
-import { IOSSpinner } from "@/components/ios-spinner";
 
 interface SuggestionResult {
   profile: ProfileWithUser;
@@ -82,7 +81,7 @@ export default function Suggestions() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <IOSSpinner size="lg" className="text-primary mx-auto mb-4" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Finding your best matches...</p>
         </div>
       </div>

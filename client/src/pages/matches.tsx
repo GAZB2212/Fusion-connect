@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare, MapPin, CheckCircle2, Heart, Crown, Lock, UserX, Eye } from "lucide-react";
+import { MessageSquare, MapPin, CheckCircle2, Heart, Crown, Lock, UserX, Eye, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,6 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useWebSocket } from "@/contexts/WebSocketContext";
 import { IOSHeader } from "@/components/ios-header";
-import { IOSSpinner } from "@/components/ios-spinner";
 import { PullToRefresh } from "@/components/pull-to-refresh";
 
 export default function Matches() {
@@ -81,7 +80,7 @@ export default function Matches() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <IOSSpinner size="lg" className="text-primary mx-auto mb-4" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Loading matches...</p>
         </div>
       </div>
