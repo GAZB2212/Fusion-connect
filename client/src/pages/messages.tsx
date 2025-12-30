@@ -1138,7 +1138,7 @@ export default function Messages() {
         /* Message input sits directly above bottom nav - balanced padding */
         .fusion-chat .sendbird-conversation__footer,
         .fusion-chat .sendbird-message-input-wrapper {
-          padding-bottom: 8px !important;
+          padding-bottom: 12px !important;
           margin-bottom: 0 !important;
         }
 
