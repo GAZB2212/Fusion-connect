@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { IOSSpinner } from "@/components/ios-spinner";
 import { cn } from "@/lib/utils";
+import { haptic } from "@/lib/haptics";
 
 interface PullToRefreshProps {
   children: React.ReactNode;
@@ -41,6 +42,7 @@ export function PullToRefresh({ children, onRefresh, className }: PullToRefreshP
     if (pullDistance >= THRESHOLD && !isRefreshing) {
       setIsRefreshing(true);
       setPullDistance(60);
+      haptic.medium();
       
       try {
         await onRefresh();

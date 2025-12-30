@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Heart, X, Sparkles, CheckCircle2, Loader2, Clock, Crown } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import type { ProfileWithUser } from "@shared/schema";
 import { IOSHeader } from "@/components/ios-header";
 import { haptic } from "@/lib/haptics";
+import { PullToRefresh } from "@/components/pull-to-refresh";
 
 interface ForYouPick {
   id: string;
@@ -34,6 +35,10 @@ export default function Suggestions() {
   const { t } = useTranslation();
   const [swipingId, setSwipingId] = useState<string | null>(null);
   const [timeUntilReset, setTimeUntilReset] = useState<string>("");
+
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ["/api/suggestions"] });
+  }, []);
 
   const { data, isLoading, isError } = useQuery<SuggestionsResponse>({
     queryKey: ["/api/suggestions"],
@@ -197,7 +202,7 @@ export default function Suggestions() {
   }
 
   return (
-    <div className="fixed inset-0 bottom-16 overflow-y-auto bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220]">
+    <PullToRefresh onRefresh={handleRefresh} className="fixed inset-0 bottom-16 bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220]">
       <IOSHeader 
         title={t('forYou.title')}
         subtitle={t('forYou.subtitle')}
@@ -406,6 +411,6 @@ export default function Suggestions() {
           })}
         </div>
       </div>
-    </div>
+    </PullToRefresh>
   );
 }
