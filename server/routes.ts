@@ -4545,6 +4545,33 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
     }
   });
 
+  // DEVELOPMENT: Cleanup duplicate welcome messages from all channels
+  app.post('/api/dev/cleanup-welcome-messages', isAuthenticated, async (req: any, res: Response) => {
+    try {
+      console.log('[CLEANUP] Starting cleanup of duplicate welcome messages');
+      
+      // Get all matches to find their channel URLs
+      const allMatches = await db
+        .select({ matchId: matches.id })
+        .from(matches);
+
+      let totalDeleted = 0;
+      let channelsProcessed = 0;
+
+      for (const match of allMatches) {
+        const deleted = await SendbirdService.cleanupDuplicateWelcomeMessages(match.matchId);
+        totalDeleted += deleted;
+        channelsProcessed++;
+      }
+
+      console.log(`[CLEANUP] Complete: Processed ${channelsProcessed} channels, deleted ${totalDeleted} duplicate messages`);
+      res.json({ success: true, channelsProcessed, totalDeleted });
+    } catch (error: any) {
+      console.error('[CLEANUP] Error:', error);
+      res.status(500).json({ message: "Failed to cleanup messages" });
+    }
+  });
+
   // DEVELOPMENT: Backfill Sendbird users for ALL existing users
   app.post('/api/dev/backfill-sendbird-users', isAuthenticated, async (req: any, res: Response) => {
     try {

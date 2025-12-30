@@ -282,6 +282,61 @@ export class SendbirdService {
     return await response.json();
   }
 
+  static async cleanupDuplicateWelcomeMessages(channelUrl: string): Promise<number> {
+    if (!isConfigured) {
+      return 0;
+    }
+    
+    try {
+      // Get messages from the channel
+      const response = await fetch(`${baseUrl}/group_channels/${encodeURIComponent(channelUrl)}/messages?message_type=ADMM&limit=100`, {
+        method: 'GET',
+        headers: {
+          'Api-Token': apiToken!
+        }
+      });
+      
+      if (!response.ok) {
+        console.error('[Sendbird] Failed to get messages for cleanup');
+        return 0;
+      }
+      
+      const data = await response.json();
+      const messages = data.messages || [];
+      
+      // Find all "It's a match!" messages
+      const welcomeMessages = messages.filter((m: any) => 
+        m.message && m.message.includes("It's a match!")
+      );
+      
+      // Keep only the first one, delete the rest
+      if (welcomeMessages.length <= 1) {
+        return 0;
+      }
+      
+      let deleted = 0;
+      for (let i = 1; i < welcomeMessages.length; i++) {
+        const msg = welcomeMessages[i];
+        const delResponse = await fetch(`${baseUrl}/group_channels/${encodeURIComponent(channelUrl)}/messages/${msg.message_id}`, {
+          method: 'DELETE',
+          headers: {
+            'Api-Token': apiToken!
+          }
+        });
+        
+        if (delResponse.ok) {
+          deleted++;
+        }
+      }
+      
+      console.log(`[Sendbird] Cleaned up ${deleted} duplicate welcome messages from ${channelUrl}`);
+      return deleted;
+    } catch (error) {
+      console.error('[Sendbird] Error cleaning up messages:', error);
+      return 0;
+    }
+  }
+
   static async deleteUser(userId: string): Promise<void> {
     if (!isConfigured) {
       throw new Error('Sendbird not configured');
