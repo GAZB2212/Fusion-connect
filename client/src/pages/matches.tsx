@@ -20,12 +20,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useWebSocket } from "@/contexts/WebSocketContext";
 import { IOSHeader } from "@/components/ios-header";
 import { PullToRefresh } from "@/components/pull-to-refresh";
+import { useTranslation } from "react-i18next";
 
 export default function Matches() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
   const { toast } = useToast();
   const { subscribe } = useWebSocket();
+  const { t } = useTranslation();
   const [showUnmatchDialog, setShowUnmatchDialog] = useState(false);
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [selectedMatchName, setSelectedMatchName] = useState<string>("");
@@ -59,8 +61,8 @@ export default function Matches() {
     },
     onSuccess: () => {
       toast({
-        title: "Unmatched",
-        description: "You have been unmatched from this person",
+        title: t('matches.unmatchedTitle'),
+        description: t('matches.unmatchedDesc'),
       });
       setShowUnmatchDialog(false);
       setSelectedMatchId(null);
@@ -69,8 +71,8 @@ export default function Matches() {
     },
     onError: (error: any) => {
       toast({
-        title: "Failed to unmatch",
-        description: error.message || "Could not unmatch",
+        title: t('matches.unmatchFailed'),
+        description: error.message || t('matches.couldNotUnmatch'),
         variant: "destructive",
       });
     },
@@ -81,7 +83,7 @@ export default function Matches() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading matches...</p>
+          <p className="text-muted-foreground">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -96,17 +98,17 @@ export default function Matches() {
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
               <Crown className="h-8 w-8 text-primary" />
             </div>
-            <h1 className="text-3xl font-bold mb-2 text-[#F8F4E3] font-serif">Upgrade to Premium</h1>
+            <h1 className="text-3xl font-bold mb-2 text-[#F8F4E3] font-serif">{t('matches.upgradeToPremium')}</h1>
             <p className="text-[#F8F4E3]/70">
-              You have matches waiting! Subscribe to view and connect with them.
+              {t('matches.matchesWaiting')}
             </p>
           </div>
 
           <Card className="bg-[#0A0E17] border-white/10">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl text-[#F8F4E3] font-serif">Fusion Premium</CardTitle>
+              <CardTitle className="text-2xl text-[#F8F4E3] font-serif">{t('matches.fusionPremium')}</CardTitle>
               <CardDescription className="text-[#F8F4E3]/70">
-                Unlock all features for just £9.99/month
+                {t('matches.unlockFeatures')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -114,36 +116,36 @@ export default function Matches() {
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-[#F8F4E3] font-medium">View All Your Matches</p>
-                    <p className="text-[#F8F4E3]/60 text-sm">See everyone who swiped right on you</p>
+                    <p className="text-[#F8F4E3] font-medium">{t('matches.viewAllMatches')}</p>
+                    <p className="text-[#F8F4E3]/60 text-sm">{t('matches.seeSwipedRight')}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-[#F8F4E3] font-medium">Unlimited Messaging</p>
-                    <p className="text-[#F8F4E3]/60 text-sm">Chat with all your matches without limits</p>
+                    <p className="text-[#F8F4E3] font-medium">{t('matches.unlimitedMessaging')}</p>
+                    <p className="text-[#F8F4E3]/60 text-sm">{t('matches.chatWithoutLimits')}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-[#F8F4E3] font-medium">Chaperone Support</p>
-                    <p className="text-[#F8F4E3]/60 text-sm">Add your Wali or guardian to conversations</p>
+                    <p className="text-[#F8F4E3] font-medium">{t('matches.chaperoneSupport')}</p>
+                    <p className="text-[#F8F4E3]/60 text-sm">{t('matches.addWaliGuardian')}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-[#F8F4E3] font-medium">Full Privacy Controls</p>
-                    <p className="text-[#F8F4E3]/60 text-sm">Control who sees your photos and profile</p>
+                    <p className="text-[#F8F4E3] font-medium">{t('matches.fullPrivacyControls')}</p>
+                    <p className="text-[#F8F4E3]/60 text-sm">{t('matches.controlWhoSees')}</p>
                   </div>
                 </div>
               </div>
 
               <div className="text-center py-4 border-t border-white/10">
                 <div className="text-5xl font-bold text-primary mb-2 font-serif">£9.99</div>
-                <div className="text-[#F8F4E3]/70">per month • Cancel anytime</div>
+                <div className="text-[#F8F4E3]/70">{t('matches.perMonthCancel')}</div>
               </div>
 
               <Button 
@@ -153,11 +155,11 @@ export default function Matches() {
                 data-testid="button-subscribe-now"
               >
                 <Crown className="h-4 w-4 mr-2" />
-                Subscribe Now
+                {t('matches.subscribeNow')}
               </Button>
 
               <p className="text-xs text-[#F8F4E3]/50 text-center">
-                Your subscription will automatically renew each month
+                {t('matches.autoRenew')}
               </p>
             </CardContent>
           </Card>
@@ -169,8 +171,8 @@ export default function Matches() {
   return (
     <div className="min-h-screen pb-20">
       <IOSHeader 
-        title="Matches" 
-        subtitle={`${matches.length} ${matches.length === 1 ? 'person' : 'people'} you both liked`}
+        title={t('matches.title')} 
+        subtitle={t('matches.subtitle', { count: matches.length })}
       />
       <div className="container max-w-4xl mx-auto px-4 py-4">
 
@@ -179,12 +181,12 @@ export default function Matches() {
             <div className="h-24 w-24 rounded-full bg-muted flex items-center justify-center mx-auto mb-6">
               <Heart className="h-12 w-12 text-muted-foreground" />
             </div>
-            <h2 className="text-2xl font-bold mb-2">No Matches Yet</h2>
+            <h2 className="text-2xl font-bold mb-2">{t('matches.noMatches')}</h2>
             <p className="text-muted-foreground mb-6">
-              Keep swiping to find your perfect match!
+              {t('matches.keepSwiping')}
             </p>
             <Button onClick={() => setLocation("/")} data-testid="button-start-swiping">
-              Start Swiping
+              {t('matches.startSwiping')}
             </Button>
           </div>
         ) : (
@@ -264,7 +266,7 @@ export default function Matches() {
                       data-testid={`button-view-profile-${match.id}`}
                     >
                       <Eye className="h-4 w-4 mr-2" />
-                      View Profile
+                      {t('matches.viewProfile')}
                     </Button>
                     <Button
                       className="w-full"
@@ -272,7 +274,7 @@ export default function Matches() {
                       data-testid={`button-message-${match.id}`}
                     >
                       <MessageSquare className="h-4 w-4 mr-2" />
-                      Send Message
+                      {t('matches.sendMessage')}
                     </Button>
                     <Button
                       variant="destructive"
@@ -285,7 +287,7 @@ export default function Matches() {
                       data-testid={`button-unmatch-${match.id}`}
                     >
                       <UserX className="h-4 w-4 mr-2" />
-                      Unmatch
+                      {t('matches.unmatch')}
                     </Button>
                   </div>
                 </Card>
@@ -300,14 +302,14 @@ export default function Matches() {
       <Dialog open={showUnmatchDialog} onOpenChange={setShowUnmatchDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Unmatch from {selectedMatchName}?</DialogTitle>
+            <DialogTitle>{t('matches.unmatchFrom', { name: selectedMatchName })}</DialogTitle>
             <DialogDescription>
-              This will remove your match and delete any conversation. You can match with them again in the future.
+              {t('matches.unmatchWarning')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setShowUnmatchDialog(false)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button 
               variant="destructive" 
@@ -315,7 +317,7 @@ export default function Matches() {
               disabled={unmatchMutation.isPending}
               data-testid="button-confirm-unmatch"
             >
-              {unmatchMutation.isPending ? "Unmatching..." : "Unmatch"}
+              {unmatchMutation.isPending ? t('matches.unmatching') : t('matches.unmatch')}
             </Button>
           </DialogFooter>
         </DialogContent>
