@@ -49,7 +49,7 @@ export function BottomNav() {
                 data-testid={item.testId}
               >
                 <item.icon className={cn("h-6 w-6", isActive && 'fill-primary')} />
-                <span className="text-[10px] font-medium">{item.label}</span>
+                <span className="text-[10px] font-medium whitespace-nowrap">{item.label}</span>
               </button>
             );
           })}
