@@ -1215,7 +1215,38 @@ export default function Messages() {
           color: hsl(var(--muted-foreground)) !important;
         }
         
-        /* Hide emoji reactions on messages - keep input emoji */
+        /* Style the emoji picker popup */
+        .fusion-chat .sendbird-emoji-list-container,
+        .fusion-chat .sendbird-emoji-container,
+        .fusion-chat [class*="emoji-list-container"],
+        .sendbird-emoji-list-container,
+        .sendbird-emoji-container {
+          display: block !important;
+          visibility: visible !important;
+          background: hsl(var(--card)) !important;
+          border: 1px solid hsl(var(--border)) !important;
+          border-radius: 12px !important;
+          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
+          z-index: 9999 !important;
+        }
+        
+        .fusion-chat .sendbird-emoji-list-container__category,
+        .sendbird-emoji-list-container__category {
+          background: hsl(var(--card)) !important;
+        }
+        
+        .fusion-chat .sendbird-emoji-item,
+        .sendbird-emoji-item {
+          cursor: pointer !important;
+          border-radius: 8px !important;
+        }
+        
+        .fusion-chat .sendbird-emoji-item:hover,
+        .sendbird-emoji-item:hover {
+          background: hsl(var(--muted)) !important;
+        }
+        
+        /* Hide emoji reactions on messages - keep input emoji and picker */
         .fusion-chat .sendbird-emoji-reactions,
         .fusion-chat .sendbird-message-content__middle__emoji-container,
         .fusion-chat .sendbird-emoji-reaction-add-button {
