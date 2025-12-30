@@ -182,7 +182,7 @@ export class SendbirdService {
     }
   }
 
-  static async createChannel(userIds: string[], channelUrl?: string): Promise<any> {
+  static async createChannel(userIds: string[], channelUrl?: string, sendWelcomeMessage: boolean = true): Promise<any> {
     if (!isConfigured) {
       console.warn('[Sendbird] Skipping channel creation - not configured');
       return null;
@@ -216,8 +216,11 @@ export class SendbirdService {
       
       console.log(`[Sendbird] Created channel for users: ${userIds.join(', ')}`);
       
-      // Send a welcome message so the channel appears in users' channel lists
-      await this.sendSystemMessage(data.channel_url, "It's a match! Say salaam and start your conversation.");
+      // Only send welcome message if explicitly requested AND channel has no messages yet
+      // This prevents duplicate messages when channel already exists (is_distinct returns existing)
+      if (sendWelcomeMessage && data.last_message === null) {
+        await this.sendSystemMessage(data.channel_url, "It's a match! Say salaam and start your conversation.");
+      }
       
       return data;
     } catch (error) {
