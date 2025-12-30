@@ -7,6 +7,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import type { ProfileWithUser } from "@shared/schema";
 import { IOSHeader } from "@/components/ios-header";
 import { haptic } from "@/lib/haptics";
@@ -30,6 +31,7 @@ interface SuggestionsResponse {
 export default function Suggestions() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const { t } = useTranslation();
   const [swipingId, setSwipingId] = useState<string | null>(null);
   const [timeUntilReset, setTimeUntilReset] = useState<string>("");
 
@@ -46,7 +48,7 @@ export default function Suggestions() {
       const diff = reset.getTime() - now.getTime();
 
       if (diff <= 0) {
-        setTimeUntilReset("Refreshing...");
+        setTimeUntilReset(t('forYou.refreshing'));
         queryClient.invalidateQueries({ queryKey: ["/api/suggestions"] });
         return;
       }
@@ -82,17 +84,17 @@ export default function Suggestions() {
       if (result.isMatch) {
         haptic.success();
         toast({
-          title: "It's a Match!",
-          description: "You both liked each other!",
+          title: t('discover.itsAMatch'),
+          description: t('discover.matchNotification'),
         });
         setLocation("/matches");
       } else {
         toast({
-          title: direction === "right" ? "Liked!" : "Passed",
+          title: direction === "right" ? t('forYou.liked') : t('forYou.passed'),
           description:
             direction === "right"
-              ? "We'll notify them if they like you back"
-              : "Profile skipped",
+              ? t('forYou.notifyIfLikeBack')
+              : t('forYou.profileSkipped'),
         });
       }
 
@@ -129,7 +131,7 @@ export default function Suggestions() {
             <Sparkles className="h-12 w-12 text-amber-400 mx-auto mb-4 animate-pulse" />
             <div className="absolute inset-0 blur-xl bg-amber-400/20 rounded-full" />
           </div>
-          <p className="text-[#F8F4E3]/70 font-serif">Curating your daily picks...</p>
+          <p className="text-[#F8F4E3]/70 font-serif">{t('forYou.curatingPicks')}</p>
         </div>
       </div>
     );
@@ -144,16 +146,16 @@ export default function Suggestions() {
               <X className="h-16 w-16 text-red-400 mx-auto" />
             </div>
             <h2 className="text-2xl font-serif font-bold text-[#F8F4E3] mb-2">
-              Unable to Load Picks
+              {t('forYou.unableToLoad')}
             </h2>
             <p className="text-[#F8F4E3]/70 mb-6">
-              We couldn't load your personalized matches. Please try again.
+              {t('forYou.couldntLoad')}
             </p>
             <Button 
               onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/suggestions"] })} 
               data-testid="button-retry-suggestions"
             >
-              Try Again
+              {t('common.retry')}
             </Button>
           </CardContent>
         </Card>
@@ -174,19 +176,19 @@ export default function Suggestions() {
               <div className="absolute inset-0 blur-2xl bg-amber-400/30 rounded-full" />
             </div>
             <h2 className="text-2xl font-serif font-bold text-[#F8F4E3] mb-2">
-              Daily Picks Complete
+              {t('forYou.dailyPicksComplete')}
             </h2>
             <p className="text-[#F8F4E3]/70 mb-4">
-              You've reviewed all your curated matches for today.
+              {t('forYou.reviewedAll')}
             </p>
             {timeUntilReset && (
               <div className="flex items-center justify-center gap-2 text-amber-400 mb-6">
                 <Clock className="h-5 w-5" />
-                <span className="font-medium">New picks in {timeUntilReset}</span>
+                <span className="font-medium">{t('forYou.newPicksIn')} {timeUntilReset}</span>
               </div>
             )}
             <Button onClick={() => setLocation("/")} data-testid="button-go-discover">
-              Discover More Profiles
+              {t('forYou.discoverMore')}
             </Button>
           </CardContent>
         </Card>
@@ -197,8 +199,8 @@ export default function Suggestions() {
   return (
     <div className="fixed inset-0 bottom-16 overflow-y-auto bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220]">
       <IOSHeader 
-        title="For You"
-        subtitle="AI-curated matches based on your values"
+        title={t('forYou.title')}
+        subtitle={t('forYou.subtitle')}
         rightElement={<Crown className="h-6 w-6 text-amber-400" />}
       />
       
@@ -210,16 +212,16 @@ export default function Suggestions() {
               <div className="absolute inset-0 blur-lg bg-amber-400/30 rounded-full" />
             </div>
             <div>
-              <p className="text-[#F8F4E3] font-medium">Today's Picks</p>
+              <p className="text-[#F8F4E3] font-medium">{t('forYou.todaysPicks')}</p>
               <p className="text-[#F8F4E3]/60 text-sm">
-                {remainingPicks.length} of {data?.dailyLimit} remaining
+                {remainingPicks.length} {t('forYou.of')} {data?.dailyLimit} {t('forYou.remaining')}
               </p>
             </div>
           </div>
           {timeUntilReset && (
             <div className="flex items-center gap-2 text-[#F8F4E3]/60 text-sm">
               <Clock className="h-4 w-4" />
-              <span>Resets in {timeUntilReset}</span>
+              <span>{t('forYou.resetsIn')} {timeUntilReset}</span>
             </div>
           )}
         </div>
@@ -292,7 +294,7 @@ export default function Suggestions() {
                           <div className="absolute top-3 right-3">
                             <Badge variant="default" className="bg-emerald-600/80 backdrop-blur-sm">
                               <CheckCircle2 className="h-3 w-3 mr-1" />
-                              Verified
+                              {t('discover.verified')}
                             </Badge>
                           </div>
                         )}
@@ -319,7 +321,7 @@ export default function Suggestions() {
                           <span className={`text-3xl font-bold ${getScoreColor(pick.compatibilityScore)}`}>
                             {pick.compatibilityScore}%
                           </span>
-                          <span className="text-[#F8F4E3]/70">Compatible</span>
+                          <span className="text-[#F8F4E3]/70">{t('forYou.compatibility')}</span>
                         </div>
                         <div className="w-full bg-[#0E1220] rounded-full h-2">
                           <div
@@ -333,7 +335,7 @@ export default function Suggestions() {
                         <div className="mb-6">
                           <h3 className="text-sm font-semibold text-[#F8F4E3]/80 mb-2 flex items-center gap-1">
                             <Sparkles className={`h-4 w-4 ${isHighMatch ? "text-amber-400" : "text-primary"}`} />
-                            Why you might connect:
+                            {t('forYou.whyMatch')}:
                           </h3>
                           <div className="space-y-2">
                             {pick.matchReasons.map((reason, idx) => (
@@ -371,7 +373,7 @@ export default function Suggestions() {
                           ) : (
                             <>
                               <X className="h-5 w-5 mr-2" />
-                              Pass
+                              {t('discover.pass')}
                             </>
                           )}
                         </Button>
@@ -391,7 +393,7 @@ export default function Suggestions() {
                           ) : (
                             <>
                               <Heart className="h-5 w-5 mr-2" />
-                              Like
+                              {t('discover.like')}
                             </>
                           )}
                         </Button>
