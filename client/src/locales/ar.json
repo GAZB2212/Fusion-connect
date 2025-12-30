@@ -14,7 +14,8 @@
     "search": "بحث",
     "retry": "حاول مرة أخرى",
     "saving": "جارٍ الحفظ...",
-    "saveChanges": "حفظ التغييرات"
+    "saveChanges": "حفظ التغييرات",
+    "maybeLater": "ربما لاحقاً"
   },
   "nav": {
     "discover": "اكتشف",
@@ -124,7 +125,15 @@
     "mainPhoto": "الصورة الرئيسية",
     "setAsMain": "تعيين كرئيسية",
     "upload": "تحميل",
-    "ethnicity": "العرق"
+    "ethnicity": "العرق",
+    "waliInvolved": "الولي مشارك",
+    "nikkahReady": "جاهز للنكاح",
+    "basicInfo": "معلومات أساسية",
+    "hasChildren": "لديه أطفال",
+    "noChildren": "لا يوجد أطفال",
+    "religiousBackground": "الخلفية الدينية",
+    "bornMuslim": "مسلم بالولادة",
+    "revert": "اعتنق الإسلام"
   },
   "settings": {
     "title": "الإعدادات",
@@ -159,7 +168,10 @@
     "unlock": "افتح جميع المميزات",
     "subscribe": "اشترك الآن",
     "currentPlan": "الخطة الحالية",
-    "features": "المميزات المتضمنة"
+    "features": "المميزات المتضمنة",
+    "upgradeToMatch": "قم بالترقية لرؤية تطابقاتك",
+    "upgradeDescription": "لرؤية من أعجب بك والتواصل معهم، قم بالترقية إلى Fusion Premium مقابل 9.99 جنيه استرليني/شهر فقط.",
+    "upgradeNow": "الترقية الآن"
   },
   "videoCall": {
     "calling": "جارٍ الاتصال...",

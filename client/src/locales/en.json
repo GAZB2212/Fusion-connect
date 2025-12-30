@@ -14,7 +14,8 @@
     "search": "Search",
     "retry": "Try Again",
     "saving": "Saving...",
-    "saveChanges": "Save Changes"
+    "saveChanges": "Save Changes",
+    "maybeLater": "Maybe Later"
   },
   "nav": {
     "discover": "Discover",
@@ -123,6 +124,14 @@
     "photoMinimum": "Please upload at least 3 photos",
     "mainPhoto": "Main Photo",
     "setAsMain": "Set as Main",
+    "waliInvolved": "Wali Involved",
+    "nikkahReady": "Nikkah Ready",
+    "basicInfo": "Basic Info",
+    "hasChildren": "Has children",
+    "noChildren": "No children",
+    "religiousBackground": "Religious Background",
+    "bornMuslim": "Born Muslim",
+    "revert": "Revert",
     "upload": "Upload",
     "ethnicity": "Ethnicity"
   },
@@ -159,7 +168,10 @@
     "unlock": "Unlock all features",
     "subscribe": "Subscribe Now",
     "currentPlan": "Current Plan",
-    "features": "Features included"
+    "features": "Features included",
+    "upgradeToMatch": "Upgrade to See Your Matches",
+    "upgradeDescription": "To see who you've liked and connect with them, upgrade to Fusion Premium for just £9.99/month.",
+    "upgradeNow": "Upgrade Now"
   },
   "videoCall": {
     "calling": "Calling...",

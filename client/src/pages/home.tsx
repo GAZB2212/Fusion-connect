@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import type { ProfileWithUser } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -110,6 +111,7 @@ function ProfilePhotoCarousel({ photos, displayName }: { photos: string[]; displ
 export default function Home() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showSubscribeDialog, setShowSubscribeDialog] = useState(false);
@@ -148,8 +150,8 @@ export default function Home() {
       if (data.isMatch && data.matchId) {
         haptic.success();
         toast({
-          title: "It's a Match!",
-          description: "You both liked each other! Opening conversation...",
+          title: t('discover.itsAMatch'),
+          description: t('discover.matchNotification'),
         });
         queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
         setTimeout(() => {
@@ -165,7 +167,7 @@ export default function Home() {
     },
     onError: (error) => {
       toast({
-        title: "Error",
+        title: t('common.error'),
         description: error.message,
         variant: "destructive",
       });
@@ -248,7 +250,7 @@ export default function Home() {
       <div className="fixed inset-0 bottom-16 flex items-center justify-center bg-background">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Finding profiles...</p>
+          <p className="text-muted-foreground">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -261,9 +263,9 @@ export default function Home() {
           <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
             <Heart className="h-12 w-12 text-primary" />
           </div>
-          <h2 className="text-2xl font-bold mb-2">No More Profiles</h2>
+          <h2 className="text-2xl font-bold mb-2">{t('discover.noMoreProfiles')}</h2>
           <p className="text-muted-foreground mb-6">
-            Check back later for more matches
+            {t('discover.checkBackLater')}
           </p>
         </div>
       </div>
@@ -508,19 +510,19 @@ export default function Home() {
             {currentProfile.isVerified && (
               <Badge className="bg-emerald-500/90 text-white border-0 gap-1.5 px-2.5 py-1">
                 <ShieldCheck className="h-3.5 w-3.5" />
-                Verified
+                {t('discover.verified')}
               </Badge>
             )}
             {currentProfile.waliInvolvement && currentProfile.waliInvolvement !== 'not_needed' && (
               <Badge className="bg-primary/90 text-primary-foreground border-0 gap-1.5 px-2.5 py-1">
                 <Users className="h-3.5 w-3.5" />
-                Wali Involved
+                {t('profile.waliInvolved')}
               </Badge>
             )}
             {currentProfile.lookingFor === "Marriage" && (
               <Badge className="bg-rose-500/90 text-white border-0 gap-1.5 px-2.5 py-1">
                 <Sparkles className="h-3.5 w-3.5" />
-                Nikkah Ready
+                {t('profile.nikkahReady')}
               </Badge>
             )}
           </div>
@@ -660,18 +662,18 @@ export default function Home() {
               <Heart className="h-8 w-8 text-primary" />
             </div>
             <DialogTitle className="text-center text-2xl font-bold">
-              Upgrade to See Your Matches
+              {t('subscription.upgradeToMatch')}
             </DialogTitle>
             <DialogDescription className="text-center">
-              To see who you've liked and connect with them, upgrade to Fusion Premium for just £9.99/month.
+              {t('subscription.upgradeDescription')}
             </DialogDescription>
           </DialogHeader>
           <div className="flex gap-3 mt-4">
             <Button variant="outline" onClick={() => setShowSubscribeDialog(false)} className="flex-1">
-              Maybe Later
+              {t('common.maybeLater')}
             </Button>
             <Button onClick={() => setLocation("/subscribe")} className="flex-1">
-              Upgrade Now
+              {t('subscription.upgradeNow')}
             </Button>
           </div>
         </DialogContent>
@@ -729,7 +731,7 @@ export default function Home() {
                 {/* Bio */}
                 {currentProfile.bio && (
                   <div className="mb-6 px-5">
-                    <h3 className="text-sm font-semibold text-muted-foreground mb-2">About Me</h3>
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-2">{t('discover.aboutMe')}</h3>
                     <p className="text-foreground">{currentProfile.bio}</p>
                   </div>
                 )}
@@ -751,7 +753,7 @@ export default function Home() {
 
                 {/* Basic Info */}
                 <div className="mb-6 px-5">
-                  <h3 className="text-sm font-semibold text-muted-foreground mb-3">Basic Info</h3>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3">{t('profile.basicInfo')}</h3>
                   <div className="grid grid-cols-2 gap-3">
                     {currentProfile.height && (
                       <div className="flex items-center gap-2 text-sm">
@@ -774,7 +776,7 @@ export default function Home() {
                     {currentProfile.hasChildren !== null && currentProfile.hasChildren !== undefined && (
                       <div className="flex items-center gap-2 text-sm">
                         <Baby className="h-4 w-4 text-primary" />
-                        <span>{currentProfile.hasChildren ? 'Has children' : 'No children'}</span>
+                        <span>{currentProfile.hasChildren ? t('profile.hasChildren') : t('profile.noChildren')}</span>
                       </div>
                     )}
                   </div>
@@ -782,7 +784,7 @@ export default function Home() {
 
                 {/* Religious Info */}
                 <div className="mb-6 px-5">
-                  <h3 className="text-sm font-semibold text-muted-foreground mb-3">Religious Background</h3>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-3">{t('profile.religiousBackground')}</h3>
                   <div className="flex flex-wrap gap-2">
                     {currentProfile.sect && currentProfile.sect !== 'No preference' && (
                       <Badge variant="outline" className="bg-primary/10 border-primary/30">
@@ -801,7 +803,7 @@ export default function Home() {
                     )}
                     {currentProfile.bornMuslim !== null && currentProfile.bornMuslim !== undefined && (
                       <Badge variant="outline" className="bg-primary/10 border-primary/30">
-                        {currentProfile.bornMuslim ? 'Born Muslim' : 'Revert'}
+                        {currentProfile.bornMuslim ? t('profile.bornMuslim') : t('profile.revert')}
                       </Badge>
                     )}
                   </div>
@@ -821,7 +823,7 @@ export default function Home() {
                   }}
                 >
                   <X className="h-4 w-4 mr-2" />
-                  Pass
+                  {t('discover.pass')}
                 </Button>
                 <Button 
                   className="flex-1 bg-gradient-to-r from-primary to-primary/80"
@@ -831,7 +833,7 @@ export default function Home() {
                   }}
                 >
                   <Heart className="h-4 w-4 mr-2" fill="currentColor" />
-                  Like
+                  {t('discover.like')}
                 </Button>
               </div>
             </div>

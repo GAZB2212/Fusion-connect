@@ -14,7 +14,8 @@
     "search": "تلاش",
     "retry": "دوبارہ کوشش کریں",
     "saving": "محفوظ ہو رہا ہے...",
-    "saveChanges": "تبدیلیاں محفوظ کریں"
+    "saveChanges": "تبدیلیاں محفوظ کریں",
+    "maybeLater": "شاید بعد میں"
   },
   "nav": {
     "discover": "دریافت کریں",
@@ -124,7 +125,15 @@
     "mainPhoto": "مین تصویر",
     "setAsMain": "مین بنائیں",
     "upload": "اپ لوڈ",
-    "ethnicity": "نسل"
+    "ethnicity": "نسل",
+    "waliInvolved": "ولی شامل",
+    "nikkahReady": "نکاح کے لیے تیار",
+    "basicInfo": "بنیادی معلومات",
+    "hasChildren": "بچے ہیں",
+    "noChildren": "کوئی بچے نہیں",
+    "religiousBackground": "مذہبی پس منظر",
+    "bornMuslim": "پیدائشی مسلمان",
+    "revert": "تبدیل مذہب"
   },
   "settings": {
     "title": "ترتیبات",
@@ -159,7 +168,10 @@
     "unlock": "تمام خصوصیات کھولیں",
     "subscribe": "ابھی سبسکرائب کریں",
     "currentPlan": "موجودہ پلان",
-    "features": "شامل خصوصیات"
+    "features": "شامل خصوصیات",
+    "upgradeToMatch": "اپنے میچز دیکھنے کے لیے اپ گریڈ کریں",
+    "upgradeDescription": "دیکھیں کہ آپ کو کس نے پسند کیا اور ان سے جڑیں، Fusion Premium میں اپ گریڈ کریں صرف £9.99/مہینہ۔",
+    "upgradeNow": "ابھی اپ گریڈ کریں"
   },
   "videoCall": {
     "calling": "کال ہو رہی ہے...",
