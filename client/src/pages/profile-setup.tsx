@@ -312,7 +312,7 @@ export default function ProfileSetup() {
   };
 
   const nextStep = () => {
-    // For fast onboarding users, skip from step 1 directly to step 8 (verification)
+    // For fast onboarding users, skip from step 1 directly to step 8 (video)
     if (isFastOnboardingComplete && step === 1) {
       setStep(8);
     } else if (step < 8) {
@@ -322,6 +322,12 @@ export default function ProfileSetup() {
 
   const prevStep = () => {
     if (step > 1) setStep(step - 1);
+  };
+
+  // Handle skipping video - submit profile without video
+  const handleSkipVideo = () => {
+    // Trigger form submission
+    form.handleSubmit(onSubmit)();
   };
 
   const handleVideoRecorded = async (videoBlob: Blob) => {
@@ -1314,7 +1320,7 @@ export default function ProfileSetup() {
                   ) : (
                     <VideoRecorder
                       onVideoRecorded={handleVideoRecorded}
-                      onCancel={() => nextStep()}
+                      onCancel={handleSkipVideo}
                       isUploading={isUploadingVideo}
                     />
                   )}
