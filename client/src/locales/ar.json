@@ -122,6 +122,12 @@
     "privacy": "الخصوصية",
     "language": "اللغة",
     "selectLanguage": "اختر اللغة",
+    "textSize": "حجم النص",
+    "selectTextSize": "اختر حجم النص المفضل لديك",
+    "textSmall": "صغير",
+    "textMedium": "متوسط",
+    "textLarge": "كبير",
+    "textSizeDesc": "يضبط حجم النص في رسائل الدردشة لتحسين سهولة القراءة",
     "darkMode": "الوضع الداكن",
     "deleteAccount": "حذف الحساب",
     "logOut": "تسجيل الخروج",
@@ -213,5 +219,12 @@
     "placeholderDisabled": "اكتب هنا......",
     "placeholderMuted": "اكتب هنا......",
     "noChannel": "لا توجد محادثات"
+  },
+  "accessibility": {
+    "textSize": "حجم النص",
+    "textSizeDesc": "ضبط حجم النص في الرسائل",
+    "small": "صغير",
+    "medium": "متوسط",
+    "large": "كبير"
   }
 }

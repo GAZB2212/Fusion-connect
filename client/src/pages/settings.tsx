@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useTextSize } from "@/contexts/TextSizeContext";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -48,7 +49,8 @@ import {
   Video,
   Play,
   BookOpen,
-  Globe
+  Globe,
+  Type
 } from "lucide-react";
 import { VideoRecorder } from "@/components/video-recorder";
 import type { Profile, Chaperone } from "@shared/schema";
@@ -87,6 +89,7 @@ export default function Settings() {
   const [, setLocation] = useLocation();
   const { t } = useTranslation();
   const { language, setLanguage, languages } = useLanguage();
+  const { textSize, setTextSize } = useTextSize();
   const [chaperoneName, setChaperoneName] = useState("");
   const [chaperoneEmail, setChaperoneEmail] = useState("");
   const [relationshipType, setRelationshipType] = useState("");
@@ -1029,6 +1032,49 @@ export default function Settings() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+        </Card>
+
+        {/* Text Size Settings */}
+        <Card className="p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+            <Type className="h-5 w-5" />
+            {t('settings.textSize', 'Text Size')}
+          </h2>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>{t('settings.selectTextSize', 'Choose your preferred text size')}</Label>
+              <div className="flex gap-2">
+                <Button
+                  variant={textSize === 'small' ? 'default' : 'outline'}
+                  onClick={() => setTextSize('small')}
+                  className="flex-1"
+                  data-testid="button-text-small"
+                >
+                  <span className="text-xs">{t('settings.textSmall', 'Small')}</span>
+                </Button>
+                <Button
+                  variant={textSize === 'medium' ? 'default' : 'outline'}
+                  onClick={() => setTextSize('medium')}
+                  className="flex-1"
+                  data-testid="button-text-medium"
+                >
+                  <span className="text-sm">{t('settings.textMedium', 'Medium')}</span>
+                </Button>
+                <Button
+                  variant={textSize === 'large' ? 'default' : 'outline'}
+                  onClick={() => setTextSize('large')}
+                  className="flex-1"
+                  data-testid="button-text-large"
+                >
+                  <span className="text-base">{t('settings.textLarge', 'Large')}</span>
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                {t('settings.textSizeDesc', 'Adjusts text size in chat messages for better readability')}
+              </p>
             </div>
           </div>
         </Card>

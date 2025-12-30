@@ -6,6 +6,7 @@ import GroupChannelList from "@sendbird/uikit-react/GroupChannelList";
 import GroupChannel from "@sendbird/uikit-react/GroupChannel";
 import useSendbirdStateContext from "@sendbird/uikit-react/useSendbirdStateContext";
 import { useTranslation } from "react-i18next";
+import { useTextSize } from "@/contexts/TextSizeContext";
 import "@sendbird/uikit-react/dist/index.css";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Video, MoreVertical, ShieldOff, Flag, Trash2, Phone, Users, Loader2 } from "lucide-react";
@@ -183,6 +184,7 @@ export default function Messages() {
   const { user } = useAuth();
   const [location, setLocation] = useLocation();
   const { t } = useTranslation();
+  const { textSizeClass } = useTextSize();
   // Parse matchId directly from URL - only if there's a path segment after /messages/
   const urlParts = location.split('/');
   const matchId = urlParts[1] === 'messages' && urlParts[2] ? urlParts[2] : undefined;
@@ -825,7 +827,7 @@ export default function Messages() {
             PLACE_HOLDER__NO_CHANNEL: t('sendbird.noChannel'),
           }}
         >
-          <div className="h-full flex fusion-chat">
+          <div className={`h-full flex fusion-chat ${textSizeClass}`}>
             {/* Channel List */}
             <div className={`w-full md:w-80 md:flex-shrink-0 md:border-r border-border h-full bg-background ${currentChannelUrl ? 'hidden md:block' : 'block'}`}>
               <GroupChannelList

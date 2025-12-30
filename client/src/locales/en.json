@@ -122,6 +122,12 @@
     "privacy": "Privacy",
     "language": "Language",
     "selectLanguage": "Select Language",
+    "textSize": "Text Size",
+    "selectTextSize": "Choose your preferred text size",
+    "textSmall": "Small",
+    "textMedium": "Medium",
+    "textLarge": "Large",
+    "textSizeDesc": "Adjusts text size in chat messages for better readability",
     "darkMode": "Dark Mode",
     "deleteAccount": "Delete Account",
     "logOut": "Log Out",
@@ -213,5 +219,12 @@
     "placeholderDisabled": "type here......",
     "placeholderMuted": "type here......",
     "noChannel": "No Chats Available"
+  },
+  "accessibility": {
+    "textSize": "Text Size",
+    "textSizeDesc": "Adjust the size of text in messages",
+    "small": "Small",
+    "medium": "Medium",
+    "large": "Large"
   }
 }

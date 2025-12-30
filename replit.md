@@ -27,6 +27,7 @@ The platform features a luxury aesthetic with a deep navy primary color, gold ac
 **Anti-Fraud System:** Combines enhanced photo verification (AI detects stock photos, etc.), mandatory face verification before matching, real-time message content moderation, bot detection, and tiered rate limiting.
 **Guidance Hub:** Emotional support center with articles on navigating relationships.
 **Multi-Language Support (i18n):** Full internationalization for English, Arabic, and Urdu, including RTL layout support and react-i18next.
+**Accessibility - Text Size Toggle:** User-adjustable chat text size (small/medium/large) in Settings for better readability, with CSS classes applied to Sendbird message bubbles.
 **Haptic Feedback:** Native haptic feedback for interactive elements on iOS/Android via @capacitor/haptics.
 **App Store Compliance:** Features like user reporting, blocking, privacy policy, terms of service, age verification, and account deletion.
 

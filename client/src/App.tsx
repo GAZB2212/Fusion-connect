@@ -17,6 +17,7 @@ import { isCapacitorNative } from "@/lib/platform";
 import { VideoCallProvider } from "@/contexts/VideoCallContext";
 import { WebSocketProvider } from "@/contexts/WebSocketContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { TextSizeProvider } from "@/contexts/TextSizeContext";
 import Landing from "@/pages/landing";
 import Launch from "@/pages/launch";
 import AdminQR from "@/pages/admin-qr";
@@ -282,14 +283,16 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
-        <TooltipProvider>
-          <WebSocketProvider>
-            <VideoCallProvider>
-              <Toaster />
-              <AppContent />
-            </VideoCallProvider>
-          </WebSocketProvider>
-        </TooltipProvider>
+        <TextSizeProvider>
+          <TooltipProvider>
+            <WebSocketProvider>
+              <VideoCallProvider>
+                <Toaster />
+                <AppContent />
+              </VideoCallProvider>
+            </WebSocketProvider>
+          </TooltipProvider>
+        </TextSizeProvider>
       </LanguageProvider>
     </QueryClientProvider>
   );

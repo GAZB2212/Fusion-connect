@@ -122,6 +122,12 @@
     "privacy": "رازداری",
     "language": "زبان",
     "selectLanguage": "زبان منتخب کریں",
+    "textSize": "متن کا سائز",
+    "selectTextSize": "اپنا پسندیدہ متن کا سائز منتخب کریں",
+    "textSmall": "چھوٹا",
+    "textMedium": "درمیانہ",
+    "textLarge": "بڑا",
+    "textSizeDesc": "بہتر پڑھنے کے لیے چیٹ پیغامات میں متن کا سائز ایڈجسٹ کرتا ہے",
     "darkMode": "ڈارک موڈ",
     "deleteAccount": "اکاؤنٹ حذف کریں",
     "logOut": "لاگ آؤٹ",
@@ -213,5 +219,12 @@
     "placeholderDisabled": "یہاں لکھیں......",
     "placeholderMuted": "یہاں لکھیں......",
     "noChannel": "کوئی چیٹ دستیاب نہیں"
+  },
+  "accessibility": {
+    "textSize": "متن کا سائز",
+    "textSizeDesc": "پیغامات میں متن کا سائز ایڈجسٹ کریں",
+    "small": "چھوٹا",
+    "medium": "درمیانہ",
+    "large": "بڑا"
   }
 }
