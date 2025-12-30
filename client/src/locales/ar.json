@@ -262,9 +262,15 @@
   },
   "guidance": {
     "title": "مركز الإرشاد",
+    "subtitle": "الدعم العاطفي والنصائح",
+    "noArticles": "لا توجد مقالات في هذا القسم بعد.",
     "islamicGuidelines": "الإرشادات الإسلامية",
     "marriageAdvice": "نصائح الزواج",
     "faq": "الأسئلة الشائعة"
+  },
+  "legal": {
+    "privacyPolicy": "سياسة الخصوصية",
+    "termsOfService": "شروط الخدمة"
   },
   "forYou": {
     "title": "لك",

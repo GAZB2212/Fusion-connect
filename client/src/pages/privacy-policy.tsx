@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 
 export default function PrivacyPolicy() {
   const [, setLocation] = useLocation();
+  const { t } = useTranslation();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -22,11 +24,11 @@ export default function PrivacyPolicy() {
           data-testid="button-back"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
+          {t('common.back')}
         </Button>
 
         <Card className="p-8">
-          <h1 className="text-3xl font-bold mb-2">Privacy Policy</h1>
+          <h1 className="text-3xl font-bold mb-2">{t('legal.privacyPolicy')}</h1>
           <p className="text-sm text-muted-foreground mb-8">
             Last updated: {new Date().toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' })}
           </p>

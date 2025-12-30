@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, BookOpen, Heart, MessageCircle, Target, ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 
 interface Article {
   id: string;
@@ -212,6 +213,7 @@ export default function GuidanceHub() {
   const [, setLocation] = useLocation();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -306,9 +308,9 @@ export default function GuidanceHub() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="font-semibold">Guidance Hub</h1>
+            <h1 className="font-semibold">{t('guidance.title')}</h1>
             <p className="text-xs text-muted-foreground">
-              Emotional support and advice
+              {t('guidance.subtitle')}
             </p>
           </div>
         </div>
@@ -359,7 +361,7 @@ export default function GuidanceHub() {
         {filteredArticles.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
             <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No articles in this category yet.</p>
+            <p>{t('guidance.noArticles')}</p>
           </div>
         )}
       </main>

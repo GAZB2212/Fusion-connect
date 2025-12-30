@@ -262,9 +262,15 @@
   },
   "guidance": {
     "title": "رہنمائی مرکز",
+    "subtitle": "جذباتی مدد اور مشورے",
+    "noArticles": "اس زمرے میں ابھی تک کوئی مضامین نہیں ہیں۔",
     "islamicGuidelines": "اسلامی رہنمائی",
     "marriageAdvice": "شادی کے مشورے",
     "faq": "عمومی سوالات"
+  },
+  "legal": {
+    "privacyPolicy": "رازداری کی پالیسی",
+    "termsOfService": "سروس کی شرائط"
   },
   "forYou": {
     "title": "آپ کے لیے",

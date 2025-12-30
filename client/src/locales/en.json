@@ -262,9 +262,15 @@
   },
   "guidance": {
     "title": "Guidance Hub",
+    "subtitle": "Emotional support and advice",
+    "noArticles": "No articles in this category yet.",
     "islamicGuidelines": "Islamic Guidelines",
     "marriageAdvice": "Marriage Advice",
     "faq": "FAQ"
+  },
+  "legal": {
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service"
   },
   "forYou": {
     "title": "For You",
