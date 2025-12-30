@@ -798,7 +798,7 @@ export default function Home() {
                     )}
                     {currentProfile.prayerFrequency && (
                       <Badge variant="outline" className="bg-primary/10 border-primary/30">
-                        Prays {String(currentProfile.prayerFrequency).toLowerCase()}
+                        {t('profile.prays')} {String(currentProfile.prayerFrequency).toLowerCase()}
                       </Badge>
                     )}
                     {currentProfile.bornMuslim !== null && currentProfile.bornMuslim !== undefined && (

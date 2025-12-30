@@ -160,7 +160,8 @@
     "noChildren": "لا يوجد أطفال",
     "religiousBackground": "الخلفية الدينية",
     "bornMuslim": "مسلم بالولادة",
-    "revert": "اعتنق الإسلام"
+    "revert": "اعتنق الإسلام",
+    "prays": "يصلي"
   },
   "settings": {
     "title": "الإعدادات",
