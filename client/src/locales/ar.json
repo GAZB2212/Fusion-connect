@@ -215,10 +215,28 @@
     "faq": "الأسئلة الشائعة"
   },
   "sendbird": {
-    "placeholder": "اكتب هنا......",
-    "placeholderDisabled": "اكتب هنا......",
-    "placeholderMuted": "اكتب هنا......",
-    "noChannel": "لا توجد محادثات"
+    "placeholder": "اكتب رسالة...",
+    "placeholderDisabled": "الدردشة معطلة",
+    "placeholderMuted": "أنت مكتوم",
+    "noChannel": "لا توجد محادثات",
+    "send": "إرسال",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "copy": "نسخ",
+    "reply": "رد",
+    "retry": "إعادة المحاولة",
+    "failedToSend": "فشل الإرسال",
+    "resend": "إعادة الإرسال",
+    "remove": "إزالة",
+    "today": "اليوم",
+    "yesterday": "أمس",
+    "messageSent": "تم الإرسال",
+    "messageDelivered": "تم التسليم",
+    "messageRead": "مقروءة",
+    "typing": "يكتب...",
+    "noMessages": "لا توجد رسائل بعد",
+    "startConversation": "ابدأ محادثة"
   },
   "accessibility": {
     "textSize": "حجم النص",

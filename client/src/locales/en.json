@@ -215,10 +215,28 @@
     "faq": "FAQ"
   },
   "sendbird": {
-    "placeholder": "type here......",
-    "placeholderDisabled": "type here......",
-    "placeholderMuted": "type here......",
-    "noChannel": "No Chats Available"
+    "placeholder": "Type a message...",
+    "placeholderDisabled": "Chat disabled",
+    "placeholderMuted": "You are muted",
+    "noChannel": "No Chats Available",
+    "send": "Send",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "copy": "Copy",
+    "reply": "Reply",
+    "retry": "Retry",
+    "failedToSend": "Failed to send",
+    "resend": "Resend",
+    "remove": "Remove",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "messageSent": "Sent",
+    "messageDelivered": "Delivered",
+    "messageRead": "Read",
+    "typing": "typing...",
+    "noMessages": "No messages yet",
+    "startConversation": "Start a conversation"
   },
   "accessibility": {
     "textSize": "Text Size",

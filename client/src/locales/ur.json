@@ -215,10 +215,28 @@
     "faq": "عمومی سوالات"
   },
   "sendbird": {
-    "placeholder": "یہاں لکھیں......",
-    "placeholderDisabled": "یہاں لکھیں......",
-    "placeholderMuted": "یہاں لکھیں......",
-    "noChannel": "کوئی چیٹ دستیاب نہیں"
+    "placeholder": "پیغام لکھیں...",
+    "placeholderDisabled": "چیٹ غیر فعال",
+    "placeholderMuted": "آپ خاموش ہیں",
+    "noChannel": "کوئی چیٹ دستیاب نہیں",
+    "send": "بھیجیں",
+    "cancel": "منسوخ",
+    "delete": "حذف کریں",
+    "edit": "ترمیم",
+    "copy": "کاپی",
+    "reply": "جواب دیں",
+    "retry": "دوبارہ کوشش",
+    "failedToSend": "بھیجنے میں ناکام",
+    "resend": "دوبارہ بھیجیں",
+    "remove": "ہٹائیں",
+    "today": "آج",
+    "yesterday": "کل",
+    "messageSent": "بھیجا گیا",
+    "messageDelivered": "پہنچ گیا",
+    "messageRead": "پڑھا گیا",
+    "typing": "لکھ رہا ہے...",
+    "noMessages": "ابھی تک کوئی پیغام نہیں",
+    "startConversation": "گفتگو شروع کریں"
   },
   "accessibility": {
     "textSize": "متن کا سائز",
