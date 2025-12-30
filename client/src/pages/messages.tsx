@@ -1135,11 +1135,22 @@ export default function Messages() {
           color: hsl(var(--foreground)) !important;
         }
 
-        /* Message input sits directly above bottom nav - balanced padding */
+        /* Message input locked to bottom nav bar */
         .fusion-chat .sendbird-conversation__footer,
         .fusion-chat .sendbird-message-input-wrapper {
-          padding-bottom: 12px !important;
-          margin-bottom: 0 !important;
+          position: fixed !important;
+          bottom: 64px !important;
+          left: 0 !important;
+          right: 0 !important;
+          padding: 8px 12px !important;
+          background: hsl(var(--background)) !important;
+          z-index: 50 !important;
+        }
+        
+        /* Add padding to messages area to account for fixed input */
+        .fusion-chat .sendbird-conversation__messages,
+        .fusion-chat .sendbird-group-channel-view__message-list {
+          padding-bottom: 70px !important;
         }
 
         /* Ghosted Send Button */
