@@ -511,13 +511,14 @@ body.text-size-small {
   font-size: 14px;
 }
 
-body.text-size-small p,
-body.text-size-small span:not(.lucide):not([class*="icon"]),
-body.text-size-small label,
-body.text-size-small .text-sm,
-body.text-size-small .text-base {
+body.text-size-small :not([data-testid="bottom-nav"]):not([data-testid="bottom-nav"] *) p,
+body.text-size-small :not([data-testid="bottom-nav"]):not([data-testid="bottom-nav"] *) span:not(.lucide):not([class*="icon"]),
+body.text-size-small :not([data-testid="bottom-nav"]):not([data-testid="bottom-nav"] *) label,
+body.text-size-small main .text-sm,
+body.text-size-small main .text-base {
   font-size: 0.875rem;
-  line-height: 1.4;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
 }
 
 /* Global Text Size - Medium (default) */
@@ -530,24 +531,42 @@ body.text-size-large {
   font-size: 18px;
 }
 
-body.text-size-large p,
-body.text-size-large span:not(.lucide):not([class*="icon"]),
-body.text-size-large label,
-body.text-size-large .text-sm,
-body.text-size-large .text-base {
+body.text-size-large :not([data-testid="bottom-nav"]):not([data-testid="bottom-nav"] *) p,
+body.text-size-large :not([data-testid="bottom-nav"]):not([data-testid="bottom-nav"] *) span:not(.lucide):not([class*="icon"]),
+body.text-size-large :not([data-testid="bottom-nav"]):not([data-testid="bottom-nav"] *) label,
+body.text-size-large main .text-sm,
+body.text-size-large main .text-base {
   font-size: 1.125rem;
-  line-height: 1.6;
+  line-height: 1.7;
+  letter-spacing: 0.02em;
 }
 
-body.text-size-large h1 { font-size: 2.5rem; }
-body.text-size-large h2 { font-size: 2rem; }
-body.text-size-large h3 { font-size: 1.5rem; }
-body.text-size-large h4 { font-size: 1.25rem; }
+/* Heading sizes - exclude bottom nav */
+body.text-size-large main h1 { font-size: 2.5rem; line-height: 1.3; }
+body.text-size-large main h2 { font-size: 2rem; line-height: 1.35; }
+body.text-size-large main h3 { font-size: 1.5rem; line-height: 1.4; }
+body.text-size-large main h4 { font-size: 1.25rem; line-height: 1.45; }
 
-body.text-size-small h1 { font-size: 1.75rem; }
-body.text-size-small h2 { font-size: 1.5rem; }
-body.text-size-small h3 { font-size: 1.125rem; }
-body.text-size-small h4 { font-size: 1rem; }
+body.text-size-small main h1 { font-size: 1.75rem; line-height: 1.3; }
+body.text-size-small main h2 { font-size: 1.5rem; line-height: 1.35; }
+body.text-size-small main h3 { font-size: 1.125rem; line-height: 1.4; }
+body.text-size-small main h4 { font-size: 1rem; line-height: 1.45; }
+
+/* Better spacing for cards and content in large text mode */
+body.text-size-large main .space-y-2 { gap: 0.625rem; }
+body.text-size-large main .space-y-3 { gap: 0.875rem; }
+body.text-size-large main .space-y-4 { gap: 1.125rem; }
+body.text-size-large main .gap-2 { gap: 0.625rem; }
+body.text-size-large main .gap-3 { gap: 0.875rem; }
+body.text-size-large main .gap-4 { gap: 1.125rem; }
+
+/* Ensure bottom nav stays fixed size */
+[data-testid="bottom-nav"],
+[data-testid="bottom-nav"] * {
+  font-size: 12px !important;
+  line-height: 1.2 !important;
+  letter-spacing: normal !important;
+}
 
 /* Sendbird Chat Text Size - Small */
 .chat-text-small .sendbird-message-content__middle__message-item-body,
