@@ -1246,44 +1246,52 @@ export default function Messages() {
           background: hsl(var(--muted)) !important;
         }
         
-        /* Style emoji reactions on messages - just the emoji, clean look */
+        /* Style emoji reactions - plain emoji only, no background */
         .fusion-chat .sendbird-emoji-reactions {
           display: inline-flex !important;
           visibility: visible !important;
           gap: 4px !important;
           margin-top: 4px !important;
           align-items: center !important;
+          background: transparent !important;
+          border: none !important;
+          box-shadow: none !important;
         }
         
         .fusion-chat .sendbird-message-content__middle__emoji-container {
           display: none !important;
         }
         
-        .fusion-chat .sendbird-emoji-reactions__reaction-badge {
+        .fusion-chat .sendbird-emoji-reactions__reaction-badge,
+        .fusion-chat .sendbird-emoji-reactions__reaction-badge * {
           display: inline-flex !important;
           visibility: visible !important;
           align-items: center !important;
           justify-content: center !important;
           padding: 0 !important;
+          margin: 0 !important;
           background: transparent !important;
+          background-color: transparent !important;
           border: none !important;
+          box-shadow: none !important;
           cursor: pointer !important;
-          font-size: 16px !important;
-          line-height: 1 !important;
         }
         
         .fusion-chat .sendbird-emoji-reactions__reaction-badge:hover {
-          transform: scale(1.2) !important;
+          transform: scale(1.15) !important;
+          background: transparent !important;
         }
         
         /* Hide the count number - just show emoji */
-        .fusion-chat .sendbird-emoji-reactions__reaction-badge__count {
+        .fusion-chat .sendbird-emoji-reactions__reaction-badge__count,
+        .fusion-chat .sendbird-emoji-reactions__reaction-badge span:not(.sendbird-emoji-reactions__reaction-badge__emoji) {
           display: none !important;
         }
         
         .fusion-chat .sendbird-emoji-reactions__reaction-badge__emoji {
-          font-size: 16px !important;
+          font-size: 18px !important;
           line-height: 1 !important;
+          background: transparent !important;
         }
         
         /* Clean up message hover menu - minimal and subtle */
