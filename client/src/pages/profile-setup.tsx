@@ -522,7 +522,7 @@ export default function ProfileSetup() {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-14">
+    <div className="min-h-screen bg-background pt-14 overflow-y-auto">
       {/* Header with Logout */}
       <div className="border-b bg-card">
         <div className="container max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -1278,7 +1278,7 @@ export default function ProfileSetup() {
 
               {/* Step 8: Video Intro */}
               {step === 8 && (
-                <div className="space-y-6">
+                <div className="space-y-6 pb-8">
                   <h2 className="text-xl font-semibold">Record Your Intro Video</h2>
                   <p className="text-muted-foreground">
                     Help potential matches get to know you with a short 20-second video introduction. This is optional but highly recommended!

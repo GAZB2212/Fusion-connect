@@ -55,7 +55,18 @@ export function VideoRecorder({
     };
   }, [recordedVideoUrl]);
 
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [isMediaRecorderSupported, setIsMediaRecorderSupported] = useState(true);
+
+  useEffect(() => {
+    // Check if MediaRecorder is supported
+    if (typeof MediaRecorder === 'undefined') {
+      setIsMediaRecorderSupported(false);
+    }
+  }, []);
+
   const startCamera = async () => {
+    setCameraError(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "user", width: { ideal: 720 }, height: { ideal: 1280 } },
@@ -72,9 +83,14 @@ export function VideoRecorder({
         }
       }
       setCameraActive(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error accessing camera:", error);
-      alert("Unable to access camera. Please allow camera and microphone permissions.");
+      const errorMessage = error.name === 'NotAllowedError' 
+        ? "Camera access denied. Please allow camera and microphone permissions in your browser settings."
+        : error.name === 'NotFoundError'
+        ? "No camera found. Please connect a camera and try again."
+        : "Unable to access camera. Please check your permissions.";
+      setCameraError(errorMessage);
     }
   };
 
@@ -90,10 +106,21 @@ export function VideoRecorder({
     if (!streamRef.current) return;
 
     chunksRef.current = [];
+    
+    // Determine the best supported MIME type (iOS needs mp4, others prefer webm)
+    let mimeType = 'video/webm';
+    if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
+      mimeType = 'video/webm;codecs=vp9';
+    } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8')) {
+      mimeType = 'video/webm;codecs=vp8';
+    } else if (MediaRecorder.isTypeSupported('video/mp4')) {
+      mimeType = 'video/mp4';
+    } else if (MediaRecorder.isTypeSupported('video/webm')) {
+      mimeType = 'video/webm';
+    }
+    
     const mediaRecorder = new MediaRecorder(streamRef.current, {
-      mimeType: MediaRecorder.isTypeSupported('video/webm;codecs=vp9') 
-        ? 'video/webm;codecs=vp9' 
-        : 'video/webm',
+      mimeType,
     });
 
     mediaRecorder.ondataavailable = (event) => {
@@ -103,7 +130,7 @@ export function VideoRecorder({
     };
 
     mediaRecorder.onstop = () => {
-      const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+      const blob = new Blob(chunksRef.current, { type: mimeType });
       setRecordedVideo(blob);
       const url = URL.createObjectURL(blob);
       setRecordedVideoUrl(url);
@@ -241,17 +268,49 @@ export function VideoRecorder({
             <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
               <Video className="h-10 w-10 text-primary" />
             </div>
-            <p className="text-center text-muted-foreground text-sm max-w-xs">
-              Record a short video introduction so potential matches can get to know you better
-            </p>
-            <Button onClick={startCamera} data-testid="button-start-camera">
-              <Video className="h-4 w-4 mr-2" />
-              Start Camera
-            </Button>
-            {onCancel && (
-              <Button variant="ghost" onClick={onCancel} data-testid="button-skip-video">
-                Skip for now
-              </Button>
+            
+            {!isMediaRecorderSupported ? (
+              <div className="text-center space-y-3">
+                <p className="text-muted-foreground text-sm max-w-xs">
+                  Video recording is not supported on your device. You can skip this step and add a video later from your profile settings.
+                </p>
+                {onCancel && (
+                  <Button onClick={onCancel} data-testid="button-skip-video">
+                    Continue Without Video
+                  </Button>
+                )}
+              </div>
+            ) : cameraError ? (
+              <div className="text-center space-y-3">
+                <p className="text-destructive text-sm max-w-xs">
+                  {cameraError}
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <Button variant="outline" onClick={startCamera} data-testid="button-retry-camera">
+                    Try Again
+                  </Button>
+                  {onCancel && (
+                    <Button variant="ghost" onClick={onCancel} data-testid="button-skip-video">
+                      Skip for now
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <>
+                <p className="text-center text-muted-foreground text-sm max-w-xs">
+                  Record a short video introduction so potential matches can get to know you better
+                </p>
+                <Button onClick={startCamera} data-testid="button-start-camera">
+                  <Video className="h-4 w-4 mr-2" />
+                  Start Camera
+                </Button>
+                {onCancel && (
+                  <Button variant="ghost" onClick={onCancel} data-testid="button-skip-video">
+                    Skip for now
+                  </Button>
+                )}
+              </>
             )}
           </div>
         ) : (
