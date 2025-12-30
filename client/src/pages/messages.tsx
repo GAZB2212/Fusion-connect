@@ -1192,12 +1192,32 @@ export default function Messages() {
           fill: hsl(var(--muted-foreground)) !important;
         }
         
-        /* Hide emoji reactions - keyboard has emojis */
+        /* Style emoji button in message input */
+        .fusion-chat .sendbird-message-input--emoji-button,
+        .fusion-chat .sendbird-iconbutton--emoji,
+        .fusion-chat [class*="message-input--emoji"] {
+          display: flex !important;
+          visibility: visible !important;
+          opacity: 0.6 !important;
+          background: transparent !important;
+          border: none !important;
+        }
+        
+        .fusion-chat .sendbird-message-input--emoji-button:hover,
+        .fusion-chat .sendbird-iconbutton--emoji:hover {
+          opacity: 1 !important;
+        }
+        
+        .fusion-chat .sendbird-message-input--emoji-button svg,
+        .fusion-chat .sendbird-iconbutton--emoji svg {
+          width: 20px !important;
+          height: 20px !important;
+          color: hsl(var(--muted-foreground)) !important;
+        }
+        
+        /* Hide emoji reactions on messages - keep input emoji */
         .fusion-chat .sendbird-emoji-reactions,
         .fusion-chat .sendbird-message-content__middle__emoji-container,
-        .fusion-chat [class*="emoji-reactions"],
-        .fusion-chat [class*="emoji-container"],
-        .fusion-chat .sendbird-context-menu [class*="emoji"],
         .fusion-chat .sendbird-emoji-reaction-add-button {
           display: none !important;
         }
@@ -1214,9 +1234,8 @@ export default function Messages() {
           padding: 4px !important;
         }
         
-        /* Hide the emoji button in message menu */
+        /* Hide emoji reactions in message menu but keep input emoji button */
         .fusion-chat .sendbird-message-content-menu__emoji-reactions,
-        .fusion-chat [class*="message-content-menu__emoji"],
         .fusion-chat .sendbird-context-menu__emoji-button,
         .fusion-chat [class*="reaction-button"] {
           display: none !important;
