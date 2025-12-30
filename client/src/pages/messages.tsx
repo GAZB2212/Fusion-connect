@@ -1135,10 +1135,10 @@ export default function Messages() {
           color: hsl(var(--foreground)) !important;
         }
 
-        /* Message input sits directly above bottom nav - minimal padding */
+        /* Message input sits directly above bottom nav - balanced padding */
         .fusion-chat .sendbird-conversation__footer,
         .fusion-chat .sendbird-message-input-wrapper {
-          padding-bottom: 4px !important;
+          padding-bottom: 8px !important;
           margin-bottom: 0 !important;
         }
 
