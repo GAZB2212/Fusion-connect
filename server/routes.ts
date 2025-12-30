@@ -58,7 +58,7 @@ import {
   type UserMatchPreference,
 } from "@shared/schema";
 import OpenAI from "openai";
-import { eq, and, or, ne, notInArray, desc, sql, lt, gte, isNull } from "drizzle-orm";
+import { eq, and, or, ne, notInArray, inArray, desc, sql, lt, gte, isNull } from "drizzle-orm";
 import { sendVideoCallNotification } from "./pushNotifications";
 import { getCached, setCached, deleteCached } from "./caching";
 
@@ -2233,7 +2233,7 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
           .select({ profile: profiles, user: users })
           .from(profiles)
           .innerJoin(users, eq(profiles.userId, users.id))
-          .where(sql`${profiles.userId} = ANY(${pickUserIds})`);
+          .where(inArray(profiles.userId, pickUserIds));
 
         const profileMap = new Map(pickProfiles.map(p => [p.profile.userId, p]));
 
