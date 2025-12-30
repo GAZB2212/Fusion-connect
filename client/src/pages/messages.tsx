@@ -1192,106 +1192,20 @@ export default function Messages() {
           fill: hsl(var(--muted-foreground)) !important;
         }
         
-        /* Style emoji button in message input */
+        /* Hide emoji button - use device keyboard for emojis */
         .fusion-chat .sendbird-message-input--emoji-button,
         .fusion-chat .sendbird-iconbutton--emoji,
         .fusion-chat [class*="message-input--emoji"] {
-          display: flex !important;
-          visibility: visible !important;
-          opacity: 0.6 !important;
-          background: transparent !important;
-          border: none !important;
-        }
-        
-        .fusion-chat .sendbird-message-input--emoji-button:hover,
-        .fusion-chat .sendbird-iconbutton--emoji:hover {
-          opacity: 1 !important;
-        }
-        
-        .fusion-chat .sendbird-message-input--emoji-button svg,
-        .fusion-chat .sendbird-iconbutton--emoji svg {
-          width: 20px !important;
-          height: 20px !important;
-          color: hsl(var(--muted-foreground)) !important;
-        }
-        
-        /* Style the emoji picker popup */
-        .fusion-chat .sendbird-emoji-list-container,
-        .fusion-chat .sendbird-emoji-container,
-        .fusion-chat [class*="emoji-list-container"],
-        .sendbird-emoji-list-container,
-        .sendbird-emoji-container {
-          display: block !important;
-          visibility: visible !important;
-          background: hsl(var(--card)) !important;
-          border: 1px solid hsl(var(--border)) !important;
-          border-radius: 12px !important;
-          box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2) !important;
-          z-index: 9999 !important;
-        }
-        
-        .fusion-chat .sendbird-emoji-list-container__category,
-        .sendbird-emoji-list-container__category {
-          background: hsl(var(--card)) !important;
-        }
-        
-        .fusion-chat .sendbird-emoji-item,
-        .sendbird-emoji-item {
-          cursor: pointer !important;
-          border-radius: 8px !important;
-        }
-        
-        .fusion-chat .sendbird-emoji-item:hover,
-        .sendbird-emoji-item:hover {
-          background: hsl(var(--muted)) !important;
-        }
-        
-        /* Style emoji reactions - plain emoji only, no background */
-        .fusion-chat .sendbird-emoji-reactions {
-          display: inline-flex !important;
-          visibility: visible !important;
-          gap: 4px !important;
-          margin-top: 4px !important;
-          align-items: center !important;
-          background: transparent !important;
-          border: none !important;
-          box-shadow: none !important;
-        }
-        
-        .fusion-chat .sendbird-message-content__middle__emoji-container {
           display: none !important;
         }
         
-        .fusion-chat .sendbird-emoji-reactions__reaction-badge,
-        .fusion-chat .sendbird-emoji-reactions__reaction-badge * {
-          display: inline-flex !important;
-          visibility: visible !important;
-          align-items: center !important;
-          justify-content: center !important;
-          padding: 0 !important;
-          margin: 0 !important;
-          background: transparent !important;
-          background-color: transparent !important;
-          border: none !important;
-          box-shadow: none !important;
-          cursor: pointer !important;
-        }
-        
-        .fusion-chat .sendbird-emoji-reactions__reaction-badge:hover {
-          transform: scale(1.15) !important;
-          background: transparent !important;
-        }
-        
-        /* Hide the count number - just show emoji */
-        .fusion-chat .sendbird-emoji-reactions__reaction-badge__count,
-        .fusion-chat .sendbird-emoji-reactions__reaction-badge span:not(.sendbird-emoji-reactions__reaction-badge__emoji) {
+        /* Hide emoji reactions - use keyboard emojis instead */
+        .fusion-chat .sendbird-emoji-reactions,
+        .fusion-chat .sendbird-message-content__middle__emoji-container,
+        .fusion-chat [class*="emoji-reactions"],
+        .fusion-chat [class*="emoji-container"],
+        .fusion-chat .sendbird-emoji-reaction-add-button {
           display: none !important;
-        }
-        
-        .fusion-chat .sendbird-emoji-reactions__reaction-badge__emoji {
-          font-size: 18px !important;
-          line-height: 1 !important;
-          background: transparent !important;
         }
         
         /* Clean up message hover menu - minimal and subtle */
