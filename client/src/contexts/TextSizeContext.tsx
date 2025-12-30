@@ -38,6 +38,9 @@ export function TextSizeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.setAttribute("data-text-size", textSize);
+    // Apply text size class to body for global styling
+    document.body.classList.remove("text-size-small", "text-size-medium", "text-size-large");
+    document.body.classList.add(`text-size-${textSize}`);
   }, [textSize]);
 
   return (

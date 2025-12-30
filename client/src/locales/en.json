@@ -127,7 +127,7 @@
     "textSmall": "Small",
     "textMedium": "Medium",
     "textLarge": "Large",
-    "textSizeDesc": "Adjusts text size in chat messages for better readability",
+    "textSizeDesc": "Adjusts text size across the app for better readability",
     "darkMode": "Dark Mode",
     "deleteAccount": "Delete Account",
     "logOut": "Log Out",

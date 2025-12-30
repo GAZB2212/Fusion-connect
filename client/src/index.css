@@ -506,6 +506,49 @@
   }
 }
 
+/* Global Text Size - Small */
+body.text-size-small {
+  font-size: 14px;
+}
+
+body.text-size-small p,
+body.text-size-small span:not(.lucide):not([class*="icon"]),
+body.text-size-small label,
+body.text-size-small .text-sm,
+body.text-size-small .text-base {
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+/* Global Text Size - Medium (default) */
+body.text-size-medium {
+  font-size: 16px;
+}
+
+/* Global Text Size - Large */
+body.text-size-large {
+  font-size: 18px;
+}
+
+body.text-size-large p,
+body.text-size-large span:not(.lucide):not([class*="icon"]),
+body.text-size-large label,
+body.text-size-large .text-sm,
+body.text-size-large .text-base {
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+
+body.text-size-large h1 { font-size: 2.5rem; }
+body.text-size-large h2 { font-size: 2rem; }
+body.text-size-large h3 { font-size: 1.5rem; }
+body.text-size-large h4 { font-size: 1.25rem; }
+
+body.text-size-small h1 { font-size: 1.75rem; }
+body.text-size-small h2 { font-size: 1.5rem; }
+body.text-size-small h3 { font-size: 1.125rem; }
+body.text-size-small h4 { font-size: 1rem; }
+
 /* Sendbird Chat Text Size - Small */
 .chat-text-small .sendbird-message-content__middle__message-item-body,
 .chat-text-small .sendbird-text-message-item-body,
