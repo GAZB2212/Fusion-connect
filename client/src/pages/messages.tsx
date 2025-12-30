@@ -1135,11 +1135,11 @@ export default function Messages() {
           color: hsl(var(--foreground)) !important;
         }
 
-        /* Add bottom padding for mobile navigation bar */
+        /* Message input sits directly above bottom nav - minimal padding */
         .fusion-chat .sendbird-conversation__footer,
         .fusion-chat .sendbird-message-input-wrapper {
-          padding-bottom: 16px !important;
-          margin-bottom: env(safe-area-inset-bottom, 0px) !important;
+          padding-bottom: 4px !important;
+          margin-bottom: 0 !important;
         }
 
         /* Ghosted Send Button */
