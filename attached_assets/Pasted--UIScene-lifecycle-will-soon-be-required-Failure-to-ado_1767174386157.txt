@@ -1,0 +1,391 @@
+`UIScene` lifecycle will soon be required. Failure to adopt will result in an assert in the future.
+Could not create a sandbox extension for '/var/containers/Bundle/Application/5EFD2BC9-406C-41ED-A07A-1D5FF2F55CCB/App.app'
+⚡️  Loading app at capacitor://localhost...
+WebContent[859] 0x100fac888 - [webPageID=8] WebPage::runJavaScriptInFrameInScriptWorld: Request to run JavaScript failed with error <private>
+⚡️  JS Eval error A JavaScript exception occurred
+WebContent[859] Unable to hide query parameters from script (missing data)
+⚡️  [debug] - [lock-safari-1] is created.
+SplashScreen.hideSplash: SplashScreen was automatically hidden after default timeout. You should call `SplashScreen.hide()` as soon as your web app is loaded (or increase the timeout). Read more at https://capacitorjs.com/docs/apis/splash-screen#hiding-the-splash-screen
+WebContent[859] ERROR AppleProResHW: 45: AppleProResHW_CheckPlatform(): IOServiceGetMatchingService failed
+⚡️  [log] - [API Query] /api/auth/user -> https://fusionmatch.replit.app/api/auth/user
+⚡️  [log] - [API] No JWT token available
+⚡️  [log] - [Push] App launch - starting early push notification init...
+⚡️  [log] - [Push] ========================================
+⚡️  [log] - [Push] EARLY INITIALIZATION STARTING
+⚡️  [log] - [Push] ========================================
+⚡️  [log] - [Push] Platform: ios
+⚡️  [log] - [Push] Is Native: true
+⚡️  [log] - [Push] Is iOS: true
+⚡️  [log] - [Push] Is Android: false
+⚡️  To Native ->  PushNotifications addListener 70682541
+⚡️  To Native ->  PushNotifications addListener 70682542
+⚡️  To Native ->  PushNotifications addListener 70682543
+⚡️  To Native ->  PushNotifications addListener 70682544
+⚡️  To Native ->  PushNotifications checkPermissions 70682545
+⚡️  [log] - [Push] STEP 1: Setting up native event listeners...
+⚡️  [log] - [Push] Setting up native notification listeners...
+⚡️  [log] - [Push] Setting up registration listeners BEFORE calling register()
+⚡️  [log] - [Push] Registration listeners set up successfully
+⚡️  [log] - [Push] All notification listeners set up successfully
+⚡️  [log] - [Push] Event listeners ready
+⚡️  [log] - [Push] STEP 2: Checking notification permission...
+⚡️  TO JS {"receive":"prompt"}
+⚡️  To Native ->  PushNotifications requestPermissions 70682546
+⚡️  [log] - [Push] Current permission: prompt
+⚡️  [log] - [Push] Requesting notification permission...
+⚡️  [log] - 09:20:57:192 %cAgora-SDK [DEBUG]: color: #64B5F6; setAppType: 1001
+⚡️  [log] - 09:20:57:203 %cAgora-SDK [DEBUG]: color: #64B5F6; browser ua:  Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148
+⚡️  [log] - 09:20:57:203 %cAgora-SDK [INFO]: color: #1E88E5; font-weight: bold; browser info:  {"name":"WebKit","version":"605","os":"iOS","osVersion":"18.7","browserVersion":"605.1.15","deviceType":"mobile"}
+⚡️  [log] - 09:20:57:203 %cAgora-SDK [INFO]: color: #1E88E5; font-weight: bold; browser compatibility:  {"getDisplayMedia":false,"getStreamFromExtension":false,"supportUnifiedPlan":true,"supportMinBitrate":false,"supportSetRtpSenderParameters":true,"supportDualStream":true,"webAudioMediaStreamDest":true,"supportReplaceTrack":true,"supportWebGL":true,"webAudioWithAEC":true,"supportRequestFrame":true,"supportShareAudio":false,"supportDualStreamEncoding":false,"supportDataChannel":false,"supportPCSetConfiguration":true,"supportWebRTCEncodedTransform":false,"supportWebRTCInsertableStream":false,"supportRequestVideoFrameCallback":true,"supportWebCrypto":true}
+⚡️  [log] - [API Query] /api/auth/user response: 401
+⚡️  [log] - [API Query] /api/auth/user returned 401 - token may be expired or missing
+⚡️  WebView loaded
+⚡️  TO JS {"receive":"granted"}
+⚡️  [log] - [Push] Permission result: granted
+⚡️  [log] - [Push] STEP 3: Registering with APNs/FCM...
+⚡️  [log] - [Push] Calling PushNotifications.register() - token will arrive via event listener
+⚡️  [log] - [Push] Starting native push registration...
+⚡️  [log] - [Push] Platform: ios
+⚡️  [log] - [Push] Checking Capacitor environment...
+⚡️  [log] - [Push] Capacitor.isNativePlatform(): true
+⚡️  [log] - [Push] Capacitor.getPlatform(): ios
+⚡️  [log] - [Push] PushNotifications plugin available: true
+⚡️  [log] - [Push] Available plugins: CapacitorHttp, Console, WebView, CapacitorCookies, SystemBars, SplashScreen, Haptics, StatusBar, Camera, PushNotifications
+⚡️  [log] - [Push] Registration listeners already initialized
+⚡️  [log] - [Push] Calling PushNotifications.register()...
+⚡️  [log] - [Push] IMPORTANT: On iOS, ensure the following in Xcode:
+⚡️  [log] - [Push]   1. Push Notifications capability is added
+⚡️  [log] - [Push]   2. Background Modes > Remote notifications is enabled
+⚡️  To Native ->  ⚡️  [log] - [Push]   3. App.entitlements has aps-environment set
+PushNotifications register 70682547
+⚡️  [log] - [Push]   4. APNs key (.p8) is configured in Apple Developer Portal
+⚡️  TO JS undefined
+⚡️  [log] - [Push] register() call completed successfully
+⚡️  [log] - [Push] Waiting for token via "registration" event listener...
+⚡️  [log] - [Push] If no token appears within 15 seconds, check Xcode configuration
+⚡️  [log] - 09:21:05:824 %cAgora-SDK [DEBUG]: color: #64B5F6; current web page is visible
+⚡️  [log] - [API Query] /api/auth/user -> https://fusionmatch.replit.app/api/auth/user
+⚡️  [log] - [API] No JWT token available
+WebContent[859] Service "com.apple.CARenderServer" failed bootstrap look up (1) - (os/kern) invalid address
+WebContent[859] Null Context server port!
+⚡️  [log] - [API Query] /api/auth/user response: 401
+⚡️  [log] - [API Query] /api/auth/user returned 401 - token may be expired or missing
+⚡️  To Native ->  Haptics impact 70682548
+⚡️  TO JS undefined
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x14b7c5f90 h=--& v=--& _UIToolbarContentView:0x14b4b0a00.width == 0   (active)>",
+    "<NSLayoutConstraint:0x14b5241e0 H:|-(0)-[_UIButtonBarStackView:0x14b477600]   (active, names: '|':_UIToolbarContentView:0x14b4b0a00 )>",
+    "<NSLayoutConstraint:0x14b524230 H:[_UIButtonBarStackView:0x14b477600]-(0)-|   (active, names: '|':_UIToolbarContentView:0x14b4b0a00 )>",
+    "<NSLayoutConstraint:0x14b7c4550 'IB_Leading_Leading' H:|-(0)-[_UIModernBarButton:0x14b70d880]   (active, names: '|':_UIButtonBarButton:0x14b61c280 )>",
+    "<NSLayoutConstraint:0x14b7c4aa0 'IB_Leading_Leading' H:|-(>=5)-[_UIModernBarButton:0x14b70dc00]   (active, names: '|':_UIButtonBarButton:0x14b61c500 )>",
+    "<NSLayoutConstraint:0x14b7c45a0 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x14b70d880]-(>=8)-|   (active, names: '|':_UIButtonBarButton:0x14b61c280 )>",
+    "<NSLayoutConstraint:0x14b7c4af0 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x14b70dc00]-(>=5)-|   (active, names: '|':_UIButtonBarButton:0x14b61c500 )>",
+    "<NSLayoutConstraint:0x14b7c5040 'TB_Leading_Leading' H:|-(8)-[_UIModernBarButton:0x14b70df80]   (active, names: '|':_UIButtonBarButton:0x14b61c780 )>",
+    "<NSLayoutConstraint:0x14b7c5090 'TB_Trailing_Trailing' H:[_UIModernBarButton:0x14b70df80]-(0)-|   (active, names: '|':_UIButtonBarButton:0x14b61c780 )>",
+    "<NSLayoutConstraint:0x14b7c53b0 'UISV-canvas-connection' UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide'.leading == _UIButtonBarButton:0x14b61c280.leading   (active)>",
+    "<NSLayoutConstraint:0x14b7c5630 'UISV-canvas-connection' UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide'.trailing == _UIButtonBarButton:0x14b61c780.trailing   (active)>",
+    "<NSLayoutConstraint:0x14b7c5680 'UISV-spacing' H:[_UIButtonBarButton:0x14b61c280]-(0)-[UIView:0x14b7148c0]   (active)>",
+    "<NSLayoutConstraint:0x14b7c56d0 'UISV-spacing' H:[UIView:0x14b7148c0]-(0)-[_UIButtonBarButton:0x14b61c500]   (active)>",
+    "<NSLayoutConstraint:0x14b7c5720 'UISV-spacing' H:[_UIButtonBarButton:0x14b61c500]-(0)-[UIView:0x14b714a80]   (active)>",
+    "<NSLayoutConstraint:0x14b7c5770 'UISV-spacing' H:[UIView:0x14b714a80]-(0)-[_UIButtonBarButton:0x14b61c780]   (active)>",
+    "<NSLayoutConstraint:0x14b5240f0 'UIView-leftMargin-guide-constraint' H:|-(0)-[UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide'](LTR)   (active, names: '|':_UIButtonBarStackView:0x14b477600 )>",
+    "<NSLayoutConstraint:0x14b524190 'UIView-rightMargin-guide-constraint' H:[UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide']-(0)-|(LTR)   (active, names: '|':_UIButtonBarStackView:0x14b477600 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x14b7c45a0 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x14b70d880]-(>=8)-|   (active, names: '|':_UIButtonBarButton:0x14b61c280 )>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x14b7c5f90 h=--& v=--& _UIToolbarContentView:0x14b4b0a00.width == 0   (active)>",
+    "<NSLayoutConstraint:0x14b5241e0 H:|-(0)-[_UIButtonBarStackView:0x14b477600]   (active, names: '|':_UIToolbarContentView:0x14b4b0a00 )>",
+    "<NSLayoutConstraint:0x14b524230 H:[_UIButtonBarStackView:0x14b477600]-(0)-|   (active, names: '|':_UIToolbarContentView:0x14b4b0a00 )>",
+    "<NSLayoutConstraint:0x14b7c4aa0 'IB_Leading_Leading' H:|-(>=5)-[_UIModernBarButton:0x14b70dc00]   (active, names: '|':_UIButtonBarButton:0x14b61c500 )>",
+    "<NSLayoutConstraint:0x14b7c4af0 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x14b70dc00]-(>=5)-|   (active, names: '|':_UIButtonBarButton:0x14b61c500 )>",
+    "<NSLayoutConstraint:0x14b7c5040 'TB_Leading_Leading' H:|-(8)-[_UIModernBarButton:0x14b70df80]   (active, names: '|':_UIButtonBarButton:0x14b61c780 )>",
+    "<NSLayoutConstraint:0x14b7c5090 'TB_Trailing_Trailing' H:[_UIModernBarButton:0x14b70df80]-(0)-|   (active, names: '|':_UIButtonBarButton:0x14b61c780 )>",
+    "<NSLayoutConstraint:0x14b7c53b0 'UISV-canvas-connection' UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide'.leading == _UIButtonBarButton:0x14b61c280.leading   (active)>",
+    "<NSLayoutConstraint:0x14b7c5630 'UISV-canvas-connection' UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide'.trailing == _UIButtonBarButton:0x14b61c780.trailing   (active)>",
+    "<NSLayoutConstraint:0x14b7c5680 'UISV-spacing' H:[_UIButtonBarButton:0x14b61c280]-(0)-[UIView:0x14b7148c0]   (active)>",
+    "<NSLayoutConstraint:0x14b7c56d0 'UISV-spacing' H:[UIView:0x14b7148c0]-(0)-[_UIButtonBarButton:0x14b61c500]   (active)>",
+    "<NSLayoutConstraint:0x14b7c5720 'UISV-spacing' H:[_UIButtonBarButton:0x14b61c500]-(0)-[UIView:0x14b714a80]   (active)>",
+    "<NSLayoutConstraint:0x14b7c5770 'UISV-spacing' H:[UIView:0x14b714a80]-(0)-[_UIButtonBarButton:0x14b61c780]   (active)>",
+    "<NSLayoutConstraint:0x14b5240f0 'UIView-leftMargin-guide-constraint' H:|-(0)-[UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide'](LTR)   (active, names: '|':_UIButtonBarStackView:0x14b477600 )>",
+    "<NSLayoutConstraint:0x14b524190 'UIView-rightMargin-guide-constraint' H:[UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide']-(0)-|(LTR)   (active, names: '|':_UIButtonBarStackView:0x14b477600 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x14b7c4af0 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x14b70dc00]-(>=5)-|   (active, names: '|':_UIButtonBarButton:0x14b61c500 )>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x14b7c5f90 h=--& v=--& _UIToolbarContentView:0x14b4b0a00.width == 0   (active)>",
+    "<NSLayoutConstraint:0x14b5241e0 H:|-(0)-[_UIButtonBarStackView:0x14b477600]   (active, names: '|':_UIToolbarContentView:0x14b4b0a00 )>",
+    "<NSLayoutConstraint:0x14b524230 H:[_UIButtonBarStackView:0x14b477600]-(0)-|   (active, names: '|':_UIToolbarContentView:0x14b4b0a00 )>",
+    "<NSLayoutConstraint:0x14b7c5040 'TB_Leading_Leading' H:|-(8)-[_UIModernBarButton:0x14b70df80]   (active, names: '|':_UIButtonBarButton:0x14b61c780 )>",
+    "<NSLayoutConstraint:0x14b7c5090 'TB_Trailing_Trailing' H:[_UIModernBarButton:0x14b70df80]-(0)-|   (active, names: '|':_UIButtonBarButton:0x14b61c780 )>",
+    "<NSLayoutConstraint:0x14b7c53b0 'UISV-canvas-connection' UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide'.leading == _UIButtonBarButton:0x14b61c280.leading   (active)>",
+    "<NSLayoutConstraint:0x14b7c5630 'UISV-canvas-connection' UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide'.trailing == _UIButtonBarButton:0x14b61c780.trailing   (active)>",
+    "<NSLayoutConstraint:0x14b7c5680 'UISV-spacing' H:[_UIButtonBarButton:0x14b61c280]-(0)-[UIView:0x14b7148c0]   (active)>",
+    "<NSLayoutConstraint:0x14b7c56d0 'UISV-spacing' H:[UIView:0x14b7148c0]-(0)-[_UIButtonBarButton:0x14b61c500]   (active)>",
+    "<NSLayoutConstraint:0x14b7c5720 'UISV-spacing' H:[_UIButtonBarButton:0x14b61c500]-(0)-[UIView:0x14b714a80]   (active)>",
+    "<NSLayoutConstraint:0x14b7c5770 'UISV-spacing' H:[UIView:0x14b714a80]-(0)-[_UIButtonBarButton:0x14b61c780]   (active)>",
+    "<NSLayoutConstraint:0x14b5240f0 'UIView-leftMargin-guide-constraint' H:|-(0)-[UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide'](LTR)   (active, names: '|':_UIButtonBarStackView:0x14b477600 )>",
+    "<NSLayoutConstraint:0x14b524190 'UIView-rightMargin-guide-constraint' H:[UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide']-(0)-|(LTR)   (active, names: '|':_UIButtonBarStackView:0x14b477600 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x14b7c5090 'TB_Trailing_Trailing' H:[_UIModernBarButton:0x14b70df80]-(0)-|   (active, names: '|':_UIButtonBarButton:0x14b61c780 )>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x14b7c6030 h=--& v=--& _UIToolbarContentView:0x14b4b0a00.height == 0   (active)>",
+    "<NSLayoutConstraint:0x14b524280 V:|-(0)-[_UIButtonBarStackView:0x14b477600]   (active, names: '|':_UIToolbarContentView:0x14b4b0a00 )>",
+    "<NSLayoutConstraint:0x14b5242d0 _UIButtonBarStackView:0x14b477600.bottom == _UIToolbarContentView:0x14b4b0a00.bottom   (active)>",
+    "<NSLayoutConstraint:0x14b7c6490 UIImageView:0x14b712200.centerY == _UIModernBarButton:0x14b70d880.centerY   (active)>",
+    "<NSLayoutConstraint:0x14b7c4820 'IB_Baseline_Baseline' _UIModernBarButton:0x14b70d880.lastBaseline == UILayoutGuide:0x14b635c00'UIViewLayoutMarginsGuide'.bottom   (active)>",
+    "<NSLayoutConstraint:0x14b7c4870 'IB_Top_Top' V:|-(>=0)-[_UIModernBarButton:0x14b70d880]   (active, names: '|':_UIButtonBarButton:0x14b61c280 )>",
+    "<NSLayoutConstraint:0x14b7c4960 'UIButtonBar.maximumAlignmentSize' _UIButtonBarButton:0x14b61c280.height == UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide'.height   (active)>",
+    "<NSLayoutConstraint:0x14b524140 'UIView-bottomMargin-guide-constraint' V:[UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide']-(0)-|   (active, names: '|':_UIButtonBarStackView:0x14b477600 )>",
+    "<NSLayoutConstraint:0x14b7c4780 'UIView-bottomMargin-guide-constraint' V:[UILayoutGuide:0x14b635c00'UIViewLayoutMarginsGuide']-(16)-|   (active, names: '|':_UIButtonBarButton:0x14b61c280 )>",
+    "<NSLayoutConstraint:0x14b5240a0 'UIView-topMargin-guide-constraint' V:|-(0)-[UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide']   (active, names: '|':_UIButtonBarStackView:0x14b477600 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x14b7c6490 UIImageView:0x14b712200.centerY == _UIModernBarButton:0x14b70d880.centerY   (active)>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x14b7c6030 h=--& v=--& _UIToolbarContentView:0x14b4b0a00.height == 0   (active)>",
+    "<NSLayoutConstraint:0x14b524280 V:|-(0)-[_UIButtonBarStackView:0x14b477600]   (active, names: '|':_UIToolbarContentView:0x14b4b0a00 )>",
+    "<NSLayoutConstraint:0x14b5242d0 _UIButtonBarStackView:0x14b477600.bottom == _UIToolbarContentView:0x14b4b0a00.bottom   (active)>",
+    "<NSLayoutConstraint:0x14b7c65d0 UIImageView:0x14b712400.centerY == _UIModernBarButton:0x14b70dc00.centerY   (active)>",
+    "<NSLayoutConstraint:0x14b7c4d70 'IB_Baseline_Baseline' _UIModernBarButton:0x14b70dc00.lastBaseline == UILayoutGuide:0x14b635ce0'UIViewLayoutMarginsGuide'.bottom   (active)>",
+    "<NSLayoutConstraint:0x14b7c4dc0 'IB_Top_Top' V:|-(>=0)-[_UIModernBarButton:0x14b70dc00]   (active, names: '|':_UIButtonBarButton:0x14b61c500 )>",
+    "<NSLayoutConstraint:0x14b7c4eb0 'UIButtonBar.maximumAlignmentSize' _UIButtonBarButton:0x14b61c500.height == UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide'.height   (active)>",
+    "<NSLayoutConstraint:0x14b524140 'UIView-bottomMargin-guide-constraint' V:[UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide']-(0)-|   (active, names: '|':_UIButtonBarStackView:0x14b477600 )>",
+    "<NSLayoutConstraint:0x14b7c4cd0 'UIView-bottomMargin-guide-constraint' V:[UILayoutGuide:0x14b635ce0'UIViewLayoutMarginsGuide']-(16)-|   (active, names: '|':_UIButtonBarButton:0x14b61c500 )>",
+    "<NSLayoutConstraint:0x14b5240a0 'UIView-topMargin-guide-constraint' V:|-(0)-[UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide']   (active, names: '|':_UIButtonBarStackView:0x14b477600 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x14b7c65d0 UIImageView:0x14b712400.centerY == _UIModernBarButton:0x14b70dc00.centerY   (active)>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x14b7c6030 h=--& v=--& _UIToolbarContentView:0x14b4b0a00.height == 0   (active)>",
+    "<NSLayoutConstraint:0x14b524280 V:|-(0)-[_UIButtonBarStackView:0x14b477600]   (active, names: '|':_UIToolbarContentView:0x14b4b0a00 )>",
+    "<NSLayoutConstraint:0x14b5242d0 _UIButtonBarStackView:0x14b477600.bottom == _UIToolbarContentView:0x14b4b0a00.bottom   (active)>",
+    "<NSLayoutConstraint:0x14b7c6710 UIButtonLabel:0x14b70e300.centerY == _UIModernBarButton:0x14b70df80.centerY + 0.5   (active)>",
+    "<NSLayoutConstraint:0x14b7c5220 'TB_Baseline_Baseline' _UIModernBarButton:0x14b70df80.lastBaseline == UILayoutGuide:0x14b635dc0'UIViewLayoutMarginsGuide'.bottom   (active)>",
+    "<NSLayoutConstraint:0x14b7c5270 'TB_Top_Top' V:|-(>=0)-[_UIModernBarButton:0x14b70df80]   (active, names: '|':_UIButtonBarButton:0x14b61c780 )>",
+    "<NSLayoutConstraint:0x14b7c5360 'UIButtonBar.maximumAlignmentSize' _UIButtonBarButton:0x14b61c780.height == UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide'.height   (active)>",
+    "<NSLayoutConstraint:0x14b524140 'UIView-bottomMargin-guide-constraint' V:[UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide']-(0)-|   (active, names: '|':_UIButtonBarStackView:0x14b477600 )>",
+    "<NSLayoutConstraint:0x14b7c5180 'UIView-bottomMargin-guide-constraint' V:[UILayoutGuide:0x14b635dc0'UIViewLayoutMarginsGuide']-(16)-|   (active, names: '|':_UIButtonBarButton:0x14b61c780 )>",
+    "<NSLayoutConstraint:0x14b5240a0 'UIView-topMargin-guide-constraint' V:|-(0)-[UILayoutGuide:0x14b4ed260'UIViewLayoutMarginsGuide']   (active, names: '|':_UIButtonBarStackView:0x14b477600 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x14b7c6710 UIButtonLabel:0x14b70e300.centerY == _UIModernBarButton:0x14b70df80.centerY + 0.5   (active)>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+-[RTIInputSystemClient remoteTextInputSessionWithID:textSuggestionsChanged:]  Can only set suggestions for an active session. sessionID = AF95E3FD-7EEA-4E88-806C-CC8A28A0015E
+⚡️  [warn] - [Push] ⚠️ Registration timed out after 20 seconds - no token received
+⚡️  [warn] - [Push] This typically means APNs/FCM is not properly configured
+⚡️  [warn] - [Push] iOS Configuration Checklist:
+⚡️  [warn] - [Push]   ✓ Are you testing on a REAL device? (Required for push)
+⚡️  [warn] - [Push]   ✓ Is Push Notifications capability added in Xcode?
+⚡️  [warn] - [Push]   ✓ Is Background Modes > Remote notifications enabled?
+⚡️  [warn] - [Push]   ✓ Does App.entitlements have aps-environment?
+⚡️  [warn] - [Push]   ✓ Is the provisioning profile updated with push capability?
+⚡️  [warn] - [Push]   ✓ Is an APNs key (.p8) or certificate configured?
+⚡️  [error] - [Push] ❌ FAILED - No token received from APNs/FCM
+⚡️  [error] - [Push] Check the iOS Configuration Checklist above
+⚡️  [log] - [Push] ========================================
+⚡️  [log] - [Push] EARLY INITIALIZATION COMPLETE
+⚡️  [log] - [Push] ========================================
+⚡️  [warn] - [Push] Early init completed but no token obtained
+-[RTIInputSystemClient remoteTextInputSessionWithID:textSuggestionsChanged:]  Can only set suggestions for an active session. sessionID = AF95E3FD-7EEA-4E88-806C-CC8A28A0015E
+⚡️  To Native ->  Haptics impact 70682549
+⚡️  TO JS undefined
+⚡️  [log] - 09:21:40:696 %cAgora-SDK [DEBUG]: color: #64B5F6; current web page is hidden
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+⚡️  WebView loaded
+⚡️  [debug] - [lock-safari-1] is created.
+⚡️  [log] - [API Query] /api/auth/user -> https://fusionmatch.replit.app/api/auth/user
+⚡️  [log] - [API] Using JWT token for request
+⚡️  [log] - [Push] App launch - starting early push notification init...
+⚡️  [log] - [Push] ========================================
+⚡️  [log] - [Push] EARLY INITIALIZATION STARTING
+⚡️  [log] - [Push] ========================================
+⚡️  [log] - [Push] Platform: ios
+⚡️  [log] - [Push] Is Native: true
+⚡️  [log] - [Push] Is iOS: true
+⚡️  [log] - [Push] Is Android: false
+⚡️  [log] - [Push] STEP 1: Setting up native event listeners...
+⚡️  [log] - [Push] Setting up native notification listeners...
+⚡️  [log] - [Push] Setting up registration listeners BEFORE calling register()
+⚡️  To Native ->  PushNotifications addListener 14772651
+⚡️  To Native ->  PushNotifications addListener 14772652
+⚡️  To Native ->  PushNotifications addListener 14772653
+⚡️  To Native ->  PushNotifications addListener 14772654
+⚡️  [log] - [Push] Registration listeners set up successfully
+⚡️  To Native ->  PushNotifications checkPermissions 14772655
+⚡️  [log] - [Push] All notification listeners set up successfully
+⚡️  [log] - [Push] Event listeners ready
+⚡️  [log] - [Push] STEP 2: Checking notification permission...
+⚡️  TO JS {"receive":"granted"}
+⚡️  [log] - [Push] Current permission: granted
+⚡️  [log] - [Push] STEP 3: Registering with APNs/FCM...
+⚡️  [log] - [Push] Calling PushNotifications.register() - token will arrive via event listener
+⚡️  [log] - [Push] Starting native push registration...
+⚡️  [log] - [Push] Platform: ios
+⚡️  [log] - [Push] Checking Capacitor environment...
+⚡️  [log] - [Push] Capacitor.isNativePlatform(): true
+⚡️  [log] - [Push] Capacitor.getPlatform(): ios
+⚡️  [log] - [Push] PushNotifications plugin available: true
+⚡️  [log] - [Push] Available plugins: CapacitorHttp, Console, WebView, CapacitorCookies, SystemBars, SplashScreen, Haptics, StatusBar, Camera, PushNotifications
+⚡️  [log] - [Push] Registration listeners already initialized
+⚡️  [log] - [Push] Calling PushNotifications.register()...
+⚡️  [log] - [Push] IMPORTANT: On iOS, ensure the following in Xcode:
+⚡️  To Native ->  PushNotifications register 14772656
+⚡️  [log] - [Push]   1. Push Notifications capability is added
+⚡️  [log] - [Push]   2. Background Modes > Remote notifications is enabled
+⚡️  [log] - [Push]   3. App.entitlements has aps-environment set
+⚡️  [log] - [Push]   4. APNs key (.p8) is configured in Apple Developer Portal
+⚡️  TO JS undefined
+⚡️  [log] - [Push] register() call completed successfully
+⚡️  [log] - [Push] Waiting for token via "registration" event listener...
+⚡️  [log] - [Push] If no token appears within 15 seconds, check Xcode configuration
+⚡️  [log] - 09:21:40:995 %cAgora-SDK [DEBUG]: color: #64B5F6; setAppType: 1001
+⚡️  [log] - 09:21:40:996 %cAgora-SDK [DEBUG]: color: #64B5F6; browser ua:  Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148
+⚡️  [log] - 09:21:40:996 %cAgora-SDK [INFO]: color: #1E88E5; font-weight: bold; browser info:  {"name":"WebKit","version":"605","os":"iOS","osVersion":"18.7","browserVersion":"605.1.15","deviceType":"mobile"}
+⚡️  [log] - 09:21:40:996 %cAgora-SDK [INFO]: color: #1E88E5; font-weight: bold; browser compatibility:  {"getDisplayMedia":false,"getStreamFromExtension":false,"supportUnifiedPlan":true,"supportMinBitrate":false,"supportSetRtpSenderParameters":true,"supportDualStream":true,"webAudioMediaStreamDest":true,"supportReplaceTrack":true,"supportWebGL":true,"webAudioWithAEC":true,"supportRequestFrame":true,"supportShareAudio":false,"supportDualStreamEncoding":false,"supportDataChannel":false,"supportPCSetConfiguration":true,"supportWebRTCEncodedTransform":false,"supportWebRTCInsertableStream":false,"supportRequestVideoFrameCallback":true,"supportWebCrypto":true}
+⚡️  [log] - [API Query] /api/auth/user response: 200
+⚡️  [log] - [API Query] /api/profile -> https://fusionmatch.replit.app/api/profile
+⚡️  [log] - [API] Using JWT token for request
+⚡️  [log] - Connecting to WebSocket: wss://fusionmatch.replit.app/ws
+⚡️  [log] - [API Query] /api/profile response: 200
+⚡️  [log] - [API Query] /api/discover -> https://fusionmatch.replit.app/api/discover
+⚡️  [log] - [API] Using JWT token for request
+⚡️  [log] - [API Query] /api/subscription-status -> https://fusionmatch.replit.app/api/subscription-status
+⚡️  [log] - [API] Using JWT token for request
+⚡️  [log] - [Push] User authenticated - registering push token with backend...
+⚡️  [log] - [Push] No pending token, using cached token
+⚡️  [log] - [Push] No token available, attempting registration...
+⚡️  [log] - [Push] Notification listeners already initialized
+⚡️  [log] - [Push] Starting native push registration...
+⚡️  [log] - [Push] Platform: ios
+⚡️  [log] - [Push] Checking Capacitor environment...
+⚡️  [log] - [Push] Capacitor.isNativePlatform(): true
+⚡️  [log] - [Push] Capacitor.getPlatform(): ios
+⚡️  [log] - [Push] PushNotifications plugin available: true
+⚡️  [log] - [Push] Available plugins: CapacitorHttp, Console, WebView, CapacitorCookies, SystemBars, SplashScreen, Haptics, StatusBar, Camera, PushNotifications
+⚡️  [log] - [Push] Registration listeners already initialized
+⚡️  [log] - [Push] Calling PushNotifications.register()...
+⚡️  [log] - [Push] IMPORTANT: On iOS, ensure the following in Xcode:
+⚡️  [log] - [Push]   1. Push Notifications capability is added
+⚡️  [log] - [Push]   2. Background Modes > Remote notifications is enabled
+⚡️  [log] - [Push]   3. App.entitlements has aps-environment set
+⚡️  [log] - [Push]   4. APNs key (.p8) is configured in Apple Developer Portal
+⚡️  To Native ->  PushNotifications register 14772657
+⚡️  TO JS undefined
+⚡️  [log] - [Push] register() call completed successfully
+⚡️  [log] - [Push] Waiting for token via "registration" event listener...
+⚡️  [log] - [Push] If no token appears within 15 seconds, check Xcode configuration
+⚡️  [error] - WebSocket error: {"isTrusted":true}
+⚡️  [log] - WebSocket disconnected
+⚡️  [log] - Reconnecting in 1000ms (attempt 1/5)
+⚡️  [log] - [API Query] /api/subscription-status response: 200
+⚡️  [log] - [API Query] /api/discover response: 200
+⚡️  To Native ->  Haptics impact 14772658
+⚡️  TO JS undefined
+⚡️  [log] - [API Query] /api/suggestions -> https://fusionmatch.replit.app/api/suggestions
+⚡️  [log] - [API] Using JWT token for request
+⚡️  [log] - [API Query] /api/suggestions response: 500
+⚡️  To Native ->  Haptics impact 14772659
+⚡️  TO JS undefined
+⚡️  [log] - [API Query] /api/matches -> https://fusionmatch.replit.app/api/matches
+⚡️  [log] - [API] Using JWT token for request
+⚡️  [log] - [API Query] /api/matches response: 200
+⚡️  To Native ->  Haptics impact 14772660
+⚡️  TO JS undefined
+⚡️  [log] - [API Query] /api/sendbird/token -> https://fusionmatch.replit.app/api/sendbird/token
+⚡️  [log] - [API] Using JWT token for request
+⚡️  [log] - [API Query] /api/chaperones -> https://fusionmatch.replit.app/api/chaperones
+⚡️  [log] - [API] Using JWT token for request
+⚡️  [log] - [API Query] /api/chaperones response: 200
+⚡️  [log] - [API Query] /api/sendbird/token response: 200
+⚡️  [log] - [VideoCall Render] State check: {"isCallActive":false,"hasActiveCall":false,"hasCallToken":false,"activeCall":null,"callToken":null}
+⚡️  To Native ->  Haptics impact 14772661
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14772662
+⚡️  TO JS undefined
+⚡️  [log] - [API Query] /api/sendbird/token -> https://fusionmatch.replit.app/api/sendbird/token
+⚡️  [log] - [API] Using JWT token for request
+⚡️  [log] - [VideoCall Render] State check: {"isCallActive":false,"hasActiveCall":false,"hasCallToken":false,"activeCall":null,"callToken":null}
+⚡️  [log] - [API Query] /api/sendbird/token response: 200
+⚡️  [log] - [VideoCall Render] State check: {"isCallActive":false,"hasActiveCall":false,"hasCallToken":false,"activeCall":null,"callToken":null}
+⚡️  [log] - [VideoCall Render] State check: {"isCallActive":false,"hasActiveCall":false,"hasCallToken":false,"activeCall":null,"callToken":null}
+⚡️  [log] - [VideoCall Render] State check: {"isCallActive":false,"hasActiveCall":false,"hasCallToken":false,"activeCall":null,"callToken":null}
+⚡️  [log] - [VideoCall Render] State check: {"isCallActive":false,"hasActiveCall":false,"hasCallToken":false,"activeCall":null,"callToken":null}
+⚡️  [log] - [VideoCall Render] State check: {"isCallActive":false,"hasActiveCall":false,"hasCallToken":false,"activeCall":null,"callToken":null}
+⚡️  [warn] - [Push] ⚠️ Registration timed out after 20 seconds - no token received
+⚡️  [warn] - [Push] This typically means APNs/FCM is not properly configured
+⚡️  [warn] - [Push] iOS Configuration Checklist:
+⚡️  [warn] - [Push]   ✓ Are you testing on a REAL device? (Required for push)
+⚡️  [warn] - [Push]   ✓ Is Push Notifications capability added in Xcode?
+⚡️  [warn] - [Push]   ✓ Is Background Modes > Remote notifications enabled?
+⚡️  [warn] - [Push]   ✓ Does App.entitlements have aps-environment?
+⚡️  [warn] - [Push]   ✓ Is the provisioning profile updated with push capability?
+⚡️  [warn] - [Push]   ✓ Is an APNs key (.p8) or certificate configured?
+⚡️  [warn] - [Push] No push token available to register with backend
+⚡️  [warn] - [Push] Failed to register token with backend
+⚡️  To Native ->  Haptics impact 14772663
+⚡️  TO JS undefined
+⚡️  [log] - [API Query] /api/subscription-status -> https://fusionmatch.replit.app/api/subscription-status
+⚡️  [log] - [API] Using JWT token for request
+⚡️  [log] - [API Query] /api/subscription-status response: 200
