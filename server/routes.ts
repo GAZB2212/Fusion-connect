@@ -1314,14 +1314,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const newChannel = await SendbirdService.createChannel([userId, partnerId], matchId);
         console.log(`[Sendbird] Created channel ${matchId}`);
         
-        // Update match with channelUrl if not set
-        if (!match.channelUrl) {
-          await db
-            .update(matches)
-            .set({ channelUrl: matchId })
-            .where(eq(matches.id, matchId));
-        }
-        
         return res.json({ 
           success: true, 
           channelUrl: newChannel.channel_url,
@@ -1388,9 +1380,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .insert(profiles)
         .values({
           ...validatedData,
-          userId,
+          userId: userId,
           isComplete: true,
-        })
+        } as any)
         .returning();
 
       res.json(profileWithAbsoluteUrls(profile));

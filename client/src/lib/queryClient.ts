@@ -35,8 +35,10 @@ export function clearAuthToken(): void {
 function getAuthHeaders(): Record<string, string> {
   const token = getAuthToken();
   if (token) {
+    console.log('[API] Using JWT token for request');
     return { 'Authorization': `Bearer ${token}` };
   }
+  console.log('[API] No JWT token available');
   return {};
 }
 
@@ -98,13 +100,24 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     const path = queryKey.join("/") as string;
     const fullUrl = getApiUrl(path);
+    console.log(`[API Query] ${path} -> ${fullUrl}`);
+    
     const res = await fetch(fullUrl, {
       credentials: "include",
       headers: getAuthHeaders(),
     });
 
+    console.log(`[API Query] ${path} response: ${res.status}`);
+
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+      console.log(`[API Query] ${path} returned 401, returning null`);
       return null;
+    }
+
+    if (res.status === 401) {
+      console.log(`[API Query] ${path} returned 401 - token may be expired or missing`);
+      // Clear potentially expired token
+      clearAuthToken();
     }
 
     await throwIfResNotOk(res);
