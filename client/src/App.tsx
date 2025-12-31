@@ -50,6 +50,11 @@ function Router() {
   // Check for URL parameters
   const searchParams = new URLSearchParams(window.location.search);
   const isRestart = searchParams.get('restart') === 'true';
+  const isSetupMode = searchParams.get('setup') === 'true';
+  const isFastOnboardingComplete = searchParams.get('fastOnboardingComplete') === 'true';
+  
+  // Combined flag for any mode that requires profile setup access
+  const needsProfileSetup = isRestart || isSetupMode || isFastOnboardingComplete;
 
   // Fetch user profile if authenticated
   const { data: profile, isLoading: profileLoading } = useQuery<Profile>({
@@ -113,11 +118,26 @@ function Router() {
   }
 
   // Authenticated with complete profile but not verified - show verification
-  // UNLESS restart=true, then allow profile setup to update photos
-  if (profile?.isComplete && !profile?.faceVerified && !isRestart) {
+  // UNLESS user needs profile setup (restart, setup mode, or fast onboarding complete)
+  if (profile?.isComplete && !profile?.faceVerified && !needsProfileSetup) {
     return (
       <Switch>
         <Route path="/" component={Verification} />
+        <Route path="/:rest*">
+          {() => {
+            setLocation("/");
+            return null;
+          }}
+        </Route>
+      </Switch>
+    );
+  }
+
+  // If user needs profile setup and profile is complete but not verified, show profile setup
+  if (needsProfileSetup && profile?.isComplete && !profile?.faceVerified) {
+    return (
+      <Switch>
+        <Route path="/" component={ProfileSetup} />
         <Route path="/:rest*">
           {() => {
             setLocation("/");
