@@ -1465,10 +1465,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Image not found" });
       }
 
-      // Set appropriate headers
+      // Set appropriate headers for mobile app compatibility
       res.set('Content-Type', response.ContentType || 'image/jpeg');
       res.set('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
       res.set('Access-Control-Allow-Origin', '*');
+      res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.set('Access-Control-Expose-Headers', 'Content-Length, Content-Type');
+      
+      // Add Cross-Origin headers for Capacitor app
+      res.set('Cross-Origin-Resource-Policy', 'cross-origin');
 
       // Stream the response
       const stream = response.Body as NodeJS.ReadableStream;
