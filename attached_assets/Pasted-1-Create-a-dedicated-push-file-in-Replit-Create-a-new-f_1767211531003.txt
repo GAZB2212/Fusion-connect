@@ -1,0 +1,88 @@
+1) Create a dedicated push file in Replit
+Create a new file:
+src/lib/push.ts (or src/utils/push.ts — anywhere under src/ is fine)
+Paste this in:
+// src/lib/push.ts
+import { Capacitor } from '@capacitor/core';
+import { PushNotifications, Token } from '@capacitor/push-notifications';
+
+let listenersSet = false;
+
+export async function initPush() {
+  // Only run on real native builds (iOS/Android), not in a normal browser
+  if (!Capacitor.isNativePlatform()) {
+    console.log('[Push] Not native platform, skipping push init');
+    return;
+  }
+
+  if (!listenersSet) {
+    listenersSet = true;
+
+    PushNotifications.addListener('registration', (token: Token) => {
+      console.log('[Push] ✅ JS registration token:', token.value);
+      localStorage.setItem('apnsToken', token.value);
+    });
+
+    PushNotifications.addListener('registrationError', (err) => {
+      console.error('[Push] ❌ JS registrationError:', JSON.stringify(err));
+    });
+
+    PushNotifications.addListener('pushNotificationReceived', (n) => {
+      console.log('[Push] Notification received:', JSON.stringify(n));
+    });
+
+    PushNotifications.addListener('pushNotificationActionPerformed', (a) => {
+      console.log('[Push] Notification action:', JSON.stringify(a));
+    });
+  }
+
+  const perm = await PushNotifications.checkPermissions();
+  console.log('[Push] Permission status:', JSON.stringify(perm));
+
+  if (perm.receive !== 'granted') {
+    const req = await PushNotifications.requestPermissions();
+    console.log('[Push] Permission request result:', JSON.stringify(req));
+    if (req.receive !== 'granted') return;
+  }
+
+  console.log('[Push] Calling PushNotifications.register()...');
+  await PushNotifications.register();
+}
+2) Call initPush() on app startup (very early)
+Where you call it depends on your project, but it’s usually one of:
+Option A: src/main.tsx (Vite)
+Add this near the top after rendering starts:
+import { initPush } from './lib/push';
+
+initPush();
+Option B: App.tsx (React)
+Inside your root App component:
+import { useEffect } from 'react';
+import { initPush } from './lib/push';
+
+export default function App() {
+  useEffect(() => {
+    initPush();
+  }, []);
+
+  return (/* your app */);
+}
+This is the most common + safest place.
+3) Make sure you don’t have push init in 2+ places
+Your logs show “early init” and then again “user authenticated - attempting registration…” — that’s fine, but you must avoid adding listeners twice.
+So:
+put initPush() in ONE place (App startup)
+then when user logs in, just read the token from localStorage.getItem('apnsToken') and send it to backend.
+Example on login success:
+const token = localStorage.getItem('apnsToken');
+if (token) {
+  await fetch('/api/push/register', { /* send token */ });
+} else {
+  console.log('[Push] No token yet');
+}
+4) Quick sanity check after you do this
+Run again in Xcode and you should now see:
+✅ NATIVE APNs TOKEN: ... (you already do)
+AND ALSO
+[Push] ✅ JS registration token: ...
+If you see the JS one, you’re done with the “no token” problem for good.

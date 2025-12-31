@@ -13,6 +13,7 @@ import {
   setNavigationCallback,
   initializePushNotifications 
 } from "@/lib/unifiedPushNotifications";
+import { initPush, getStoredPushToken, getPushTokenType } from "@/lib/push";
 import { isCapacitorNative } from "@/lib/platform";
 import { VideoCallProvider } from "@/contexts/VideoCallContext";
 import { WebSocketProvider } from "@/contexts/WebSocketContext";
@@ -220,13 +221,22 @@ function AppContent() {
         setLocation(`/messages/${matchId}`);
       });
       
+      // Use simplified push initialization (recommended pattern)
+      await initPush();
+      
+      // Also run the original init for backward compatibility
       try {
-        // Initialize early - this requests permission and gets APNs/FCM token
         const token = await initializeEarly();
         if (token) {
           console.log('[Push] Early init successful - token ready for backend registration');
         } else {
-          console.warn('[Push] Early init completed but no token obtained');
+          // Check if simplified push got a token
+          const storedToken = getStoredPushToken();
+          if (storedToken) {
+            console.log('[Push] Token available from simplified push init');
+          } else {
+            console.warn('[Push] Early init completed but no token obtained');
+          }
         }
       } catch (error) {
         console.error('[Push] Early init failed:', error);
@@ -255,7 +265,35 @@ function AppContent() {
       // For native apps, use the pending token from early init
       if (isCapacitorNative()) {
         try {
-          const success = await registerTokenWithBackend();
+          let success = await registerTokenWithBackend();
+          
+          // Fallback: if normal registration failed, try using stored token from simplified push
+          if (!success) {
+            const storedToken = getStoredPushToken();
+            const tokenType = getPushTokenType();
+            if (storedToken && tokenType) {
+              console.log('[Push] Trying fallback with stored token from simplified push...');
+              const { getApiUrl, getAuthToken } = await import('@/lib/queryClient');
+              const authToken = getAuthToken();
+              const response = await fetch(getApiUrl('/api/push/register'), {
+                method: 'POST',
+                headers: { 
+                  'Content-Type': 'application/json',
+                  ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}),
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                  type: tokenType,
+                  token: storedToken,
+                })
+              });
+              success = response.ok;
+              if (success) {
+                console.log('[Push] Fallback token registration successful');
+              }
+            }
+          }
+          
           if (success) {
             console.log('[Push] Token registered with backend successfully');
           } else {
