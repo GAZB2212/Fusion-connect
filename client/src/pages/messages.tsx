@@ -895,6 +895,22 @@ export default function Messages() {
         .fusion-chat .sendbird-channel-list,
         .fusion-chat .sendbird-group-channel-list {
           background: hsl(var(--background)) !important;
+          padding: 0 12px !important;
+        }
+
+        .fusion-chat .sendbird-channel-preview {
+          margin: 4px 0 !important;
+          padding: 12px !important;
+          border-radius: 12px !important;
+          background: transparent !important;
+        }
+
+        .fusion-chat .sendbird-channel-preview:hover {
+          background: hsl(var(--muted)) !important;
+        }
+
+        .fusion-chat .sendbird-channel-preview--active {
+          background: hsl(var(--muted)) !important;
         }
 
         /* Conversation area */
