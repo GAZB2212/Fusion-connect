@@ -1341,11 +1341,12 @@ export default function Messages() {
           box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2) !important;
         }
 
-        /* Voice Message Styling */
+        /* Voice Message Styling - Dark background with colored border */
         .fusion-chat .sendbird-voice-message-input,
         .fusion-chat .sendbird-voice-message-item-body,
         .fusion-chat [class*="voice-message"] {
-          background: hsl(var(--muted)) !important;
+          background: hsl(var(--background)) !important;
+          border: 2px solid hsl(var(--primary)) !important;
           border-radius: 16px !important;
           color: hsl(var(--foreground)) !important;
         }
@@ -1387,18 +1388,39 @@ export default function Messages() {
           background: hsl(var(--primary)) !important;
         }
         
-        /* Outgoing voice messages */
+        /* Outgoing voice messages - dark background with gold border */
         .fusion-chat .sendbird-message-content--outgoing .sendbird-voice-message-item-body {
-          background: linear-gradient(135deg, hsl(var(--primary)), hsl(45 62% 48%)) !important;
-          color: hsl(var(--primary-foreground)) !important;
+          background: hsl(var(--background)) !important;
+          border: 2px solid hsl(var(--primary)) !important;
+          color: hsl(var(--foreground)) !important;
         }
         
         .fusion-chat .sendbird-message-content--outgoing .sendbird-voice-message-item-body__progress {
-          background: rgba(255, 255, 255, 0.2) !important;
+          background: hsl(var(--muted)) !important;
         }
         
         .fusion-chat .sendbird-message-content--outgoing .sendbird-voice-message-item-body__progress-bar {
-          background: hsl(var(--primary-foreground)) !important;
+          background: hsl(var(--primary)) !important;
+        }
+        
+        /* Incoming voice messages - dark background with gold border */
+        .fusion-chat .sendbird-message-content--incoming .sendbird-voice-message-item-body {
+          background: hsl(var(--background)) !important;
+          border: 2px solid hsl(var(--primary)) !important;
+          color: hsl(var(--foreground)) !important;
+        }
+        
+        /* Voice message play button */
+        .fusion-chat .sendbird-voice-message-item-body__playback-button,
+        .fusion-chat [class*="voice-message-item-body__playback"] {
+          background: hsl(var(--primary)) !important;
+          border-radius: 50% !important;
+        }
+        
+        .fusion-chat .sendbird-voice-message-item-body__playback-button svg,
+        .fusion-chat [class*="voice-message-item-body__playback"] svg {
+          color: hsl(var(--primary-foreground)) !important;
+          fill: hsl(var(--primary-foreground)) !important;
         }
 
       `}</style>
