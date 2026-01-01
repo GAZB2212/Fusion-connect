@@ -181,6 +181,7 @@ export default function ChaperonePortal() {
                   <GroupChannel
                     channelUrl={currentChannelUrl}
                     onBackClick={handleBackToList}
+                    startingPoint={0}
                   />
                 ) : (
                   <div className="h-full flex items-center justify-center text-muted-foreground">
