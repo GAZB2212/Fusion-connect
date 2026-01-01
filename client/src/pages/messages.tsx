@@ -823,6 +823,7 @@ export default function Messages() {
           uikitOptions={{
             groupChannel: {
               enableVoiceMessage: true,
+              enableTypingIndicator: true,
             },
           }}
           stringSet={{
@@ -1421,6 +1422,50 @@ export default function Messages() {
         .fusion-chat [class*="voice-message-item-body__playback"] svg {
           color: hsl(var(--primary-foreground)) !important;
           fill: hsl(var(--primary-foreground)) !important;
+        }
+
+        /* Typing Indicator Styling */
+        .fusion-chat .sendbird-typing-indicator,
+        .fusion-chat [class*="typing-indicator"] {
+          color: hsl(var(--muted-foreground)) !important;
+          font-size: 12px !important;
+          padding: 4px 12px !important;
+        }
+        
+        .fusion-chat .sendbird-typing-indicator__text,
+        .fusion-chat [class*="typing-indicator__text"] {
+          color: hsl(var(--muted-foreground)) !important;
+        }
+
+        /* Message Receipt Status (Read/Delivered) */
+        .fusion-chat .sendbird-message-status,
+        .fusion-chat [class*="message-status"] {
+          display: flex !important;
+          visibility: visible !important;
+        }
+        
+        .fusion-chat .sendbird-message-status__icon,
+        .fusion-chat [class*="message-status__icon"] {
+          color: hsl(var(--primary)) !important;
+          fill: hsl(var(--primary)) !important;
+        }
+        
+        .fusion-chat .sendbird-message-status__icon--read,
+        .fusion-chat [class*="message-status__icon--read"] {
+          color: hsl(var(--primary)) !important;
+          fill: hsl(var(--primary)) !important;
+        }
+        
+        .fusion-chat .sendbird-message-status__icon--sent,
+        .fusion-chat [class*="message-status__icon--sent"] {
+          color: hsl(var(--muted-foreground)) !important;
+          fill: hsl(var(--muted-foreground)) !important;
+        }
+        
+        .fusion-chat .sendbird-message-status__icon--delivered,
+        .fusion-chat [class*="message-status__icon--delivered"] {
+          color: hsl(var(--muted-foreground)) !important;
+          fill: hsl(var(--muted-foreground)) !important;
         }
 
       `}</style>
