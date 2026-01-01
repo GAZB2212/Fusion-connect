@@ -949,11 +949,32 @@ export default function Messages() {
           color: #000 !important;
         }
 
-        /* ===== IMAGE/FILE MESSAGES ===== */
-        .fusion-chat .sendbird-thumbnail-message-item-body,
+        /* ===== IMAGE/FILE MESSAGES - OVERFLOW FIX ===== */
+        .fusion-chat .sendbird-thumbnail-message-item-body {
+          max-width: 180px !important;
+          width: 180px !important;
+          border-radius: 12px !important;
+          overflow: hidden !important;
+        }
+
         .fusion-chat .sendbird-image-renderer {
           max-width: 180px !important;
+          width: 100% !important;
           border-radius: 12px !important;
+          overflow: hidden !important;
+        }
+
+        .fusion-chat .sendbird-image-renderer__image {
+          max-width: 100% !important;
+          width: 100% !important;
+          height: auto !important;
+          object-fit: cover !important;
+        }
+        
+        /* Multiple images grid */
+        .fusion-chat .sendbird-multiple-files-message-item-body {
+          max-width: 180px !important;
+          width: 180px !important;
           overflow: hidden !important;
         }
 
@@ -961,6 +982,7 @@ export default function Messages() {
           max-width: 180px !important;
           background: hsl(var(--muted)) !important;
           border-radius: 12px !important;
+          overflow: hidden !important;
         }
 
         /* ===== INPUT AREA ===== */
