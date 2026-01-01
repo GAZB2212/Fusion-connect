@@ -1115,6 +1115,22 @@ export default function Messages() {
           padding: 8px 12px !important;
         }
 
+        /* Constrain ALL message content to prevent overflow */
+        .fusion-chat .sendbird-message-content {
+          max-width: 100% !important;
+          width: 100% !important;
+          box-sizing: border-box !important;
+        }
+        
+        .fusion-chat .sendbird-message-content__middle {
+          max-width: calc(100% - 80px) !important;
+          overflow: hidden !important;
+        }
+        
+        .fusion-chat .sendbird-message-content--outgoing .sendbird-message-content__middle {
+          max-width: calc(100% - 40px) !important;
+        }
+
         /* Constrain images within chat boundaries */
         .fusion-chat img:not(.sendbird-avatar-img):not(.sendbird-user-profile__avatar) {
           max-width: 180px !important;
@@ -1130,6 +1146,34 @@ export default function Messages() {
           max-height: 240px !important;
           overflow: hidden !important;
           border-radius: 12px !important;
+        }
+        
+        /* File message constraints */
+        .fusion-chat .sendbird-file-message-item-body {
+          max-width: 220px !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+        }
+        
+        /* Multiple file/image message grid constraints */
+        .fusion-chat .sendbird-multiple-files-message-item-body {
+          max-width: 220px !important;
+          overflow: hidden !important;
+        }
+        
+        .fusion-chat .sendbird-multiple-files-message-item-body__thumbnail-grid {
+          max-width: 100% !important;
+          display: grid !important;
+          grid-template-columns: repeat(2, 1fr) !important;
+          gap: 4px !important;
+        }
+        
+        .fusion-chat .sendbird-multiple-files-message-item-body__thumbnail-grid img {
+          max-width: 100% !important;
+          width: 100% !important;
+          height: auto !important;
+          aspect-ratio: 1 !important;
+          object-fit: cover !important;
         }
 
         .fusion-chat .sendbird-message-content--incoming .sendbird-text-message-item-body {
