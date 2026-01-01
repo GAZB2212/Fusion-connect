@@ -891,15 +891,25 @@ export default function Messages() {
           display: none !important;
         }
 
-        /* Channel list */
+        /* Channel list - full width */
         .fusion-chat .sendbird-channel-list,
         .fusion-chat .sendbird-group-channel-list {
+          width: 100% !important;
+          max-width: 100% !important;
+          min-width: 100% !important;
+          height: 100% !important;
           background: hsl(var(--background)) !important;
-          padding: 0 12px !important;
+        }
+
+        .fusion-chat .sendbird-channel-list__body,
+        .fusion-chat .sendbird-group-channel-list__body {
+          width: 100% !important;
+          padding: 0 8px !important;
         }
 
         .fusion-chat .sendbird-channel-preview {
-          margin: 4px 0 !important;
+          width: calc(100% - 16px) !important;
+          margin: 4px 8px !important;
           padding: 12px !important;
           border-radius: 12px !important;
           background: transparent !important;
