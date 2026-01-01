@@ -477,6 +477,51 @@ export class SendbirdService {
     }
   }
 
+  // Get all channels (for cleanup purposes)
+  static async getAllChannels(): Promise<any[]> {
+    if (!isConfigured) {
+      console.warn('[Sendbird] Skipping get all channels - not configured');
+      return [];
+    }
+    
+    try {
+      const allChannels: any[] = [];
+      let nextToken: string | null = null;
+      
+      do {
+        let fetchUrl: string;
+        if (nextToken) {
+          fetchUrl = `${baseUrl}/group_channels?custom_types=fusion_match&limit=100&token=${nextToken}`;
+        } else {
+          fetchUrl = `${baseUrl}/group_channels?custom_types=fusion_match&limit=100`;
+        }
+          
+        const resp: Response = await fetch(fetchUrl, {
+          method: 'GET',
+          headers: {
+            'Api-Token': apiToken!
+          }
+        });
+        
+        const respData: any = await resp.json();
+        
+        if (!resp.ok) {
+          console.error('[Sendbird] Get all channels failed:', respData);
+          break;
+        }
+        
+        allChannels.push(...(respData.channels || []));
+        nextToken = respData.next || null;
+      } while (nextToken);
+      
+      console.log(`[Sendbird] Retrieved ${allChannels.length} total channels`);
+      return allChannels;
+    } catch (error) {
+      console.error('[Sendbird] Error getting all channels:', error);
+      return [];
+    }
+  }
+
   // Register APNs push token for iOS
   static async registerApnsPushToken(userId: string, deviceToken: string): Promise<any> {
     if (!isConfigured) {

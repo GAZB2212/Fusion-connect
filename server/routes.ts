@@ -5029,6 +5029,51 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
     }
   });
 
+  // DEVELOPMENT: Cleanup orphaned Sendbird channels (channels without matching database records)
+  app.post('/api/dev/cleanup-orphaned-channels', isAuthenticated, async (req: any, res: Response) => {
+    try {
+      console.log('[CLEANUP-CHANNELS] Starting cleanup of orphaned Sendbird channels');
+      
+      // Get all Sendbird channels
+      const allChannels = await SendbirdService.getAllChannels();
+      console.log(`[CLEANUP-CHANNELS] Found ${allChannels.length} channels in Sendbird`);
+      
+      // Get all match IDs from database
+      const allMatches = await db
+        .select({ matchId: matches.id })
+        .from(matches);
+      
+      const validMatchIds = new Set(allMatches.map(m => m.matchId));
+      console.log(`[CLEANUP-CHANNELS] Found ${validMatchIds.size} valid matches in database`);
+      
+      let deleted = 0;
+      let kept = 0;
+      
+      for (const channel of allChannels) {
+        const channelUrl = channel.channel_url;
+        
+        // Check if this channel has a corresponding match
+        if (!validMatchIds.has(channelUrl)) {
+          try {
+            await SendbirdService.deleteChannel(channelUrl);
+            deleted++;
+            console.log(`[CLEANUP-CHANNELS] ✅ Deleted orphaned channel: ${channelUrl}`);
+          } catch (err: any) {
+            console.error(`[CLEANUP-CHANNELS] ❌ Failed to delete channel ${channelUrl}:`, err.message);
+          }
+        } else {
+          kept++;
+        }
+      }
+      
+      console.log(`[CLEANUP-CHANNELS] Complete: Deleted ${deleted} orphaned channels, kept ${kept} valid channels`);
+      res.json({ success: true, deleted, kept, totalChannels: allChannels.length });
+    } catch (error: any) {
+      console.error('[CLEANUP-CHANNELS] Error:', error);
+      res.status(500).json({ message: "Failed to cleanup orphaned channels" });
+    }
+  });
+
   // DEVELOPMENT: Backfill Sendbird users for ALL existing users
   app.post('/api/dev/backfill-sendbird-users', isAuthenticated, async (req: any, res: Response) => {
     try {
