@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Phone, PhoneOff, Video, X } from "lucide-react";
@@ -20,23 +20,61 @@ interface IncomingCallBannerProps {
   onDismiss: () => void;
 }
 
+// Track handled call IDs to prevent showing the same call multiple times
+const handledCallIds = new Set<string>();
+const MAX_HANDLED_CALLS = 50;
+
+// Helper to add a call ID and clean up old ones
+function markCallHandled(callId: string) {
+  handledCallIds.add(callId);
+  // Keep only the last MAX_HANDLED_CALLS to prevent memory growth
+  if (handledCallIds.size > MAX_HANDLED_CALLS) {
+    const iterator = handledCallIds.values();
+    const firstValue = iterator.next().value;
+    if (firstValue) {
+      handledCallIds.delete(firstValue);
+    }
+  }
+}
+
 export function IncomingCallBanner({ callData, onDismiss }: IncomingCallBannerProps) {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const [isAccepting, setIsAccepting] = useState(false);
   const [isDeclining, setIsDeclining] = useState(false);
+  const hasTriggeredHaptic = useRef(false);
 
+  // Trigger haptic only once per call
   useEffect(() => {
-    if (callData && Capacitor.isNativePlatform()) {
+    if (callData && !hasTriggeredHaptic.current && Capacitor.isNativePlatform()) {
+      hasTriggeredHaptic.current = true;
       try {
         Haptics.impact({ style: ImpactStyle.Heavy });
       } catch (e) {}
     }
-  }, [callData]);
+    
+    // Reset haptic flag when call data changes
+    if (!callData) {
+      hasTriggeredHaptic.current = false;
+    }
+  }, [callData?.callId]);
 
+  // Don't show banner if:
+  // 1. No call data
+  // 2. Already on the call page
+  // 3. This call was already handled (accepted/declined/dismissed)
   if (!callData) return null;
+  if (location.startsWith('/call/')) return null;
+  if (handledCallIds.has(callData.callId)) {
+    // Auto-dismiss if this call was already handled
+    onDismiss();
+    return null;
+  }
 
   const handleAccept = async () => {
+    // Mark as handled immediately to prevent duplicate banners
+    markCallHandled(callData.callId);
     setIsAccepting(true);
+    
     if (Capacitor.isNativePlatform()) {
       try {
         Haptics.impact({ style: ImpactStyle.Medium });
@@ -44,12 +82,15 @@ export function IncomingCallBanner({ callData, onDismiss }: IncomingCallBannerPr
     }
     
     const path = `/call/${callData.callId}?callerName=${encodeURIComponent(callData.callerName)}&callType=${callData.callType}`;
-    setLocation(path);
     onDismiss();
+    setLocation(path);
   };
 
   const handleDecline = async () => {
+    // Mark as handled immediately to prevent duplicate banners
+    markCallHandled(callData.callId);
     setIsDeclining(true);
+    
     if (Capacitor.isNativePlatform()) {
       try {
         Haptics.impact({ style: ImpactStyle.Light });
@@ -64,6 +105,12 @@ export function IncomingCallBanner({ callData, onDismiss }: IncomingCallBannerPr
     
     onDismiss();
     setIsDeclining(false);
+  };
+  
+  const handleDismiss = () => {
+    // Mark as handled so it doesn't show again
+    markCallHandled(callData.callId);
+    onDismiss();
   };
 
   return (
@@ -120,7 +167,7 @@ export function IncomingCallBanner({ callData, onDismiss }: IncomingCallBannerPr
           <Button
             size="icon"
             variant="ghost"
-            onClick={onDismiss}
+            onClick={handleDismiss}
             className="h-8 w-8 text-white/60 hover:text-white hover:bg-white/10"
             data-testid="button-dismiss-banner"
           >
