@@ -1437,35 +1437,16 @@ export default function Messages() {
           color: hsl(var(--muted-foreground)) !important;
         }
 
-        /* Message Receipt Status (Read/Delivered) */
-        .fusion-chat .sendbird-message-status,
-        .fusion-chat [class*="message-status"] {
-          display: flex !important;
+        /* Message Receipt Status (Read/Delivered) - ensure visible */
+        .fusion-chat .sendbird-message-item-menu__list--sent-status {
+          display: block !important;
           visibility: visible !important;
         }
         
-        .fusion-chat .sendbird-message-status__icon,
-        .fusion-chat [class*="message-status__icon"] {
-          color: hsl(var(--primary)) !important;
-          fill: hsl(var(--primary)) !important;
-        }
-        
-        .fusion-chat .sendbird-message-status__icon--read,
-        .fusion-chat [class*="message-status__icon--read"] {
-          color: hsl(var(--primary)) !important;
-          fill: hsl(var(--primary)) !important;
-        }
-        
-        .fusion-chat .sendbird-message-status__icon--sent,
-        .fusion-chat [class*="message-status__icon--sent"] {
-          color: hsl(var(--muted-foreground)) !important;
-          fill: hsl(var(--muted-foreground)) !important;
-        }
-        
-        .fusion-chat .sendbird-message-status__icon--delivered,
-        .fusion-chat [class*="message-status__icon--delivered"] {
-          color: hsl(var(--muted-foreground)) !important;
-          fill: hsl(var(--muted-foreground)) !important;
+        .fusion-chat .sendbird-message-content__middle__message-item-menu .sendbird-message-status {
+          display: inline-flex !important;
+          visibility: visible !important;
+          opacity: 1 !important;
         }
 
       `}</style>
