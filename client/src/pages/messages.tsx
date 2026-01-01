@@ -975,17 +975,11 @@ export default function Messages() {
           color: #000 !important;
         }
 
-        /* ===== IMAGE/FILE MESSAGES - SIMPLE FIX ===== */
-        .fusion-chat .sendbird-thumbnail-message-item-body {
-          max-width: 150px !important;
-          width: auto !important;
-          border-radius: 8px !important;
-        }
-
-        .fusion-chat .sendbird-file-message-item-body {
-          max-width: 150px !important;
-          background: hsl(var(--muted)) !important;
-          border-radius: 8px !important;
+        /* ===== HIDE IMAGE/FILE UPLOAD (Not supported in React) ===== */
+        .fusion-chat .sendbird-message-input--attach,
+        .fusion-chat .sendbird-iconbutton--attach,
+        .fusion-chat [class*="message-input--attach"] {
+          display: none !important;
         }
 
         /* ===== INPUT AREA ===== */
