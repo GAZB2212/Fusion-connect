@@ -1191,52 +1191,40 @@ export default function Messages() {
           opacity: 1 !important;
         }
         
-        .fusion-chat img:not(.sendbird-avatar-img):not(.sendbird-user-profile__avatar):not(.sendbird-icon) {
-          max-width: 160px !important;
-          max-height: 200px !important;
-          width: auto !important;
-          height: auto !important;
-          object-fit: cover !important;
-          border-radius: 12px !important;
-          display: block !important;
-        }
-
+        /* Image messages - let Sendbird handle sizing, just add theme styling */
         .fusion-chat .sendbird-thumbnail-message-item-body,
-        .fusion-chat .sendbird-image-renderer,
-        .fusion-chat .sendbird-image-renderer__image {
-          max-width: 160px !important;
-          max-height: 200px !important;
+        .fusion-chat .sendbird-image-renderer {
+          max-width: 200px !important;
+          border-radius: 12px !important;
           overflow: hidden !important;
+        }
+        
+        .fusion-chat .sendbird-image-renderer__image,
+        .fusion-chat .sendbird-thumbnail-message-item-body img {
+          max-width: 100% !important;
+          height: auto !important;
+          object-fit: contain !important;
           border-radius: 12px !important;
         }
         
-        /* File message constraints */
-        .fusion-chat .sendbird-file-message-item-body,
-        .fusion-chat .sendbird-file-message__file-name {
-          max-width: 180px !important;
+        /* File message styling */
+        .fusion-chat .sendbird-file-message-item-body {
+          max-width: 200px !important;
+          background: hsl(var(--muted)) !important;
+          border-radius: 12px !important;
+          padding: 8px 12px !important;
+        }
+        
+        .fusion-chat .sendbird-file-message-item-body__file-name {
+          color: hsl(var(--foreground)) !important;
           overflow: hidden !important;
           text-overflow: ellipsis !important;
           white-space: nowrap !important;
         }
         
-        /* Multiple file/image message grid constraints */
+        /* Multiple files grid - let Sendbird handle layout */
         .fusion-chat .sendbird-multiple-files-message-item-body {
-          max-width: 180px !important;
-          overflow: hidden !important;
-        }
-        
-        .fusion-chat .sendbird-multiple-files-message-item-body__thumbnail-grid {
-          max-width: 100% !important;
-          display: grid !important;
-          grid-template-columns: repeat(2, 80px) !important;
-          gap: 4px !important;
-        }
-        
-        .fusion-chat .sendbird-multiple-files-message-item-body__thumbnail-grid img {
-          max-width: 80px !important;
-          width: 80px !important;
-          height: 80px !important;
-          object-fit: cover !important;
+          max-width: 200px !important;
         }
 
         .fusion-chat .sendbird-message-content--incoming .sendbird-text-message-item-body {
