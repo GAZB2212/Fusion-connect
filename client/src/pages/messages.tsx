@@ -1110,32 +1110,66 @@ export default function Messages() {
           margin-left: 0 !important;
         }
 
+        /* CRITICAL: Force word wrap on ALL text content */
         .fusion-chat .sendbird-text-message-item-body {
           border-radius: 16px !important;
           padding: 8px 12px !important;
+          word-wrap: break-word !important;
+          word-break: break-word !important;
+          overflow-wrap: break-word !important;
+          white-space: pre-wrap !important;
+          max-width: 100% !important;
+        }
+        
+        .fusion-chat .sendbird-text-message-item-body__message {
+          word-wrap: break-word !important;
+          word-break: break-word !important;
+          overflow-wrap: break-word !important;
+          white-space: pre-wrap !important;
+          max-width: 100% !important;
+        }
+
+        /* ROOT LEVEL: Force width constraints on the entire message list */
+        .fusion-chat .sendbird-conversation__messages-padding,
+        .fusion-chat .sendbird-place-holder {
+          width: 100% !important;
+          max-width: 100% !important;
+          padding-left: 8px !important;
+          padding-right: 8px !important;
+          box-sizing: border-box !important;
+          overflow: hidden !important;
         }
 
         /* Constrain ALL message content to prevent overflow */
         .fusion-chat .sendbird-message-content {
           max-width: 100% !important;
-          width: 100% !important;
+          width: auto !important;
           box-sizing: border-box !important;
-        }
-        
-        .fusion-chat .sendbird-message-content__middle {
-          max-width: calc(100% - 80px) !important;
           overflow: hidden !important;
         }
         
+        .fusion-chat .sendbird-message-content__middle {
+          max-width: 75% !important;
+          overflow: hidden !important;
+          flex-shrink: 1 !important;
+        }
+        
         .fusion-chat .sendbird-message-content--outgoing .sendbird-message-content__middle {
-          max-width: calc(100% - 40px) !important;
+          max-width: 75% !important;
+        }
+        
+        /* Message hug - constrain the wrapper */
+        .fusion-chat .sendbird-message-hoc__message-content {
+          max-width: 100% !important;
+          overflow: hidden !important;
         }
 
-        /* AGGRESSIVE image constraints - prevent ALL overflow */
+        /* AGGRESSIVE overflow prevention on ALL message parts */
         .fusion-chat .sendbird-message-content,
         .fusion-chat .sendbird-message-content__middle,
         .fusion-chat .sendbird-message-content__left,
-        .fusion-chat .sendbird-message-content__right {
+        .fusion-chat .sendbird-message-content__right,
+        .fusion-chat .sendbird-message-hoc {
           overflow: hidden !important;
         }
         
