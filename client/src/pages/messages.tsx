@@ -1170,13 +1170,25 @@ export default function Messages() {
           overflow: hidden !important;
         }
 
-        /* AGGRESSIVE overflow prevention on ALL message parts */
+        /* AGGRESSIVE overflow prevention on message parts (but not right side where checkmarks are) */
         .fusion-chat .sendbird-message-content,
         .fusion-chat .sendbird-message-content__middle,
         .fusion-chat .sendbird-message-content__left,
-        .fusion-chat .sendbird-message-content__right,
         .fusion-chat .sendbird-message-hoc {
           overflow: hidden !important;
+        }
+        
+        /* Ensure message status (checkmarks) area is visible */
+        .fusion-chat .sendbird-message-content__right {
+          overflow: visible !important;
+          display: flex !important;
+          visibility: visible !important;
+        }
+        
+        .fusion-chat .sendbird-message-status {
+          display: inline-flex !important;
+          visibility: visible !important;
+          opacity: 1 !important;
         }
         
         .fusion-chat img:not(.sendbird-avatar-img):not(.sendbird-user-profile__avatar):not(.sendbird-icon) {
