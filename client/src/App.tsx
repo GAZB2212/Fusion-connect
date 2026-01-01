@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Profile } from "@shared/schema";
 import { 
   initializeEarly, 
@@ -13,7 +13,7 @@ import {
   setNavigationCallback,
   initializePushNotifications 
 } from "@/lib/unifiedPushNotifications";
-import { initPush, getStoredPushToken, getPushTokenType, setNavigationCallbackForPush } from "@/lib/push";
+import { initPush, getStoredPushToken, getPushTokenType, setNavigationCallbackForPush, setIncomingCallCallback } from "@/lib/push";
 import { isCapacitorNative } from "@/lib/platform";
 import { VideoCallProvider } from "@/contexts/VideoCallContext";
 import { WebSocketProvider } from "@/contexts/WebSocketContext";
@@ -43,6 +43,7 @@ import GuidanceHub from "@/pages/guidance-hub";
 import IncomingCall from "@/pages/incoming-call";
 import NotFound from "@/pages/not-found";
 import { BottomNav } from "@/components/navigation";
+import IncomingCallBanner, { type IncomingCallData } from "@/components/IncomingCallBanner";
 import { Loader2 } from "lucide-react";
 
 function Router() {
@@ -197,6 +198,9 @@ function AppContent() {
     retry: false,
   });
   
+  // Incoming call banner state
+  const [incomingCall, setIncomingCall] = useState<IncomingCallData | null>(null);
+  
   // Track if we've done early push init
   const earlyInitDone = useRef(false);
   // Track if we've registered token with backend
@@ -227,6 +231,12 @@ function AppContent() {
       setNavigationCallbackForPush((path: string) => {
         console.log('[Push] Navigating to path from push notification:', path);
         setLocation(path);
+      });
+      
+      // Set incoming call callback for foreground notifications
+      setIncomingCallCallback((callData) => {
+        console.log('[Push] Incoming call in foreground:', callData);
+        setIncomingCall(callData);
       });
       
       // Use simplified push initialization (recommended pattern)
@@ -339,6 +349,10 @@ function AppContent() {
 
   return (
     <>
+      <IncomingCallBanner 
+        callData={incomingCall} 
+        onDismiss={() => setIncomingCall(null)} 
+      />
       <Router />
       {isAuthenticated && <BottomNav />}
     </>

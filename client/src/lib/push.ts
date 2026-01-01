@@ -12,9 +12,23 @@ const FCM_TOKEN_KEY = 'fcmToken';
 // Navigation callback for handling notification taps
 let navigateCallback: ((path: string) => void) | null = null;
 
+// Foreground call notification callback
+let incomingCallCallback: ((callData: {
+  callId: string;
+  callerName: string;
+  callerId: string;
+  callType: 'video' | 'audio';
+  channel: string;
+}) => void) | null = null;
+
 export function setNavigationCallbackForPush(callback: (path: string) => void) {
   navigateCallback = callback;
   console.log('[Push] Navigation callback set for push notification handling');
+}
+
+export function setIncomingCallCallback(callback: typeof incomingCallCallback) {
+  incomingCallCallback = callback;
+  console.log('[Push] Incoming call callback set for foreground notifications');
 }
 
 export function getStoredPushToken(): string | null {
@@ -73,7 +87,33 @@ export async function initPush() {
     });
 
     PushNotifications.addListener('pushNotificationReceived', (notification: PushNotificationSchema) => {
-      console.log('[Push] Notification received:', JSON.stringify(notification));
+      console.log('[Push] Notification received in foreground:', JSON.stringify(notification));
+      
+      // Parse notification data
+      const data = notification.data;
+      if (!data) return;
+      
+      // Check if this is an incoming call notification
+      const notificationType = data.type;
+      console.log('[Push] Foreground notification type:', notificationType);
+      
+      if (notificationType === 'rtc_call_invite') {
+        const callData = {
+          callId: data.callId as string,
+          callerName: (data.callerName as string) || 'Someone',
+          callerId: data.callerId as string,
+          callType: (data.callType as 'video' | 'audio') || 'video',
+          channel: data.channel as string,
+        };
+        
+        console.log('[Push] Incoming call notification in foreground:', callData);
+        
+        if (incomingCallCallback) {
+          incomingCallCallback(callData);
+        } else {
+          console.log('[Push] No incoming call callback set');
+        }
+      }
     });
 
     PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
