@@ -9,6 +9,14 @@ let listenersSet = false;
 const APNS_TOKEN_KEY = 'apnsToken';
 const FCM_TOKEN_KEY = 'fcmToken';
 
+// Navigation callback for handling notification taps
+let navigateCallback: ((path: string) => void) | null = null;
+
+export function setNavigationCallbackForPush(callback: (path: string) => void) {
+  navigateCallback = callback;
+  console.log('[Push] Navigation callback set for push notification handling');
+}
+
 export function getStoredPushToken(): string | null {
   const platform = Capacitor.getPlatform();
   if (platform === 'ios') {
@@ -70,6 +78,43 @@ export async function initPush() {
 
     PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
       console.log('[Push] Notification action performed:', JSON.stringify(action));
+      
+      // Try to parse notification data
+      const data = action.notification?.data;
+      if (!data) {
+        console.log('[Push] No data in notification action');
+        return;
+      }
+      
+      // Handle different notification types
+      const notificationType = data.type || data.sendbird?.custom_type;
+      console.log('[Push] Notification type:', notificationType);
+      
+      if (notificationType === 'rtc_call_invite') {
+        // Incoming call notification tapped
+        const callId = data.callId;
+        const callerName = data.callerName || 'Someone';
+        const callType = data.callType || 'video';
+        
+        if (callId && navigateCallback) {
+          const path = `/call/${callId}?callerName=${encodeURIComponent(callerName)}&callType=${callType}`;
+          console.log('[Push] Navigating to incoming call:', path);
+          navigateCallback(path);
+        } else {
+          console.log('[Push] No callId or navigation callback for call notification');
+        }
+      } else if (data.sendbird?.channel_url) {
+        // Sendbird message notification - navigate to chat
+        // Extract match ID from channel URL (format: match_<matchId> or similar)
+        const channelUrl = data.sendbird.channel_url;
+        const matchId = channelUrl.replace('match_', '').split('_')[0];
+        
+        if (matchId && navigateCallback) {
+          const path = `/messages/${matchId}`;
+          console.log('[Push] Navigating to messages:', path);
+          navigateCallback(path);
+        }
+      }
     });
 
     console.log('[Push] All listeners set up successfully');

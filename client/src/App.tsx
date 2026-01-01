@@ -13,7 +13,7 @@ import {
   setNavigationCallback,
   initializePushNotifications 
 } from "@/lib/unifiedPushNotifications";
-import { initPush, getStoredPushToken, getPushTokenType } from "@/lib/push";
+import { initPush, getStoredPushToken, getPushTokenType, setNavigationCallbackForPush } from "@/lib/push";
 import { isCapacitorNative } from "@/lib/platform";
 import { VideoCallProvider } from "@/contexts/VideoCallContext";
 import { WebSocketProvider } from "@/contexts/WebSocketContext";
@@ -40,6 +40,7 @@ import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
 import ChaperonePortal from "@/pages/chaperone-portal";
 import GuidanceHub from "@/pages/guidance-hub";
+import IncomingCall from "@/pages/incoming-call";
 import NotFound from "@/pages/not-found";
 import { BottomNav } from "@/components/navigation";
 import { Loader2 } from "lucide-react";
@@ -181,6 +182,7 @@ function Router() {
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/terms-of-service" component={TermsOfService} />
       <Route path="/chaperone" component={ChaperonePortal} />
+      <Route path="/call/:callId" component={IncomingCall} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -215,10 +217,16 @@ function AppContent() {
       
       console.log('[Push] App launch - starting early push notification init...');
       
-      // Set navigation callback early
+      // Set navigation callback early (for original unified push)
       setNavigationCallback((matchId: string) => {
         console.log('[Push] Navigating to chat from notification:', matchId);
         setLocation(`/messages/${matchId}`);
+      });
+      
+      // Set navigation callback for simplified push (handles call notifications and chat)
+      setNavigationCallbackForPush((path: string) => {
+        console.log('[Push] Navigating to path from push notification:', path);
+        setLocation(path);
       });
       
       // Use simplified push initialization (recommended pattern)
