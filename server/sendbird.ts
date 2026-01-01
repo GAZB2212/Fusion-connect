@@ -216,10 +216,15 @@ export class SendbirdService {
       
       console.log(`[Sendbird] Created channel for users: ${userIds.join(', ')}`);
       
-      // Only send welcome message if explicitly requested AND channel has no messages yet
-      // This prevents duplicate messages when channel already exists (is_distinct returns existing)
-      if (sendWelcomeMessage && data.last_message === null) {
+      // Only send welcome message if explicitly requested AND this is a brand new channel
+      // Check both last_message and message_count to ensure channel truly has no messages
+      const hasNoMessages = data.last_message === null && (!data.message_count || data.message_count === 0);
+      
+      if (sendWelcomeMessage && hasNoMessages) {
+        console.log(`[Sendbird] Sending welcome message to new channel ${data.channel_url}`);
         await this.sendSystemMessage(data.channel_url, "It's a match! Say salaam and start your conversation.");
+      } else if (sendWelcomeMessage) {
+        console.log(`[Sendbird] Skipping welcome message - channel already has messages (last_message: ${data.last_message ? 'yes' : 'no'}, message_count: ${data.message_count})`);
       }
       
       return data;
