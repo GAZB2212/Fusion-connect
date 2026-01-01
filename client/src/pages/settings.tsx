@@ -306,6 +306,46 @@ export default function Settings() {
     },
   });
 
+  // Cleanup orphaned channels mutation (testing only)
+  const cleanupChannelsMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/dev/cleanup-orphaned-channels", {});
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Channels Cleaned Up",
+        description: `Deleted ${data.deleted} orphaned channels, kept ${data.kept} valid channels.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to cleanup channels",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Cleanup duplicate welcome messages mutation (testing only)
+  const cleanupMessagesMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/dev/cleanup-welcome-messages", {});
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Messages Cleaned Up",
+        description: `Processed ${data.channelsProcessed} channels, deleted ${data.totalDeleted} duplicate messages.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to cleanup messages",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Update full profile mutation
   const updateProfileMutation = useMutation({
     mutationFn: async (updates: Partial<Profile>) => {
@@ -1518,6 +1558,26 @@ export default function Settings() {
             >
               <Trash2 className="h-4 w-4 mr-2" />
               {resetMatchesMutation.isPending ? "Resetting..." : "Reset All Matches"}
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={() => cleanupChannelsMutation.mutate()}
+              disabled={cleanupChannelsMutation.isPending}
+              data-testid="button-cleanup-channels"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {cleanupChannelsMutation.isPending ? "Cleaning..." : "Cleanup Old Chats"}
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={() => cleanupMessagesMutation.mutate()}
+              disabled={cleanupMessagesMutation.isPending}
+              data-testid="button-cleanup-messages"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {cleanupMessagesMutation.isPending ? "Cleaning..." : "Remove Duplicate Welcome Messages"}
             </Button>
           </div>
         </Card>
