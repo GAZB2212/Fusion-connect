@@ -293,8 +293,8 @@ export class SendbirdService {
     }
     
     try {
-      // Get messages from the channel
-      const response = await fetch(`${baseUrl}/group_channels/${encodeURIComponent(channelUrl)}/messages?message_type=ADMM&limit=100`, {
+      // Get ALL messages from the channel (no message_type filter)
+      const response = await fetch(`${baseUrl}/group_channels/${encodeURIComponent(channelUrl)}/messages?limit=100`, {
         method: 'GET',
         headers: {
           'Api-Token': apiToken!
@@ -302,19 +302,24 @@ export class SendbirdService {
       });
       
       if (!response.ok) {
-        console.error('[Sendbird] Failed to get messages for cleanup');
+        const errorText = await response.text();
+        console.error('[Sendbird] Failed to get messages for cleanup:', response.status, errorText);
         return 0;
       }
       
       const data = await response.json();
       const messages = data.messages || [];
+      console.log(`[Sendbird] Channel ${channelUrl}: Found ${messages.length} total messages`);
       
-      // Find all "It's a match!" messages
-      const welcomeMessages = messages.filter((m: any) => 
-        m.message && m.message.includes("It's a match!")
-      );
+      // Find all "It's a match!" messages (check both message and message text)
+      const welcomeMessages = messages.filter((m: any) => {
+        const text = m.message || '';
+        return text.includes("It's a match!");
+      });
       
-      // Keep only the first one, delete the rest
+      console.log(`[Sendbird] Channel ${channelUrl}: Found ${welcomeMessages.length} welcome messages`);
+      
+      // Keep only the first one (oldest), delete the rest
       if (welcomeMessages.length <= 1) {
         return 0;
       }

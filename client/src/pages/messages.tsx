@@ -1131,48 +1131,59 @@ export default function Messages() {
           max-width: calc(100% - 40px) !important;
         }
 
-        /* Constrain images within chat boundaries */
-        .fusion-chat img:not(.sendbird-avatar-img):not(.sendbird-user-profile__avatar) {
-          max-width: 180px !important;
-          max-height: 240px !important;
+        /* AGGRESSIVE image constraints - prevent ALL overflow */
+        .fusion-chat .sendbird-message-content,
+        .fusion-chat .sendbird-message-content__middle,
+        .fusion-chat .sendbird-message-content__left,
+        .fusion-chat .sendbird-message-content__right {
+          overflow: hidden !important;
+        }
+        
+        .fusion-chat img:not(.sendbird-avatar-img):not(.sendbird-user-profile__avatar):not(.sendbird-icon) {
+          max-width: 160px !important;
+          max-height: 200px !important;
           width: auto !important;
           height: auto !important;
           object-fit: cover !important;
           border-radius: 12px !important;
+          display: block !important;
         }
 
-        .fusion-chat .sendbird-thumbnail-message-item-body {
-          max-width: 180px !important;
-          max-height: 240px !important;
+        .fusion-chat .sendbird-thumbnail-message-item-body,
+        .fusion-chat .sendbird-image-renderer,
+        .fusion-chat .sendbird-image-renderer__image {
+          max-width: 160px !important;
+          max-height: 200px !important;
           overflow: hidden !important;
           border-radius: 12px !important;
         }
         
         /* File message constraints */
-        .fusion-chat .sendbird-file-message-item-body {
-          max-width: 220px !important;
+        .fusion-chat .sendbird-file-message-item-body,
+        .fusion-chat .sendbird-file-message__file-name {
+          max-width: 180px !important;
           overflow: hidden !important;
           text-overflow: ellipsis !important;
+          white-space: nowrap !important;
         }
         
         /* Multiple file/image message grid constraints */
         .fusion-chat .sendbird-multiple-files-message-item-body {
-          max-width: 220px !important;
+          max-width: 180px !important;
           overflow: hidden !important;
         }
         
         .fusion-chat .sendbird-multiple-files-message-item-body__thumbnail-grid {
           max-width: 100% !important;
           display: grid !important;
-          grid-template-columns: repeat(2, 1fr) !important;
+          grid-template-columns: repeat(2, 80px) !important;
           gap: 4px !important;
         }
         
         .fusion-chat .sendbird-multiple-files-message-item-body__thumbnail-grid img {
-          max-width: 100% !important;
-          width: 100% !important;
-          height: auto !important;
-          aspect-ratio: 1 !important;
+          max-width: 80px !important;
+          width: 80px !important;
+          height: 80px !important;
           object-fit: cover !important;
         }
 
