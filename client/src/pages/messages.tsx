@@ -1041,6 +1041,21 @@ export default function Messages() {
           color: hsl(var(--muted-foreground)) !important;
         }
 
+        /* ===== VOICE MESSAGE - SHOW BACK/CANCEL BUTTON ===== */
+        .fusion-chat .sendbird-voice-message-input__cancel,
+        .fusion-chat .sendbird-voice-message-input-wrapper__cancel,
+        .fusion-chat [class*="voice-message-input__cancel"],
+        .fusion-chat [class*="voice-message"] button[class*="cancel"] {
+          display: flex !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          color: hsl(var(--muted-foreground)) !important;
+        }
+
+        .fusion-chat .sendbird-voice-message-input__cancel:hover {
+          color: hsl(var(--foreground)) !important;
+        }
+
       `}</style>
 
       {/* Video Call Overlay - Debug log */}
