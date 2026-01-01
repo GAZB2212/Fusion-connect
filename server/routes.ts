@@ -35,6 +35,7 @@ import {
   onboardingConversations,
   forYouMatches,
   userMatchPreferences,
+  callSessions,
   insertProfileSchema,
   insertMessageSchema,
   insertChaperoneSchema,
@@ -43,6 +44,7 @@ import {
   insertBlockedUserSchema,
   insertUserReportSchema,
   insertUserFeedbackSchema,
+  insertCallSessionSchema,
   registerUserSchema,
   loginSchema,
   type Profile,
@@ -56,6 +58,7 @@ import {
   type EarlySignup,
   type ForYouMatch,
   type UserMatchPreference,
+  type CallSession,
 } from "@shared/schema";
 import OpenAI from "openai";
 import { eq, and, or, ne, notInArray, inArray, desc, sql, lt, gte, isNull } from "drizzle-orm";
@@ -3903,6 +3906,16 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
         ...req.body
       });
 
+      // Determine platform from type if not provided
+      const platform = validatedData.platform || 
+        (validatedData.type === 'apns' ? 'ios' : 
+         validatedData.type === 'fcm' ? 'android' : 'web');
+      
+      // Default environment to production (TestFlight uses production APNs)
+      const environment = validatedData.environment || 'production';
+
+      console.log(`[Push] Registering token for user=${userId} platform=${platform} type=${validatedData.type} env=${environment}`);
+
       // For web push, use endpoint as the unique identifier
       // For native push, use the token itself
       const tokenIdentifier = validatedData.type === 'web' 
@@ -3913,44 +3926,87 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
         return res.status(400).json({ message: "Token or endpoint required" });
       }
 
-      // Check if this token already exists for this user
-      const [existing] = await db
+      // Check if this exact token already exists (globally, not just for this user)
+      const [existingToken] = await db
         .select()
         .from(pushTokens)
-        .where(
-          and(
-            eq(pushTokens.userId, userId),
-            eq(pushTokens.token, validatedData.token)
-          )
-        )
+        .where(eq(pushTokens.token, validatedData.token))
         .limit(1);
 
-      if (existing) {
-        // Update the existing token (mark as active, update timestamp)
+      if (existingToken) {
+        // Token exists - update it (may belong to different user if device was reassigned)
         await db
           .update(pushTokens)
           .set({ 
+            userId, // Update to current user
             isActive: true, 
             updatedAt: new Date(),
-            // Update web push keys if provided
-            endpoint: validatedData.endpoint || existing.endpoint,
-            auth: validatedData.auth || existing.auth,
-            p256dh: validatedData.p256dh || existing.p256dh,
+            platform,
+            environment,
+            endpoint: validatedData.endpoint || existingToken.endpoint,
+            auth: validatedData.auth || existingToken.auth,
+            p256dh: validatedData.p256dh || existingToken.p256dh,
           })
-          .where(eq(pushTokens.id, existing.id));
+          .where(eq(pushTokens.id, existingToken.id));
+        
+        console.log(`[Push] Updated existing token for user=${userId}`);
         
         // Re-register with Sendbird in case it was removed
         if (validatedData.type === 'apns') {
           try {
             await SendbirdService.registerApnsPushToken(userId, validatedData.token);
-          } catch (e) { /* ignore */ }
+            console.log(`[Push] Re-registered iOS APNs token with Sendbird for user=${userId}`);
+          } catch (e) {
+            console.error('[Push] Failed to re-register APNs with Sendbird:', e);
+          }
         } else if (validatedData.type === 'fcm') {
           try {
             await SendbirdService.registerFcmPushToken(userId, validatedData.token);
-          } catch (e) { /* ignore */ }
+            console.log(`[Push] Re-registered Android FCM token with Sendbird for user=${userId}`);
+          } catch (e) {
+            console.error('[Push] Failed to re-register FCM with Sendbird:', e);
+          }
         }
         
         return res.json({ message: "Push token updated" });
+      }
+
+      // For iOS APNs: remove old tokens for this user to avoid BadDeviceToken errors
+      if (validatedData.type === 'apns') {
+        const oldIosTokens = await db
+          .select()
+          .from(pushTokens)
+          .where(
+            and(
+              eq(pushTokens.userId, userId),
+              eq(pushTokens.type, 'apns'),
+              eq(pushTokens.environment, environment)
+            )
+          );
+        
+        // Unregister old tokens from Sendbird first
+        for (const oldToken of oldIosTokens) {
+          try {
+            await SendbirdService.unregisterApnsPushToken(userId, oldToken.token);
+            console.log(`[Push] Unregistered old APNs token from Sendbird: ${oldToken.token.substring(0, 10)}...`);
+          } catch (e) {
+            // Ignore errors - token may already be invalid
+          }
+        }
+        
+        // Delete old tokens from our database
+        if (oldIosTokens.length > 0) {
+          await db
+            .delete(pushTokens)
+            .where(
+              and(
+                eq(pushTokens.userId, userId),
+                eq(pushTokens.type, 'apns'),
+                eq(pushTokens.environment, environment)
+              )
+            );
+          console.log(`[Push] Removed ${oldIosTokens.length} old iOS tokens for user=${userId} env=${environment}`);
+        }
       }
 
       // Create new token registration
@@ -3962,22 +4018,25 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
         auth: validatedData.auth,
         p256dh: validatedData.p256dh,
         deviceId: validatedData.deviceId,
+        platform,
+        environment,
         isActive: true,
       });
+      
+      console.log(`[Push] Created new token registration for user=${userId} platform=${platform}`);
 
       // Also register native push tokens with Sendbird for chat notifications
       if (validatedData.type === 'apns') {
         try {
           await SendbirdService.registerApnsPushToken(userId, validatedData.token);
-          console.log(`[Push] Registered APNs token with Sendbird for user ${userId}`);
+          console.log(`[Push] Registered iOS APNs token with Sendbird for user=${userId}`);
         } catch (sendbirdError) {
           console.error('[Push] Failed to register APNs token with Sendbird:', sendbirdError);
-          // Don't fail the request, still store locally
         }
       } else if (validatedData.type === 'fcm') {
         try {
           await SendbirdService.registerFcmPushToken(userId, validatedData.token);
-          console.log(`[Push] Registered FCM token with Sendbird for user ${userId}`);
+          console.log(`[Push] Registered Android FCM token with Sendbird for user=${userId}`);
         } catch (sendbirdError) {
           console.error('[Push] Failed to register FCM token with Sendbird:', sendbirdError);
         }
@@ -4043,6 +4102,406 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
     } catch (error: any) {
       console.error('Error getting unread count:', error);
       res.json({ unreadCount: 0 });
+    }
+  });
+
+  // ============================================
+  // CALL ENDPOINTS (Agora RTC)
+  // ============================================
+  
+  // Rate limiting for call invites (simple in-memory)
+  const callInviteRateLimits = new Map<string, { count: number; resetAt: number }>();
+  const CALL_RATE_LIMIT = 5; // Max 5 calls per minute
+  const CALL_RATE_WINDOW = 60000; // 1 minute
+
+  // POST /api/call/invite - Send call invitation to another user
+  app.post("/api/call/invite", isAuthenticated, async (req: any, res: Response) => {
+    const callerUserId = req.user.id;
+    const { calleeUserId, callType } = req.body;
+
+    try {
+      // Validate input
+      if (!calleeUserId || !callType) {
+        return res.status(400).json({ message: "calleeUserId and callType are required" });
+      }
+      if (!['video', 'audio'].includes(callType)) {
+        return res.status(400).json({ message: "callType must be 'video' or 'audio'" });
+      }
+      if (callerUserId === calleeUserId) {
+        return res.status(400).json({ message: "Cannot call yourself" });
+      }
+
+      // Rate limiting
+      const now = Date.now();
+      const rateLimit = callInviteRateLimits.get(callerUserId);
+      if (rateLimit && now < rateLimit.resetAt) {
+        if (rateLimit.count >= CALL_RATE_LIMIT) {
+          return res.status(429).json({ message: "Too many call invites. Please wait a minute." });
+        }
+        rateLimit.count++;
+      } else {
+        callInviteRateLimits.set(callerUserId, { count: 1, resetAt: now + CALL_RATE_WINDOW });
+      }
+
+      // Check if callee exists and is not blocked
+      const [callee] = await db.select().from(users).where(eq(users.id, calleeUserId)).limit(1);
+      if (!callee) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check if blocked
+      const [blocked] = await db.select().from(blockedUsers).where(
+        or(
+          and(eq(blockedUsers.blockerId, callerUserId), eq(blockedUsers.blockedId, calleeUserId)),
+          and(eq(blockedUsers.blockerId, calleeUserId), eq(blockedUsers.blockedId, callerUserId))
+        )
+      ).limit(1);
+      if (blocked) {
+        return res.status(403).json({ message: "Cannot call this user" });
+      }
+
+      // Generate call ID and channel name
+      const callId = randomBytes(12).toString('hex');
+      const channelName = `fusion_${callId}`;
+
+      console.log(`[Call] Creating call invite: callId=${callId} channel=${channelName} caller=${callerUserId} callee=${calleeUserId} type=${callType}`);
+
+      // Create call session
+      await db.insert(callSessions).values({
+        callId,
+        channelName,
+        callerUserId,
+        calleeUserId,
+        callType,
+        status: 'ringing',
+      });
+
+      // Get caller profile for notification
+      const [callerProfile] = await db.select().from(profiles).where(eq(profiles.userId, callerUserId)).limit(1);
+      const callerName = callerProfile?.displayName || 'Someone';
+
+      // Get callee's push tokens
+      const calleeTokens = await db
+        .select()
+        .from(pushTokens)
+        .where(
+          and(
+            eq(pushTokens.userId, calleeUserId),
+            eq(pushTokens.isActive, true)
+          )
+        );
+
+      console.log(`[Call] Found ${calleeTokens.length} push tokens for callee=${calleeUserId}`);
+
+      // Prepare push notification data
+      const pushData = {
+        type: 'rtc_call_invite',
+        callId,
+        channel: channelName,
+        callerId: callerUserId,
+        callerName,
+        callType,
+      };
+      const pushTitle = 'Incoming call';
+      const pushBody = `${callerName} is calling you`;
+
+      // Send push notifications
+      let iosPushSent = 0;
+      let androidPushSent = 0;
+
+      for (const token of calleeTokens) {
+        try {
+          if (token.type === 'apns') {
+            // iOS: Send via Sendbird (since APNs is already working via Sendbird)
+            await SendbirdService.sendPushToUser(calleeUserId, pushTitle, pushBody, pushData);
+            iosPushSent++;
+            console.log(`[Call] Sent iOS push via Sendbird to user=${calleeUserId}`);
+          } else if (token.type === 'fcm') {
+            // Android: Send via FCM (requires Firebase Admin SDK)
+            // For now, also try sending via Sendbird as fallback
+            await SendbirdService.sendPushToUser(calleeUserId, pushTitle, pushBody, pushData);
+            androidPushSent++;
+            console.log(`[Call] Sent Android push via Sendbird to user=${calleeUserId}`);
+          }
+        } catch (pushError) {
+          console.error(`[Call] Failed to send push to token type=${token.type}:`, pushError);
+        }
+      }
+
+      console.log(`[Call] Push summary: iOS=${iosPushSent} Android=${androidPushSent}`);
+
+      // Also send via WebSocket if user is online
+      broadcastToUser(calleeUserId, {
+        type: 'incoming_call',
+        data: pushData,
+      });
+
+      res.json({
+        callId,
+        channel: channelName,
+        callType,
+        calleeUserId,
+      });
+    } catch (error: any) {
+      console.error('[Call] Error creating call invite:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // POST /api/call/accept - Accept an incoming call
+  app.post("/api/call/accept", isAuthenticated, async (req: any, res: Response) => {
+    const calleeUserId = req.user.id;
+    const { callId } = req.body;
+
+    try {
+      if (!callId) {
+        return res.status(400).json({ message: "callId is required" });
+      }
+
+      // Find the call session
+      const [callSession] = await db
+        .select()
+        .from(callSessions)
+        .where(
+          and(
+            eq(callSessions.callId, callId),
+            eq(callSessions.calleeUserId, calleeUserId)
+          )
+        )
+        .limit(1);
+
+      if (!callSession) {
+        return res.status(404).json({ message: "Call not found" });
+      }
+
+      if (callSession.status !== 'ringing') {
+        return res.status(400).json({ message: `Call is already ${callSession.status}` });
+      }
+
+      console.log(`[Call] Accepting call: callId=${callId} callee=${calleeUserId}`);
+
+      // Update call status to accepted
+      await db
+        .update(callSessions)
+        .set({ status: 'accepted', startedAt: new Date() })
+        .where(eq(callSessions.callId, callId));
+
+      // Generate Agora RTC token for the callee
+      const agoraAppId = process.env.AGORA_APP_ID;
+      const agoraCertificate = process.env.AGORA_APP_CERTIFICATE;
+      
+      if (!agoraAppId || !agoraCertificate) {
+        console.error('[Call] Agora credentials not configured');
+        return res.status(500).json({ message: "Video calling not configured" });
+      }
+
+      const uid = Math.floor(Math.random() * 100000);
+      const expirationTimeInSeconds = 3600; // 1 hour
+      const currentTimestamp = Math.floor(Date.now() / 1000);
+      const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
+
+      const rtcToken = RtcTokenBuilder.buildTokenWithUid(
+        agoraAppId,
+        agoraCertificate,
+        callSession.channelName,
+        uid,
+        RtcRole.PUBLISHER,
+        privilegeExpiredTs,
+        privilegeExpiredTs
+      );
+
+      console.log(`[Call] Generated RTC token for callee=${calleeUserId} channel=${callSession.channelName} uid=${uid}`);
+
+      // Notify caller that call was accepted via WebSocket
+      broadcastToUser(callSession.callerUserId, {
+        type: 'call_accepted',
+        data: {
+          callId,
+          channel: callSession.channelName,
+          calleeUserId,
+        },
+      });
+
+      res.json({
+        channel: callSession.channelName,
+        rtcToken,
+        uid,
+        callType: callSession.callType,
+        callerId: callSession.callerUserId,
+        appId: agoraAppId,
+      });
+    } catch (error: any) {
+      console.error('[Call] Error accepting call:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // POST /api/call/decline - Decline an incoming call
+  app.post("/api/call/decline", isAuthenticated, async (req: any, res: Response) => {
+    const calleeUserId = req.user.id;
+    const { callId } = req.body;
+
+    try {
+      if (!callId) {
+        return res.status(400).json({ message: "callId is required" });
+      }
+
+      // Find the call session
+      const [callSession] = await db
+        .select()
+        .from(callSessions)
+        .where(
+          and(
+            eq(callSessions.callId, callId),
+            eq(callSessions.calleeUserId, calleeUserId)
+          )
+        )
+        .limit(1);
+
+      if (!callSession) {
+        return res.status(404).json({ message: "Call not found" });
+      }
+
+      console.log(`[Call] Declining call: callId=${callId} callee=${calleeUserId}`);
+
+      // Update call status to declined
+      await db
+        .update(callSessions)
+        .set({ status: 'declined', endedAt: new Date() })
+        .where(eq(callSessions.callId, callId));
+
+      // Notify caller that call was declined via WebSocket
+      broadcastToUser(callSession.callerUserId, {
+        type: 'call_declined',
+        data: {
+          callId,
+          calleeUserId,
+        },
+      });
+
+      res.json({ message: "Call declined" });
+    } catch (error: any) {
+      console.error('[Call] Error declining call:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // POST /api/call/end - End an active call
+  app.post("/api/call/end", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+    const { callId } = req.body;
+
+    try {
+      if (!callId) {
+        return res.status(400).json({ message: "callId is required" });
+      }
+
+      // Find the call session (must be caller or callee)
+      const [callSession] = await db
+        .select()
+        .from(callSessions)
+        .where(
+          and(
+            eq(callSessions.callId, callId),
+            or(
+              eq(callSessions.callerUserId, userId),
+              eq(callSessions.calleeUserId, userId)
+            )
+          )
+        )
+        .limit(1);
+
+      if (!callSession) {
+        return res.status(404).json({ message: "Call not found" });
+      }
+
+      console.log(`[Call] Ending call: callId=${callId} by user=${userId}`);
+
+      // Update call status to ended
+      await db
+        .update(callSessions)
+        .set({ status: 'ended', endedAt: new Date() })
+        .where(eq(callSessions.callId, callId));
+
+      // Notify the other party via WebSocket
+      const otherUserId = userId === callSession.callerUserId 
+        ? callSession.calleeUserId 
+        : callSession.callerUserId;
+      
+      broadcastToUser(otherUserId, {
+        type: 'call_ended',
+        data: {
+          callId,
+          endedBy: userId,
+        },
+      });
+
+      res.json({ message: "Call ended" });
+    } catch (error: any) {
+      console.error('[Call] Error ending call:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // GET /api/call/token - Get Agora RTC token for caller to join channel
+  app.get("/api/call/token", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+    const { callId } = req.query;
+
+    try {
+      if (!callId) {
+        return res.status(400).json({ message: "callId is required" });
+      }
+
+      // Find the call session
+      const [callSession] = await db
+        .select()
+        .from(callSessions)
+        .where(eq(callSessions.callId, callId as string))
+        .limit(1);
+
+      if (!callSession) {
+        return res.status(404).json({ message: "Call not found" });
+      }
+
+      // Verify user is part of this call
+      if (callSession.callerUserId !== userId && callSession.calleeUserId !== userId) {
+        return res.status(403).json({ message: "Not authorized for this call" });
+      }
+
+      // Generate Agora RTC token
+      const agoraAppId = process.env.AGORA_APP_ID;
+      const agoraCertificate = process.env.AGORA_APP_CERTIFICATE;
+      
+      if (!agoraAppId || !agoraCertificate) {
+        return res.status(500).json({ message: "Video calling not configured" });
+      }
+
+      const uid = Math.floor(Math.random() * 100000);
+      const expirationTimeInSeconds = 3600;
+      const currentTimestamp = Math.floor(Date.now() / 1000);
+      const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
+
+      const rtcToken = RtcTokenBuilder.buildTokenWithUid(
+        agoraAppId,
+        agoraCertificate,
+        callSession.channelName,
+        uid,
+        RtcRole.PUBLISHER,
+        privilegeExpiredTs,
+        privilegeExpiredTs
+      );
+
+      res.json({
+        channel: callSession.channelName,
+        rtcToken,
+        uid,
+        callType: callSession.callType,
+        appId: agoraAppId,
+      });
+    } catch (error: any) {
+      console.error('[Call] Error getting call token:', error);
+      res.status(500).json({ message: error.message });
     }
   });
 

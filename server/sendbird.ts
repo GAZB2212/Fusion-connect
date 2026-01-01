@@ -640,4 +640,64 @@ export class SendbirdService {
       console.error('[Sendbird] Error updating push preferences:', error);
     }
   }
+
+  // Send a push notification to a specific user via Sendbird's Push API
+  // This uses Sendbird's "send_push" endpoint to deliver custom push notifications
+  static async sendPushToUser(
+    userId: string, 
+    title: string, 
+    body: string, 
+    data?: Record<string, any>
+  ): Promise<boolean> {
+    if (!isConfigured) {
+      console.warn('[Sendbird] Skipping push send - not configured');
+      return false;
+    }
+    
+    try {
+      // Sendbird uses the "send_push" endpoint to send push messages to a user
+      // This requires the Platform API to be enabled for push
+      const response = await fetch(`${baseUrl}/users/${encodeURIComponent(userId)}/push`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Api-Token': apiToken!
+        },
+        body: JSON.stringify({
+          message: {
+            type: 'MESG',
+            message: body,
+            data: data ? JSON.stringify(data) : undefined,
+            custom_type: 'call_notification',
+          },
+          push_option: 'force', // Send push even if user is online
+          apns_bundle_id: process.env.APNS_BUNDLE_ID || 'com.fusioncouples.app',
+          sound: 'default',
+          push_template: 'default',
+          // Custom notification fields
+          notification: {
+            title,
+            body,
+            data: data || {},
+          }
+        })
+      });
+      
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        console.error('[Sendbird] Send push to user failed:', responseData);
+        
+        // Fallback: Try sending via admin message to a system channel or direct messaging
+        // For now, just log the failure
+        return false;
+      }
+      
+      console.log(`[Sendbird] Push notification sent to user ${userId}`);
+      return true;
+    } catch (error) {
+      console.error('[Sendbird] Error sending push to user:', error);
+      return false;
+    }
+  }
 }
