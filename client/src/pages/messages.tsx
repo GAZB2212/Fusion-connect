@@ -872,581 +872,154 @@ export default function Messages() {
       </div>
 
       <style>{`
+        /* ===== SIMPLIFIED SENDBIRD STYLING ===== */
+        
+        /* Base container */
         .fusion-chat {
           height: 100% !important;
           width: 100% !important;
           max-width: 100% !important;
           overflow: hidden !important;
-        }
-
-        .fusion-chat .sendbird-channel-list,
-        .fusion-chat .sendbird-group-channel-list {
-          width: 100% !important;
-          max-width: 100% !important;
-          min-width: 100% !important;
-          height: 100% !important;
           background: hsl(var(--background)) !important;
-          overflow-x: hidden !important;
         }
 
-        .fusion-chat .sendbird-channel-list__body,
-        .fusion-chat .sendbird-group-channel-list__body {
-          width: 100% !important;
-          max-width: 100% !important;
-        }
-
+        /* Hide Sendbird headers - we use our own */
         .fusion-chat .sendbird-channel-list__header,
         .fusion-chat .sendbird-group-channel-list__header,
-        .fusion-chat .sendbird-channel-header,
-        .fusion-chat .sendbird-group-channel-header,
         .fusion-chat .sendbird-conversation__header,
-        .fusion-chat .sendbird-chat-header,
         .fusion-chat .sendbird-ui-header {
           display: none !important;
         }
 
-        /* Hide the info button in conversation header */
-        .fusion-chat .sendbird-ui-header__right,
-        .fusion-chat .sendbird-conversation__header-icon--info,
-        .fusion-chat .sendbird-iconbutton--info,
-        .fusion-chat [class*="header-icon--info"],
-        .fusion-chat .sendbird-chat-header__right {
-          display: none !important;
+        /* Channel list */
+        .fusion-chat .sendbird-channel-list,
+        .fusion-chat .sendbird-group-channel-list {
+          background: hsl(var(--background)) !important;
         }
 
-        /* Style the attachment/upload button with gold accent */
-        .fusion-chat .sendbird-message-input--attach,
-        .fusion-chat .sendbird-iconbutton--attach,
-        .fusion-chat [class*="message-input--attach"] {
-          color: #f59e0b !important;
-          opacity: 0.8 !important;
-          transition: all 0.2s ease !important;
-        }
-        
-        .fusion-chat .sendbird-message-input--attach:hover,
-        .fusion-chat .sendbird-iconbutton--attach:hover {
-          color: #fbbf24 !important;
-          opacity: 1 !important;
-        }
-        
-        .fusion-chat .sendbird-message-input-wrapper__tools {
-          background: transparent !important;
-        }
-
-        /* Hide the leave channel and other default menu options */
-        .fusion-chat .sendbird-channel-preview__action,
-        .fusion-chat .sendbird-channel-preview-action,
-        .fusion-chat [class*="channel-preview__action"],
-        .fusion-chat [class*="leave-channel"],
-        .fusion-chat .sendbird-icon-leave {
-          display: none !important;
-        }
-
-        .fusion-chat .sendbird-channel-preview {
-          width: calc(100% - 16px) !important;
-          max-width: calc(100% - 16px) !important;
-          background: transparent !important;
-          border-radius: 12px !important;
-          margin: 4px 8px !important;
-          transition: all 0.2s ease !important;
-        }
-
-        .fusion-chat .sendbird-channel-preview:hover {
-          background: hsl(var(--muted)) !important;
-          transform: translateX(2px) !important;
-        }
-        
-        /* Premium selected channel state */
-        .fusion-chat .sendbird-channel-preview--active,
-        .fusion-chat .sendbird-channel-preview--selected {
-          background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.05)) !important;
-          border: 1px solid rgba(251, 191, 36, 0.3) !important;
-        }
-
-        /* Clean single avatar display in channel list */
-        .fusion-chat .sendbird-channel-preview__avatar {
-          width: 48px !important;
-          height: 48px !important;
-          min-width: 48px !important;
-          min-height: 48px !important;
-          border-radius: 50% !important;
-          overflow: hidden !important;
-          position: relative !important;
-          padding: 0 !important;
-          background: transparent !important;
-          box-shadow: none !important;
-        }
-        
-        /* Hide stacked multiple avatars - show only the first one */
-        .fusion-chat .sendbird-channel-preview__avatar .sendbird-avatar:not(:first-child) {
-          display: none !important;
-        }
-        
-        .fusion-chat .sendbird-channel-preview__avatar .sendbird-avatar {
-          width: 100% !important;
-          height: 100% !important;
-          min-width: 100% !important;
-          min-height: 100% !important;
-          position: relative !important;
-          background: transparent !important;
-          box-shadow: none !important;
-          padding: 0 !important;
-        }
-
-        .fusion-chat .sendbird-channel-preview__avatar .sendbird-avatar-img {
-          width: 100% !important;
-          height: 100% !important;
-          object-fit: cover !important;
-          border-radius: 50% !important;
-          border: 2px solid hsl(var(--background)) !important;
-        }
-
-        /* Message avatars - clean styling */
-        .fusion-chat .sendbird-message-content__left__avatar .sendbird-avatar {
-          width: 32px !important;
-          height: 32px !important;
-          min-width: 32px !important;
-          min-height: 32px !important;
-          padding: 0 !important;
-          background: transparent !important;
-          box-shadow: none !important;
-          overflow: hidden !important;
-        }
-        
-        .fusion-chat .sendbird-message-content__left__avatar .sendbird-avatar-img {
-          border: none !important;
-        }
-
+        /* Conversation area */
         .fusion-chat .sendbird-conversation,
         .fusion-chat .sendbird-group-channel-view {
-          width: 100% !important;
-          max-width: 100% !important;
-          height: 100% !important;
-          display: flex !important;
-          flex-direction: column !important;
-          background: hsl(var(--background)) !important;
-          overflow: hidden !important;
-        }
-
-        .fusion-chat .sendbird-conversation__messages,
-        .fusion-chat .sendbird-group-channel-view__message-list {
-          flex: 1 !important;
-          min-height: 0 !important;
-          width: 100% !important;
-          max-width: 100% !important;
-          overflow-x: hidden !important;
-          overflow-y: auto !important;
           background: hsl(var(--background)) !important;
         }
 
+        /* ===== MESSAGE WIDTH FIX ===== */
         .fusion-chat .sendbird-conversation__messages-padding {
           width: 100% !important;
           max-width: 100% !important;
+          padding: 8px !important;
           box-sizing: border-box !important;
         }
 
-        .fusion-chat .sendbird-message-input {
-          flex-shrink: 0 !important;
-          width: 100% !important;
-          max-width: 100% !important;
-          box-sizing: border-box !important;
-          background: transparent !important;
-          border: none !important;
-          padding: 8px 12px !important;
-        }
-
-        .fusion-chat .sendbird-message-input-text-field {
-          width: 100% !important;
-          max-width: 100% !important;
-          box-sizing: border-box !important;
-          background: hsl(var(--muted)) !important;
-          border: 1px solid hsl(var(--border)) !important;
-          border-radius: 20px !important;
-          color: hsl(var(--foreground)) !important;
-          min-height: 40px !important;
-          max-height: 120px !important;
-          font-size: 15px !important;
-          padding: 10px 16px !important;
-          word-wrap: break-word !important;
-          word-break: break-word !important;
-          white-space: pre-wrap !important;
-          overflow-wrap: break-word !important;
-          overflow-x: hidden !important;
-          overflow-y: auto !important;
-        }
-
-        .fusion-chat .sendbird-message-input-wrapper {
-          width: 100% !important;
-          max-width: 100% !important;
-          overflow: hidden !important;
-        }
-
-        .fusion-chat .sendbird-message-input-text-field::placeholder,
-        .fusion-chat .sendbird-message-input-text-field::-webkit-input-placeholder {
-          color: hsl(var(--muted-foreground)) !important;
-          opacity: 0.6 !important;
-          font-size: 15px !important;
-        }
-        
-        /* Fix Sendbird placeholder - target ALL possible placeholder elements */
-        .fusion-chat .sendbird-message-input-text-field__placeholder,
-        .fusion-chat .sendbird-message-input__placeholder,
-        .fusion-chat .sendbird-message-input__place-holder,
-        .fusion-chat [class*="text-field__placeholder"],
-        .fusion-chat [class*="input__placeholder"],
-        .fusion-chat [class*="message-input"] [class*="placeholder"] {
-          left: 16px !important;
-          padding-left: 18px !important;
-          margin-left: 0 !important;
-          transform: none !important;
-          position: absolute !important;
-        }
-        
-        /* Quill editor placeholder */
-        .fusion-chat .ql-editor.ql-blank::before {
-          left: 16px !important;
-          padding-left: 18px !important;
-          font-style: normal !important;
-        }
-        
-        /* Ensure the input wrapper doesn't offset */
-        .fusion-chat .sendbird-message-input-text-field .ql-editor,
-        .fusion-chat .sendbird-message-input-text-field > div {
-          padding-left: 0 !important;
-          margin-left: 0 !important;
-        }
-
-        /* CRITICAL: Force word wrap on ALL text content */
-        .fusion-chat .sendbird-text-message-item-body {
-          border-radius: 16px !important;
-          padding: 8px 12px !important;
-          word-wrap: break-word !important;
-          word-break: break-word !important;
-          overflow-wrap: break-word !important;
-          white-space: pre-wrap !important;
-          max-width: 100% !important;
-        }
-        
-        .fusion-chat .sendbird-text-message-item-body__message {
-          word-wrap: break-word !important;
-          word-break: break-word !important;
-          overflow-wrap: break-word !important;
-          white-space: pre-wrap !important;
-          max-width: 100% !important;
-        }
-
-        /* ROOT LEVEL: Force width constraints on the entire message list */
-        .fusion-chat .sendbird-conversation__messages-padding,
-        .fusion-chat .sendbird-place-holder {
-          width: 100% !important;
-          max-width: 100% !important;
-          padding-left: 8px !important;
-          padding-right: 8px !important;
-          box-sizing: border-box !important;
-          overflow: hidden !important;
-        }
-
-        /* Constrain ALL message content to prevent overflow */
-        .fusion-chat .sendbird-message-content {
-          max-width: 100% !important;
-          width: auto !important;
-          box-sizing: border-box !important;
-          overflow: hidden !important;
-        }
-        
-        .fusion-chat .sendbird-message-content__middle {
-          max-width: 75% !important;
-          overflow: hidden !important;
-          flex-shrink: 1 !important;
-        }
-        
-        .fusion-chat .sendbird-message-content--outgoing .sendbird-message-content__middle {
-          max-width: 75% !important;
-        }
-        
-        /* Message hug - constrain the wrapper */
-        .fusion-chat .sendbird-message-hoc__message-content {
-          max-width: 100% !important;
-          overflow: hidden !important;
-        }
-
-        /* AGGRESSIVE overflow prevention on message parts (but not right side where checkmarks are) */
-        .fusion-chat .sendbird-message-content,
-        .fusion-chat .sendbird-message-content__middle,
-        .fusion-chat .sendbird-message-content__left,
         .fusion-chat .sendbird-message-hoc {
-          overflow: hidden !important;
-        }
-        
-        /* Ensure message status (checkmarks) area is visible */
-        .fusion-chat .sendbird-message-content__right {
-          overflow: visible !important;
-          display: flex !important;
-          visibility: visible !important;
-        }
-        
-        .fusion-chat .sendbird-message-status {
-          display: inline-flex !important;
-          visibility: visible !important;
-          opacity: 1 !important;
-        }
-        
-        /* Image messages - let Sendbird handle sizing, just add theme styling */
-        .fusion-chat .sendbird-thumbnail-message-item-body,
-        .fusion-chat .sendbird-image-renderer {
-          max-width: 200px !important;
-          border-radius: 12px !important;
-          overflow: hidden !important;
-        }
-        
-        .fusion-chat .sendbird-image-renderer__image,
-        .fusion-chat .sendbird-thumbnail-message-item-body img {
           max-width: 100% !important;
-          height: auto !important;
-          object-fit: contain !important;
-          border-radius: 12px !important;
-        }
-        
-        /* File message styling */
-        .fusion-chat .sendbird-file-message-item-body {
-          max-width: 200px !important;
-          background: hsl(var(--muted)) !important;
-          border-radius: 12px !important;
-          padding: 8px 12px !important;
-        }
-        
-        .fusion-chat .sendbird-file-message-item-body__file-name {
-          color: hsl(var(--foreground)) !important;
-          overflow: hidden !important;
-          text-overflow: ellipsis !important;
-          white-space: nowrap !important;
-        }
-        
-        /* Multiple files grid - let Sendbird handle layout */
-        .fusion-chat .sendbird-multiple-files-message-item-body {
-          max-width: 200px !important;
         }
 
+        .fusion-chat .sendbird-message-content {
+          max-width: calc(100vw - 32px) !important;
+        }
+
+        .fusion-chat .sendbird-message-content__middle {
+          max-width: 70% !important;
+          min-width: 0 !important;
+        }
+
+        /* Text messages - force word wrap */
+        .fusion-chat .sendbird-text-message-item-body {
+          max-width: 100% !important;
+          word-wrap: break-word !important;
+          word-break: break-word !important;
+          overflow-wrap: break-word !important;
+          white-space: pre-wrap !important;
+          border-radius: 16px !important;
+          padding: 10px 14px !important;
+        }
+
+        /* ===== SIMPLE COLORS ===== */
+        
+        /* Incoming messages - dark muted */
         .fusion-chat .sendbird-message-content--incoming .sendbird-text-message-item-body {
           background: hsl(var(--muted)) !important;
           color: hsl(var(--foreground)) !important;
         }
 
-        /* Message input locked directly to top of bottom nav bar */
+        /* Outgoing messages - simple gold */
+        .fusion-chat .sendbird-message-content--outgoing .sendbird-text-message-item-body {
+          background: #f59e0b !important;
+          color: #000 !important;
+        }
+
+        /* ===== IMAGE/FILE MESSAGES ===== */
+        .fusion-chat .sendbird-thumbnail-message-item-body,
+        .fusion-chat .sendbird-image-renderer {
+          max-width: 180px !important;
+          border-radius: 12px !important;
+          overflow: hidden !important;
+        }
+
+        .fusion-chat .sendbird-file-message-item-body {
+          max-width: 180px !important;
+          background: hsl(var(--muted)) !important;
+          border-radius: 12px !important;
+        }
+
+        /* ===== INPUT AREA ===== */
         .fusion-chat .sendbird-conversation__footer,
         .fusion-chat .sendbird-message-input-wrapper {
           position: fixed !important;
           bottom: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
           left: 0 !important;
           right: 0 !important;
-          padding: 6px 12px !important;
-          margin: 0 !important;
+          padding: 8px 12px !important;
           background: hsl(var(--background)) !important;
           z-index: 50 !important;
-          box-sizing: border-box !important;
         }
-        
-        /* Add padding to messages area to account for fixed input */
-        .fusion-chat .sendbird-conversation__messages,
-        .fusion-chat .sendbird-group-channel-view__message-list {
+
+        .fusion-chat .sendbird-message-input-text-field {
+          background: hsl(var(--muted)) !important;
+          border: 1px solid hsl(var(--border)) !important;
+          border-radius: 20px !important;
+          color: hsl(var(--foreground)) !important;
+        }
+
+        /* Messages padding for fixed input */
+        .fusion-chat .sendbird-conversation__messages {
           padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important;
         }
 
-        /* Ghosted Send Button */
-        .fusion-chat .sendbird-message-input--send,
-        .fusion-chat .sendbird-iconbutton--send,
-        .fusion-chat [class*="message-input--send"],
-        .fusion-chat .sendbird-message-input-wrapper__message-input--send {
-          display: flex !important;
-          visibility: visible !important;
-          opacity: 0.5 !important;
-          width: 36px !important;
-          height: 36px !important;
-          min-width: 36px !important;
-          min-height: 36px !important;
-          margin-left: 8px !important;
-          background: transparent !important;
-          border-radius: 50% !important;
-          align-items: center !important;
-          justify-content: center !important;
-          box-shadow: none !important;
-          transition: opacity 0.2s ease !important;
-        }
+        /* ===== YELLOW ACCENTS ===== */
         
-        .fusion-chat .sendbird-message-input--send:hover,
-        .fusion-chat .sendbird-iconbutton--send:hover {
-          opacity: 0.8 !important;
+        /* Attachment button */
+        .fusion-chat .sendbird-message-input--attach {
+          color: #f59e0b !important;
         }
 
-        .fusion-chat .sendbird-message-input--send svg,
-        .fusion-chat .sendbird-iconbutton--send svg,
-        .fusion-chat [class*="message-input--send"] svg {
-          width: 20px !important;
-          height: 20px !important;
-          color: hsl(var(--muted-foreground)) !important;
-          fill: hsl(var(--muted-foreground)) !important;
-        }
-        
-        /* Hide emoji button - use device keyboard for emojis */
-        .fusion-chat .sendbird-message-input--emoji-button,
-        .fusion-chat .sendbird-iconbutton--emoji,
-        .fusion-chat [class*="message-input--emoji"] {
-          display: none !important;
-        }
-        
-        /* Hide emoji reactions - use keyboard emojis instead */
-        .fusion-chat .sendbird-emoji-reactions,
-        .fusion-chat .sendbird-message-content__middle__emoji-container,
-        .fusion-chat [class*="emoji-reactions"],
-        .fusion-chat [class*="emoji-container"],
-        .fusion-chat .sendbird-emoji-reaction-add-button {
-          display: none !important;
-        }
-        
-        /* Clean up message hover menu - minimal and subtle */
-        .fusion-chat .sendbird-message-content-menu,
-        .fusion-chat .sendbird-message-item-menu,
-        .fusion-chat [class*="message-content-menu"],
-        .fusion-chat [class*="message-item-menu"] {
-          background: hsl(var(--card)) !important;
-          border: 1px solid hsl(var(--border)) !important;
-          border-radius: 8px !important;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-          padding: 4px !important;
-        }
-        
-        /* Hide the emoji add button on messages - keep it clean */
-        .fusion-chat .sendbird-emoji-reaction-add-button {
-          display: none !important;
-        }
-        
-        /* Style message menu items */
-        .fusion-chat .sendbird-context-menu-item,
-        .fusion-chat [class*="context-menu-item"] {
-          color: hsl(var(--foreground)) !important;
-          background: transparent !important;
-          border-radius: 6px !important;
-          padding: 8px 12px !important;
-          font-size: 14px !important;
-        }
-        
-        .fusion-chat .sendbird-context-menu-item:hover,
-        .fusion-chat [class*="context-menu-item"]:hover {
-          background: hsl(var(--muted)) !important;
+        /* Voice message button */
+        .fusion-chat .sendbird-message-input--voice {
+          color: #f59e0b !important;
         }
 
-        /* Premium outgoing message bubbles with subtle gold accent */
-        .fusion-chat .sendbird-message-content--outgoing .sendbird-text-message-item-body {
-          background: linear-gradient(135deg, hsl(var(--primary)), hsl(45 62% 48%)) !important;
-          color: hsl(var(--primary-foreground)) !important;
-          box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2) !important;
-        }
-
-        /* Voice Message Styling - Dark background with colored border */
-        .fusion-chat .sendbird-voice-message-input,
-        .fusion-chat .sendbird-voice-message-item-body,
-        .fusion-chat [class*="voice-message"] {
+        /* Voice message player */
+        .fusion-chat .sendbird-voice-message-item-body {
           background: hsl(var(--background)) !important;
-          border: 2px solid hsl(var(--primary)) !important;
+          border: 2px solid #f59e0b !important;
           border-radius: 16px !important;
-          color: hsl(var(--foreground)) !important;
-        }
-        
-        .fusion-chat .sendbird-voice-message-input__button,
-        .fusion-chat [class*="voice-message-input__button"] {
-          background: hsl(var(--primary)) !important;
-          border-radius: 50% !important;
-        }
-        
-        .fusion-chat .sendbird-voice-message-input__button svg,
-        .fusion-chat [class*="voice-message-input__button"] svg {
-          color: hsl(var(--primary-foreground)) !important;
-          fill: hsl(var(--primary-foreground)) !important;
-        }
-        
-        /* Voice message record button */
-        .fusion-chat .sendbird-message-input--voice,
-        .fusion-chat .sendbird-iconbutton--voice,
-        .fusion-chat [class*="message-input--voice"] {
-          display: flex !important;
-          visibility: visible !important;
-          opacity: 0.7 !important;
-        }
-        
-        .fusion-chat .sendbird-message-input--voice:hover,
-        .fusion-chat .sendbird-iconbutton--voice:hover {
-          opacity: 1 !important;
-        }
-        
-        /* Voice message player styling */
-        .fusion-chat .sendbird-voice-message-item-body__progress,
-        .fusion-chat [class*="voice-message-item-body__progress"] {
-          background: hsl(var(--muted)) !important;
-        }
-        
-        .fusion-chat .sendbird-voice-message-item-body__progress-bar,
-        .fusion-chat [class*="voice-message-item-body__progress-bar"] {
-          background: hsl(var(--primary)) !important;
-        }
-        
-        /* Outgoing voice messages - dark background with gold border */
-        .fusion-chat .sendbird-message-content--outgoing .sendbird-voice-message-item-body {
-          background: hsl(var(--background)) !important;
-          border: 2px solid hsl(var(--primary)) !important;
-          color: hsl(var(--foreground)) !important;
-        }
-        
-        .fusion-chat .sendbird-message-content--outgoing .sendbird-voice-message-item-body__progress {
-          background: hsl(var(--muted)) !important;
-        }
-        
-        .fusion-chat .sendbird-message-content--outgoing .sendbird-voice-message-item-body__progress-bar {
-          background: hsl(var(--primary)) !important;
-        }
-        
-        /* Incoming voice messages - dark background with gold border */
-        .fusion-chat .sendbird-message-content--incoming .sendbird-voice-message-item-body {
-          background: hsl(var(--background)) !important;
-          border: 2px solid hsl(var(--primary)) !important;
-          color: hsl(var(--foreground)) !important;
-        }
-        
-        /* Voice message play button */
-        .fusion-chat .sendbird-voice-message-item-body__playback-button,
-        .fusion-chat [class*="voice-message-item-body__playback"] {
-          background: hsl(var(--primary)) !important;
-          border-radius: 50% !important;
-        }
-        
-        .fusion-chat .sendbird-voice-message-item-body__playback-button svg,
-        .fusion-chat [class*="voice-message-item-body__playback"] svg {
-          color: hsl(var(--primary-foreground)) !important;
-          fill: hsl(var(--primary-foreground)) !important;
         }
 
-        /* Typing Indicator Styling */
-        .fusion-chat .sendbird-typing-indicator,
-        .fusion-chat [class*="typing-indicator"] {
-          color: hsl(var(--muted-foreground)) !important;
-          font-size: 12px !important;
-          padding: 4px 12px !important;
-        }
-        
-        .fusion-chat .sendbird-typing-indicator__text,
-        .fusion-chat [class*="typing-indicator__text"] {
-          color: hsl(var(--muted-foreground)) !important;
+        .fusion-chat .sendbird-voice-message-item-body__progress-bar {
+          background: #f59e0b !important;
         }
 
-        /* Message Receipt Status (Read/Delivered) - ensure visible */
-        .fusion-chat .sendbird-message-item-menu__list--sent-status {
-          display: block !important;
-          visibility: visible !important;
+        /* ===== HIDE UNNECESSARY ELEMENTS ===== */
+        .fusion-chat .sendbird-emoji-reactions,
+        .fusion-chat .sendbird-emoji-reaction-add-button,
+        .fusion-chat .sendbird-message-input--emoji-button {
+          display: none !important;
         }
-        
-        .fusion-chat .sendbird-message-content__middle__message-item-menu .sendbird-message-status {
-          display: inline-flex !important;
-          visibility: visible !important;
-          opacity: 1 !important;
+
+        /* ===== TYPING INDICATOR ===== */
+        .fusion-chat .sendbird-typing-indicator {
+          color: hsl(var(--muted-foreground)) !important;
         }
 
       `}</style>
