@@ -1,0 +1,144 @@
+You are Replit Agent working on the Fusion Capacitor app + backend (Replit monorepo). Goal: implement OPTION 1 “Tap to answer” call notifications for Agora RTC (NOT CallKit/VoIP). Calls/media stay direct via Agora; backend only coordinates call invite + push notification + token generation.
+
+CONTEXT
+- We already have iOS APNs working via Sendbird + Capacitor. iOS device tokens are being captured and registered to Sendbird.
+- We use Agora RTC for video/audio. Backend already generates RTC tokens via agora-token package at /api/agora/token.
+- We need cross-platform call invites:
+  - iOS: send a normal APNs push (production) to the callee
+  - Android: send a normal FCM push to the callee
+- When user taps push, the app navigates to an “Incoming Call” screen, then on Accept it joins Agora channel.
+
+REQUIREMENTS (do ALL)
+1) DATABASE / STORAGE
+- Add a table/collection for device push tokens if not present.
+- Must store per user:
+  - userId (our app user)
+  - platform: 'ios' | 'android'
+  - token (string)
+  - provider: 'apns' | 'fcm'
+  - environment: 'production' | 'sandbox' (store if you can detect; default 'production' for TestFlight)
+  - updatedAt timestamp
+- Ensure a user can have multiple devices (multiple rows), but avoid duplicates per token.
+
+2) PUSH TOKEN REGISTRATION ENDPOINTS
+- Implement/confirm POST /api/push/register that accepts:
+  {
+    "platform": "ios"|"android",
+    "provider": "apns"|"fcm",
+    "token": "<token string>",
+    "environment": "production"|"sandbox" (optional)
+  }
+- Auth required; map to current logged-in user.
+- Upsert token row (if token exists update userId/updatedAt; else insert).
+- For iOS (provider apns): ALSO register token with Sendbird for that Sendbird userId.
+  - Our Sendbird userId should match the app user id we use for chat.
+  - Ensure we don’t leave old tokens causing BadDeviceToken. Do one of:
+    A) Before registering new iOS token: remove all previous iOS tokens for that Sendbird user OR
+    B) If removal is too hard, at least remove tokens that don’t match current environment (sandbox vs production) and de-duplicate.
+  - Log clearly: “Registered iOS token with Sendbird”.
+
+3) CALL INVITE ENDPOINT (core)
+- Implement POST /api/call/invite (auth required).
+Request:
+  {
+    "calleeUserId": "<user id>",
+    "callType": "video"|"audio"
+  }
+
+Backend logic:
+- Create callId (uuid or nanoid).
+- Create channelName: "fusion_" + callId
+- Store call session in DB with:
+  - callId, channelName, callerUserId, calleeUserId, callType, status ('ringing'|'accepted'|'declined'|'missed'), createdAt
+- Do NOT generate RTC token here if using Option B below (preferred).
+- Send a push notification to ALL callee devices:
+  - For iOS devices -> send via Sendbird push to that user OR via direct APNs if already implemented; prefer Sendbird since APNs is working there.
+  - For Android devices -> send via FCM from backend (requires Firebase service account/legacy key in env). If FCM isn’t set up, implement it and read credentials from env vars.
+
+Push payload MUST include data:
+  {
+    "type": "rtc_call_invite",
+    "callId": "<callId>",
+    "channel": "<channelName>",
+    "callerId": "<callerUserId>",
+    "callerName": "<caller display name if available>",
+    "callType": "video"|"audio"
+  }
+Notification text:
+- Title: "Incoming call"
+- Body: "<callerName> is calling you" (fallback to “Someone is calling you”)
+
+Response to caller:
+  {
+    "callId": "...",
+    "channel": "...",
+    "callType": "...",
+    "calleeUserId": "..."
+  }
+
+4) ACCEPT / DECLINE ENDPOINTS (minimal)
+- POST /api/call/accept
+Request: { "callId": "<callId>" }
+Auth required; must be callee.
+- Mark call status = accepted.
+- Generate Agora RTC token for THIS user to join the channel:
+  - Reuse existing agora-token logic
+  - Return: { "channel": "<channelName>", "rtcToken": "<token>", "uid": <agora uid>, "callType": "...", "callerId": "..." }
+
+- POST /api/call/decline
+Request: { "callId": "<callId>" }
+Auth required; must be callee.
+- Mark call status = declined.
+- Optionally push “missed/declined” to caller (nice to have but optional).
+
+5) CLIENT (React/Capacitor) CHANGES
+- We already have push init logic. Ensure we handle tapping notification:
+  - Add PushNotifications.addListener('pushNotificationActionPerformed', ...)
+  - If data.type === 'rtc_call_invite': navigate to /incoming-call with query params callId/channel/callerId/callType/callerName.
+- Create an IncomingCall screen/route if not present:
+  - Show callerName and audio/video indicator.
+  - Buttons: Accept / Decline.
+  - Accept:
+    - Call POST /api/call/accept with callId
+    - Receive rtcToken + channel + uid
+    - Navigate to Call screen and join Agora RTC channel using token.
+  - Decline:
+    - Call POST /api/call/decline
+    - Navigate back to inbox/home.
+- Also handle foreground push:
+  - If pushNotificationReceived arrives while app is open, show an in-app incoming call banner/modal that can open the IncomingCall screen.
+
+6) ANDROID FCM SETUP (if not already)
+- Add Firebase Cloud Messaging for Android build:
+  - Ensure Capacitor Android project includes google-services.json
+  - Configure FCM plugin if needed
+  - Capture FCM token in the app and call POST /api/push/register (platform=android, provider=fcm).
+- On backend, implement FCM send:
+  - Use Firebase Admin SDK with service account JSON in env (preferred) OR server key if you already use it.
+  - Implement a function sendFcmPush(tokens, title, body, data)
+
+7) SECURITY / RELIABILITY
+- Validate caller is logged in and allowed to call callee (basic checks).
+- Limit call invite spam: rate limit per caller (simple in-memory limit ok for now).
+- Expire ringing calls after 30–60s: mark missed if not accepted (optional, but good).
+- Keep logs very clear for debugging:
+  - “Call invite created callId=... channel=... callee=...”
+  - “Sent iOS push via Sendbird to user=...”
+  - “Sent Android FCM push tokens=<count>”
+  - “Callee accepted callId=... generated rtcToken”
+- Do NOT implement CallKit/PushKit/VoIP.
+
+8) DELIVERABLES
+- Implement backend endpoints and DB changes.
+- Implement client route + listener + IncomingCall UI.
+- Provide a short README section:
+  - How to test from TestFlight (production APNs)
+  - How to test Android with FCM
+  - Example payloads and endpoints
+  - Note: Option 1 = “tap to answer”, not full phone ringing.
+
+IMPORTANT NOTES
+- We have already had sandbox vs production token issues. Avoid mixing by storing environment and removing stale tokens where possible.
+- Use existing API query wrapper/logging pattern already in project.
+- Keep changes minimal and consistent with current structure (client/ server folders).
+- After changes, ensure typescript builds and API endpoints are wired.
