@@ -975,37 +975,32 @@ export default function Messages() {
           color: #000 !important;
         }
 
-        /* ===== IMAGE/FILE MESSAGES - 50% SMALLER ===== */
-        .fusion-chat .sendbird-thumbnail-message-item-body {
+        /* ===== IMAGE/FILE MESSAGES - ENSURE VISIBLE ===== */
+        .fusion-chat .sendbird-thumbnail-message-item-body,
+        .fusion-chat .sendbird-image-renderer,
+        .fusion-chat .sendbird-image-renderer__image,
+        .fusion-chat .sendbird-multiple-files-message-item-body,
+        .fusion-chat .sendbird-file-viewer,
+        .fusion-chat img[class*="sendbird"] {
+          display: block !important;
+          visibility: visible !important;
+          opacity: 1 !important;
           max-width: 120px !important;
           border-radius: 8px !important;
-          overflow: hidden !important;
-        }
-
-        .fusion-chat .sendbird-image-renderer {
-          max-width: 120px !important;
-          border-radius: 8px !important;
-          overflow: hidden !important;
         }
 
         .fusion-chat .sendbird-image-renderer__image {
-          max-width: 120px !important;
+          width: auto !important;
           height: auto !important;
-          object-fit: cover !important;
-          display: block !important;
-        }
-        
-        /* Multiple images grid */
-        .fusion-chat .sendbird-multiple-files-message-item-body {
           max-width: 120px !important;
-          overflow: hidden !important;
+          max-height: 160px !important;
+          object-fit: contain !important;
         }
 
         .fusion-chat .sendbird-file-message-item-body {
           max-width: 120px !important;
           background: hsl(var(--muted)) !important;
           border-radius: 8px !important;
-          overflow: hidden !important;
         }
 
         /* ===== INPUT AREA ===== */
