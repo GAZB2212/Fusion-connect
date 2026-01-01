@@ -975,30 +975,15 @@ export default function Messages() {
           color: #000 !important;
         }
 
-        /* ===== IMAGE/FILE MESSAGES - ENSURE VISIBLE ===== */
-        .fusion-chat .sendbird-thumbnail-message-item-body,
-        .fusion-chat .sendbird-image-renderer,
-        .fusion-chat .sendbird-image-renderer__image,
-        .fusion-chat .sendbird-multiple-files-message-item-body,
-        .fusion-chat .sendbird-file-viewer,
-        .fusion-chat img[class*="sendbird"] {
-          display: block !important;
-          visibility: visible !important;
-          opacity: 1 !important;
-          max-width: 120px !important;
+        /* ===== IMAGE/FILE MESSAGES - SIMPLE FIX ===== */
+        .fusion-chat .sendbird-thumbnail-message-item-body {
+          max-width: 150px !important;
+          width: auto !important;
           border-radius: 8px !important;
         }
 
-        .fusion-chat .sendbird-image-renderer__image {
-          width: auto !important;
-          height: auto !important;
-          max-width: 120px !important;
-          max-height: 160px !important;
-          object-fit: contain !important;
-        }
-
         .fusion-chat .sendbird-file-message-item-body {
-          max-width: 120px !important;
+          max-width: 150px !important;
           background: hsl(var(--muted)) !important;
           border-radius: 8px !important;
         }
