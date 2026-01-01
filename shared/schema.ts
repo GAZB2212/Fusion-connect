@@ -233,12 +233,34 @@ export const pushTokens = pgTable("push_tokens", {
   auth: text("auth"), // For web push only
   p256dh: text("p256dh"), // For web push only
   deviceId: varchar("device_id", { length: 100 }), // Optional device identifier
+  platform: varchar("platform", { length: 10 }), // 'ios', 'android', 'web'
+  environment: varchar("environment", { length: 20 }).default('production'), // 'production', 'sandbox'
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => [
   index("user_push_token_idx").on(table.userId),
   index("token_type_idx").on(table.type),
+  index("token_unique_idx").on(table.token),
+]);
+
+// Call Sessions - Track Agora RTC call invitations and status
+export const callSessions = pgTable("call_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  callId: varchar("call_id", { length: 50 }).notNull().unique(), // Unique call identifier
+  channelName: varchar("channel_name", { length: 100 }).notNull(), // Agora channel name
+  callerUserId: varchar("caller_user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  calleeUserId: varchar("callee_user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  callType: varchar("call_type", { length: 10 }).notNull(), // 'video', 'audio'
+  status: varchar("status", { length: 20 }).notNull().default('ringing'), // 'ringing', 'accepted', 'declined', 'missed', 'ended'
+  startedAt: timestamp("started_at"), // When call was accepted
+  endedAt: timestamp("ended_at"), // When call ended
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("call_caller_idx").on(table.callerUserId),
+  index("call_callee_idx").on(table.calleeUserId),
+  index("call_id_idx").on(table.callId),
+  index("call_status_idx").on(table.status),
 ]);
 
 // Early signups - waitlist for pre-launch
@@ -408,6 +430,19 @@ export const pushTokensRelations = relations(pushTokens, ({ one }) => ({
   }),
 }));
 
+export const callSessionsRelations = relations(callSessions, ({ one }) => ({
+  caller: one(users, {
+    fields: [callSessions.callerUserId],
+    references: [users.id],
+    relationName: "caller",
+  }),
+  callee: one(users, {
+    fields: [callSessions.calleeUserId],
+    references: [users.id],
+    relationName: "callee",
+  }),
+}));
+
 export const blockedUsersRelations = relations(blockedUsers, ({ one }) => ({
   blocker: one(users, {
     fields: [blockedUsers.blockerId],
@@ -487,7 +522,14 @@ export const insertPushTokenSchema = createInsertSchema(pushTokens, {
   auth: z.string().optional(),
   p256dh: z.string().optional(),
   deviceId: z.string().optional(),
+  platform: z.enum(["ios", "android", "web"]).optional(),
+  environment: z.enum(["production", "sandbox"]).optional(),
 }).omit({ id: true, createdAt: true, updatedAt: true, isActive: true });
+
+export const insertCallSessionSchema = createInsertSchema(callSessions, {
+  callType: z.enum(["video", "audio"]),
+  status: z.enum(["ringing", "accepted", "declined", "missed", "ended"]).optional(),
+}).omit({ id: true, createdAt: true, startedAt: true, endedAt: true });
 
 export const insertBlockedUserSchema = createInsertSchema(blockedUsers, {
   reason: z.string().optional(),
@@ -536,6 +578,8 @@ export type PushSubscription = typeof pushSubscriptions.$inferSelect;
 export type InsertPushSubscription = z.infer<typeof insertPushSubscriptionSchema>;
 export type PushToken = typeof pushTokens.$inferSelect;
 export type InsertPushToken = z.infer<typeof insertPushTokenSchema>;
+export type CallSession = typeof callSessions.$inferSelect;
+export type InsertCallSession = z.infer<typeof insertCallSessionSchema>;
 export type BlockedUser = typeof blockedUsers.$inferSelect;
 export type InsertBlockedUser = z.infer<typeof insertBlockedUserSchema>;
 export type UserReport = typeof userReports.$inferSelect;
