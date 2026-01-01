@@ -1,0 +1,117 @@
+Voice message
+
+Feedback
+Voice message is an alternate form of communication between users without sending a text or file message. By delivering voice messages, users can be more expressive with their tone and intentions. It also takes less time to record a voice message than type up a long message, which enhances efficiency for the sender. The receiver can also listen to the message at a convenient time while multi-tasking. The user can record and send a voice message in the voice message input component of the group channel. Then, the message will appear in the message list component of the channel where the receiver can play the file.
+To view the image in full screen, click on theImage|Group channel view showing the recording icon and the voice message.
+
+Limitations
+
+Feedback
+The voice message feature currently has the following limitations:
+Voice message is available for group channels and supergroup channels only.
+Users must record for at least one second and up to and including ten minutes.
+Users can't pause while recording a voice message.
+How to use
+
+Feedback
+To turn on the feature, refer to the code below:
+
+
+
+import App from '@sendbird/uikit-react/App';
+import SendbirdProvider from '@sendbird/uikit-react/SendbirdProvider';
+
+const QuickStart = () => (
+  <App
+    uikitOptions={{ groupChannel: { enableVoiceMessage: true } }}
+  />
+);
+
+const CustomApp = () => (
+  <SendbirdProvider
+    uikitOptions={{ groupChannel: { enableVoiceMessage: true } }}
+  >
+    {/* implement your custom app */}
+  </SendbirdProvider>
+);
+Send a voice message
+
+Feedback
+In order to send a voice message, users have to record a message first in the VoiceMessageInput component of Channel module. By default, a voice message icon is visible on the right side of the input field. Once this icon is tapped, the voice recorder appears. Users can record a message by tapping the red record button. They can select the cancel button to go back to the message input field or they can tap the send button to send the voice message. To listen to the preview of the voice message before sending it, users can tap the play button.
+To view the image in full screen, click on theImage|Group channel view showing the voice message icon button and the play button in the voice message input component.
+
+Voice message recorder
+
+Feedback
+The control button in the VoiceMessageInput UI component has currentType that can have four different states: READY_TO_RECORD, RECORDING, READY_TO_PLAY, and PLAYING. Depending on the state, the icon and the action type of the button changes. It appears as a red record button when currentType is set to READY_TO_RECORD.
+When recording a voice message, the message must be at least one second long and shorter than ten minutes. Once you tap the stop button, you can't restart to continue recording. You must either cancel the recording and record again or just send what you've recorded so far. If the message is less than one second before tapping the stop button, the message won't be saved and you'll see the message input component with the red record button again.
+Once you've successfully recorded a voice message, you can listen to it before sending it to others. Pausing the recorded voice message while listening to it is allowed. When listening to the recorded voice message, you can see the playing time and the progress of the message through the PlaybackTime UI component and ProgressBar UI component.
+Customize the UI in voice message input
+
+Feedback
+You can render a custom view of the VoiceMessageInput component through the renderMessageInput property of Channel. Refer to the code below:
+
+
+
+import GroupChannel from '@sendbird/uikit-react/GroupChannel';
+import VoiceMessageInput '@sendbird/uikit-react/ui/VoiceMessageInput';
+
+const QuickStart = () => (
+  <GroupChannel
+    renderMessageInput={() => {
+      if (showVoiceMessageInput) {
+        return //Returns voice message input.
+      }
+      return //Returns message input.
+    }}
+  />
+);
+Receive a voice message
+
+Feedback
+You can receive voice messages in a group channel like any other messages sent between channel members. The voice message is shown in the MessageList component of Channel module and the ThreadList component of Thread module. You can only listen to one voice message at a time in the channel. If you try to play another message while listening to a message, the message that was playing first will pause.
+To view the image in full screen, click on theImage|Group channel view showing the voice message in a message list.
+
+Voice message in message list
+
+Feedback
+Members of a group channel can view and play voice messages by tapping the play button. They can also pause the message while listening and play it as many times as they wish to. However, users can only listen to voice messages within the client app and they can't save them to their devices.
+The voice message feature can be used with reactions and message threading. Users can react to a voice message with various emojis and reply to the message in a thread as shown below. Voice messages can be used starting in UIKit v3.4.0 and in lower versions that don't provide this feature, all voice messages in a channel will appear and be recognized as an audio message. While voice messages can be played directly in the group channel, audio messages need to be played on an external app.
+Customize the UI in group channel
+
+Feedback
+You can render a custom view of voice messages through the 
+renderMessage
+ property of Channel. Refer to the code below:
+
+
+
+import GroupChannel from '@sendbird/uikit-react/GroupChannel';
+import isVoiceMessage from '@sendbird/uikit-react/utils/message/isVoiceMessage';
+
+const QuickStart = () => (
+  <GroupChannel
+    renderMessage={({ message }) => {
+      if (isVoiceMessage(message)) {
+        return // return your custom voice message component
+      }
+      return null;
+    }}
+   />
+);
+String set for group channel
+
+Feedback
+The following table shows customizable properties of stringSet that appear in the ChannelUI.
+Key
+String
+Description
+VOICE_MESSAGE
+Voice message
+A text that indicates that a voice message was sent to a group channel and appears in a channel list view.
+MODALVOICE_MESSAGE_INPUT_DISABLEDTITLE_MUTED
+You're muted by the operator.
+A text for an alert dialog that's displayed when a user is muted while playing a voice message.
+MODALVOICE_MESSAGE_INPUT_DISABLEDTITLE_FROZEN
+Channel is frozen.
+A text for an alert dialog that's displayed when a channel freezes while a user plays a voice message.
