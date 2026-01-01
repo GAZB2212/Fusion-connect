@@ -1,0 +1,145 @@
+Voice message
+
+Feedback
+Voice message is an alternate form of communication between users without sending a text or file message. By delivering voice messages, users can be more expressive with their tone and intentions. It also takes less time to record a voice message than type up a long message, which enhances efficiency for the sender. The receiver can also listen to the message at a convenient time while multi-tasking. The user can record and send a voice message in the input component of the group channel. Then, the message will appear in the message list component of the channel where the receiver can play the file.
+To view the image in full screen, click on theImage|Group channel view showing the recording icon and the voice message.
+
+Limitations
+
+Feedback
+The voice message feature currently has the following limitations:
+Voice message is available for group channels and supergroup channels only.
+Users must record for at least one second and up to and including ten minutes.
+Users can't pause while recording a voice message.
+How to use
+
+Feedback
+To turn on the feature, refer to the code below:
+Swift
+
+
+
+SBUGlobals.voiceMessageConfig.isVoiceMessageEnabled = true
+Microphone permission
+
+Feedback
+In order to use the voice message feature, client apps must acquire permission from users to use their microphone. Refer to the Media attachment permission page.
+Send a voice message
+
+Feedback
+In order to send a voice message, users have to record a message first in the inputComponent of SBUGroupChannelViewController. By default, a voice message icon is visible on the right side of the input field. Once this icon is tapped, the voice recorder appears. Users can record a message by tapping the red record button. They can select the cancel button to go back to the message input field or they can tap the send button to send the voice message. To listen to the preview of the voice message before sending it, users can tap the play button.
+Once the user's done recording, the voice message recorder deactivates the audio session configured by Sendbird UIKit and tries to reactivate the client app's audio session. See the guide on playing audio and video files on how to configure the audio session in UIKit.
+To view the image in full screen, click on theImage|Group channel view showing the voice message icon button and the play button in the message input field component.
+
+Voice message recorder
+
+Feedback
+The voice message recorder is displayed through SBUVoiceMessageInputView. The voice message input view includes the record button, cancel button, and send button. You can also see the recording progress and view the play and pause buttons.
+When recording a voice message, the message must be at least one second long and shorter than ten minutes. Once you tap the stop button, you can't restart to continue recording. You must either cancel the recording and record again or just send what you've recorded so far. If the message is less than one second before tapping the stop button, the message won't be saved and you'll see the message input component with the red record button again. Once you've successfully recorded a voice message, you can listen to it before sending it to others. Pausing the recorded voice message while listening to it is allowed.
+Customize SBUVoiceMessageInputView
+
+Feedback
+The following table shows a customizable property of SBUVoiceMessageInputView to modify the UI of the voice message recorder view.
+List of properties of SBUVoiceMessageInputView
+
+Feedback
+Property name
+Type
+Description
+theme
+SBUVoiceMessageInputTheme
+Specifies the theme object that's used in SBUVoiceMessageInputView.
+Customize SBUIconSet
+
+Feedback
+The following table shows customizable icons in the voice message recorder view.
+Icon
+Image
+Description
+iconVoiceMessageOn
+To view the image in full screen, click on theicon-voice-message-on
+An icon used as a button to show the voice message recording view in the input component.
+iconRecording
+To view the image in full screen, click on theicon-recording
+An icon used as a record button start recording a voice message in the input component.
+iconStop
+To view the image in full screen, click on theicon-stop
+An icon used as a stop button to stop recording a voice message in the input component.
+iconPlay
+To view the image in full screen, click on theicon-play
+An icon used as a play button to listen to a voice message recording in the input component.
+iconPause
+To view the image in full screen, click on theicon-pause
+An icon used as a pause button to pause a voice message recording from playing in the input component.
+Receive a voice message
+
+Feedback
+You can receive voice messages in a group channel like any other messages sent between channel members. The voice message is shown in the inputComponent of SBUGroupChannelViewController and the listComponent of SBUMessageThreadModule. You can only listen to one voice message at a time in the channel. If you try to play another message while listening to a message, the message that was playing first will pause.
+Once you're done listening to the voice message, the player deactivates the audio session configured by Sendbird UIKit and tries to reactivate the client app's audio session. For more information on how to configure and activate the audio session, see Apple's developer guide.
+To view the image in full screen, click on theImage|Group channel view showing the voice message in a message list.
+
+Voice message in message list
+
+Feedback
+Members of a group channel can view and play voice messages by tapping the play button. They can also pause the message while listening and play it as many times as they wish to. However, users can only listen to voice messages within the client app and they can't save them to their devices.
+The voice message feature can be used with reactions and message threading. Users can react to a voice message with various emojis and reply to the message in a thread as shown below. Voice messages can be used starting in UIKit v3.4.0 and in lower versions of the client app that don't provide this feature, all voice messages in a channel will appear and be recognized as an audio message. While voice messages can be played directly in the group channel, audio messages need to be played on an external app.
+To view the image in full screen, click on theImage|Group channel view showing the voice message being used with reactions and message threading.
+
+In a group channel view, the voice message is displayed using SBUVoiceContentView, which inherits the properties and methods of SBUBaseFileContentView. It takes the state property of SBUVoiceView to show the progress bar of the recording. Channel members can view voice messages through the SBUFileMessageCell class and through the SBUQuotedFileMessageView class if it's a thread reply.
+Customize SBUVoiceContentView
+
+Feedback
+The following table shows customizable properties of SBUVoiceContentView to modify the UI of the voice message in a group channel view.
+List of properties of SBUVoiceContentView
+
+Feedback
+Property name
+Type
+Description
+progressView
+UIProgressView
+Specifies the view that shows the progress of how long the voice message is being played for.
+progressTimeLabel
+UILabel
+Specifies the UILabel displaying the current playing time of the voice message.
+statusButton
+UIButton
+Specifies the UIButton displaying either iconPlay or iconPause to show the playing status of the voice message.
+voiceFileInfo
+SBUVoiceFileInfo
+Specifies the essential information of a voice message such as file name, file path, play time and so on.
+Customize SBUStringSet
+
+Feedback
+The following table shows a customizable property of SBUStringSet that appears in a channel list view when the latest message sent to a channel is a voice message.
+Property name
+Description
+Alert_Allow_Microphone_Access
+A text used to ask the user permission for microphone usage.
+VoiceMessage.Input.cancel
+A text for the cancel button in SBUVoiceMessageInputView.
+VoiceMessage.Alert.frozen
+A text for an alert dialog that's displayed when a channel freezes while a user plays a voice message. The default text is Channel is frozen..
+VoiceMessage.Alert.muted
+A text for an alert dialog that's displayed when a user is muted while playing a voice message. The default text is You're muted by the operator..
+VoiceMessage.Preview.quotedMessage
+A text that indicates that a quoted message is a voice message. The default text is Voice message.
+VoiceMessage.Preview.channelList
+A text that indicates that a voice message was sent to a group channel and appears in SBUGroupChannelCell in the group channel list view. The default text is Voice message.
+VoiceMessage.Preview.searchResult
+A text that's used in SBUMessageSearchResultCell to indicate that a search result is a voice message. The default text is Voice message.
+VoiceMessage.fileName
+A text that's used in a name of the voice message file.
+Customize SBUIconSet
+
+Feedback
+The following table shows customizable icons in the list component of a group channel view.
+Icon
+Image
+Description
+iconPlay
+To view the image in full screen, click on theicon-play
+An icon used as a play button to listen to a voice message recording in the list component of a group channel.
+iconPause
+To view the image in full screen, click on theicon-pause
+An icon used as a pause button to pause a voice message recording from playing in the list component of a group channel.

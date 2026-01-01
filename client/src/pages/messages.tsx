@@ -820,6 +820,11 @@ export default function Messages() {
           userId={user.id}
           accessToken={sendbirdToken}
           theme="dark"
+          uikitOptions={{
+            groupChannel: {
+              enableVoiceMessage: true,
+            },
+          }}
           stringSet={{
             MESSAGE_INPUT__PLACE_HOLDER: t('sendbird.placeholder'),
             MESSAGE_INPUT__PLACE_HOLDER__DISABLED: t('sendbird.placeholderDisabled'),
@@ -1334,6 +1339,66 @@ export default function Messages() {
           background: linear-gradient(135deg, hsl(var(--primary)), hsl(45 62% 48%)) !important;
           color: hsl(var(--primary-foreground)) !important;
           box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2) !important;
+        }
+
+        /* Voice Message Styling */
+        .fusion-chat .sendbird-voice-message-input,
+        .fusion-chat .sendbird-voice-message-item-body,
+        .fusion-chat [class*="voice-message"] {
+          background: hsl(var(--muted)) !important;
+          border-radius: 16px !important;
+          color: hsl(var(--foreground)) !important;
+        }
+        
+        .fusion-chat .sendbird-voice-message-input__button,
+        .fusion-chat [class*="voice-message-input__button"] {
+          background: hsl(var(--primary)) !important;
+          border-radius: 50% !important;
+        }
+        
+        .fusion-chat .sendbird-voice-message-input__button svg,
+        .fusion-chat [class*="voice-message-input__button"] svg {
+          color: hsl(var(--primary-foreground)) !important;
+          fill: hsl(var(--primary-foreground)) !important;
+        }
+        
+        /* Voice message record button */
+        .fusion-chat .sendbird-message-input--voice,
+        .fusion-chat .sendbird-iconbutton--voice,
+        .fusion-chat [class*="message-input--voice"] {
+          display: flex !important;
+          visibility: visible !important;
+          opacity: 0.7 !important;
+        }
+        
+        .fusion-chat .sendbird-message-input--voice:hover,
+        .fusion-chat .sendbird-iconbutton--voice:hover {
+          opacity: 1 !important;
+        }
+        
+        /* Voice message player styling */
+        .fusion-chat .sendbird-voice-message-item-body__progress,
+        .fusion-chat [class*="voice-message-item-body__progress"] {
+          background: hsl(var(--muted)) !important;
+        }
+        
+        .fusion-chat .sendbird-voice-message-item-body__progress-bar,
+        .fusion-chat [class*="voice-message-item-body__progress-bar"] {
+          background: hsl(var(--primary)) !important;
+        }
+        
+        /* Outgoing voice messages */
+        .fusion-chat .sendbird-message-content--outgoing .sendbird-voice-message-item-body {
+          background: linear-gradient(135deg, hsl(var(--primary)), hsl(45 62% 48%)) !important;
+          color: hsl(var(--primary-foreground)) !important;
+        }
+        
+        .fusion-chat .sendbird-message-content--outgoing .sendbird-voice-message-item-body__progress {
+          background: rgba(255, 255, 255, 0.2) !important;
+        }
+        
+        .fusion-chat .sendbird-message-content--outgoing .sendbird-voice-message-item-body__progress-bar {
+          background: hsl(var(--primary-foreground)) !important;
         }
 
       `}</style>
