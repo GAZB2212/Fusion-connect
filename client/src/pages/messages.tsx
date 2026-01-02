@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import SendbirdProvider from "@sendbird/uikit-react/SendbirdProvider";
@@ -392,8 +392,8 @@ export default function Messages() {
     },
   });
 
-  // Handle ending the call
-  const handleEndCall = async (duration: number) => {
+  // Handle ending the call - memoized to prevent unnecessary re-renders
+  const handleEndCall = useCallback(async (duration: number) => {
     if (!activeCall) return;
     
     // Stop all ringing sounds
@@ -426,7 +426,13 @@ export default function Messages() {
       title: "Call ended",
       description: `Duration: ${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')}`,
     });
-  };
+  }, [activeCall, stopIncomingRing, stopOutgoingRing, setIsCallActive, toast]);
+  
+  // Memoized callback for when call connects
+  const handleCallConnected = useCallback(() => {
+    stopIncomingRing();
+    stopOutgoingRing();
+  }, [stopIncomingRing, stopOutgoingRing]);
 
   const blockMutation = useMutation({
     mutationFn: async () => {
@@ -1096,16 +1102,16 @@ export default function Messages() {
 
       `}</style>
 
-      {/* Video Call Overlay - Debug log */}
-      {(() => { console.log('[VideoCall Render] State check:', { isCallActive, hasActiveCall: !!activeCall, hasCallToken: !!callToken, activeCall, callToken }); return null; })()}
+      {/* Video Call Overlay */}
       {isCallActive && activeCall && callToken && (
         <VideoCallComponent
+          key={`call-${activeCall.id}`}
           callId={activeCall.id}
           channelName={activeCall.channelName}
           token={callToken}
           onEndCall={handleEndCall}
           isInitiator={activeCall.callerId === user?.id}
-          onConnected={() => { stopIncomingRing(); stopOutgoingRing(); }}
+          onConnected={handleCallConnected}
         />
       )}
     </div>
