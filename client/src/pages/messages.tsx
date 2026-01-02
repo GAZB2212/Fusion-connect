@@ -1041,6 +1041,44 @@ export default function Messages() {
           color: hsl(var(--muted-foreground)) !important;
         }
 
+        /* ===== MESSAGE STATUS / READ RECEIPTS (TICKS) ===== */
+        .fusion-chat .sendbird-message-status {
+          display: flex !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+        }
+
+        .fusion-chat .sendbird-message-status__icon {
+          display: block !important;
+          visibility: visible !important;
+          color: #f59e0b !important;
+        }
+
+        .fusion-chat .sendbird-message-status__icon--sent,
+        .fusion-chat .sendbird-message-status__icon--delivered,
+        .fusion-chat .sendbird-message-status__icon--read {
+          display: block !important;
+          visibility: visible !important;
+        }
+
+        /* Double tick color for read messages */
+        .fusion-chat .sendbird-message-status--read .sendbird-message-status__icon,
+        .fusion-chat .sendbird-message-status__icon--read {
+          color: #22c55e !important;
+        }
+
+        /* Single tick for sent */
+        .fusion-chat .sendbird-message-status--sent .sendbird-message-status__icon,
+        .fusion-chat .sendbird-message-status__icon--sent {
+          color: hsl(var(--muted-foreground)) !important;
+        }
+
+        /* Double tick for delivered */
+        .fusion-chat .sendbird-message-status--delivered .sendbird-message-status__icon,
+        .fusion-chat .sendbird-message-status__icon--delivered {
+          color: hsl(var(--muted-foreground)) !important;
+        }
+
         /* ===== VOICE MESSAGE - SHOW BACK/CANCEL BUTTON ===== */
         .fusion-chat .sendbird-voice-message-input__cancel,
         .fusion-chat .sendbird-voice-message-input-wrapper__cancel,
