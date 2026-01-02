@@ -1048,41 +1048,65 @@ export default function Messages() {
         }
 
         /* ===== MESSAGE STATUS / READ RECEIPTS (TICKS) ===== */
-        .fusion-chat .sendbird-message-status {
+        /* Ensure message status container is visible */
+        .fusion-chat .sendbird-message-status,
+        .fusion-chat [class*="message-status"],
+        .fusion-chat [class*="MessageStatus"] {
           display: flex !important;
           visibility: visible !important;
           opacity: 1 !important;
         }
 
-        .fusion-chat .sendbird-message-status__icon {
+        /* Message content menu state (where read receipts appear) */
+        .fusion-chat .sendbird-message-content-menu__outgoing-menu__state,
+        .fusion-chat [class*="outgoing-menu__state"],
+        .fusion-chat [class*="message-content"] [class*="state"] {
+          display: flex !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+        }
+
+        /* All message status icons - base styling */
+        .fusion-chat .sendbird-message-status__icon,
+        .fusion-chat [class*="message-status"] svg,
+        .fusion-chat [class*="MessageStatus"] svg,
+        .fusion-chat .sendbird-icon-done,
+        .fusion-chat .sendbird-icon-done-all {
           display: block !important;
           visibility: visible !important;
-          color: #f59e0b !important;
+          opacity: 1 !important;
         }
 
-        .fusion-chat .sendbird-message-status__icon--sent,
-        .fusion-chat .sendbird-message-status__icon--delivered,
-        .fusion-chat .sendbird-message-status__icon--read {
-          display: block !important;
-          visibility: visible !important;
-        }
-
-        /* Double tick color for read messages */
-        .fusion-chat .sendbird-message-status--read .sendbird-message-status__icon,
-        .fusion-chat .sendbird-message-status__icon--read {
-          color: #22c55e !important;
-        }
-
-        /* Single tick for sent */
+        /* Sent status - single gray tick */
         .fusion-chat .sendbird-message-status--sent .sendbird-message-status__icon,
-        .fusion-chat .sendbird-message-status__icon--sent {
+        .fusion-chat .sendbird-message-status__icon--sent,
+        .fusion-chat [class*="message-status--sent"] svg,
+        .fusion-chat .sendbird-icon-done {
           color: hsl(var(--muted-foreground)) !important;
+          fill: hsl(var(--muted-foreground)) !important;
         }
 
-        /* Double tick for delivered */
+        /* Delivered status - double gray ticks */
         .fusion-chat .sendbird-message-status--delivered .sendbird-message-status__icon,
-        .fusion-chat .sendbird-message-status__icon--delivered {
+        .fusion-chat .sendbird-message-status__icon--delivered,
+        .fusion-chat [class*="message-status--delivered"] svg {
           color: hsl(var(--muted-foreground)) !important;
+          fill: hsl(var(--muted-foreground)) !important;
+        }
+
+        /* Read status - double GREEN ticks */
+        .fusion-chat .sendbird-message-status--read .sendbird-message-status__icon,
+        .fusion-chat .sendbird-message-status__icon--read,
+        .fusion-chat [class*="message-status--read"] svg,
+        .fusion-chat .sendbird-icon-done-all {
+          color: #22c55e !important;
+          fill: #22c55e !important;
+        }
+
+        /* Target SVG paths inside icons for read state */
+        .fusion-chat .sendbird-message-status--read svg path,
+        .fusion-chat [class*="message-status--read"] svg path {
+          fill: #22c55e !important;
         }
 
         /* ===== VOICE MESSAGE - SHOW BACK/CANCEL BUTTON ===== */
