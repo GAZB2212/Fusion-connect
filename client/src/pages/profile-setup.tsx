@@ -256,41 +256,74 @@ export default function ProfileSetup() {
       let photoUrl: string;
 
       if (isCapacitorNative()) {
-        // Convert image to JPEG using canvas (handles HEIC and other formats from iOS)
+        // Convert image to JPEG using canvas (handles various formats from iOS)
         const base64Data = await new Promise<string>((resolve, reject) => {
           const img = new Image();
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            const maxSize = 1920; // Max dimension for upload
-            let width = img.width;
-            let height = img.height;
-            
-            // Scale down if too large
-            if (width > maxSize || height > maxSize) {
-              if (width > height) {
-                height = (height / width) * maxSize;
-                width = maxSize;
-              } else {
-                width = (width / height) * maxSize;
-                height = maxSize;
-              }
-            }
-            
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-              reject(new Error('Could not get canvas context'));
-              return;
-            }
-            ctx.drawImage(img, 0, 0, width, height);
-            const jpegBase64 = canvas.toDataURL('image/jpeg', 0.9);
-            resolve(jpegBase64);
-          };
-          img.onerror = () => reject(new Error('Failed to load image'));
+          img.crossOrigin = 'anonymous';
           
-          // Create object URL from file to load into image
-          img.src = URL.createObjectURL(file);
+          const objectUrl = URL.createObjectURL(file);
+          
+          img.onload = () => {
+            try {
+              const canvas = document.createElement('canvas');
+              const maxSize = 1920; // Max dimension for upload
+              let width = img.naturalWidth || img.width;
+              let height = img.naturalHeight || img.height;
+              
+              console.log('[Photo Upload] Original image dimensions:', width, 'x', height);
+              
+              if (width === 0 || height === 0) {
+                URL.revokeObjectURL(objectUrl);
+                reject(new Error('Image has invalid dimensions'));
+                return;
+              }
+              
+              // Scale down if too large
+              if (width > maxSize || height > maxSize) {
+                if (width > height) {
+                  height = Math.round((height / width) * maxSize);
+                  width = maxSize;
+                } else {
+                  width = Math.round((width / height) * maxSize);
+                  height = maxSize;
+                }
+              }
+              
+              console.log('[Photo Upload] Canvas dimensions:', width, 'x', height);
+              
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              if (!ctx) {
+                URL.revokeObjectURL(objectUrl);
+                reject(new Error('Could not get canvas context'));
+                return;
+              }
+              
+              // Fill with white background first (for transparent PNGs)
+              ctx.fillStyle = '#FFFFFF';
+              ctx.fillRect(0, 0, width, height);
+              
+              ctx.drawImage(img, 0, 0, width, height);
+              const jpegBase64 = canvas.toDataURL('image/jpeg', 0.9);
+              
+              console.log('[Photo Upload] Base64 length:', jpegBase64.length);
+              
+              URL.revokeObjectURL(objectUrl);
+              resolve(jpegBase64);
+            } catch (err) {
+              URL.revokeObjectURL(objectUrl);
+              reject(err);
+            }
+          };
+          
+          img.onerror = (e) => {
+            console.error('[Photo Upload] Image load error:', e);
+            URL.revokeObjectURL(objectUrl);
+            reject(new Error('Failed to load image'));
+          };
+          
+          img.src = objectUrl;
         });
 
         const CapacitorHttp = (window as any).Capacitor?.Plugins?.CapacitorHttp;
