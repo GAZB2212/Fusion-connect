@@ -4,6 +4,7 @@ import type {
   ToastActionElement,
   ToastProps,
 } from "@/components/ui/toast"
+import { isCapacitorNative } from "@/lib/platform"
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
@@ -148,6 +149,15 @@ function toast({ ...props }: Toast) {
       toast: { ...props, id },
     })
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
+
+  // Skip showing toasts on native mobile apps - they don't fit mobile UX patterns
+  if (isCapacitorNative()) {
+    return {
+      id: id,
+      dismiss,
+      update,
+    }
+  }
 
   dispatch({
     type: "ADD_TOAST",
