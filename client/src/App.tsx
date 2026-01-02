@@ -347,6 +347,8 @@ function AppContent() {
     registerToken();
   }, [isAuthenticated, profile?.isComplete, profile?.faceVerified, setLocation]);
 
+  const showBottomNav = isAuthenticated && profile?.isComplete && profile?.faceVerified;
+
   return (
     <>
       <IncomingCallBanner 
@@ -354,7 +356,7 @@ function AppContent() {
         onDismiss={() => setIncomingCall(null)} 
       />
       <Router />
-      {isAuthenticated && <BottomNav />}
+      {showBottomNav && <BottomNav />}
     </>
   );
 }
