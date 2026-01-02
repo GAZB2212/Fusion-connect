@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import AgoraRTC from "agora-rtc-react";
 import {
   AgoraRTCProvider,
-  useRTCClient,
   useLocalMicrophoneTrack,
   useLocalCameraTrack,
   useRemoteUsers,
@@ -44,7 +43,6 @@ function VideoCallContent({
   isInitiator,
   onConnected 
 }: Omit<VideoCallProps, 'callId'>) {
-  const client = useRTCClient(AgoraRTC.createClient({ mode: "rtc", codec: "vp8" }));
   const { isLoading: isLoadingMic, localMicrophoneTrack } = useLocalMicrophoneTrack(true);
   const { isLoading: isLoadingCam, localCameraTrack } = useLocalCameraTrack(true);
   const remoteUsers = useRemoteUsers();
