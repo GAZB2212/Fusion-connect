@@ -1259,10 +1259,10 @@ export default function ProfileSetup() {
 
             {/* Step 17: Video Intro */}
             {step === 17 && (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {introVideoUrl ? (
-                  <div className="space-y-4">
-                    <div className="relative aspect-[9/16] max-h-[350px] mx-auto bg-black rounded-xl overflow-hidden">
+                  <div className="space-y-3">
+                    <div className="relative aspect-[9/16] max-h-[280px] mx-auto bg-black rounded-xl overflow-hidden">
                       <video
                         src={introVideoUrl}
                         className="w-full h-full object-cover"
@@ -1288,15 +1288,10 @@ export default function ProfileSetup() {
                   />
                 )}
 
-                <div className="bg-muted/50 rounded-xl p-4 border">
-                  <div className="flex items-start gap-3">
-                    <Video className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    <div>
-                      <p className="font-medium text-sm">Profiles with videos get 3x more matches!</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        A short intro helps others see your personality.
-                      </p>
-                    </div>
+                <div className="bg-muted/50 rounded-lg p-3 border">
+                  <div className="flex items-center gap-2">
+                    <Video className="h-4 w-4 text-primary flex-shrink-0" />
+                    <p className="text-xs"><span className="font-medium">Profiles with videos get 3x more matches!</span> <span className="text-muted-foreground">A short intro helps others see your personality.</span></p>
                   </div>
                 </div>
               </div>

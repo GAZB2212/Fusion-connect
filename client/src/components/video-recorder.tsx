@@ -330,26 +330,26 @@ export function VideoRecorder({
 
   return (
     <>
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Record Your Intro Video</h3>
-          <Badge variant="outline">20 sec max</Badge>
+          <h3 className="text-base font-semibold">Record Your Intro Video</h3>
+          <Badge variant="outline" className="text-xs">20 sec max</Badge>
         </div>
 
         {showPrompts && (
-          <div className="bg-muted/50 rounded-lg p-4 border">
-            <div className="flex items-start gap-3">
-              <Lightbulb className="h-5 w-5 text-amber-500 mt-0.5 shrink-0" />
+          <div className="bg-muted/50 rounded-lg p-3 border">
+            <div className="flex items-start gap-2">
+              <Lightbulb className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
               <div className="flex-1">
-                <p className="text-sm font-medium mb-1">Idea for your video:</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs font-medium">Idea for your video:</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
                   "{VIDEO_PROMPTS[currentPromptIndex]}"
                 </p>
                 <Button 
                   variant="ghost" 
                   size="sm" 
                   onClick={nextPrompt}
-                  className="mt-2 h-7 px-2 text-xs"
+                  className="mt-1 h-6 px-2 text-xs"
                   data-testid="button-next-prompt"
                 >
                   Show another idea
@@ -359,14 +359,14 @@ export function VideoRecorder({
           </div>
         )}
 
-        <div className="flex flex-col items-center gap-4 py-8">
-          <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
-            <Video className="h-10 w-10 text-primary" />
+        <div className="flex flex-col items-center gap-3 py-4">
+          <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
+            <Video className="h-7 w-7 text-primary" />
           </div>
           
           {!isMediaRecorderSupported ? (
-            <div className="text-center space-y-3">
-              <p className="text-muted-foreground text-sm max-w-xs">
+            <div className="text-center space-y-2">
+              <p className="text-muted-foreground text-xs max-w-xs">
                 Video recording is not supported on your device. You can skip this step and add a video later from your profile settings.
               </p>
               {onCancel && (
@@ -377,7 +377,7 @@ export function VideoRecorder({
             </div>
           ) : (
             <>
-              <p className="text-center text-muted-foreground text-sm max-w-xs">
+              <p className="text-center text-muted-foreground text-xs max-w-xs">
                 Record a short video introduction so potential matches can get to know you better
               </p>
               <Button onClick={startCamera} data-testid="button-start-camera">
@@ -385,7 +385,7 @@ export function VideoRecorder({
                 Start Camera
               </Button>
               {onCancel && (
-                <Button variant="ghost" onClick={onCancel} data-testid="button-skip-video">
+                <Button variant="ghost" size="sm" onClick={onCancel} data-testid="button-skip-video">
                   Skip for now
                 </Button>
               )}
