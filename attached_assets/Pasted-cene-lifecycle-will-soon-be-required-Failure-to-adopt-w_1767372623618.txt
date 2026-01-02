@@ -1,0 +1,520 @@
+cene` lifecycle will soon be required. Failure to adopt will result in an assert in the future.
+Could not create a sandbox extension for '/var/containers/Bundle/Application/3E8C7436-EA06-4527-9720-7AB83977F25F/App.app'
+⚡️  Loading app at capacitor://localhost...
+WebContent[9165] Unable to hide query parameters from script (missing data)
+WebContent[9165] ERROR AppleProResHW: 45: AppleProResHW_CheckPlatform(): IOServiceGetMatchingService failed
+⚡️  [debug] - [lock-safari-1] is created.
+⚡️  [log] - [API Query] /api/auth/user -> https://fusionmatch.replit.app/api/auth/user
+⚡️  [log] - [API] No JWT token available
+⚡️  [log] - [Push] App launch - starting early push notification init...
+⚡️  [log] - [Push] Navigation callback set for push notification handling
+⚡️  [log] - [Push] Incoming call callback set for foreground notifications
+⚡️  [log] - [Push] initPush() starting on platform: ios
+⚡️  [log] - [Push] Setting up listeners for first time...
+⚡️  [log] - [Push] All listeners set up successfully
+⚡️  To Native ->  PushNotifications addListener 111453400
+⚡️  To Native ->  PushNotifications addListener 111453401
+⚡️  To Native ->  PushNotifications addListener 111453402
+⚡️  To Native ->  PushNotifications addListener 111453403
+⚡️  To Native ->  PushNotifications checkPermissions 111453404
+⚡️  TO JS {"receive":"prompt"}
+⚡️  [log] - [Push] Permission status: {"receive":"prompt"}
+⚡️  To Native ->  PushNotifications requestPermissions 111453405
+⚡️  [log] - [Push] Requesting permission...
+⚡️  [log] - 16:43:47:363 %cAgora-SDK [INFO]: color: #1E88E5; font-weight: bold; browser info:  {"name":"WebKit","version":"605","os":"iOS","osVersion":"18.7","browserVersion":"605.1.15","deviceType":"mobile"}
+⚡️  [log] - 16:43:47:363 %cAgora-SDK [INFO]: color: #1E88E5; font-weight: bold; browser compatibility:  {"getDisplayMedia":false,"getStreamFromExtension":false,"supportUnifiedPlan":true,"supportMinBitrate":false,"supportSetRtpSenderParameters":true,"supportDualStream":true,"webAudioMediaStreamDest":true,"supportReplaceTrack":true,"supportWebGL":true,"webAudioWithAEC":true,"supportRequestFrame":true,"supportShareAudio":false,"supportDualStreamEncoding":false,"supportDataChannel":false,"supportPCSetConfiguration":true,"supportWebRTCEncodedTransform":false,"supportWebRTCInsertableStream":false,"supportRequestVideoFrameCallback":true,"supportWebCrypto":true}
+⚡️  [log] - 16:43:47:452 %cAgora-SDK [DEBUG]: color: #64B5F6; setAppType: 1001
+SplashScreen.hideSplash: SplashScreen was automatically hidden after default timeout. You should call `SplashScreen.hide()` as soon as your web app is loaded (or increase the timeout). Read more at https://capacitorjs.com/docs/apis/splash-screen#hiding-the-splash-screen
+⚡️  [log] - 16:43:47:456 %cAgora-SDK [DEBUG]: color: #64B5F6; browser ua:  Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148
+⚡️  [log] - [API Query] /api/auth/user response: 401
+⚡️  [log] - [API Query] /api/auth/user returned 401 - token may be expired or missing
+⚡️  WebView loaded
+⚡️  TO JS {"receive":"granted"}
+⚡️  [log] - [Push] Permission request result: {"receive":"granted"}
+⚡️  [log] - [Push] Permission granted, calling register()...
+⚡️  [log] - [Push] NOTE: On iOS, if no token appears:
+⚡️  [log] - [Push]   1. Check Push Notifications capability in Xcode
+⚡️  [log] - [Push]   2. Check Background Modes > Remote notifications
+⚡️  [log] - [Push]   3. Check App.entitlements has aps-environment
+⚡️  [log] - [Push]   4. Check APNs key is uploaded to Sendbird Dashboard
+⚡️  To Native ->  PushNotifications register 111453406
+⚡️  [log] - [Push]   5. Must test on real device, not simulator
+⚡️  TO JS undefined
+⚡️  [log] - [Push] register() call completed
+⚡️  [log] - [Push] Waiting for registration event...
+⚡️  [log] - [Push] ========================================
+⚡️  [log] - [Push] EARLY INITIALIZATION STARTING
+⚡️  [log] - [Push] ========================================
+⚡️  [log] - [Push] Platform: ios
+⚡️  [log] - [Push] Is Native: true
+⚡️  [log] - [Push] Is iOS: true
+⚡️  [log] - [Push] Is Android: false
+⚡️  [log] - [Push] STEP 1: Setting up native event listeners...
+⚡️  [log] - [Push] Setting up native notification listeners...
+⚡️  [log] - [Push] Setting up registration listeners BEFORE calling register()
+⚡️  To Native ->  PushNotifications addListener 111453407
+⚡️  To Native ->  PushNotifications addListener 111453408
+⚡️  To Native ->  PushNotifications ⚡️  [log] - [Push] Registration listeners set up successfully
+addListener 111453409
+⚡️  To Native ->  PushNotifications addListener 111453410
+⚡️  [log] - [Push] All notification listeners set up successfully
+⚡️  To Native ->  PushNotifications checkPermissions 111453411
+⚡️  [log] - [Push] Event listeners ready
+⚡️  [log] - [Push] STEP 2: Checking notification permission...
+⚡️  TO JS {"receive":"granted"}
+⚡️  [log] - [Push] Current permission: granted
+⚡️  [log] - [Push] STEP 3: Registering with APNs/FCM...
+⚡️  [log] - [Push] Calling PushNotifications.register() - token will arrive via event listener
+⚡️  [log] - [Push] Starting native push registration...
+⚡️  [log] - [Push] Platform: ios
+⚡️  [log] - [Push] Checking Capacitor environment...
+⚡️  [log] - [Push] Capacitor.isNativePlatform(): true
+⚡️  [log] - [Push] Capacitor.getPlatform(): ios
+⚡️  [log] - [Push] PushNotifications plugin available: true
+⚡️  [log] - [Push] Available plugins: CapacitorHttp, Console, WebView, CapacitorCookies, SystemBars, PushNotifications, Haptics, Camera, SplashScreen, StatusBar
+⚡️  [log] - [Push] Registration listeners already initialized
+⚡️  [log] - [Push] Calling PushNotifications.register()...
+⚡️  [log] - [Push] IMPORTANT: On iOS, ensure the following in Xcode:
+⚡️  [log] - [Push]   1. Push Notifications capability is added
+⚡️  [log] - [Push]   2. Background Modes > Remote notifications is enabled
+⚡️  [log] - [Push]   3. App.entitlements has aps-environment set
+⚡️  [log] - [Push]   4. APNs key (.p8) is configured in Apple Developer Portal
+⚡️  To Native ->  PushNotifications register 111453412
+⚡️  TO JS undefined
+⚡️  [log] - [Push] register() call completed successfully
+⚡️  [log] - [Push] Waiting for token via "registration" event listener...
+⚡️  [log] - [Push] If no token appears within 15 seconds, check Xcode configuration
+✅ NATIVE APNs TOKEN: de7daa0efffe95071bb076ee159a7b03496d0b18be243febbc5ae2ecf7c1195b
+⚡️  TO JS {"value":"DE7DAA0EFFFE95071BB076EE159A7B03496D0B18BE243FEBBC5AE2ECF7C1195B"}
+⚡️  TO JS {"value":"DE7DAA0EFFFE95071BB076EE159A7B03496D0B18BE243FEBBC5AE2ECF7C1195B"}
+⚡️  [log] - [Push] =============================================
+⚡️  [log] - [Push] JS registration SUCCESS!
+⚡️  [log] - [Push] Token value: DE7DAA0EFFFE95071BB076EE159A7B03496D0B18BE243FEBBC5AE2ECF7C1195B
+⚡️  [log] - [Push] Token length: 64
+⚡️  [log] - [Push] =============================================
+⚡️  [log] - [Push] APNs token saved to localStorage
+⚡️  [log] - [Push] SUCCESS - Received ios device token: DE7DAA0EFFFE95071BB0...ECF7C1195B
+⚡️  [log] - [Push] Token length: 64 characters
+⚡️  [log] - [Push] ✅ SUCCESS - Got device token!
+⚡️  [log] - [Push] Token type: apns
+⚡️  [log] - [Push] Token preview: DE7DAA0EFFFE95071BB0...
+⚡️  [log] - [Push] Token cached to localStorage
+⚡️  [log] - [Push] ========================================
+⚡️  [log] - [Push] EARLY INITIALIZATION COMPLETE
+⚡️  [log] - [Push] ========================================
+⚡️  [log] - [Push] Early init successful - token ready for backend registration
+⚡️  To Native ->  Haptics impact 111453413
+⚡️  TO JS undefined
+Reporter disconnected. { function=sendMessage, reporterID=39346195398658 }
+Reporter disconnected. { function=sendMessage, reporterID=39346195398658 }
+Reporter disconnected. { function=sendMessage, reporterID=39346195398658 }
+Reporter disconnected. { function=sendMessage, reporterID=39346195398658 }
+Reporter disconnected. { function=sendMessage, reporterID=39346195398658 }
+Reporter disconnected. { function=sendMessage, reporterID=39346195398658 }
+Reporter disconnected. { function=sendMessage, reporterID=39346195398658 }
+Reporter disconnected. { function=sendMessage, reporterID=39346195398658 }
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x12a416210 h=--& v=--& _UIToolbarContentView:0x11bd08c80.width == 0   (active)>",
+    "<NSLayoutConstraint:0x11bda42d0 H:|-(0)-[_UIButtonBarStackView:0x11bcf7600]   (active, names: '|':_UIToolbarContentView:0x11bd08c80 )>",
+    "<NSLayoutConstraint:0x11bda4320 H:[_UIButtonBarStackView:0x11bcf7600]-(0)-|   (active, names: '|':_UIToolbarContentView:0x11bd08c80 )>",
+    "<NSLayoutConstraint:0x12a4147d0 'IB_Leading_Leading' H:|-(0)-[_UIModernBarButton:0x12a419500]   (active, names: '|':_UIButtonBarButton:0x11bfe5e00 )>",
+    "<NSLayoutConstraint:0x12a414d20 'IB_Leading_Leading' H:|-(>=5)-[_UIModernBarButton:0x12a419880]   (active, names: '|':_UIButtonBarButton:0x11bfe6080 )>",
+    "<NSLayoutConstraint:0x12a414820 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x12a419500]-(>=8)-|   (active, names: '|':_UIButtonBarButton:0x11bfe5e00 )>",
+    "<NSLayoutConstraint:0x12a414d70 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x12a419880]-(>=5)-|   (active, names: '|':_UIButtonBarButton:0x11bfe6080 )>",
+    "<NSLayoutConstraint:0x12a4152c0 'TB_Leading_Leading' H:|-(8)-[_UIModernBarButton:0x12a419c00]   (active, names: '|':_UIButtonBarButton:0x11bfe6300 )>",
+    "<NSLayoutConstraint:0x12a415310 'TB_Trailing_Trailing' H:[_UIModernBarButton:0x12a419c00]-(0)-|   (active, names: '|':_UIButtonBarButton:0x11bfe6300 )>",
+    "<NSLayoutConstraint:0x12a415630 'UISV-canvas-connection' UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide'.leading == _UIButtonBarButton:0x11bfe5e00.leading   (active)>",
+    "<NSLayoutConstraint:0x12a4158b0 'UISV-canvas-connection' UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide'.trailing == _UIButtonBarButton:0x11bfe6300.trailing   (active)>",
+    "<NSLayoutConstraint:0x12a415900 'UISV-spacing' H:[_UIButtonBarButton:0x11bfe5e00]-(0)-[UIView:0x11bf648c0]   (active)>",
+    "<NSLayoutConstraint:0x12a415950 'UISV-spacing' H:[UIView:0x11bf648c0]-(0)-[_UIButtonBarButton:0x11bfe6080]   (active)>",
+    "<NSLayoutConstraint:0x12a4159a0 'UISV-spacing' H:[_UIButtonBarButton:0x11bfe6080]-(0)-[UIView:0x11bf64a80]   (active)>",
+    "<NSLayoutConstraint:0x12a4159f0 'UISV-spacing' H:[UIView:0x11bf64a80]-(0)-[_UIButtonBarButton:0x11bfe6300]   (active)>",
+    "<NSLayoutConstraint:0x11bda41e0 'UIView-leftMargin-guide-constraint' H:|-(0)-[UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide'](LTR)   (active, names: '|':_UIButtonBarStackView:0x11bcf7600 )>",
+    "<NSLayoutConstraint:0x11bda4280 'UIView-rightMargin-guide-constraint' H:[UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide']-(0)-|(LTR)   (active, names: '|':_UIButtonBarStackView:0x11bcf7600 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x12a414820 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x12a419500]-(>=8)-|   (active, names: '|':_UIButtonBarButton:0x11bfe5e00 )>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x12a416210 h=--& v=--& _UIToolbarContentView:0x11bd08c80.width == 0   (active)>",
+    "<NSLayoutConstraint:0x11bda42d0 H:|-(0)-[_UIButtonBarStackView:0x11bcf7600]   (active, names: '|':_UIToolbarContentView:0x11bd08c80 )>",
+    "<NSLayoutConstraint:0x11bda4320 H:[_UIButtonBarStackView:0x11bcf7600]-(0)-|   (active, names: '|':_UIToolbarContentView:0x11bd08c80 )>",
+    "<NSLayoutConstraint:0x12a414d20 'IB_Leading_Leading' H:|-(>=5)-[_UIModernBarButton:0x12a419880]   (active, names: '|':_UIButtonBarButton:0x11bfe6080 )>",
+    "<NSLayoutConstraint:0x12a414d70 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x12a419880]-(>=5)-|   (active, names: '|':_UIButtonBarButton:0x11bfe6080 )>",
+    "<NSLayoutConstraint:0x12a4152c0 'TB_Leading_Leading' H:|-(8)-[_UIModernBarButton:0x12a419c00]   (active, names: '|':_UIButtonBarButton:0x11bfe6300 )>",
+    "<NSLayoutConstraint:0x12a415310 'TB_Trailing_Trailing' H:[_UIModernBarButton:0x12a419c00]-(0)-|   (active, names: '|':_UIButtonBarButton:0x11bfe6300 )>",
+    "<NSLayoutConstraint:0x12a415630 'UISV-canvas-connection' UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide'.leading == _UIButtonBarButton:0x11bfe5e00.leading   (active)>",
+    "<NSLayoutConstraint:0x12a4158b0 'UISV-canvas-connection' UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide'.trailing == _UIButtonBarButton:0x11bfe6300.trailing   (active)>",
+    "<NSLayoutConstraint:0x12a415900 'UISV-spacing' H:[_UIButtonBarButton:0x11bfe5e00]-(0)-[UIView:0x11bf648c0]   (active)>",
+    "<NSLayoutConstraint:0x12a415950 'UISV-spacing' H:[UIView:0x11bf648c0]-(0)-[_UIButtonBarButton:0x11bfe6080]   (active)>",
+    "<NSLayoutConstraint:0x12a4159a0 'UISV-spacing' H:[_UIButtonBarButton:0x11bfe6080]-(0)-[UIView:0x11bf64a80]   (active)>",
+    "<NSLayoutConstraint:0x12a4159f0 'UISV-spacing' H:[UIView:0x11bf64a80]-(0)-[_UIButtonBarButton:0x11bfe6300]   (active)>",
+    "<NSLayoutConstraint:0x11bda41e0 'UIView-leftMargin-guide-constraint' H:|-(0)-[UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide'](LTR)   (active, names: '|':_UIButtonBarStackView:0x11bcf7600 )>",
+    "<NSLayoutConstraint:0x11bda4280 'UIView-rightMargin-guide-constraint' H:[UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide']-(0)-|(LTR)   (active, names: '|':_UIButtonBarStackView:0x11bcf7600 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x12a414d70 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x12a419880]-(>=5)-|   (active, names: '|':_UIButtonBarButton:0x11bfe6080 )>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x12a416210 h=--& v=--& _UIToolbarContentView:0x11bd08c80.width == 0   (active)>",
+    "<NSLayoutConstraint:0x11bda42d0 H:|-(0)-[_UIButtonBarStackView:0x11bcf7600]   (active, names: '|':_UIToolbarContentView:0x11bd08c80 )>",
+    "<NSLayoutConstraint:0x11bda4320 H:[_UIButtonBarStackView:0x11bcf7600]-(0)-|   (active, names: '|':_UIToolbarContentView:0x11bd08c80 )>",
+    "<NSLayoutConstraint:0x12a4152c0 'TB_Leading_Leading' H:|-(8)-[_UIModernBarButton:0x12a419c00]   (active, names: '|':_UIButtonBarButton:0x11bfe6300 )>",
+    "<NSLayoutConstraint:0x12a415310 'TB_Trailing_Trailing' H:[_UIModernBarButton:0x12a419c00]-(0)-|   (active, names: '|':_UIButtonBarButton:0x11bfe6300 )>",
+    "<NSLayoutConstraint:0x12a415630 'UISV-canvas-connection' UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide'.leading == _UIButtonBarButton:0x11bfe5e00.leading   (active)>",
+    "<NSLayoutConstraint:0x12a4158b0 'UISV-canvas-connection' UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide'.trailing == _UIButtonBarButton:0x11bfe6300.trailing   (active)>",
+    "<NSLayoutConstraint:0x12a415900 'UISV-spacing' H:[_UIButtonBarButton:0x11bfe5e00]-(0)-[UIView:0x11bf648c0]   (active)>",
+    "<NSLayoutConstraint:0x12a415950 'UISV-spacing' H:[UIView:0x11bf648c0]-(0)-[_UIButtonBarButton:0x11bfe6080]   (active)>",
+    "<NSLayoutConstraint:0x12a4159a0 'UISV-spacing' H:[_UIButtonBarButton:0x11bfe6080]-(0)-[UIView:0x11bf64a80]   (active)>",
+    "<NSLayoutConstraint:0x12a4159f0 'UISV-spacing' H:[UIView:0x11bf64a80]-(0)-[_UIButtonBarButton:0x11bfe6300]   (active)>",
+    "<NSLayoutConstraint:0x11bda41e0 'UIView-leftMargin-guide-constraint' H:|-(0)-[UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide'](LTR)   (active, names: '|':_UIButtonBarStackView:0x11bcf7600 )>",
+    "<NSLayoutConstraint:0x11bda4280 'UIView-rightMargin-guide-constraint' H:[UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide']-(0)-|(LTR)   (active, names: '|':_UIButtonBarStackView:0x11bcf7600 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x12a415310 'TB_Trailing_Trailing' H:[_UIModernBarButton:0x12a419c00]-(0)-|   (active, names: '|':_UIButtonBarButton:0x11bfe6300 )>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x12a4162b0 h=--& v=--& _UIToolbarContentView:0x11bd08c80.height == 0   (active)>",
+    "<NSLayoutConstraint:0x11bda4370 V:|-(0)-[_UIButtonBarStackView:0x11bcf7600]   (active, names: '|':_UIToolbarContentView:0x11bd08c80 )>",
+    "<NSLayoutConstraint:0x11bda43c0 _UIButtonBarStackView:0x11bcf7600.bottom == _UIToolbarContentView:0x11bd08c80.bottom   (active)>",
+    "<NSLayoutConstraint:0x12a416710 UIImageView:0x11bf62200.centerY == _UIModernBarButton:0x12a419500.centerY   (active)>",
+    "<NSLayoutConstraint:0x12a414aa0 'IB_Baseline_Baseline' _UIModernBarButton:0x12a419500.lastBaseline == UILayoutGuide:0x11beae140'UIViewLayoutMarginsGuide'.bottom   (active)>",
+    "<NSLayoutConstraint:0x12a414af0 'IB_Top_Top' V:|-(>=0)-[_UIModernBarButton:0x12a419500]   (active, names: '|':_UIButtonBarButton:0x11bfe5e00 )>",
+    "<NSLayoutConstraint:0x12a414be0 'UIButtonBar.maximumAlignmentSize' _UIButtonBarButton:0x11bfe5e00.height == UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide'.height   (active)>",
+    "<NSLayoutConstraint:0x11bda4230 'UIView-bottomMargin-guide-constraint' V:[UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide']-(0)-|   (active, names: '|':_UIButtonBarStackView:0x11bcf7600 )>",
+    "<NSLayoutConstraint:0x12a414a00 'UIView-bottomMargin-guide-constraint' V:[UILayoutGuide:0x11beae140'UIViewLayoutMarginsGuide']-(16)-|   (active, names: '|':_UIButtonBarButton:0x11bfe5e00 )>",
+    "<NSLayoutConstraint:0x11bda4190 'UIView-topMargin-guide-constraint' V:|-(0)-[UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide']   (active, names: '|':_UIButtonBarStackView:0x11bcf7600 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x12a416710 UIImageView:0x11bf62200.centerY == _UIModernBarButton:0x12a419500.centerY   (active)>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x12a4162b0 h=--& v=--& _UIToolbarContentView:0x11bd08c80.height == 0   (active)>",
+    "<NSLayoutConstraint:0x11bda4370 V:|-(0)-[_UIButtonBarStackView:0x11bcf7600]   (active, names: '|':_UIToolbarContentView:0x11bd08c80 )>",
+    "<NSLayoutConstraint:0x11bda43c0 _UIButtonBarStackView:0x11bcf7600.bottom == _UIToolbarContentView:0x11bd08c80.bottom   (active)>",
+    "<NSLayoutConstraint:0x12a416850 UIImageView:0x11bf62400.centerY == _UIModernBarButton:0x12a419880.centerY   (active)>",
+    "<NSLayoutConstraint:0x12a414ff0 'IB_Baseline_Baseline' _UIModernBarButton:0x12a419880.lastBaseline == UILayoutGuide:0x11beaf100'UIViewLayoutMarginsGuide'.bottom   (active)>",
+    "<NSLayoutConstraint:0x12a415040 'IB_Top_Top' V:|-(>=0)-[_UIModernBarButton:0x12a419880]   (active, names: '|':_UIButtonBarButton:0x11bfe6080 )>",
+    "<NSLayoutConstraint:0x12a415130 'UIButtonBar.maximumAlignmentSize' _UIButtonBarButton:0x11bfe6080.height == UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide'.height   (active)>",
+    "<NSLayoutConstraint:0x11bda4230 'UIView-bottomMargin-guide-constraint' V:[UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide']-(0)-|   (active, names: '|':_UIButtonBarStackView:0x11bcf7600 )>",
+    "<NSLayoutConstraint:0x12a414f50 'UIView-bottomMargin-guide-constraint' V:[UILayoutGuide:0x11beaf100'UIViewLayoutMarginsGuide']-(16)-|   (active, names: '|':_UIButtonBarButton:0x11bfe6080 )>",
+    "<NSLayoutConstraint:0x11bda4190 'UIView-topMargin-guide-constraint' V:|-(0)-[UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide']   (active, names: '|':_UIButtonBarStackView:0x11bcf7600 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x12a416850 UIImageView:0x11bf62400.centerY == _UIModernBarButton:0x12a419880.centerY   (active)>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x12a4162b0 h=--& v=--& _UIToolbarContentView:0x11bd08c80.height == 0   (active)>",
+    "<NSLayoutConstraint:0x11bda4370 V:|-(0)-[_UIButtonBarStackView:0x11bcf7600]   (active, names: '|':_UIToolbarContentView:0x11bd08c80 )>",
+    "<NSLayoutConstraint:0x11bda43c0 _UIButtonBarStackView:0x11bcf7600.bottom == _UIToolbarContentView:0x11bd08c80.bottom   (active)>",
+    "<NSLayoutConstraint:0x12a416990 UIButtonLabel:0x12a419f80.centerY == _UIModernBarButton:0x12a419c00.centerY + 0.5   (active)>",
+    "<NSLayoutConstraint:0x12a4154a0 'TB_Baseline_Baseline' _UIModernBarButton:0x12a419c00.lastBaseline == UILayoutGuide:0x11beae220'UIViewLayoutMarginsGuide'.bottom   (active)>",
+    "<NSLayoutConstraint:0x12a4154f0 'TB_Top_Top' V:|-(>=0)-[_UIModernBarButton:0x12a419c00]   (active, names: '|':_UIButtonBarButton:0x11bfe6300 )>",
+    "<NSLayoutConstraint:0x12a4155e0 'UIButtonBar.maximumAlignmentSize' _UIButtonBarButton:0x11bfe6300.height == UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide'.height   (active)>",
+    "<NSLayoutConstraint:0x11bda4230 'UIView-bottomMargin-guide-constraint' V:[UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide']-(0)-|   (active, names: '|':_UIButtonBarStackView:0x11bcf7600 )>",
+    "<NSLayoutConstraint:0x12a415400 'UIView-bottomMargin-guide-constraint' V:[UILayoutGuide:0x11beae220'UIViewLayoutMarginsGuide']-(16)-|   (active, names: '|':_UIButtonBarButton:0x11bfe6300 )>",
+    "<NSLayoutConstraint:0x11bda4190 'UIView-topMargin-guide-constraint' V:|-(0)-[UILayoutGuide:0x108294a80'UIViewLayoutMarginsGuide']   (active, names: '|':_UIButtonBarStackView:0x11bcf7600 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x12a416990 UIButtonLabel:0x12a419f80.centerY == _UIModernBarButton:0x12a419c00.centerY + 0.5   (active)>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+-[RTIInputSystemClient remoteTextInputSessionWithID:textSuggestionsChanged:]  Can only set suggestions for an active session. sessionID = 6DCF6EAA-ACEC-41BC-9D17-8E8F8A7AE669
+Error: this application, or a library it uses, has passed an invalid numeric value (NaN, or not-a-number) to CoreGraphics API and this value is being ignored. Please fix this problem.
+If you want to see the backtrace, please set CG_NUMERICS_SHOW_BACKTRACE environmental variable.
+Error: this application, or a library it uses, has passed an invalid numeric value (NaN, or not-a-number) to CoreGraphics API and this value is being ignored. Please fix this problem.
+If you want to see the backtrace, please set CG_NUMERICS_SHOW_BACKTRACE environmental variable.
+Error: this application, or a library it uses, has passed an invalid numeric value (NaN, or not-a-number) to CoreGraphics API and this value is being ignored. Please fix this problem.
+If you want to see the backtrace, please set CG_NUMERICS_SHOW_BACKTRACE environmental variable.
+Error: this application, or a library it uses, has passed an invalid numeric value (NaN, or not-a-number) to CoreGraphics API and this value is being ignored. Please fix this problem.
+If you want to see the backtrace, please set CG_NUMERICS_SHOW_BACKTRACE environmental variable.
+Error: this application, or a library it uses, has passed an invalid numeric value (NaN, or not-a-number) to CoreGraphics API and this value is being ignored. Please fix this problem.
+If you want to see the backtrace, please set CG_NUMERICS_SHOW_BACKTRACE environmental variable.
+Error: this application, or a library it uses, has passed an invalid numeric value (NaN, or not-a-number) to CoreGraphics API and this value is being ignored. Please fix this problem.
+If you want to see the backtrace, please set CG_NUMERICS_SHOW_BACKTRACE environmental variable.
+-[RTIInputSystemClient remoteTextInputSessionWithID:textSuggestionsChanged:]  Can only set suggestions for an active session. sessionID = 6DCF6EAA-ACEC-41BC-9D17-8E8F8A7AE669
+-[RTIInputSystemClient remoteTextInputSessionWithID:textSuggestionsChanged:]  Can only set suggestions for an active session. sessionID = 6DCF6EAA-ACEC-41BC-9D17-8E8F8A7AE669
+-[RTIInputSystemClient remoteTextInputSessionWithID:textSuggestionsChanged:]  Can only set suggestions for an active session. sessionID = 6DCF6EAA-ACEC-41BC-9D17-8E8F8A7AE669
+-[RTIInputSystemClient remoteTextInputSessionWithID:textSuggestionsChanged:]  Can only set suggestions for an active session. sessionID = 6DCF6EAA-ACEC-41BC-9D17-8E8F8A7AE669
+⚡️  To Native ->  Haptics impact 111453414
+⚡️  TO JS undefined
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:textSuggestionsChanged:]  Can only set suggestions for an active session. sessionID = 6DCF6EAA-ACEC-41BC-9D17-8E8F8A7AE669
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+⚡️  To Native ->  Haptics impact 111453415
+⚡️  TO JS undefined
+⚡️  [log] - 16:44:35:922 %cAgora-SDK [DEBUG]: color: #64B5F6; current web page is hidden
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+⚡️  WebView loaded
+⚡️  [debug] - [lock-safari-1] is created.
+⚡️  [log] - [API Query] /api/auth/user -> https://fusionmatch.replit.app/api/auth/user
+⚡️  [log] - [API] Using JWT token for request
+⚡️  [log] - [Push] App launch - starting early push notification init...
+⚡️  [log] - [Push] Navigation callback set for push notification handling
+⚡️  [log] - [Push] Incoming call callback set for foreground notifications
+⚡️  [log] - [Push] initPush() starting on platform: ios
+⚡️  [log] - [Push] Setting up listeners for first time...
+⚡️  [log] - [Push] All listeners set up successfully
+⚡️  To Native ->  PushNotifications addListener 101577503
+⚡️  To Native ->  PushNotifications addListener 101577504
+⚡️  To Native ->  PushNotifications addListener 101577505
+⚡️  To Native ->  PushNotifications addListener 101577506
+⚡️  To Native ->  PushNotifications checkPermissions 101577507
+⚡️  TO JS {"receive":"granted"}
+⚡️  [log] - [Push] Permission status: {"receive":"granted"}
+⚡️  [log] - [Push] Permission granted, calling register()...
+⚡️  [log] - [Push] NOTE: On iOS, if no token appears:
+⚡️  [log] - [Push]   1. Check Push Notifications capability in Xcode
+⚡️  [log] - [Push]   2. Check Background Modes > Remote notifications
+⚡️  [log] - [Push]   3. Check App.entitlements has aps-environment
+⚡️  To Native ->  PushNotifications register 101577508
+⚡️  [log] - [Push]   4. Check APNs key is uploaded to Sendbird Dashboard
+⚡️  [log] - [Push]   5. Must test on real device, not simulator
+⚡️  TO JS undefined
+✅ NATIVE APNs TOKEN: de7daa0efffe95071bb076ee159a7b03496d0b18be243febbc5ae2ecf7c1195b
+⚡️  TO JS {"value":"DE7DAA0EFFFE95071BB076EE159A7B03496D0B18BE243FEBBC5AE2ECF7C1195B"}
+⚡️  [log] - [Push] register() call completed
+⚡️  [log] - [Push] Waiting for registration event...
+⚡️  [log] - [Push] ========================================
+⚡️  [log] - [Push] EARLY INITIALIZATION STARTING
+⚡️  [log] - [Push] ========================================
+⚡️  [log] - [Push] Platform: ios
+⚡️  [log] - [Push] Is Native: true
+⚡️  [log] - [Push] Is iOS: true
+⚡️  [log] - [Push] Is Android: false
+⚡️  [log] - [Push] Retrieved cached token from localStorage
+⚡️  [log] - [Push] Found cached token, will use it
+⚡️  [log] - [Push] STEP 1: Setting up native event listeners...
+⚡️  [log] - [Push] Setting up native notification listeners...
+⚡️  To Native ->  PushNotifications addListener 101577509
+⚡️  [log] - [Push] Setting up registration listeners BEFORE calling register()
+⚡️  To Native ->  PushNotifications addListener 101577510
+⚡️  To Native ->  PushNotifications ⚡️  [log] - [Push] Registration listeners set up successfully
+addListener 101577511
+⚡️  To Native ->  PushNotifications addListener 101577512
+⚡️  [log] - [Push] All notification listeners set up successfully
+⚡️  [log] - [Push] Event listeners ready
+⚡️  To Native ->  PushNotifications checkPermissions ⚡️  [log] - [Push] STEP 2: Checking notification permission...
+101577513
+⚡️  [log] - [Push] =============================================
+⚡️  [log] - [Push] JS registration SUCCESS!
+⚡️  [log] - [Push] Token value: DE7DAA0EFFFE95071BB076EE159A7B03496D0B18BE243FEBBC5AE2ECF7C1195B
+⚡️  [log] - [Push] Token length: 64
+⚡️  [log] - [Push] =============================================
+⚡️  [log] - [Push] APNs token saved to localStorage
+⚡️  TO JS {"receive":"granted"}
+⚡️  [log] - [Push] Current permission: granted
+⚡️  [log] - [Push] STEP 3: Registering with APNs/FCM...
+⚡️  [log] - [Push] Calling PushNotifications.register() - token will arrive via event listener
+⚡️  [log] - [Push] Starting native push registration...
+⚡️  To Native ->  PushNotifications register 101577514
+⚡️  [log] - [Push] Platform: ios
+⚡️  [log] - [Push] Checking Capacitor environment...
+⚡️  [log] - [Push] Capacitor.isNativePlatform(): true
+⚡️  [log] - [Push] Capacitor.getPlatform(): ios
+⚡️  [log] - [Push] PushNotifications plugin available: true
+⚡️  [log] - [Push] Available plugins: CapacitorHttp, Console, WebView, CapacitorCookies, SystemBars, PushNotifications, Haptics, Camera, SplashScreen, StatusBar
+⚡️  [log] - [Push] Registration listeners already initialized
+⚡️  [log] - [Push] Calling PushNotifications.register()...
+⚡️  [log] - [Push] IMPORTANT: On iOS, ensure the following in Xcode:
+⚡️  [log] - [Push]   1. Push Notifications capability is added
+⚡️  [log] - [Push]   2. Background Modes > Remote notifications is enabled
+⚡️  [log] - [Push]   3. App.entitlements has aps-environment set
+⚡️  [log] - [Push]   4. APNs key (.p8) is configured in Apple Developer Portal
+⚡️  TO JS undefined
+✅ NATIVE APNs TOKEN: de7daa0efffe95071bb076ee159a7b03496d0b18be243febbc5ae2ecf7c1195b
+⚡️  TO JS {"value":"DE7DAA0EFFFE95071BB076EE159A7B03496D0B18BE243FEBBC5AE2ECF7C1195B"}
+⚡️  TO JS {"value":"DE7DAA0EFFFE95071BB076EE159A7B03496D0B18BE243FEBBC5AE2ECF7C1195B"}
+⚡️  [log] - [Push] register() call completed successfully
+⚡️  [log] - [Push] Waiting for token via "registration" event listener...
+⚡️  [log] - [Push] If no token appears within 15 seconds, check Xcode configuration
+⚡️  [log] - [Push] =============================================
+⚡️  [log] - [Push] JS registration SUCCESS!
+⚡️  [log] - [Push] Token value: DE7DAA0EFFFE95071BB076EE159A7B03496D0B18BE243FEBBC5AE2ECF7C1195B
+⚡️  [log] - [Push] Token length: 64
+⚡️  [log] - [Push] =============================================
+⚡️  [log] - [Push] APNs token saved to localStorage
+⚡️  [log] - [Push] SUCCESS - Received ios device token: DE7DAA0EFFFE95071BB0...ECF7C1195B
+⚡️  [log] - [Push] Token length: 64 characters
+⚡️  [log] - [Push] ✅ SUCCESS - Got device token!
+⚡️  [log] - [Push] Token type: apns
+⚡️  [log] - [Push] Token preview: DE7DAA0EFFFE95071BB0...
+⚡️  [log] - [Push] Token cached to localStorage
+⚡️  [log] - [Push] ========================================
+⚡️  [log] - [Push] EARLY INITIALIZATION COMPLETE
+⚡️  [log] - [Push] ========================================
+⚡️  [log] - [Push] Early init successful - token ready for backend registration
+⚡️  [log] - 16:44:36:199 %cAgora-SDK [DEBUG]: color: #64B5F6; setAppType: 1001
+⚡️  [log] - 16:44:36:199 %cAgora-SDK [DEBUG]: color: #64B5F6; browser ua:  Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148
+⚡️  [log] - 16:44:36:199 %cAgora-SDK [INFO]: color: #1E88E5; font-weight: bold; browser info:  {"name":"WebKit","version":"605","os":"iOS","osVersion":"18.7","browserVersion":"605.1.15","deviceType":"mobile"}
+⚡️  [log] - 16:44:36:199 %cAgora-SDK [INFO]: color: #1E88E5; font-weight: bold; browser compatibility:  {"getDisplayMedia":false,"getStreamFromExtension":false,"supportUnifiedPlan":true,"supportMinBitrate":false,"supportSetRtpSenderParameters":true,"supportDualStream":true,"webAudioMediaStreamDest":true,"supportReplaceTrack":true,"supportWebGL":true,"webAudioWithAEC":true,"supportRequestFrame":true,"supportShareAudio":false,"supportDualStreamEncoding":false,"supportDataChannel":false,"supportPCSetConfiguration":true,"supportWebRTCEncodedTransform":false,"supportWebRTCInsertableStream":false,"supportRequestVideoFrameCallback":true,"supportWebCrypto":true}
+⚡️  [log] - [API Query] /api/auth/user response: 200
+⚡️  [log] - [API Query] /api/profile -> https://fusionmatch.replit.app/api/profile
+⚡️  [log] - [API] Using JWT token for request
+⚡️  [log] - Connecting to WebSocket: wss://fusionmatch.replit.app/ws
+⚡️  [error] - WebSocket error: {"isTrusted":true}
+⚡️  [log] - WebSocket disconnected
+⚡️  [log] - Reconnecting in 1000ms (attempt 1/5)
+⚡️  [log] - [API Query] /api/profile response: 404
+⚡️  To Native ->  Haptics impact 101577515
+⚡️  TO JS undefined
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+59638328 Plugin query method called
+(501) Invalidation handler invoked, clearing connection
+(501) personaAttributesForPersonaType for type:0 failed with error Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.mobile.usermanagerd.xpc was invalidated from this process." UserInfo={NSDebugDescription=The connection to service named com.apple.mobile.usermanagerd.xpc was invalidated from this process.}
+LaunchServices: store (null) or url (null) was nil: Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Attempt to map database failed: permission was denied. This attempt will not be retried.
+Failed to initialize client context with error Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+⚡️  [log] - [Photo Upload] Original image dimensions: 1284 x 2778
+⚡️  [log] - [Photo Upload] Canvas dimensions: 887 x 1920
+⚡️  [log] - [Photo Upload] Base64 length: 646991
+⚡️  To Native ->  CapacitorHttp post 101577516
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+⚡️  TO JS {"status":200,"data":{"photoUrl":"https:\/\/fusionmatch.replit.app\/api\/images\/profile\/697626c1-aea8-4b3e-8940-ccb08192b96d\/977a16d7434fd17328869a65f8cbfb60.jpeg","message":"Photo uploaded successfully","success":true},"headers":{"alt-svc":"h3=\":443\"
+LaunchServices: store (null) or url (null) was nil: Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Attempt to map database failed: permission was denied. This attempt will not be retried.
+Failed to initialize client context with error Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+⚡️  [log] - [Photo Upload] Original image dimensions: 1284 x 2778
+⚡️  [log] - [Photo Upload] Canvas dimensions: 887 x 1920
+⚡️  [log] - [Photo Upload] Base64 length: 646991
+⚡️  To Native ->  CapacitorHttp post 101577517
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+⚡️  TO JS {"url":"https:\/\/fusionmatch.replit.app\/api\/photos\/upload-base64","data":{"success":true,"message":"Photo uploaded successfully","photoUrl":"https:\/\/fusionmatch.replit.app\/api\/images\/profile\/697626c1-aea8-4b3e-8940-ccb08192b96d\/50a045f9b5231bafc
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+LaunchServices: store (null) or url (null) was nil: Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Attempt to map database failed: permission was denied. This attempt will not be retried.
+Failed to initialize client context with error Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+⚡️  [log] - [Photo Upload] Original image dimensions: 1284 x 2778
+⚡️  [log] - [Photo Upload] Canvas dimensions: 887 x 1920
+⚡️  [log] - [Photo Upload] Base64 length: 646991
+⚡️  To Native ->  CapacitorHttp post 101577518
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+⚡️  TO JS {"headers":{"access-control-allow-origin":"capacitor:\/\/localhost","content-length":"194","x-powered-by":"Express","x-cloud-trace-context":"318be0b7580959ba5672779c3abd0cec","via":"1.1 google","server":"Google Frontend","alt-svc":"h3=\":443\"; ma=2592000,
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+⚡️  To Native ->  Haptics impact 101577519
+⚡️  TO JS undefined
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:textSuggestionsChanged:]  Can only set suggestions for an active session. sessionID = 6DCF6EAA-ACEC-41BC-9D17-8E8F8A7AE669
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+⚡️  To Native ->  Haptics impact 101577520
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 101577521
+⚡️  TO JS undefined
+⚡️  [log] - [API] Using JWT token for request
+⚡️  [log] - [API Query] /api/auth/user -> https://fusionmatch.replit.app/api/auth/user
+⚡️  [log] - [API] No JWT token available
+⚡️  [log] - [API Query] /api/auth/user response: 401
+⚡️  [log] - [API Query] /api/auth/user returned 401 - token may be expired or missing
+⚡️  [log] - [API Query] /api/profile -> https://fusionmatch.replit.app/api/profile
+⚡️  [log] - [API] No JWT token available
+⚡️  [log] - [API Query] /api/profile response: 401
+⚡️  [log] - [API Query] /api/profile returned 401 - token may be expired or missing
+⚡️  To Native ->  Haptics impact 101577522
+⚡️  TO JS undefined
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+LaunchServices: store (null) or url (null) was nil: Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Attempt to map database failed: permission was denied. This attempt will not be retried.
+Failed to initialize client context with error Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+⚡️  [log] - [Photo Upload] Original image dimensions: 1284 x 2778
+⚡️  [log] - [Photo Upload] Canvas dimensions: 887 x 1920
+⚡️  [log] - [Photo Upload] Base64 length: 646991
+⚡️  To Native ->  CapacitorHttp post 101577523
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+⚡️  TO JS {"url":"https:\/\/fusionmatch.replit.app\/api\/photos\/upload-base64","data":{"message":"Unauthorized"},"headers":{"alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","content-length":"26","strict-transport-security":"max-age=63072000; includeSu
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+LaunchServices: store (null) or url (null) was nil: Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+Attempt to map database failed: permission was denied. This attempt will not be retried.
+Failed to initialize client context with error Error Domain=NSOSStatusErrorDomain Code=-54 "process may not map database" UserInfo={_LSLine=74, _LSFunction=_LSServer_GetServerStoreForConnectionWithCompletionHandler, _LSFile=LSDReadService.mm, NSDebugDescription=process may not map database}
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+⚡️  [log] - [Photo Upload] Original image dimensions: 1284 x 2778
+⚡️  [log] - [Photo Upload] Canvas dimensions: 887 x 1920
+⚡️  [log] - [Photo Upload] Base64 length: 646991
+⚡️  To Native ->  CapacitorHttp post 101577524
+⚡️  TO JS {"status":401,"headers":{"access-control-allow-origin":"capacitor:\/\/localhost","content-length":"26","x-powered-by":"Express","x-cloud-trace-context":"3301b3982a798d7682809f27e3d94f24;o=1","via":"1.1 google","server":"Google Frontend","alt-svc":"h3=\":44
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = dismissAutoFillPanel, customInfoType = UIUserInteractionRemoteInputOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = dismissAutoFillPanel, customInfoType = UIUserInteractionRemoteInputOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = dismissAutoFillPanel, customInfoType = UIUserInteractionRemoteInputOperations
+[C:4] Error received: Connection interrupted.
+[C:4-1] Error received: Connection interrupted.
+-[RTIInputSystemClient _configureConnection:withMachName:]_block_invoke  Client connection to service was interrupted: <NSXPCConnection: 0x11902e800> connection to service with pid -1 named (null)
+Snapshotting a view (0x119067c00, UIKeyboardImpl) that is not in a visible window requires afterScreenUpdates:YES.
