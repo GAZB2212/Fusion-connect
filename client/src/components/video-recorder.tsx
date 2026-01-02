@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Video, StopCircle, Play, RotateCcw, Upload, Loader2, Lightbulb, X } from "lucide-react";
-import { isCapacitorNative } from "@/lib/platform";
+import { isCapacitorNative, isIOS } from "@/lib/platform";
+import { requestCameraAndMicrophonePermissions } from "@/lib/permissions";
 
 const VIDEO_PROMPTS = [
   "Tell us about yourself and what you're looking for",
@@ -71,7 +72,17 @@ export function VideoRecorder({
     setIsFullscreenOpen(true);
     
     try {
-      console.log('[VideoRecorder] Requesting camera access...');
+      console.log('[VideoRecorder] Checking camera and microphone permissions...');
+      
+      const permissionResult = await requestCameraAndMicrophonePermissions();
+      
+      if (!permissionResult.granted) {
+        console.log('[VideoRecorder] Permission denied:', permissionResult.errorMessage);
+        setCameraError(permissionResult.errorMessage || 'Camera access denied');
+        return;
+      }
+      
+      console.log('[VideoRecorder] Permissions granted, accessing camera...');
       
       const constraints: MediaStreamConstraints = {
         video: {

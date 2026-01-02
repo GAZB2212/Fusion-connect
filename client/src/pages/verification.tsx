@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import type { Profile } from "@shared/schema";
 import { motion, AnimatePresence } from "framer-motion";
+import { requestCameraPermission } from "@/lib/permissions";
 
 export default function Verification() {
   const [, setLocation] = useLocation();
@@ -43,6 +44,22 @@ export default function Verification() {
 
   const startCamera = async () => {
     try {
+      console.log('[Verification] Requesting camera permission...');
+      
+      const permissionResult = await requestCameraPermission();
+      
+      if (!permissionResult.granted) {
+        console.log('[Verification] Permission denied:', permissionResult.errorMessage);
+        toast({
+          title: "Camera Access Denied",
+          description: permissionResult.errorMessage || "Please allow camera access to complete verification.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      console.log('[Verification] Permission granted, starting camera...');
+      
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { 
           facingMode: 'user',
@@ -55,7 +72,6 @@ export default function Verification() {
       
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        // Explicitly play the video
         try {
           await videoRef.current.play();
         } catch (playError) {

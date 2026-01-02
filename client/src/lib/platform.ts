@@ -57,3 +57,13 @@ export function isMobile(): boolean {
 export function hasCapacitorPlugin(pluginName: string): boolean {
   return !!(window as any).Capacitor?.Plugins?.[pluginName];
 }
+
+// Check if running on iOS
+export function isIOS(): boolean {
+  return getPlatform() === 'ios';
+}
+
+// Check if running on Android
+export function isAndroid(): boolean {
+  return getPlatform() === 'android';
+}
