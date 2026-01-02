@@ -378,33 +378,47 @@ export function VideoRecorder({
               )}
             </div>
 
-            <div className="flex gap-3 justify-center">
-              {!isRecording ? (
-                <>
+            <div className="flex flex-col gap-3 items-center">
+              <div className="flex gap-3 justify-center">
+                {!isRecording ? (
+                  <>
+                    <Button 
+                      variant="outline" 
+                      onClick={stopCamera}
+                      data-testid="button-cancel-camera"
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={startRecording}
+                      className="bg-red-600 hover:bg-red-700"
+                      data-testid="button-start-recording"
+                    >
+                      <div className="h-3 w-3 rounded-full bg-white mr-2" />
+                      Start Recording
+                    </Button>
+                  </>
+                ) : (
                   <Button 
-                    variant="outline" 
-                    onClick={stopCamera}
-                    data-testid="button-cancel-camera"
+                    onClick={stopRecording}
+                    variant="destructive"
+                    data-testid="button-stop-recording"
                   >
-                    Cancel
+                    <StopCircle className="h-4 w-4 mr-2" />
+                    Stop Recording
                   </Button>
-                  <Button 
-                    onClick={startRecording}
-                    className="bg-red-600 hover:bg-red-700"
-                    data-testid="button-start-recording"
-                  >
-                    <div className="h-3 w-3 rounded-full bg-white mr-2" />
-                    Start Recording
-                  </Button>
-                </>
-              ) : (
+                )}
+              </div>
+              {onCancel && !isRecording && (
                 <Button 
-                  onClick={stopRecording}
-                  variant="destructive"
-                  data-testid="button-stop-recording"
+                  variant="ghost" 
+                  onClick={() => {
+                    stopCamera();
+                    onCancel();
+                  }}
+                  data-testid="button-skip-video-active"
                 >
-                  <StopCircle className="h-4 w-4 mr-2" />
-                  Stop Recording
+                  Skip for now
                 </Button>
               )}
             </div>
