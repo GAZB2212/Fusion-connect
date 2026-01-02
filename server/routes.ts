@@ -1525,13 +1525,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Upload intro video (20 seconds max) - base64 encoded
   app.post("/api/video/upload", isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;
-    const { video } = req.body;
+    const { video, mimeType: explicitMimeType } = req.body;
 
     if (!video) {
       return res.status(400).json({ message: "No video data provided" });
     }
 
     try {
+      // Log the first 100 chars to debug MIME type detection
+      console.log(`[Video Upload] Received video data prefix: ${video.substring(0, 100)}`);
+      console.log(`[Video Upload] Explicit mimeType from client: ${explicitMimeType}`);
+      
       // Check video size (rough estimate from base64 length - max 20MB)
       const estimatedSize = (video.length * 3) / 4;
       const maxSize = 20 * 1024 * 1024; // 20MB
@@ -1541,10 +1545,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const buffer = base64ToBuffer(video);
-      const contentType = detectContentType(video);
+      let contentType = detectContentType(video);
+      
+      console.log(`[Video Upload] Detected content type from data URL: ${contentType}`);
+      
+      // Use explicit mimeType from client if detection fails or returns non-video
+      if (!contentType.startsWith('video/') && explicitMimeType && explicitMimeType.startsWith('video/')) {
+        console.log(`[Video Upload] Using explicit mimeType from client: ${explicitMimeType}`);
+        contentType = explicitMimeType;
+      }
+      
+      // Final fallback: assume video/mp4 if it's from a native upload (has mimeType param)
+      if (!contentType.startsWith('video/') && explicitMimeType) {
+        console.log(`[Video Upload] Falling back to video/mp4 for native upload`);
+        contentType = 'video/mp4';
+      }
+      
+      console.log(`[Video Upload] Final content type: ${contentType}`);
       
       // Verify it's a video
       if (!contentType.startsWith('video/')) {
+        console.log(`[Video Upload] Invalid content type: ${contentType}, expected video/*`);
         return res.status(400).json({ message: "Invalid file type. Please upload a video." });
       }
 

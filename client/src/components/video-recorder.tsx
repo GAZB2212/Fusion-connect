@@ -187,18 +187,31 @@ export function VideoRecorder({
 
     chunksRef.current = [];
     
-    let mimeType = 'video/webm';
-    if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
-      mimeType = 'video/webm;codecs=vp9';
-    } else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8')) {
-      mimeType = 'video/webm;codecs=vp8';
-    } else if (MediaRecorder.isTypeSupported('video/mp4')) {
-      mimeType = 'video/mp4';
-    } else if (MediaRecorder.isTypeSupported('video/webm')) {
-      mimeType = 'video/webm';
+    // Test supported MIME types - iOS Safari only supports mp4
+    const supportedTypes = [
+      'video/mp4',
+      'video/mp4;codecs=avc1',
+      'video/webm;codecs=vp9',
+      'video/webm;codecs=vp8',
+      'video/webm',
+    ];
+    
+    console.log('[VideoRecorder] Testing supported MIME types...');
+    supportedTypes.forEach(type => {
+      console.log(`[VideoRecorder] ${type}: ${MediaRecorder.isTypeSupported(type)}`);
+    });
+    
+    let mimeType = 'video/mp4'; // Default to mp4 for better iOS compatibility
+    
+    // Find the first supported type
+    for (const type of supportedTypes) {
+      if (MediaRecorder.isTypeSupported(type)) {
+        mimeType = type;
+        break;
+      }
     }
     
-    console.log('[VideoRecorder] Using MIME type:', mimeType);
+    console.log('[VideoRecorder] Selected MIME type:', mimeType);
     
     const mediaRecorder = new MediaRecorder(streamRef.current, {
       mimeType,

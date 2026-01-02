@@ -534,11 +534,17 @@ export default function ProfileSetup() {
       const token = getAuthToken();
       let videoUrl: string;
 
+      console.log('[VideoUpload] Starting video upload...');
+      console.log('[VideoUpload] Blob type:', videoBlob.type);
+      console.log('[VideoUpload] Blob size:', videoBlob.size);
+      console.log('[VideoUpload] Is native:', isCapacitorNative());
+
       if (isCapacitorNative()) {
         const base64Data = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = () => {
             const result = reader.result as string;
+            console.log('[VideoUpload] Data URL prefix:', result.substring(0, 100));
             resolve(result);
           };
           reader.onerror = reject;
@@ -547,6 +553,7 @@ export default function ProfileSetup() {
 
         const CapacitorHttp = (window as any).Capacitor?.Plugins?.CapacitorHttp;
         if (CapacitorHttp) {
+          console.log('[VideoUpload] Sending via CapacitorHttp...');
           const response = await CapacitorHttp.post({
             url: getApiUrl('/api/video/upload'),
             headers: {
@@ -555,8 +562,11 @@ export default function ProfileSetup() {
             },
             data: {
               video: base64Data,
+              mimeType: videoBlob.type, // Send the blob's MIME type explicitly
             },
           });
+          console.log('[VideoUpload] Response status:', response.status);
+          console.log('[VideoUpload] Response data:', JSON.stringify(response.data));
 
           if (response.status !== 200) {
             throw new Error(response.data?.message || 'Failed to upload video');
