@@ -1278,7 +1278,25 @@ export default function ProfileSetup() {
                         className="w-full h-full object-cover"
                         controls
                         playsInline
+                        autoPlay
+                        muted
+                        onError={(e) => {
+                          console.log('[VideoPreview] Video playback error:', e);
+                        }}
+                        onLoadedData={(e) => {
+                          console.log('[VideoPreview] Video loaded successfully');
+                        }}
                       />
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="text-white text-center bg-black/50 px-3 py-2 rounded-lg opacity-0 peer-[video[poster]]:opacity-100">
+                          <CheckCircle2 className="h-8 w-8 mx-auto mb-1 text-green-500" />
+                          <p className="text-sm">Video uploaded!</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-center gap-2 text-green-600">
+                      <CheckCircle2 className="h-4 w-4" />
+                      <span className="text-sm font-medium">Video saved successfully</span>
                     </div>
                     <Button
                       type="button"
