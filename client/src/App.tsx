@@ -44,6 +44,8 @@ import IncomingCall from "@/pages/incoming-call";
 import NotFound from "@/pages/not-found";
 import { BottomNav } from "@/components/navigation";
 import IncomingCallBanner, { type IncomingCallData } from "@/components/IncomingCallBanner";
+import { InlineNotificationBanner } from "@/components/inline-notification";
+import { useInlineNotification } from "@/hooks/use-inline-notification";
 import { Loader2 } from "lucide-react";
 
 function Router() {
@@ -201,6 +203,9 @@ function AppContent() {
   // Incoming call banner state
   const [incomingCall, setIncomingCall] = useState<IncomingCallData | null>(null);
   
+  // Inline notification for mobile
+  const { notification } = useInlineNotification();
+  
   // Track if we've done early push init
   const earlyInitDone = useRef(false);
   // Track if we've registered token with backend
@@ -351,6 +356,7 @@ function AppContent() {
 
   return (
     <>
+      <InlineNotificationBanner notification={notification} />
       <IncomingCallBanner 
         callData={incomingCall} 
         onDismiss={() => setIncomingCall(null)} 

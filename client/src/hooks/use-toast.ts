@@ -5,6 +5,7 @@ import type {
   ToastProps,
 } from "@/components/ui/toast"
 import { isCapacitorNative } from "@/lib/platform"
+import { showInlineNotification } from "@/hooks/use-inline-notification"
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
@@ -150,8 +151,16 @@ function toast({ ...props }: Toast) {
     })
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
 
-  // Skip showing toasts on native mobile apps - they don't fit mobile UX patterns
+  // On native mobile apps, use inline notifications with haptic feedback instead of toasts
   if (isCapacitorNative()) {
+    const title = typeof props.title === 'string' ? props.title : '';
+    const description = typeof props.description === 'string' ? props.description : undefined;
+    const type = props.variant === 'destructive' ? 'error' : 'success';
+    
+    if (title || description) {
+      showInlineNotification(type, title || description || '', description);
+    }
+    
     return {
       id: id,
       dismiss,
