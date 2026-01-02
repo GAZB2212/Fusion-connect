@@ -431,16 +431,17 @@ export default function Home() {
         {/* Photo */}
         <div className="absolute inset-0">
           {currentPhoto && !imageLoadError ? (
-            <motion.img
-              key={currentPhotoIndex}
-              initial={{ opacity: 0.8 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.2 }}
+            <img
+              key={`${currentProfile.id}-${currentPhotoIndex}`}
               src={currentPhoto}
               alt={displayName}
               className="w-full h-full object-cover"
-              onError={() => {
-                console.log('[Home] Image load error for:', currentPhoto);
+              loading="eager"
+              onLoad={() => {
+                console.log('[Home] Image loaded successfully:', currentPhoto);
+              }}
+              onError={(e) => {
+                console.log('[Home] Image load error for:', currentPhoto, e);
                 setImageLoadError(true);
               }}
             />
