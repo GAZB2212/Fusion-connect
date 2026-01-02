@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Video, StopCircle, Play, RotateCcw, Upload, Loader2, Lightbulb } from "lucide-react";
+import { isCapacitorNative } from "@/lib/platform";
 
 const VIDEO_PROMPTS = [
   "Tell us about yourself and what you're looking for",
@@ -75,21 +76,64 @@ export function VideoRecorder({
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        // Explicitly play the video - required for Safari
-        try {
-          await videoRef.current.play();
-        } catch (playError) {
-          console.log("Auto-play prevented, user interaction needed:", playError);
-        }
+        
+        // Set webkit-specific attributes for iOS
+        videoRef.current.setAttribute('webkit-playsinline', 'true');
+        videoRef.current.setAttribute('playsinline', 'true');
+        
+        // For iOS/Safari, we need to wait for loadedmetadata before playing
+        await new Promise<void>((resolve, reject) => {
+          if (!videoRef.current) {
+            reject(new Error('Video element not found'));
+            return;
+          }
+          
+          const video = videoRef.current;
+          
+          // If already ready, play immediately
+          if (video.readyState >= 2) {
+            video.play()
+              .then(() => resolve())
+              .catch(reject);
+            return;
+          }
+          
+          // Wait for metadata to load
+          const onLoadedMetadata = () => {
+            video.removeEventListener('loadedmetadata', onLoadedMetadata);
+            video.play()
+              .then(() => resolve())
+              .catch(reject);
+          };
+          
+          video.addEventListener('loadedmetadata', onLoadedMetadata);
+          
+          // Timeout fallback
+          setTimeout(() => {
+            video.removeEventListener('loadedmetadata', onLoadedMetadata);
+            video.play()
+              .then(() => resolve())
+              .catch(() => resolve()); // Don't fail on timeout, camera might still work
+          }, 2000);
+        });
       }
       setCameraActive(true);
     } catch (error: any) {
       console.error("Error accessing camera:", error);
-      const errorMessage = error.name === 'NotAllowedError' 
-        ? "Camera access denied. Please allow camera and microphone permissions in your browser settings."
-        : error.name === 'NotFoundError'
-        ? "No camera found. Please connect a camera and try again."
-        : "Unable to access camera. Please check your permissions.";
+      let errorMessage = "Unable to access camera. Please check your permissions.";
+      
+      if (error.name === 'NotAllowedError') {
+        if (isCapacitorNative()) {
+          errorMessage = "Camera access denied. Please go to Settings > Fusion and enable Camera & Microphone permissions.";
+        } else {
+          errorMessage = "Camera access denied. Please allow camera and microphone permissions in your browser settings.";
+        }
+      } else if (error.name === 'NotFoundError') {
+        errorMessage = "No camera found. Please connect a camera and try again.";
+      } else if (error.name === 'NotReadableError') {
+        errorMessage = "Camera is in use by another app. Please close other apps using the camera.";
+      }
+      
       setCameraError(errorMessage);
     }
   };

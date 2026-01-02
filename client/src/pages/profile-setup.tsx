@@ -1146,51 +1146,53 @@ export default function ProfileSetup() {
             {/* Step 16: Bio */}
             {step === 16 && (
               <div className="space-y-4">
-                <div className="relative">
-                  <Textarea
-                    value={form.watch("bio") || ""}
-                    onChange={(e) => form.setValue("bio", e.target.value)}
-                    placeholder="Tell potential matches about yourself, your values, and what you're looking for..."
-                    className="min-h-40 text-base pr-12"
-                    data-testid="textarea-bio"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2 h-8 w-8 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
-                    onClick={async () => {
-                      const bio = form.watch("bio");
-                      if (!bio || bio.trim().length < 10) {
-                        toast({
-                          title: "Write something first",
-                          description: "Write at least a few words before enhancing",
-                          variant: "destructive",
-                        });
-                        return;
+                <Textarea
+                  value={form.watch("bio") || ""}
+                  onChange={(e) => form.setValue("bio", e.target.value)}
+                  placeholder="Tell potential matches about yourself, your values, and what you're looking for..."
+                  className="min-h-40 text-base"
+                  data-testid="textarea-bio"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 hover:from-purple-600 hover:to-pink-600"
+                  onClick={async () => {
+                    const bio = form.watch("bio");
+                    if (!bio || bio.trim().length < 10) {
+                      toast({
+                        title: "Write something first",
+                        description: "Write at least a few words before enhancing",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    setIsEnhancingBio(true);
+                    try {
+                      const response = await apiRequest("POST", "/api/enhance-bio", { bio });
+                      const data = await response.json();
+                      if (data.enhancedBio) {
+                        form.setValue("bio", data.enhancedBio);
+                        toast({ title: "Bio enhanced!", description: "Your bio has been improved" });
                       }
-                      setIsEnhancingBio(true);
-                      try {
-                        const response = await apiRequest("POST", "/api/enhance-bio", { bio });
-                        const data = await response.json();
-                        if (data.enhancedBio) {
-                          form.setValue("bio", data.enhancedBio);
-                          toast({ title: "Bio enhanced!", description: "Your bio has been improved" });
-                        }
-                      } catch (error: any) {
-                        toast({ title: "Enhancement failed", description: error.message, variant: "destructive" });
-                      } finally {
-                        setIsEnhancingBio(false);
-                      }
-                    }}
-                    disabled={isEnhancingBio}
-                    data-testid="button-enhance-bio"
-                  >
-                    {isEnhancingBio ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Tap the sparkle button to enhance your bio with AI
+                    } catch (error: any) {
+                      toast({ title: "Enhancement failed", description: error.message, variant: "destructive" });
+                    } finally {
+                      setIsEnhancingBio(false);
+                    }
+                  }}
+                  disabled={isEnhancingBio}
+                  data-testid="button-enhance-bio"
+                >
+                  {isEnhancingBio ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 mr-2" />
+                  )}
+                  Enhance with AI
+                </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  Write a few words, then tap the button to enhance your bio with AI
                 </p>
               </div>
             )}
