@@ -178,8 +178,9 @@ export async function deletePhotoFromR2(photoUrl: string): Promise<void> {
  * @returns Buffer
  */
 export function base64ToBuffer(base64String: string): Buffer {
-  // Remove data URL prefix if present (e.g., "data:image/jpeg;base64," or "data:video/mp4;base64,")
-  const base64Data = base64String.replace(/^data:(image|video)\/[\w+]+;base64,/, '');
+  // Remove data URL prefix if present - use inclusive regex for all MIME types
+  // Handles: data:image/jpeg;base64, data:image/heic;base64, data:application/octet-stream;base64, etc.
+  const base64Data = base64String.replace(/^data:[^;]+;base64,/, '');
   return Buffer.from(base64Data, 'base64');
 }
 
@@ -189,8 +190,20 @@ export function base64ToBuffer(base64String: string): Buffer {
  * @returns MIME type
  */
 export function detectContentType(base64String: string): string {
-  const match = base64String.match(/^data:((image|video)\/[\w+]+);base64,/);
-  return match ? match[1] : 'image/jpeg'; // Default to JPEG
+  const match = base64String.match(/^data:([^;]+);base64,/);
+  if (match) {
+    const mimeType = match[1];
+    // Convert HEIC/HEIF to JPEG for better compatibility (iOS photo library)
+    if (mimeType === 'image/heic' || mimeType === 'image/heif') {
+      return 'image/jpeg';
+    }
+    // Handle octet-stream as JPEG (fallback for unknown image types)
+    if (mimeType === 'application/octet-stream') {
+      return 'image/jpeg';
+    }
+    return mimeType;
+  }
+  return 'image/jpeg'; // Default to JPEG
 }
 
 /**

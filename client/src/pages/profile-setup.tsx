@@ -256,14 +256,41 @@ export default function ProfileSetup() {
       let photoUrl: string;
 
       if (isCapacitorNative()) {
+        // Convert image to JPEG using canvas (handles HEIC and other formats from iOS)
         const base64Data = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const result = reader.result as string;
-            resolve(result);
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const maxSize = 1920; // Max dimension for upload
+            let width = img.width;
+            let height = img.height;
+            
+            // Scale down if too large
+            if (width > maxSize || height > maxSize) {
+              if (width > height) {
+                height = (height / width) * maxSize;
+                width = maxSize;
+              } else {
+                width = (width / height) * maxSize;
+                height = maxSize;
+              }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) {
+              reject(new Error('Could not get canvas context'));
+              return;
+            }
+            ctx.drawImage(img, 0, 0, width, height);
+            const jpegBase64 = canvas.toDataURL('image/jpeg', 0.9);
+            resolve(jpegBase64);
           };
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
+          img.onerror = () => reject(new Error('Failed to load image'));
+          
+          // Create object URL from file to load into image
+          img.src = URL.createObjectURL(file);
         });
 
         const CapacitorHttp = (window as any).Capacitor?.Plugins?.CapacitorHttp;
