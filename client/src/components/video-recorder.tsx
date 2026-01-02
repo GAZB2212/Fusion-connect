@@ -269,7 +269,6 @@ export function VideoRecorder({
 
   const handleUpload = () => {
     if (recordedVideo) {
-      setIsFullscreenOpen(false);
       onVideoRecorded(recordedVideo);
     }
   };
@@ -289,55 +288,63 @@ export function VideoRecorder({
 
   if (recordedVideoUrl) {
     return (
-      <Dialog open={isFullscreenOpen} onOpenChange={(open) => !open && handleCloseDialog()}>
+      <Dialog open={isFullscreenOpen} onOpenChange={(open) => !open && !isUploading && handleCloseDialog()}>
         <DialogContent className="max-w-md w-full p-0 gap-0 h-[90vh] max-h-[700px] flex flex-col">
-          <div className="p-4 border-b flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Preview Your Video</h3>
-            <Button type="button" variant="ghost" size="icon" onClick={handleCloseDialog}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <div className="flex-1 bg-black flex items-center justify-center overflow-hidden">
-            <video
-              ref={previewRef}
-              src={recordedVideoUrl}
-              className="w-full h-full object-contain"
-              controls
-              playsInline
-            />
-          </div>
+          {isUploading ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-8 gap-6">
+              <div className="relative">
+                <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Video className="h-12 w-12 text-primary" />
+                </div>
+                <div className="absolute inset-0 h-24 w-24 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
+              </div>
+              <div className="text-center space-y-2">
+                <h3 className="text-lg font-semibold">Uploading Your Video</h3>
+                <p className="text-sm text-muted-foreground">
+                  Please wait while we save your intro video...
+                </p>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="p-4 border-b flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Preview Your Video</h3>
+                <Button type="button" variant="ghost" size="icon" onClick={handleCloseDialog}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="flex-1 bg-black flex items-center justify-center overflow-hidden">
+                <video
+                  ref={previewRef}
+                  src={recordedVideoUrl}
+                  className="w-full h-full object-contain"
+                  controls
+                  playsInline
+                />
+              </div>
 
-          <div className="p-4 border-t flex gap-3 justify-center">
-            <Button 
-              type="button"
-              variant="outline" 
-              onClick={retakeVideo}
-              disabled={isUploading}
-              data-testid="button-retake-video"
-            >
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Retake
-            </Button>
-            <Button 
-              type="button"
-              onClick={handleUpload}
-              disabled={isUploading}
-              data-testid="button-upload-video"
-            >
-              {isUploading ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                <>
+              <div className="p-4 border-t flex gap-3 justify-center">
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  onClick={retakeVideo}
+                  data-testid="button-retake-video"
+                >
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Retake
+                </Button>
+                <Button 
+                  type="button"
+                  onClick={handleUpload}
+                  data-testid="button-upload-video"
+                >
                   <Upload className="h-4 w-4 mr-2" />
                   Use This Video
-                </>
-              )}
-            </Button>
-          </div>
+                </Button>
+              </div>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     );
