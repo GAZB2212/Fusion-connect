@@ -1271,32 +1271,17 @@ export default function ProfileSetup() {
             {step === 17 && (
               <div className="space-y-4">
                 {introVideoUrl ? (
-                  <div className="space-y-3">
-                    <div className="relative aspect-[9/16] max-h-[280px] mx-auto bg-black rounded-xl overflow-hidden">
-                      <video
-                        src={introVideoUrl}
-                        className="w-full h-full object-cover"
-                        controls
-                        playsInline
-                        autoPlay
-                        muted
-                        onError={(e) => {
-                          console.log('[VideoPreview] Video playback error:', e);
-                        }}
-                        onLoadedData={(e) => {
-                          console.log('[VideoPreview] Video loaded successfully');
-                        }}
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="text-white text-center bg-black/50 px-3 py-2 rounded-lg opacity-0 peer-[video[poster]]:opacity-100">
-                          <CheckCircle2 className="h-8 w-8 mx-auto mb-1 text-green-500" />
-                          <p className="text-sm">Video uploaded!</p>
-                        </div>
+                  <div className="space-y-4">
+                    <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-xl p-6 text-center">
+                      <div className="h-16 w-16 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center mx-auto mb-4">
+                        <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
                       </div>
-                    </div>
-                    <div className="flex items-center justify-center gap-2 text-green-600">
-                      <CheckCircle2 className="h-4 w-4" />
-                      <span className="text-sm font-medium">Video saved successfully</span>
+                      <h3 className="text-lg font-semibold text-green-800 dark:text-green-300 mb-1">
+                        Video Uploaded Successfully
+                      </h3>
+                      <p className="text-sm text-green-600 dark:text-green-400">
+                        Your intro video has been saved and will be visible on your profile
+                      </p>
                     </div>
                     <Button
                       type="button"
