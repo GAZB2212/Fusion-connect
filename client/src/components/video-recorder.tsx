@@ -270,13 +270,17 @@ export function VideoRecorder({
     onCancel?.();
   };
 
+  const handleCloseDialog = () => {
+    closeFullscreen();
+  };
+
   if (recordedVideoUrl) {
     return (
-      <Dialog open={isFullscreenOpen} onOpenChange={(open) => !open && handleSkip()}>
+      <Dialog open={isFullscreenOpen} onOpenChange={(open) => !open && handleCloseDialog()}>
         <DialogContent className="max-w-md w-full p-0 gap-0 h-[90vh] max-h-[700px] flex flex-col">
           <div className="p-4 border-b flex items-center justify-between">
             <h3 className="text-lg font-semibold">Preview Your Video</h3>
-            <Button variant="ghost" size="icon" onClick={handleSkip}>
+            <Button variant="ghost" size="icon" onClick={handleCloseDialog}>
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -390,14 +394,14 @@ export function VideoRecorder({
         </div>
       </div>
 
-      <Dialog open={isFullscreenOpen && !recordedVideoUrl} onOpenChange={(open) => !open && handleSkip()}>
+      <Dialog open={isFullscreenOpen && !recordedVideoUrl} onOpenChange={(open) => !open && handleCloseDialog()}>
         <DialogContent className="max-w-md w-full p-0 gap-0 h-[90vh] max-h-[700px] flex flex-col">
           <div className="p-4 border-b flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h3 className="text-lg font-semibold">Record Video</h3>
               <Badge variant="outline">20 sec max</Badge>
             </div>
-            <Button variant="ghost" size="icon" onClick={handleSkip}>
+            <Button variant="ghost" size="icon" onClick={handleCloseDialog}>
               <X className="h-4 w-4" />
             </Button>
           </div>
