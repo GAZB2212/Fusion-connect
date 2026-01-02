@@ -31,6 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Upload, CheckCircle2, LogOut, MapPin, Loader2, Video, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 import { VideoRecorder } from "@/components/video-recorder";
 import { PhotoGuidelines } from "@/components/photo-guidelines";
+import { isCapacitorNative } from "@/lib/platform";
 import {
   INTEREST_CATEGORIES,
   PROFESSIONS,
@@ -250,24 +251,62 @@ export default function ProfileSetup() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('photo', file);
-
     try {
       const token = getAuthToken();
-      const response = await fetch(getApiUrl('/api/upload-photo'), {
-        method: 'POST',
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-        credentials: 'include',
-        body: formData,
-      });
+      let photoUrl: string;
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to upload photo');
+      if (isCapacitorNative()) {
+        const base64Data = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result as string;
+            resolve(result);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+
+        const CapacitorHttp = (window as any).Capacitor?.Plugins?.CapacitorHttp;
+        if (CapacitorHttp) {
+          const response = await CapacitorHttp.post({
+            url: getApiUrl('/api/photos/upload-base64'),
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
+            data: {
+              photo: base64Data,
+              photoType: 'profile',
+            },
+          });
+
+          if (response.status !== 200) {
+            throw new Error(response.data?.message || 'Failed to upload photo');
+          }
+          photoUrl = response.data.photoUrl;
+        } else {
+          throw new Error('Native HTTP not available');
+        }
+      } else {
+        const formData = new FormData();
+        formData.append('photos', file);
+
+        const response = await fetch(getApiUrl('/api/photos/upload'), {
+          method: 'POST',
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+          credentials: 'include',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to upload photo');
+        }
+
+        const result = await response.json();
+        photoUrl = result.photoUrls[0];
       }
 
-      const { photoUrl } = await response.json();
       const newPhotos = [...photos, photoUrl];
       setPhotos(newPhotos);
       form.setValue("photos", newPhotos);
@@ -430,24 +469,62 @@ export default function ProfileSetup() {
 
   const handleVideoRecorded = async (videoBlob: Blob) => {
     setIsUploadingVideo(true);
-    const formData = new FormData();
-    formData.append('video', videoBlob, 'intro-video.webm');
 
     try {
       const token = getAuthToken();
-      const response = await fetch(getApiUrl('/api/upload-video'), {
-        method: 'POST',
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-        credentials: 'include',
-        body: formData,
-      });
+      let videoUrl: string;
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to upload video');
+      if (isCapacitorNative()) {
+        const base64Data = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result as string;
+            resolve(result);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(videoBlob);
+        });
+
+        const CapacitorHttp = (window as any).Capacitor?.Plugins?.CapacitorHttp;
+        if (CapacitorHttp) {
+          const response = await CapacitorHttp.post({
+            url: getApiUrl('/api/video/upload'),
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
+            data: {
+              video: base64Data,
+            },
+          });
+
+          if (response.status !== 200) {
+            throw new Error(response.data?.message || 'Failed to upload video');
+          }
+          videoUrl = response.data.videoUrl;
+        } else {
+          throw new Error('Native HTTP not available');
+        }
+      } else {
+        const formData = new FormData();
+        formData.append('video', videoBlob, 'intro-video.webm');
+
+        const response = await fetch(getApiUrl('/api/video/upload'), {
+          method: 'POST',
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+          credentials: 'include',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Failed to upload video');
+        }
+
+        const result = await response.json();
+        videoUrl = result.videoUrl;
       }
 
-      const { videoUrl } = await response.json();
       setIntroVideoUrl(videoUrl);
       form.setValue("introVideoUrl" as any, videoUrl);
       
