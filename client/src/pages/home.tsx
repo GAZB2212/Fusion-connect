@@ -173,6 +173,7 @@ export default function Home() {
   const [showAnimation, setShowAnimation] = useState<'like' | 'pass' | null>(null);
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [isProfileExpanded, setIsProfileExpanded] = useState(false);
+  const [imageLoadError, setImageLoadError] = useState(false);
   
   // First-time swipe hints
   const [hasSwipedOnce, setHasSwipedOnce] = useState(
@@ -212,6 +213,7 @@ export default function Home() {
       }
       setCurrentIndex((prev) => prev + 1);
       setCurrentPhotoIndex(0);
+      setImageLoadError(false);
       setIsProfileExpanded(false);
       queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
     },
@@ -271,14 +273,22 @@ export default function Home() {
     const width = rect.width;
     
     if (x < width / 3) {
+      setImageLoadError(false);
       setCurrentPhotoIndex((prev) => Math.max(0, prev - 1));
     } else if (x > (width * 2) / 3) {
+      setImageLoadError(false);
       const maxIndex = (currentProfile?.photos?.length || 1) - 1;
       setCurrentPhotoIndex((prev) => Math.min(maxIndex, prev + 1));
     }
   };
 
   const currentProfile = profiles[currentIndex];
+
+  // Reset photo state when profile changes
+  useEffect(() => {
+    setCurrentPhotoIndex(0);
+    setImageLoadError(false);
+  }, [currentProfile?.id]);
 
   // Card entry animation
   useEffect(() => {
@@ -420,7 +430,7 @@ export default function Home() {
       >
         {/* Photo */}
         <div className="absolute inset-0">
-          {currentPhoto ? (
+          {currentPhoto && !imageLoadError ? (
             <motion.img
               key={currentPhotoIndex}
               initial={{ opacity: 0.8 }}
@@ -429,9 +439,9 @@ export default function Home() {
               src={currentPhoto}
               alt={displayName}
               className="w-full h-full object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
+              onError={() => {
+                console.log('[Home] Image load error for:', currentPhoto);
+                setImageLoadError(true);
               }}
             />
           ) : (
@@ -467,6 +477,7 @@ export default function Home() {
               className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/20 backdrop-blur-sm text-white/80 hover:bg-black/40 transition-colors z-20 hidden md:flex"
               onClick={(e) => {
                 e.stopPropagation();
+                setImageLoadError(false);
                 setCurrentPhotoIndex((prev) => Math.max(0, prev - 1));
               }}
               disabled={currentPhotoIndex === 0}
@@ -477,6 +488,7 @@ export default function Home() {
               className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/20 backdrop-blur-sm text-white/80 hover:bg-black/40 transition-colors z-20 hidden md:flex"
               onClick={(e) => {
                 e.stopPropagation();
+                setImageLoadError(false);
                 setCurrentPhotoIndex((prev) => Math.min(photos.length - 1, prev + 1));
               }}
               disabled={currentPhotoIndex === photos.length - 1}
