@@ -30,6 +30,7 @@ import { apiRequest, queryClient, getApiUrl, clearAuthToken, getAuthToken } from
 import { useToast } from "@/hooks/use-toast";
 import { Upload, CheckCircle2, LogOut, MapPin, Loader2, Video, Sparkles } from "lucide-react";
 import { VideoRecorder } from "@/components/video-recorder";
+import { PhotoGuidelines } from "@/components/photo-guidelines";
 import {
   INTEREST_CATEGORIES,
   PROFESSIONS,
@@ -70,6 +71,7 @@ export default function ProfileSetup() {
   const [introVideoUrl, setIntroVideoUrl] = useState<string | null>(null);
   const [isEnhancingBio, setIsEnhancingBio] = useState(false);
   const [fastBio, setFastBio] = useState("");
+  const [showPhotoGuidelines, setShowPhotoGuidelines] = useState(true);
 
   // Fetch existing profile if restarting or fast onboarding complete
   const { data: existingProfile } = useQuery<Profile>({
@@ -525,6 +527,11 @@ export default function ProfileSetup() {
         </Card>
       </div>
     );
+  }
+
+  // Show photo guidelines before step 1 photo upload
+  if (step === 1 && showPhotoGuidelines) {
+    return <PhotoGuidelines onContinue={() => setShowPhotoGuidelines(false)} />;
   }
 
   return (
