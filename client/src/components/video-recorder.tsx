@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Video, StopCircle, Play, RotateCcw, Upload, Loader2, Lightbulb, X } from "lucide-react";
+import { Video, StopCircle, Loader2, Lightbulb, X, Play } from "lucide-react";
 import { isCapacitorNative, isIOS } from "@/lib/platform";
 import { requestCameraAndMicrophonePermissions } from "@/lib/permissions";
 
@@ -31,8 +31,6 @@ export function VideoRecorder({
   existingVideoUrl 
 }: VideoRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
-  const [recordedVideo, setRecordedVideo] = useState<Blob | null>(null);
-  const [recordedVideoUrl, setRecordedVideoUrl] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(20);
   const [cameraActive, setCameraActive] = useState(false);
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
@@ -40,7 +38,6 @@ export function VideoRecorder({
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
-  const previewRef = useRef<HTMLVideoElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -52,11 +49,8 @@ export function VideoRecorder({
       if (countdownIntervalRef.current) {
         clearInterval(countdownIntervalRef.current);
       }
-      if (recordedVideoUrl) {
-        URL.revokeObjectURL(recordedVideoUrl);
-      }
     };
-  }, [recordedVideoUrl]);
+  }, []);
 
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isMediaRecorderSupported, setIsMediaRecorderSupported] = useState(true);
@@ -225,10 +219,11 @@ export function VideoRecorder({
 
     mediaRecorder.onstop = () => {
       const blob = new Blob(chunksRef.current, { type: mimeType });
-      setRecordedVideo(blob);
-      const url = URL.createObjectURL(blob);
-      setRecordedVideoUrl(url);
+      console.log('[VideoRecorder] Recording complete, blob size:', blob.size);
       stopCamera();
+      setIsFullscreenOpen(false);
+      // Automatically upload the video without preview
+      onVideoRecorded(blob);
     };
 
     mediaRecorderRef.current = mediaRecorder;
@@ -257,23 +252,6 @@ export function VideoRecorder({
     }
   };
 
-  const retakeVideo = () => {
-    setRecordedVideo(null);
-    if (recordedVideoUrl) {
-      URL.revokeObjectURL(recordedVideoUrl);
-      setRecordedVideoUrl(null);
-    }
-    setCountdown(20);
-    startCamera();
-  };
-
-  const handleUpload = () => {
-    if (recordedVideo) {
-      setIsFullscreenOpen(false);
-      onVideoRecorded(recordedVideo);
-    }
-  };
-
   const nextPrompt = () => {
     setCurrentPromptIndex((prev) => (prev + 1) % VIDEO_PROMPTS.length);
   };
@@ -286,62 +264,6 @@ export function VideoRecorder({
   const handleCloseDialog = () => {
     closeFullscreen();
   };
-
-  if (recordedVideoUrl) {
-    return (
-      <Dialog open={isFullscreenOpen} onOpenChange={(open) => !open && handleCloseDialog()}>
-        <DialogContent className="max-w-md w-full p-0 gap-0 h-[90vh] max-h-[700px] flex flex-col">
-          <div className="p-4 border-b flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Preview Your Video</h3>
-            <Button type="button" variant="ghost" size="icon" onClick={handleCloseDialog}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <div className="flex-1 bg-black flex items-center justify-center overflow-hidden">
-            <video
-              ref={previewRef}
-              src={recordedVideoUrl}
-              className="w-full h-full object-contain"
-              controls
-              playsInline
-            />
-          </div>
-
-          <div className="p-4 border-t flex gap-3 justify-center">
-            <Button 
-              type="button"
-              variant="outline" 
-              onClick={retakeVideo}
-              disabled={isUploading}
-              data-testid="button-retake-video"
-            >
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Retake
-            </Button>
-            <Button 
-              type="button"
-              onClick={handleUpload}
-              disabled={isUploading}
-              data-testid="button-upload-video"
-            >
-              {isUploading ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Use This Video
-                </>
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
 
   return (
     <>
@@ -410,7 +332,7 @@ export function VideoRecorder({
         </div>
       </div>
 
-      <Dialog open={isFullscreenOpen && !recordedVideoUrl} onOpenChange={(open) => !open && handleCloseDialog()}>
+      <Dialog open={isFullscreenOpen} onOpenChange={(open) => !open && handleCloseDialog()}>
         <DialogContent className="max-w-md w-full p-0 gap-0 h-[90vh] max-h-[700px] flex flex-col">
           <div className="p-4 border-b flex items-center justify-between">
             <div className="flex items-center gap-2">
