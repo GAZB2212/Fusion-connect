@@ -593,7 +593,10 @@ export default function ProfileSetup() {
 
   if (profileSubmitted) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div 
+        className="min-h-screen bg-background flex items-center justify-center p-4"
+        style={{ paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
         <Card className="max-w-md w-full p-8">
           <div className="text-center space-y-6">
             <div className="mx-auto w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center">
@@ -625,7 +628,10 @@ export default function ProfileSetup() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Fixed Header with Progress */}
-      <div className="sticky top-0 z-50 bg-background border-b">
+      <div 
+        className="sticky top-0 z-50 bg-background border-b"
+        style={{ paddingTop: 'env(safe-area-inset-top)' }}
+      >
         <div className="container max-w-lg mx-auto px-4 py-3">
           <div className="flex items-center justify-between mb-3">
             <Button
@@ -663,7 +669,10 @@ export default function ProfileSetup() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 container max-w-lg mx-auto px-4 py-8 pb-32">
+      <div 
+        className="flex-1 container max-w-lg mx-auto px-4 py-8"
+        style={{ paddingBottom: 'calc(8rem + env(safe-area-inset-bottom))' }}
+      >
         {/* Question Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold mb-2">{currentStepInfo.title}</h1>
@@ -1235,7 +1244,10 @@ export default function ProfileSetup() {
       </div>
 
       {/* Fixed Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 safe-area-bottom">
+      <div 
+        className="fixed bottom-0 left-0 right-0 bg-background border-t p-4"
+        style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+      >
         <div className="container max-w-lg mx-auto">
           {step < TOTAL_STEPS ? (
             <Button
