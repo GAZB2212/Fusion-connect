@@ -108,6 +108,56 @@ function ProfilePhotoCarousel({ photos, displayName }: { photos: string[]; displ
   );
 }
 
+// Video player with error handling for the intro video modal
+function VideoModalPlayer({ videoUrl, displayName }: { videoUrl: string; displayName: string }) {
+  const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    setHasError(false);
+    setIsLoading(true);
+  }, [videoUrl]);
+
+  if (hasError) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center bg-black text-white p-6 text-center">
+        <div className="h-16 w-16 rounded-full bg-white/10 flex items-center justify-center mb-4">
+          <Play className="h-8 w-8 text-white/50" />
+        </div>
+        <h3 className="text-lg font-semibold mb-2">Video Unavailable</h3>
+        <p className="text-sm text-white/60">
+          {displayName}'s intro video couldn't be loaded on this device.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black">
+          <Loader2 className="h-8 w-8 text-white animate-spin" />
+        </div>
+      )}
+      <video
+        ref={videoRef}
+        src={videoUrl}
+        className="w-full h-full object-cover"
+        controls
+        autoPlay
+        playsInline
+        onLoadedData={() => setIsLoading(false)}
+        onError={() => {
+          console.log('[VideoModalPlayer] Video playback error for:', videoUrl);
+          setHasError(true);
+          setIsLoading(false);
+        }}
+      />
+    </>
+  );
+}
+
 export default function Home() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -642,12 +692,9 @@ export default function Home() {
           </DialogHeader>
           <div className="relative aspect-[9/16] w-full max-h-[80vh]">
             {currentProfile?.introVideoUrl && (
-              <video
-                src={currentProfile.introVideoUrl}
-                className="w-full h-full object-cover"
-                controls
-                autoPlay
-                playsInline
+              <VideoModalPlayer 
+                videoUrl={currentProfile.introVideoUrl}
+                displayName={currentProfile?.displayName?.split(' ')[0] || 'This user'}
               />
             )}
           </div>
