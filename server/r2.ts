@@ -178,9 +178,9 @@ export async function deletePhotoFromR2(photoUrl: string): Promise<void> {
  * @returns Buffer
  */
 export function base64ToBuffer(base64String: string): Buffer {
-  // Remove data URL prefix if present - use inclusive regex for all MIME types
-  // Handles: data:image/jpeg;base64, data:image/heic;base64, data:application/octet-stream;base64, etc.
-  const base64Data = base64String.replace(/^data:[^;]+;base64,/, '');
+  // Remove data URL prefix if present - handles MIME types with parameters like codecs
+  // Handles: data:image/jpeg;base64, data:video/webm;codecs=vp9;base64, etc.
+  const base64Data = base64String.replace(/^data:[^,]+,/, '');
   return Buffer.from(base64Data, 'base64');
 }
 
@@ -190,9 +190,12 @@ export function base64ToBuffer(base64String: string): Buffer {
  * @returns MIME type
  */
 export function detectContentType(base64String: string): string {
-  const match = base64String.match(/^data:([^;]+);base64,/);
+  // Match data URL pattern - handles MIME types with parameters like video/webm;codecs=vp9
+  // Captures everything between 'data:' and the first ';' or ','
+  const match = base64String.match(/^data:([^;,]+)/);
   if (match) {
     const mimeType = match[1];
+    console.log(`[detectContentType] Detected MIME type: ${mimeType}`);
     // Convert HEIC/HEIF to JPEG for better compatibility (iOS photo library)
     if (mimeType === 'image/heic' || mimeType === 'image/heif') {
       return 'image/jpeg';
@@ -203,6 +206,7 @@ export function detectContentType(base64String: string): string {
     }
     return mimeType;
   }
+  console.log('[detectContentType] No match found, defaulting to image/jpeg');
   return 'image/jpeg'; // Default to JPEG
 }
 
