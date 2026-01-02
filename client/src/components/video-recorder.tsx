@@ -280,7 +280,7 @@ export function VideoRecorder({
         <DialogContent className="max-w-md w-full p-0 gap-0 h-[90vh] max-h-[700px] flex flex-col">
           <div className="p-4 border-b flex items-center justify-between">
             <h3 className="text-lg font-semibold">Preview Your Video</h3>
-            <Button variant="ghost" size="icon" onClick={handleCloseDialog}>
+            <Button type="button" variant="ghost" size="icon" onClick={handleCloseDialog}>
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -297,6 +297,7 @@ export function VideoRecorder({
 
           <div className="p-4 border-t flex gap-3 justify-center">
             <Button 
+              type="button"
               variant="outline" 
               onClick={retakeVideo}
               disabled={isUploading}
@@ -306,6 +307,7 @@ export function VideoRecorder({
               Retake
             </Button>
             <Button 
+              type="button"
               onClick={handleUpload}
               disabled={isUploading}
               data-testid="button-upload-video"
@@ -346,6 +348,7 @@ export function VideoRecorder({
                   "{VIDEO_PROMPTS[currentPromptIndex]}"
                 </p>
                 <Button 
+                  type="button"
                   variant="ghost" 
                   size="sm" 
                   onClick={nextPrompt}
@@ -370,7 +373,7 @@ export function VideoRecorder({
                 Video recording is not supported on your device. You can skip this step and add a video later from your profile settings.
               </p>
               {onCancel && (
-                <Button onClick={onCancel} data-testid="button-skip-video">
+                <Button type="button" onClick={onCancel} data-testid="button-skip-video">
                   Continue Without Video
                 </Button>
               )}
@@ -380,12 +383,12 @@ export function VideoRecorder({
               <p className="text-center text-muted-foreground text-xs max-w-xs">
                 Record a short video introduction so potential matches can get to know you better
               </p>
-              <Button onClick={startCamera} data-testid="button-start-camera">
+              <Button type="button" onClick={startCamera} data-testid="button-start-camera">
                 <Video className="h-4 w-4 mr-2" />
                 Start Camera
               </Button>
               {onCancel && (
-                <Button variant="ghost" size="sm" onClick={onCancel} data-testid="button-skip-video">
+                <Button type="button" variant="ghost" size="sm" onClick={onCancel} data-testid="button-skip-video">
                   Skip for now
                 </Button>
               )}
@@ -401,7 +404,7 @@ export function VideoRecorder({
               <h3 className="text-lg font-semibold">Record Video</h3>
               <Badge variant="outline">20 sec max</Badge>
             </div>
-            <Button variant="ghost" size="icon" onClick={handleCloseDialog}>
+            <Button type="button" variant="ghost" size="icon" onClick={handleCloseDialog}>
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -413,7 +416,7 @@ export function VideoRecorder({
                   {cameraError}
                 </p>
                 <div className="flex gap-3">
-                  <Button variant="outline" onClick={startCamera} data-testid="button-retry-camera">
+                  <Button type="button" variant="outline" onClick={startCamera} data-testid="button-retry-camera">
                     Try Again
                   </Button>
                 </div>
@@ -456,6 +459,7 @@ export function VideoRecorder({
                 {!isRecording ? (
                   <>
                     <Button 
+                      type="button"
                       variant="outline" 
                       onClick={handleSkip}
                       data-testid="button-cancel-camera"
@@ -463,6 +467,7 @@ export function VideoRecorder({
                       Cancel
                     </Button>
                     <Button 
+                      type="button"
                       onClick={startRecording}
                       className="bg-red-600 hover:bg-red-700"
                       disabled={!cameraActive || !!cameraError}
@@ -474,6 +479,7 @@ export function VideoRecorder({
                   </>
                 ) : (
                   <Button 
+                    type="button"
                     onClick={stopRecording}
                     variant="destructive"
                     data-testid="button-stop-recording"
@@ -485,6 +491,7 @@ export function VideoRecorder({
               </div>
               {!isRecording && (
                 <Button 
+                  type="button"
                   variant="ghost" 
                   onClick={handleSkip}
                   data-testid="button-skip-video-active"
