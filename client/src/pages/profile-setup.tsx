@@ -28,7 +28,7 @@ import {
 import { insertProfileSchema, type InsertProfile } from "@shared/schema";
 import { apiRequest, queryClient, getApiUrl, clearAuthToken, getAuthToken } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, CheckCircle2, LogOut, MapPin, Loader2, Video, Sparkles } from "lucide-react";
+import { Upload, CheckCircle2, LogOut, MapPin, Loader2, Video, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 import { VideoRecorder } from "@/components/video-recorder";
 import { PhotoGuidelines } from "@/components/photo-guidelines";
 import {
@@ -43,14 +43,34 @@ import {
   EDUCATION_OPTIONS,
 } from "@shared/constants";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
+
+const TOTAL_STEPS = 17;
+
+const STEP_TITLES: Record<number, { title: string; subtitle: string }> = {
+  1: { title: "Add Your Photos", subtitle: "Show your best self with at least 3 clear photos" },
+  2: { title: "What's your name?", subtitle: "This is how you'll appear to others" },
+  3: { title: "How old are you?", subtitle: "You must be 18 or older to use Fusion" },
+  4: { title: "What's your gender?", subtitle: "Select your gender" },
+  5: { title: "Where are you based?", subtitle: "We'll show you people nearby" },
+  6: { title: "How tall are you?", subtitle: "Optional, but it helps with matching" },
+  7: { title: "What's your ethnicity?", subtitle: "Select all that apply" },
+  8: { title: "Were you born Muslim?", subtitle: "This helps with compatibility matching" },
+  9: { title: "What's your sect?", subtitle: "Select your Islamic sect" },
+  10: { title: "How do you practise your faith?", subtitle: "Select what best describes you" },
+  11: { title: "What's your profession?", subtitle: "What do you do for work?" },
+  12: { title: "What's your marital status?", subtitle: "Select your current status" },
+  13: { title: "Describe your personality", subtitle: "Select up to 5 traits" },
+  14: { title: "What are your interests?", subtitle: "Select up to 15 interests" },
+  15: { title: "Partner preferences", subtitle: "What are you looking for in a partner?" },
+  16: { title: "Tell us about yourself", subtitle: "Write a short bio to introduce yourself" },
+  17: { title: "Record a video intro", subtitle: "Optional: Add a personal touch" },
+};
 
 export default function ProfileSetup() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   
-  // Check URL parameters
   const searchParams = new URLSearchParams(window.location.search);
   const isRestart = searchParams.get('restart') === 'true';
   const isFastOnboardingComplete = searchParams.get('fastOnboardingComplete') === 'true';
@@ -70,10 +90,8 @@ export default function ProfileSetup() {
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const [introVideoUrl, setIntroVideoUrl] = useState<string | null>(null);
   const [isEnhancingBio, setIsEnhancingBio] = useState(false);
-  const [fastBio, setFastBio] = useState("");
   const [showPhotoGuidelines, setShowPhotoGuidelines] = useState(true);
 
-  // Fetch existing profile if restarting or fast onboarding complete
   const { data: existingProfile } = useQuery<Profile>({
     queryKey: ["/api/profile"],
     enabled: isRestart || isFastOnboardingComplete,
@@ -118,10 +136,8 @@ export default function ProfileSetup() {
     },
   });
 
-  // Load existing profile data when restarting or from fast onboarding
   useEffect(() => {
     if ((isRestart || isFastOnboardingComplete) && existingProfile) {
-      // Pre-fill form with existing data
       form.reset({
         displayName: existingProfile.displayName,
         age: existingProfile.age,
@@ -151,41 +167,28 @@ export default function ProfileSetup() {
         ethnicities: existingProfile.ethnicities || [],
         partnerPreferences: existingProfile.partnerPreferences || undefined,
         photoVisibility: existingProfile.photoVisibility || "visible",
-        photoVerified: false, // Reset verification
+        photoVerified: false,
         phoneVerified: existingProfile.phoneVerified || false,
-        faceVerified: false, // Reset face verification
+        faceVerified: false,
         useNickname: existingProfile.useNickname || false,
         waliInvolvement: existingProfile.waliInvolvement || "",
       });
 
-      // Set state variables
       setSelectedInterests(existingProfile.interests || []);
       setSelectedTraits(existingProfile.personalityTraits || []);
       setSelectedEthnicities(existingProfile.ethnicities || []);
-      
-      // For fast onboarding, also set the bio field
-      if (isFastOnboardingComplete && existingProfile.bio) {
-        setFastBio(existingProfile.bio);
-      }
       
       if (existingProfile.partnerPreferences && typeof existingProfile.partnerPreferences === 'object') {
         const prefs = existingProfile.partnerPreferences as any;
         setPartnerSects(prefs.sects || []);
         setPartnerEthnicities(prefs.ethnicities || []);
-        setAgeRange([
-          prefs.minAge || 18,
-          prefs.maxAge || 45
-        ]);
+        setAgeRange([prefs.minAge || 18, prefs.maxAge || 45]);
       }
       
-      // Stay on step 1 where photos are uploaded
       setStep(1);
-      
-      // Clear photos for new uploads (both restart and fast onboarding need fresh photos)
       setPhotos([]);
       form.setValue("photos", []);
       
-      // Only show toast for restart users, not fast onboarding
       if (isRestart) {
         toast({
           title: "Upload New Photos",
@@ -200,10 +203,7 @@ export default function ProfileSetup() {
       return apiRequest("POST", "/api/profile", data);
     },
     onSuccess: async () => {
-      // Show success screen first
       setProfileSubmitted(true);
-      
-      // Wait 2 seconds to show the success message, then invalidate and redirect
       setTimeout(async () => {
         await queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
         setLocation("/");
@@ -223,85 +223,63 @@ export default function ProfileSetup() {
       return apiRequest("POST", "/api/logout", {});
     },
     onSuccess: async () => {
-      // Clear JWT token for mobile app support
       clearAuthToken();
       await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       await queryClient.invalidateQueries({ queryKey: ["/api/profile"] });
-      queryClient.clear();
       setLocation("/");
     },
     onError: (error) => {
-      // Still clear token even on error
-      clearAuthToken();
       toast({
-        title: "Logout Failed",
+        title: "Logout failed",
         description: error.message,
         variant: "destructive",
       });
     },
   });
 
-  const onSubmit = (data: InsertProfile) => {
-    createProfileMutation.mutate({
-      ...data,
-      latitude: userCoordinates?.lat,
-      longitude: userCoordinates?.lng,
-      isComplete: true,
-    });
-  };
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+    if (photos.length >= 6) {
+      toast({
+        title: "Maximum photos reached",
+        description: "You can only upload up to 6 photos",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    const filesToUpload = Array.from(files).slice(0, 6 - photos.length);
-    if (filesToUpload.length === 0) return;
+    const formData = new FormData();
+    formData.append('photo', file);
 
     try {
-      // Show loading toast
-      toast({
-        title: "Uploading photos...",
-        description: `Uploading ${filesToUpload.length} photo(s) to cloud storage`,
-      });
-
-      // Create FormData
-      const formData = new FormData();
-      filesToUpload.forEach((file) => {
-        formData.append('photos', file);
-      });
-
-      // Upload to R2 using fetch (FormData requires multipart/form-data)
-      // Include auth token for Capacitor mobile app support
       const token = getAuthToken();
-      const response = await fetch(getApiUrl('/api/photos/upload'), {
+      const response = await fetch(getApiUrl('/api/upload-photo'), {
         method: 'POST',
-        body: formData,
-        credentials: 'include',
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        credentials: 'include',
+        body: formData,
       });
 
       if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error || 'Upload failed');
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to upload photo');
       }
 
-      const data = await response.json();
-
-      if (data.photoUrls) {
-        const updatedPhotos = [...photos, ...data.photoUrls];
-        setPhotos(updatedPhotos);
-        form.setValue("photos", updatedPhotos);
-
-        toast({
-          title: "Upload successful",
-          description: `${data.photoUrls.length} photo(s) uploaded successfully`,
-        });
-      }
+      const { photoUrl } = await response.json();
+      const newPhotos = [...photos, photoUrl];
+      setPhotos(newPhotos);
+      form.setValue("photos", newPhotos);
+      
+      toast({
+        title: "Photo uploaded",
+        description: "Your photo has been uploaded successfully",
+      });
     } catch (error: any) {
-      console.error('Photo upload error:', error);
       toast({
         title: "Upload failed",
-        description: error.message || "Failed to upload photos. Please try again.",
+        description: error.message,
         variant: "destructive",
       });
     }
@@ -313,90 +291,11 @@ export default function ProfileSetup() {
     form.setValue("photos", newPhotos);
   };
 
-  const nextStep = () => {
-    // For fast onboarding users, skip from step 1 directly to step 8 (video)
-    if (isFastOnboardingComplete && step === 1) {
-      setStep(8);
-    } else if (step < 8) {
-      setStep(step + 1);
-    }
-  };
-
-  const prevStep = () => {
-    if (step > 1) setStep(step - 1);
-  };
-
-  // Handle skipping video - submit profile without video
-  const handleSkipVideo = () => {
-    // Trigger form submission
-    form.handleSubmit(onSubmit)();
-  };
-
-  const handleVideoRecorded = async (videoBlob: Blob) => {
-    setIsUploadingVideo(true);
-    
-    try {
-      // Convert blob to base64
-      const reader = new FileReader();
-      const base64Promise = new Promise<string>((resolve) => {
-        reader.onloadend = () => resolve(reader.result as string);
-      });
-      reader.readAsDataURL(videoBlob);
-      const base64Video = await base64Promise;
-
-      const response = await apiRequest("POST", "/api/video/upload", {
-        video: base64Video,
-      });
-      
-      const data = await response.json();
-      
-      if (data.videoUrl) {
-        setIntroVideoUrl(data.videoUrl);
-        toast({
-          title: "Video uploaded!",
-          description: "Your intro video has been saved.",
-        });
-      }
-    } catch (error: any) {
-      console.error("Video upload error:", error);
-      toast({
-        title: "Upload failed",
-        description: error.message || "Failed to upload video. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUploadingVideo(false);
-    }
-  };
-
-  const toggleInterest = (interest: string) => {
-    if (selectedInterests.length >= 15 && !selectedInterests.includes(interest)) {
-      return;
-    }
-    const newInterests = selectedInterests.includes(interest)
-      ? selectedInterests.filter((i) => i !== interest)
-      : [...selectedInterests, interest];
-    setSelectedInterests(newInterests);
-    form.setValue("interests", newInterests);
-  };
-
-  const toggleTrait = (trait: string) => {
-    if (selectedTraits.length >= 5 && !selectedTraits.includes(trait)) {
-      return;
-    }
-    const newTraits = selectedTraits.includes(trait)
-      ? selectedTraits.filter((t) => t !== trait)
-      : [...selectedTraits, trait];
-    setSelectedTraits(newTraits);
-    form.setValue("personalityTraits", newTraits);
-  };
-
-  // Get user's location using browser geolocation
   const detectLocation = async () => {
     if (!navigator.geolocation) {
       toast({
         title: "Location not supported",
-        description: "Your browser doesn't support location detection. Please enter your location manually.",
+        description: "Your browser doesn't support location detection",
         variant: "destructive",
       });
       return;
@@ -409,44 +308,33 @@ export default function ProfileSetup() {
         navigator.geolocation.getCurrentPosition(resolve, reject, {
           enableHighAccuracy: true,
           timeout: 10000,
-          maximumAge: 0
+          maximumAge: 0,
         });
       });
 
       const { latitude, longitude } = position.coords;
       setUserCoordinates({ lat: latitude, lng: longitude });
 
-      // Reverse geocode to get city name using OpenStreetMap Nominatim
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`,
-        { headers: { 'Accept-Language': 'en' } }
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
       );
+      const data = await response.json();
       
-      if (response.ok) {
-        const data = await response.json();
-        const city = data.address?.city || data.address?.town || data.address?.village || data.address?.county || '';
-        const country = data.address?.country || '';
-        const locationString = city && country ? `${city}, ${country}` : city || country || 'Unknown location';
-        
-        form.setValue("location", locationString);
+      const city = data.address?.city || data.address?.town || data.address?.village || "";
+      const country = data.address?.country || "";
+      const locationStr = city && country ? `${city}, ${country}` : city || country;
+      
+      if (locationStr) {
+        form.setValue("location", locationStr);
         toast({
           title: "Location detected",
-          description: locationString,
+          description: `Set to ${locationStr}`,
         });
       }
-    } catch (error: any) {
-      console.error('Location detection error:', error);
-      let message = "Could not detect your location. Please enter it manually.";
-      if (error.code === 1) {
-        message = "Location access denied. Please enable location permissions or enter manually.";
-      } else if (error.code === 2) {
-        message = "Location unavailable. Please enter your location manually.";
-      } else if (error.code === 3) {
-        message = "Location request timed out. Please try again or enter manually.";
-      }
+    } catch (error) {
       toast({
-        title: "Location detection failed",
-        description: message,
+        title: "Location error",
+        description: "Could not detect your location. Please enter it manually.",
         variant: "destructive",
       });
     } finally {
@@ -454,10 +342,47 @@ export default function ProfileSetup() {
     }
   };
 
+  const toggleInterest = (interest: string) => {
+    let newInterests: string[];
+    if (selectedInterests.includes(interest)) {
+      newInterests = selectedInterests.filter((i) => i !== interest);
+    } else if (selectedInterests.length < 15) {
+      newInterests = [...selectedInterests, interest];
+    } else {
+      toast({
+        title: "Maximum reached",
+        description: "You can select up to 15 interests",
+      });
+      return;
+    }
+    setSelectedInterests(newInterests);
+    form.setValue("interests", newInterests);
+  };
+
+  const toggleTrait = (trait: string) => {
+    let newTraits: string[];
+    if (selectedTraits.includes(trait)) {
+      newTraits = selectedTraits.filter((t) => t !== trait);
+    } else if (selectedTraits.length < 5) {
+      newTraits = [...selectedTraits, trait];
+    } else {
+      toast({
+        title: "Maximum reached",
+        description: "You can select up to 5 personality traits",
+      });
+      return;
+    }
+    setSelectedTraits(newTraits);
+    form.setValue("personalityTraits", newTraits);
+  };
+
   const toggleEthnicity = (ethnicity: string) => {
-    const newEthnicities = selectedEthnicities.includes(ethnicity)
-      ? selectedEthnicities.filter((e) => e !== ethnicity)
-      : [...selectedEthnicities, ethnicity];
+    let newEthnicities: string[];
+    if (selectedEthnicities.includes(ethnicity)) {
+      newEthnicities = selectedEthnicities.filter((e) => e !== ethnicity);
+    } else {
+      newEthnicities = [...selectedEthnicities, ethnicity];
+    }
     setSelectedEthnicities(newEthnicities);
     form.setValue("ethnicities", newEthnicities);
   };
@@ -503,7 +428,92 @@ export default function ProfileSetup() {
     prof.toLowerCase().includes(professionSearch.toLowerCase())
   );
 
-  // Show success screen after profile submission
+  const handleVideoRecorded = async (videoBlob: Blob) => {
+    setIsUploadingVideo(true);
+    const formData = new FormData();
+    formData.append('video', videoBlob, 'intro-video.webm');
+
+    try {
+      const token = getAuthToken();
+      const response = await fetch(getApiUrl('/api/upload-video'), {
+        method: 'POST',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        credentials: 'include',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to upload video');
+      }
+
+      const { videoUrl } = await response.json();
+      setIntroVideoUrl(videoUrl);
+      form.setValue("introVideoUrl" as any, videoUrl);
+      
+      toast({
+        title: "Video uploaded!",
+        description: "Your intro video has been saved successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Upload failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingVideo(false);
+    }
+  };
+
+  const handleSkipVideo = () => {
+    form.handleSubmit(onSubmit)();
+  };
+
+  const onSubmit = (data: InsertProfile) => {
+    const submitData = {
+      ...data,
+      photos,
+      interests: selectedInterests,
+      personalityTraits: selectedTraits,
+      ethnicities: selectedEthnicities,
+      partnerPreferences: {
+        ageMin: ageRange[0],
+        ageMax: ageRange[1],
+        sects: partnerSects,
+        ethnicities: partnerEthnicities,
+      },
+      coordinates: userCoordinates,
+      introVideoUrl: introVideoUrl || undefined,
+    };
+    createProfileMutation.mutate(submitData);
+  };
+
+  const nextStep = () => {
+    if (step < TOTAL_STEPS) {
+      setStep(step + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (step > 1) {
+      setStep(step - 1);
+    }
+  };
+
+  const canProceed = () => {
+    switch (step) {
+      case 1: return photos.length >= 3;
+      case 2: return form.watch("displayName")?.trim().length > 0;
+      case 3: return form.watch("age") >= 18;
+      case 4: return !!form.watch("gender");
+      case 5: return form.watch("location")?.trim().length > 0;
+      default: return true;
+    }
+  };
+
+  const progressPercent = Math.round((step / TOTAL_STEPS) * 100);
+
   if (profileSubmitted) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -529,855 +539,650 @@ export default function ProfileSetup() {
     );
   }
 
-  // Show photo guidelines before step 1 photo upload
   if (step === 1 && showPhotoGuidelines) {
     return <PhotoGuidelines onContinue={() => setShowPhotoGuidelines(false)} />;
   }
 
+  const currentStepInfo = STEP_TITLES[step] || { title: "Profile Setup", subtitle: "" };
+
   return (
-    <div className="min-h-screen bg-background pt-14 overflow-y-auto">
-      {/* Header with Logout */}
-      <div className="border-b bg-card">
-        <div className="container max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h2 className="font-semibold text-lg hidden md:block">Fusion</h2>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => logoutMutation.mutate()}
-            disabled={logoutMutation.isPending}
-            data-testid="button-logout"
-            className="md:ml-auto"
-          >
-            <LogOut className="h-4 w-4 mr-2" />
-            {logoutMutation.isPending ? "Logging out..." : "Logout"}
-          </Button>
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Fixed Header with Progress */}
+      <div className="sticky top-0 z-50 bg-background border-b">
+        <div className="container max-w-lg mx-auto px-4 py-3">
+          <div className="flex items-center justify-between mb-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={step > 1 ? prevStep : undefined}
+              disabled={step === 1}
+              className={step === 1 ? "invisible" : ""}
+              data-testid="button-back"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <span className="text-sm text-muted-foreground font-medium">
+              {step} of {TOTAL_STEPS}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => logoutMutation.mutate()}
+              disabled={logoutMutation.isPending}
+              data-testid="button-logout"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-primary transition-all duration-300 ease-out rounded-full"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
         </div>
       </div>
 
-      <div className="container max-w-2xl mx-auto px-4 py-12 pb-32">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold mb-2">
-            {isFastOnboardingComplete ? "Complete Your Profile" : "Create Your Profile"}
-          </h1>
-          <p className="text-muted-foreground">
-            {isFastOnboardingComplete 
-              ? "Just add photos and a bio, then verify your identity" 
-              : "Let's help you find your perfect match"
-            }
-          </p>
-          
-          {/* Progress - simplified for fast onboarding */}
-          <div className="flex items-center justify-center gap-2 mt-6">
-            {isFastOnboardingComplete ? (
-              // Fast onboarding: 2 steps (Photos+Bio, Verification)
-              <>
-                <div className={`h-2 w-16 rounded-full ${step === 1 ? 'bg-primary' : 'bg-muted'}`} />
-                <div className={`h-2 w-16 rounded-full ${step === 8 ? 'bg-primary' : 'bg-muted'}`} />
-              </>
-            ) : (
-              // Standard: 8 steps
-              [1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
-                <div
-                  key={s}
-                  className={`h-2 w-10 rounded-full ${
-                    s <= step ? 'bg-primary' : 'bg-muted'
-                  }`}
-                />
-              ))
-            )}
-          </div>
+      {/* Main Content */}
+      <div className="flex-1 container max-w-lg mx-auto px-4 py-8 pb-32">
+        {/* Question Header */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold mb-2">{currentStepInfo.title}</h1>
+          <p className="text-muted-foreground">{currentStepInfo.subtitle}</p>
         </div>
 
-        <Card className="p-8">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Step 1: Basic Info (or just photos for fast onboarding) */}
-              {step === 1 && (
-                <div className="space-y-6">
-                  {isFastOnboardingComplete ? (
-                    <>
-                      <div className="text-center mb-6">
-                        <CheckCircle2 className="h-12 w-12 text-emerald-500 mx-auto mb-3" />
-                        <h2 className="text-xl font-semibold">Almost Done!</h2>
-                        <p className="text-muted-foreground">
-                          Your profile info is saved. Now add some photos to complete your profile.
-                        </p>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <h2 className="text-xl font-semibold">Basic Information</h2>
-
-                      <FormField
-                        control={form.control}
-                        name="displayName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Full Name</FormLabel>
-                            <FormControl>
-                              <Input {...field} placeholder="Your full name" data-testid="input-name" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="age"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Age</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              {...field}
-                              onChange={(e) => field.onChange(parseInt(e.target.value))}
-                              data-testid="input-age"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="gender"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Gender</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger data-testid="select-gender">
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="max-h-[40vh] overflow-y-auto">
-                              <SelectItem value="male">Male</SelectItem>
-                              <SelectItem value="female">Female</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="location"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Location</FormLabel>
-                        <div className="flex gap-2">
-                          <FormControl>
-                            <Input {...field} placeholder="City, Country" data-testid="input-location" className="flex-1" />
-                          </FormControl>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            
+            {/* Step 1: Photos */}
+            {step === 1 && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-3 gap-3">
+                  {[...Array(6)].map((_, index) => (
+                    <div key={index} className="relative aspect-square">
+                      {photos[index] ? (
+                        <div className="relative h-full group rounded-xl overflow-hidden border-2 border-border">
+                          {index === 0 && (
+                            <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-primary/90 to-primary/70 text-primary-foreground text-xs font-semibold text-center py-1">
+                              Main Photo
+                            </div>
+                          )}
+                          <img
+                            src={photos[index]}
+                            alt={`Photo ${index + 1}`}
+                            className="h-full w-full object-cover"
+                          />
                           <Button
                             type="button"
-                            variant="outline"
+                            variant="destructive"
                             size="icon"
-                            onClick={detectLocation}
-                            disabled={isLocating}
-                            data-testid="button-detect-location"
+                            className="absolute bottom-2 right-2 h-7 w-7 opacity-80 hover:opacity-100"
+                            onClick={() => removePhoto(index)}
+                            data-testid={`button-remove-photo-${index}`}
                           >
-                            {isLocating ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <MapPin className="h-4 w-4" />
-                            )}
+                            ×
                           </Button>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Click the pin icon to auto-detect your location
-                        </p>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="height"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Height</FormLabel>
-                        <Select
-                          onValueChange={(value) => field.onChange(parseInt(value))}
-                          value={field.value?.toString()}
+                      ) : (
+                        <label
+                          htmlFor={`photo-upload-${index}`}
+                          className="flex flex-col items-center justify-center h-full border-2 border-dashed border-muted-foreground/30 rounded-xl cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
+                          data-testid={`label-upload-photo-${index}`}
                         >
-                          <FormControl>
-                            <SelectTrigger data-testid="select-height">
-                              <SelectValue placeholder="Select your height" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="max-h-[40vh] overflow-y-auto">
-                            {HEIGHT_OPTIONS_CM.map((option) => (
-                              <SelectItem key={option.cm} value={option.cm.toString()}>
-                                {option.cm}cm • {option.ft}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* Ethnicity Multi-select */}
-                  <div>
-                    <Label className="mb-3 block">Ethnicity (Optional)</Label>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Select all that apply
-                    </p>
-                    <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto border rounded-lg p-3">
-                      {ETHNICITY_OPTIONS.map((ethnicity) => (
-                        <Badge
-                          key={ethnicity}
-                          variant={selectedEthnicities.includes(ethnicity) ? "default" : "outline"}
-                          className="cursor-pointer hover-elevate px-3 py-1"
-                          onClick={() => toggleEthnicity(ethnicity)}
-                          data-testid={`badge-ethnicity-${ethnicity}`}
-                        >
-                          {ethnicity}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                    </>
-                  )}
-
-                  {/* Photo Upload - Min 3 photos required */}
-                  <div>
-                    <Label>Profile Photos (Minimum 3 required)</Label>
-                    <p className="text-sm text-muted-foreground mt-1 mb-3">
-                      Upload 3-6 clear photos showing your face
-                    </p>
-                    <div className="grid grid-cols-3 gap-4">
-                      {[...Array(6)].map((_, index) => (
-                        <div key={index} className="relative aspect-square">
-                          {photos[index] ? (
-                            <div className="relative h-full group rounded-xl overflow-hidden border-2 border-border">
-                              {index === 0 && (
-                                <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-primary/90 to-primary/70 text-primary-foreground text-xs font-semibold text-center py-1.5">
-                                  Verification Selfie
-                                </div>
-                              )}
-                              <img
-                                src={photos[index]}
-                                alt={`Photo ${index + 1}`}
-                                className="h-full w-full object-cover"
-                              />
-                              <Button
-                                type="button"
-                                variant="destructive"
-                                size="icon"
-                                className="absolute bottom-2 right-2 h-7 w-7 opacity-80 hover:opacity-100"
-                                onClick={() => removePhoto(index)}
-                                data-testid={`button-remove-photo-${index}`}
-                              >
-                                ×
-                              </Button>
-                            </div>
-                          ) : (
-                            <label
-                              htmlFor={`photo-upload-${index}`}
-                              className="flex flex-col items-center justify-center h-full border-2 border-dashed border-muted-foreground/30 rounded-xl cursor-pointer hover:border-muted-foreground/60 hover:bg-muted/30 transition-colors"
-                              data-testid={`label-upload-photo-${index}`}
-                            >
-                              <Upload className="h-6 w-6 text-muted-foreground mb-2" />
-                              <span className="text-xs text-muted-foreground font-medium">
-                                {index === 0 ? "Selfie" : "Upload"}
-                              </span>
-                              {index === 0 && (
-                                <span className="text-[10px] text-muted-foreground/70 text-center px-2 mt-1">
-                                  Close-up face
-                                </span>
-                              )}
-                              <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handlePhotoUpload}
-                                className="hidden"
-                                id={`photo-upload-${index}`}
-                              />
-                            </label>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                    {photos.length < 3 && (
-                      <p className="text-sm text-destructive mt-2">
-                        Please upload at least 3 photos to continue
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Bio with AI Enhancement - Only for fast onboarding */}
-                  {isFastOnboardingComplete && (
-                    <div className="space-y-3">
-                      <Label>About Me</Label>
-                      <p className="text-sm text-muted-foreground">
-                        Write a short bio about yourself. Use the AI button to enhance it!
-                      </p>
-                      <div className="relative">
-                        <Textarea
-                          value={fastBio}
-                          onChange={(e) => {
-                            setFastBio(e.target.value);
-                            form.setValue("bio", e.target.value);
-                          }}
-                          placeholder="I'm a kind-hearted person who loves..."
-                          className="min-h-32 pr-12"
-                          data-testid="textarea-fast-bio"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute top-2 right-2 h-8 w-8 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
-                          onClick={async () => {
-                            if (!fastBio || fastBio.trim().length < 10) {
-                              toast({
-                                title: "Write something first",
-                                description: "Please write at least a few words about yourself before enhancing",
-                                variant: "destructive",
-                              });
-                              return;
-                            }
-                            setIsEnhancingBio(true);
-                            try {
-                              const response = await apiRequest("POST", "/api/enhance-bio", {
-                                bio: fastBio,
-                              });
-                              const data = await response.json();
-                              if (data.enhancedBio) {
-                                setFastBio(data.enhancedBio);
-                                form.setValue("bio", data.enhancedBio);
-                                toast({
-                                  title: "Bio enhanced!",
-                                  description: "Your bio has been improved by AI",
-                                });
-                              }
-                            } catch (error: any) {
-                              toast({
-                                title: "Enhancement failed",
-                                description: error.message || "Could not enhance bio",
-                                variant: "destructive",
-                              });
-                            } finally {
-                              setIsEnhancingBio(false);
-                            }
-                          }}
-                          disabled={isEnhancingBio}
-                          data-testid="button-enhance-bio"
-                        >
-                          {isEnhancingBio ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Sparkles className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Tip: Write a few sentences, then tap the sparkle button to let AI make it shine!
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Step 2: Islamic Values */}
-              {step === 2 && (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-semibold">Islamic Values</h2>
-
-                  <FormField
-                    control={form.control}
-                    name="bornMuslim"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Were you born a Muslim?</FormLabel>
-                        <Select
-                          onValueChange={(value) => field.onChange(value === "yes")}
-                          value={field.value === undefined ? "" : field.value ? "yes" : "no"}
-                        >
-                          <FormControl>
-                            <SelectTrigger data-testid="select-born-muslim">
-                              <SelectValue placeholder="Select" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="max-h-[40vh] overflow-y-auto">
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="sect"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Sect</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value ?? undefined}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-sect">
-                              <SelectValue placeholder="Select sect" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="max-h-[40vh] overflow-y-auto">
-                            {SECT_OPTIONS.map((sect) => (
-                              <SelectItem key={sect} value={sect}>
-                                {sect}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="religiousPractice"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>How do you practise your religion?</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value ?? undefined}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-religious-practice">
-                              <SelectValue placeholder="Select level" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="max-h-[40vh] overflow-y-auto">
-                            {RELIGIOUS_PRACTICE_OPTIONS.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                <div>
-                                  <div className="font-medium">{option.value}</div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {option.description}
-                                  </div>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              )}
-
-              {/* Step 3: Profession & Personal */}
-              {step === 3 && (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-semibold">About You</h2>
-
-                  <FormField
-                    control={form.control}
-                    name="profession"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>What's your profession?</FormLabel>
-                        <div className="space-y-2">
-                          <Input
-                            placeholder="Search jobs"
-                            value={professionSearch}
-                            onChange={(e) => setProfessionSearch(e.target.value)}
-                            data-testid="input-profession-search"
+                          <Upload className="h-6 w-6 text-muted-foreground mb-1" />
+                          <span className="text-xs text-muted-foreground">
+                            {index === 0 ? "Main" : `Photo ${index + 1}`}
+                          </span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handlePhotoUpload}
+                            className="hidden"
+                            id={`photo-upload-${index}`}
                           />
-                          <Select onValueChange={field.onChange} value={field.value ?? undefined}>
-                            <FormControl>
-                              <SelectTrigger data-testid="select-profession">
-                                <SelectValue placeholder="Select profession" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="max-h-[40vh] overflow-y-auto">
-                              {filteredProfessions.slice(0, 20).map((prof) => (
-                                <SelectItem key={prof} value={prof}>
-                                  {prof}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="maritalStatus"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>What's your marital status?</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value ?? undefined}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-marital">
-                              <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="max-h-[40vh] overflow-y-auto">
-                            {MARITAL_STATUS_OPTIONS.map((status) => (
-                              <SelectItem key={status} value={status}>
-                                {status}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="education"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Education Level (Optional)</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value ?? undefined}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-education">
-                              <SelectValue placeholder="Select education level" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="max-h-[40vh] overflow-y-auto">
-                            {EDUCATION_OPTIONS.map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              )}
-
-              {/* Step 4: Personality Traits */}
-              {step === 4 && (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-semibold">How would you describe your personality?</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Select up to 5 traits to show off your personality!
-                  </p>
-
-                  <div className="flex flex-wrap gap-2 max-h-96 overflow-y-auto border rounded-lg p-4">
-                    {PERSONALITY_TRAITS.map((trait) => (
-                      <Badge
-                        key={trait.value}
-                        variant={selectedTraits.includes(trait.value) ? "default" : "outline"}
-                        className="cursor-pointer hover-elevate px-3 py-2"
-                        onClick={() => toggleTrait(trait.value)}
-                        data-testid={`badge-trait-${trait.value}`}
-                      >
-                        <span className="mr-1">{trait.emoji}</span>
-                        {trait.value}
-                      </Badge>
-                    ))}
-                  </div>
-
-                  {selectedTraits.length > 0 && (
-                    <div className="bg-muted/50 rounded-lg p-4 border">
-                      <p className="text-sm text-muted-foreground">
-                        {selectedTraits.length} / 5 traits selected
-                      </p>
+                        </label>
+                      )}
                     </div>
-                  )}
+                  ))}
                 </div>
-              )}
-
-              {/* Step 5: Interests */}
-              {step === 5 && (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-semibold">What are your interests?</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Select up to 15 interests to make your profile stand out!
+                {photos.length < 3 && (
+                  <p className="text-sm text-destructive text-center">
+                    Upload at least {3 - photos.length} more photo{3 - photos.length !== 1 ? 's' : ''} to continue
                   </p>
+                )}
+              </div>
+            )}
 
-                  {Object.entries(INTEREST_CATEGORIES).map(([category, interests]) => (
-                    <div key={category}>
-                      <h3 className="font-semibold mb-3">{category}</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {interests.map((interest) => (
-                          <Badge
-                            key={interest.value}
-                            variant={selectedInterests.includes(interest.value) ? "default" : "outline"}
-                            className="cursor-pointer hover-elevate px-3 py-2"
-                            onClick={() => toggleInterest(interest.value)}
-                            data-testid={`badge-interest-${interest.value}`}
+            {/* Step 2: Name */}
+            {step === 2 && (
+              <FormField
+                control={form.control}
+                name="displayName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        placeholder="Your full name" 
+                        className="text-lg h-14"
+                        data-testid="input-name" 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {/* Step 3: Age */}
+            {step === 3 && (
+              <FormField
+                control={form.control}
+                name="age"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={18}
+                        max={99}
+                        {...field}
+                        onChange={(e) => field.onChange(parseInt(e.target.value))}
+                        className="text-lg h-14 text-center"
+                        data-testid="input-age"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {/* Step 4: Gender */}
+            {step === 4 && (
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { value: "male", label: "Male" },
+                  { value: "female", label: "Female" },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => form.setValue("gender", option.value as "male" | "female")}
+                    className={`p-6 rounded-xl border-2 transition-all ${
+                      form.watch("gender") === option.value
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                    data-testid={`button-gender-${option.value}`}
+                  >
+                    <span className="text-lg font-medium">{option.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Step 5: Location */}
+            {step === 5 && (
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex gap-2">
+                      <FormControl>
+                        <Input 
+                          {...field} 
+                          placeholder="City, Country" 
+                          className="text-lg h-14 flex-1"
+                          data-testid="input-location" 
+                        />
+                      </FormControl>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="h-14 w-14"
+                        onClick={detectLocation}
+                        disabled={isLocating}
+                        data-testid="button-detect-location"
+                      >
+                        {isLocating ? (
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                        ) : (
+                          <MapPin className="h-5 w-5" />
+                        )}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Tap the pin to auto-detect your location
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {/* Step 6: Height */}
+            {step === 6 && (
+              <FormField
+                control={form.control}
+                name="height"
+                render={({ field }) => (
+                  <FormItem>
+                    <Select
+                      onValueChange={(value) => field.onChange(parseInt(value))}
+                      value={field.value?.toString()}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="h-14 text-lg" data-testid="select-height">
+                          <SelectValue placeholder="Select your height" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="max-h-[40vh] overflow-y-auto">
+                        {HEIGHT_OPTIONS_CM.map((option) => (
+                          <SelectItem key={option.cm} value={option.cm.toString()}>
+                            {option.cm}cm • {option.ft}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {/* Step 7: Ethnicity */}
+            {step === 7 && (
+              <div className="flex flex-wrap gap-2">
+                {ETHNICITY_OPTIONS.map((ethnicity) => (
+                  <Badge
+                    key={ethnicity}
+                    variant={selectedEthnicities.includes(ethnicity) ? "default" : "outline"}
+                    className="cursor-pointer hover-elevate px-4 py-2 text-sm"
+                    onClick={() => toggleEthnicity(ethnicity)}
+                    data-testid={`badge-ethnicity-${ethnicity}`}
+                  >
+                    {ethnicity}
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            {/* Step 8: Born Muslim */}
+            {step === 8 && (
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { value: true, label: "Yes" },
+                  { value: false, label: "No, I reverted" },
+                ].map((option) => (
+                  <button
+                    key={String(option.value)}
+                    type="button"
+                    onClick={() => form.setValue("bornMuslim", option.value)}
+                    className={`p-6 rounded-xl border-2 transition-all ${
+                      form.watch("bornMuslim") === option.value
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                    data-testid={`button-born-muslim-${option.value}`}
+                  >
+                    <span className="text-lg font-medium">{option.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Step 9: Sect */}
+            {step === 9 && (
+              <div className="space-y-2">
+                {SECT_OPTIONS.map((sect) => (
+                  <button
+                    key={sect}
+                    type="button"
+                    onClick={() => form.setValue("sect", sect)}
+                    className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                      form.watch("sect") === sect
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                    data-testid={`button-sect-${sect}`}
+                  >
+                    <span className="font-medium">{sect}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Step 10: Religious Practice */}
+            {step === 10 && (
+              <div className="space-y-2">
+                {RELIGIOUS_PRACTICE_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => form.setValue("religiousPractice", option.value)}
+                    className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                      form.watch("religiousPractice") === option.value
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                    data-testid={`button-practice-${option.value}`}
+                  >
+                    <span className="font-medium block">{option.value}</span>
+                    <span className="text-sm text-muted-foreground">{option.description}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Step 11: Profession */}
+            {step === 11 && (
+              <FormField
+                control={form.control}
+                name="profession"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="space-y-3">
+                      <Input
+                        placeholder="Search professions..."
+                        value={professionSearch}
+                        onChange={(e) => setProfessionSearch(e.target.value)}
+                        className="h-12"
+                        data-testid="input-profession-search"
+                      />
+                      <div className="max-h-64 overflow-y-auto space-y-1">
+                        {filteredProfessions.slice(0, 15).map((prof) => (
+                          <button
+                            key={prof}
+                            type="button"
+                            onClick={() => {
+                              field.onChange(prof);
+                              setProfessionSearch(prof);
+                            }}
+                            className={`w-full p-3 rounded-lg text-left transition-all ${
+                              field.value === prof
+                                ? "bg-primary text-primary-foreground"
+                                : "hover:bg-muted"
+                            }`}
+                            data-testid={`button-profession-${prof}`}
                           >
-                            <span className="mr-1">{interest.emoji}</span>
-                            {interest.value}
-                          </Badge>
+                            {prof}
+                          </button>
                         ))}
                       </div>
                     </div>
-                  ))}
-
-                  {selectedInterests.length > 0 && (
-                    <div className="bg-muted/50 rounded-lg p-4 border">
-                      <p className="text-sm text-muted-foreground">
-                        {selectedInterests.length} / 15 interests selected
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Step 6: Partner Preferences */}
-              {step === 6 && (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-semibold">Partner Preferences</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Tell us about your ideal partner to help us find better matches
-                  </p>
-
-                  {/* Age Range */}
-                  <div className="space-y-4">
-                    <Label>Age Range</Label>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span>{ageRange[0]} years</span>
-                        <span>{ageRange[1]} years</span>
-                      </div>
-                      <Slider
-                        min={18}
-                        max={70}
-                        step={1}
-                        value={ageRange}
-                        onValueChange={updateAgeRange}
-                        className="w-full"
-                        data-testid="slider-age-range"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Sect Preference */}
-                  <div>
-                    <Label className="mb-3 block">Preferred Sects (Optional)</Label>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Select all that apply
-                    </p>
-                    <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto border rounded-lg p-3">
-                      {SECT_OPTIONS.map((sect) => (
-                        <Badge
-                          key={sect}
-                          variant={partnerSects.includes(sect) ? "default" : "outline"}
-                          className="cursor-pointer hover-elevate px-3 py-1"
-                          onClick={() => togglePartnerSect(sect)}
-                          data-testid={`badge-partner-sect-${sect}`}
-                        >
-                          {sect}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Ethnicity Preference */}
-                  <div>
-                    <Label className="mb-3 block">Preferred Ethnicities (Optional)</Label>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      Select all that apply
-                    </p>
-                    <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto border rounded-lg p-3">
-                      {ETHNICITY_OPTIONS.map((ethnicity) => (
-                        <Badge
-                          key={ethnicity}
-                          variant={partnerEthnicities.includes(ethnicity) ? "default" : "outline"}
-                          className="cursor-pointer hover-elevate px-3 py-1"
-                          onClick={() => togglePartnerEthnicity(ethnicity)}
-                          data-testid={`badge-partner-ethnicity-${ethnicity}`}
-                        >
-                          {ethnicity}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Step 7: Bio & Final Details */}
-              {step === 7 && (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-semibold">Final Details</h2>
-
-                  <FormField
-                    control={form.control}
-                    name="lookingFor"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>What are you looking for?</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-looking-for">
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="max-h-[40vh] overflow-y-auto">
-                            <SelectItem value="Marriage">Marriage</SelectItem>
-                            <SelectItem value="Friendship">Friendship</SelectItem>
-                            <SelectItem value="Networking">Networking</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="waliInvolvement"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Wali (Guardian) Involvement</FormLabel>
-                        <FormDescription>
-                          Would you like a guardian involved in your matchmaking journey?
-                        </FormDescription>
-                        <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-wali-involvement">
-                              <SelectValue placeholder="Select your preference" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="max-h-[40vh] overflow-y-auto">
-                            <SelectItem value="essential">Essential - I want my wali involved</SelectItem>
-                            <SelectItem value="preferred">Preferred - Would appreciate it</SelectItem>
-                            <SelectItem value="flexible">Flexible - Open to it</SelectItem>
-                            <SelectItem value="not_needed">Not needed at this time</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="bio"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>About Me</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            {...field}
-                            placeholder="Tell potential matches about yourself..."
-                            className="min-h-24"
-                            data-testid="textarea-bio"
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Share your interests, values, and what you're looking for
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                </div>
-              )}
-
-              {/* Step 8: Video Intro */}
-              {step === 8 && (
-                <div className="space-y-6 pb-8">
-                  <h2 className="text-xl font-semibold">Record Your Intro Video</h2>
-                  <p className="text-muted-foreground">
-                    Help potential matches get to know you with a short 20-second video introduction. This is optional but highly recommended!
-                  </p>
-
-                  {introVideoUrl ? (
-                    <div className="space-y-4">
-                      <div className="relative aspect-[9/16] max-h-[400px] mx-auto bg-black rounded-lg overflow-hidden">
-                        <video
-                          src={introVideoUrl}
-                          className="w-full h-full object-cover"
-                          controls
-                          playsInline
-                        />
-                      </div>
-                      <div className="flex justify-center gap-3">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setIntroVideoUrl(null)}
-                          data-testid="button-remove-video"
-                        >
-                          Record New Video
-                        </Button>
-                      </div>
-                      <div className="bg-emerald-500/10 rounded-lg p-4 border border-emerald-500/20">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-                          <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">Video saved! Click Complete Profile to continue.</span>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <VideoRecorder
-                      onVideoRecorded={handleVideoRecorded}
-                      onCancel={handleSkipVideo}
-                      isUploading={isUploadingVideo}
-                    />
-                  )}
-
-                  <div className="bg-muted/50 rounded-lg p-6 border">
-                    <div className="flex items-start gap-3">
-                      <Video className="h-5 w-5 text-primary mt-0.5" />
-                      <div>
-                        <h3 className="font-semibold mb-2">Why add a video?</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Profiles with videos get 3x more matches! It helps others see your personality and feel more confident about connecting with you.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Navigation */}
-              <div className="flex items-center justify-between pt-6">
-                {step > 1 ? (
-                  <Button type="button" variant="outline" onClick={prevStep}>
-                    Back
-                  </Button>
-                ) : (
-                  <div />
+                    <FormMessage />
+                  </FormItem>
                 )}
+              />
+            )}
 
-                {step < 8 ? (
-                  <Button 
-                    type="button" 
-                    onClick={nextStep} 
-                    data-testid="button-next"
-                    disabled={step === 1 && photos.length < 3}
+            {/* Step 12: Marital Status */}
+            {step === 12 && (
+              <div className="space-y-2">
+                {MARITAL_STATUS_OPTIONS.map((status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    onClick={() => form.setValue("maritalStatus", status)}
+                    className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                      form.watch("maritalStatus") === status
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                    data-testid={`button-marital-${status}`}
                   >
-                    {step === 7 ? "Next: Add Video" : "Next"}
-                  </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    disabled={createProfileMutation.isPending || isUploadingVideo}
-                    data-testid="button-submit-profile"
-                  >
-                    {createProfileMutation.isPending ? "Creating..." : "Complete Profile"}
-                  </Button>
+                    <span className="font-medium">{status}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Step 13: Personality Traits */}
+            {step === 13 && (
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-2">
+                  {PERSONALITY_TRAITS.map((trait) => (
+                    <Badge
+                      key={trait.value}
+                      variant={selectedTraits.includes(trait.value) ? "default" : "outline"}
+                      className="cursor-pointer hover-elevate px-4 py-2"
+                      onClick={() => toggleTrait(trait.value)}
+                      data-testid={`badge-trait-${trait.value}`}
+                    >
+                      <span className="mr-1">{trait.emoji}</span>
+                      {trait.value}
+                    </Badge>
+                  ))}
+                </div>
+                {selectedTraits.length > 0 && (
+                  <p className="text-sm text-muted-foreground text-center">
+                    {selectedTraits.length} of 5 selected
+                  </p>
                 )}
               </div>
-            </form>
-          </Form>
-        </Card>
+            )}
+
+            {/* Step 14: Interests */}
+            {step === 14 && (
+              <div className="space-y-6">
+                {Object.entries(INTEREST_CATEGORIES).map(([category, interests]) => (
+                  <div key={category}>
+                    <h3 className="font-semibold mb-2 text-sm text-muted-foreground uppercase tracking-wide">{category}</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {interests.map((interest) => (
+                        <Badge
+                          key={interest.value}
+                          variant={selectedInterests.includes(interest.value) ? "default" : "outline"}
+                          className="cursor-pointer hover-elevate px-3 py-1.5"
+                          onClick={() => toggleInterest(interest.value)}
+                          data-testid={`badge-interest-${interest.value}`}
+                        >
+                          <span className="mr-1">{interest.emoji}</span>
+                          {interest.value}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                {selectedInterests.length > 0 && (
+                  <p className="text-sm text-muted-foreground text-center">
+                    {selectedInterests.length} of 15 selected
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Step 15: Partner Preferences */}
+            {step === 15 && (
+              <div className="space-y-8">
+                {/* Age Range */}
+                <div className="space-y-4">
+                  <Label className="text-base">Age Range</Label>
+                  <div className="flex items-center justify-between text-lg font-medium">
+                    <span>{ageRange[0]}</span>
+                    <span className="text-muted-foreground">to</span>
+                    <span>{ageRange[1]}</span>
+                  </div>
+                  <Slider
+                    min={18}
+                    max={70}
+                    step={1}
+                    value={ageRange}
+                    onValueChange={updateAgeRange}
+                    className="w-full"
+                    data-testid="slider-age-range"
+                  />
+                </div>
+
+                {/* Preferred Sects */}
+                <div className="space-y-3">
+                  <Label className="text-base">Preferred Sects (Optional)</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {SECT_OPTIONS.map((sect) => (
+                      <Badge
+                        key={sect}
+                        variant={partnerSects.includes(sect) ? "default" : "outline"}
+                        className="cursor-pointer hover-elevate px-3 py-1.5"
+                        onClick={() => togglePartnerSect(sect)}
+                        data-testid={`badge-partner-sect-${sect}`}
+                      >
+                        {sect}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Preferred Ethnicities */}
+                <div className="space-y-3">
+                  <Label className="text-base">Preferred Ethnicities (Optional)</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {ETHNICITY_OPTIONS.map((ethnicity) => (
+                      <Badge
+                        key={ethnicity}
+                        variant={partnerEthnicities.includes(ethnicity) ? "default" : "outline"}
+                        className="cursor-pointer hover-elevate px-3 py-1.5"
+                        onClick={() => togglePartnerEthnicity(ethnicity)}
+                        data-testid={`badge-partner-ethnicity-${ethnicity}`}
+                      >
+                        {ethnicity}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step 16: Bio */}
+            {step === 16 && (
+              <div className="space-y-4">
+                <div className="relative">
+                  <Textarea
+                    value={form.watch("bio") || ""}
+                    onChange={(e) => form.setValue("bio", e.target.value)}
+                    placeholder="Tell potential matches about yourself, your values, and what you're looking for..."
+                    className="min-h-40 text-base pr-12"
+                    data-testid="textarea-bio"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2 h-8 w-8 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+                    onClick={async () => {
+                      const bio = form.watch("bio");
+                      if (!bio || bio.trim().length < 10) {
+                        toast({
+                          title: "Write something first",
+                          description: "Write at least a few words before enhancing",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      setIsEnhancingBio(true);
+                      try {
+                        const response = await apiRequest("POST", "/api/enhance-bio", { bio });
+                        const data = await response.json();
+                        if (data.enhancedBio) {
+                          form.setValue("bio", data.enhancedBio);
+                          toast({ title: "Bio enhanced!", description: "Your bio has been improved" });
+                        }
+                      } catch (error: any) {
+                        toast({ title: "Enhancement failed", description: error.message, variant: "destructive" });
+                      } finally {
+                        setIsEnhancingBio(false);
+                      }
+                    }}
+                    disabled={isEnhancingBio}
+                    data-testid="button-enhance-bio"
+                  >
+                    {isEnhancingBio ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Tap the sparkle button to enhance your bio with AI
+                </p>
+              </div>
+            )}
+
+            {/* Step 17: Video Intro */}
+            {step === 17 && (
+              <div className="space-y-6">
+                {introVideoUrl ? (
+                  <div className="space-y-4">
+                    <div className="relative aspect-[9/16] max-h-[350px] mx-auto bg-black rounded-xl overflow-hidden">
+                      <video
+                        src={introVideoUrl}
+                        className="w-full h-full object-cover"
+                        controls
+                        playsInline
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIntroVideoUrl(null)}
+                      className="w-full"
+                      data-testid="button-remove-video"
+                    >
+                      Record New Video
+                    </Button>
+                  </div>
+                ) : (
+                  <VideoRecorder
+                    onVideoRecorded={handleVideoRecorded}
+                    onCancel={handleSkipVideo}
+                    isUploading={isUploadingVideo}
+                  />
+                )}
+
+                <div className="bg-muted/50 rounded-xl p-4 border">
+                  <div className="flex items-start gap-3">
+                    <Video className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium text-sm">Profiles with videos get 3x more matches!</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        A short intro helps others see your personality.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </form>
+        </Form>
+      </div>
+
+      {/* Fixed Bottom Navigation */}
+      <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4 safe-area-bottom">
+        <div className="container max-w-lg mx-auto">
+          {step < TOTAL_STEPS ? (
+            <Button
+              type="button"
+              onClick={nextStep}
+              disabled={!canProceed()}
+              className="w-full h-12 text-base"
+              data-testid="button-next"
+            >
+              Continue
+              <ChevronRight className="h-5 w-5 ml-1" />
+            </Button>
+          ) : (
+            <Button
+              type="button"
+              onClick={() => form.handleSubmit(onSubmit)()}
+              disabled={createProfileMutation.isPending || isUploadingVideo}
+              className="w-full h-12 text-base"
+              data-testid="button-submit-profile"
+            >
+              {createProfileMutation.isPending ? "Creating..." : "Complete Profile"}
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
