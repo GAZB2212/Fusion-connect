@@ -1,0 +1,87 @@
+Typing indicator
+
+Feedback
+Typing indicator is a feature that allows users to know visually if another user in the channel is typing a message. The indicator remains visible until the user sends the message or deletes the text completely. It will also disappear when the user stops typing for more than 10 seconds.
+Types
+
+Feedback
+We support two types of typing indicators: Text and Bubble.
+Text
+
+Feedback
+The text typing indicator can be used in the following places.
+In the channel list as shown in the left image. This is the listComponent of the SBUGroupChannelListViewController module.
+In the channel as shown in the right image. This is the header component of the SBUGroupChannelViewController class.
+To view the image in full screen, click on theImage|A side-by-side image showing the text typing indicator in group channel view and channel list view.
+
+Note : In order to use the typing indicator feature, you must first create a channel and enable the chat service. To learn how to allow users to chat in a channel, refer to Chat in a group channel.
+Bubble
+
+Feedback
+The bubble typing indicator can be used in the following place.
+In the channel. This is the list component of the SBUGroupChannelViewController class.
+Note that the bubble typing indicator is not supported in the SBUGroupChannelListViewController module.
+To view the image in full screen, click on theImage|Channel view showing bubble typing indicator.
+
+How to use in channel
+
+Feedback
+You can enable text and bubble typing indicators in your channel by following the code below. By default, the .text type of typing indicator is turned on. However, you can also enable the .bubble type here, or use both types at the same time.
+Swift
+
+
+
+SendbirdUI.config.groupChannel.channel.isTypingIndicatorEnabled = true
+SendbirdUI.config.groupChannel.channel.typingIndicatorTypes = [.text, .bubble]
+How to use in channel list
+
+Feedback
+You can enable the text typing indicator in the channel list by following the code below. You need to set the feature's setter method to true in the SBUGroupChannelListViewController module. The bubble typing indicator is not supported in this module.
+Swift
+
+
+
+SendbirdUI.config.groupChannel.channelList.isTypingIndicatorEnabled = true
+Customize the text typing indicator UI
+
+Feedback
+The UI for text typing indicator can be customized through SBUStringSet. The SBUStringSet is a set of strings used to compose the screen. You need to modify the stringSet values in advance if you want to make changes to the screen.
+Text strings for typing status can vary depending on the number of members typing in a channel:
+If one member is typing: “Member is typing...”
+If two members are simultaneously typing: “Member A and Member B are typing...”
+If more than two members are simultaneously typing: “Several people are typing...”
+SBUStringSet
+
+Feedback
+The following table lists customizable properties of SBUStringSet that can be modified to customize text typing indicator.
+Property name
+Description
+Channel_Typing (typingMembers)
+A text for a member’s typing status.
+Customize the bubble typing indicator UI
+
+Feedback
+The UI for bubble typing indicator can be customized by registering your custom SBUTypingIndicatorMessageCell to the listComponent of the SBUGroupChannelViewController.
+Swift
+
+
+
+class MyTypingIndicatorMessageCell: SBUTypingIndicatorMessageCell {
+
+}
+
+listComponent.register(typingIndicatorMessageCell: MyTypingIndicatorMessageCell)
+You can also customize the bubble view by overriding typingBubbleView of SBUTypingIndicatorMessageCell with your custom UIView.
+Swift
+
+
+
+class MyTypingIndicatorMessageCell: SBUTypingIndicatorMessageCell {
+    override lazy var typingBubbleView: MyTypingBubbleView = {
+    let myTypingBubble = MyTypingBubbleView()
+    // ... 
+    return myTypingBubble
+    }()
+}
+
+listComponent.register(typingIndicatorMessageCell: MyTypingIndicatorMessageCell)
