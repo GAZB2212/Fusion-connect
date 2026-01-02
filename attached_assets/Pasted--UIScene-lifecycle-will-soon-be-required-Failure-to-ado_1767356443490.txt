@@ -1,0 +1,597 @@
+`UIScene` lifecycle will soon be required. Failure to adopt will result in an assert in the future.
+Could not create a sandbox extension for '/var/containers/Bundle/Application/D47C35E4-E21D-48A6-9CF3-F566D864BA15/App.app'
+⚡️  Loading app at capacitor://localhost...
+WebContent[7417] Unable to hide query parameters from script (missing data)
+DeviceIdHashSaltStorage: The length of the hash salt (47) is different to the length of the hash salts defined in WebKit (48)
+⚡️  [debug] - [lock-safari-1] is created.
+WebContent[7417] ERROR AppleProResHW: 45: AppleProResHW_CheckPlatform(): IOServiceGetMatchingService failed
+⚡️  [log] - [API Query] /api/auth/user -> https://fusionmatch.replit.app/api/auth/user
+⚡️  [log] - [API] Using JWT token for request
+⚡️  [log] - [Push] App launch - starting early push notification init...
+⚡️  [log] - [Push] Navigation callback set for push notification handling
+⚡️  [log] - [Push] Incoming call callback set for foreground notifications
+⚡️  [log] - [Push] initPush() starting on platform: ios
+⚡️  [log] - [Push] Setting up listeners for first time...
+⚡️  [log] - [Push] All listeners set up successfully
+⚡️  To Native ->  PushNotifications addListener 14006806
+⚡️  To Native ->  PushNotifications addListener 14006807
+⚡️  To Native ->  PushNotifications addListener 14006808
+⚡️  To Native ->  PushNotifications addListener 14006809
+⚡️  To Native ->  PushNotifications checkPermissions 14006810
+⚡️  TO JS {"receive":"granted"}
+⚡️  [log] - [Push] Permission status: {"receive":"granted"}
+⚡️  [log] - [Push] Permission granted, calling register()...
+⚡️  [log] - [Push] NOTE: On iOS, if no token appears:
+⚡️  [log] - [Push]   1. Check Push Notifications capability in Xcode
+⚡️  To Native ->  PushNotifications register 14006811
+⚡️  [log] - [Push]   2. Check Background Modes > Remote notifications
+⚡️  [log] - [Push]   3. Check App.entitlements has aps-environment
+⚡️  [log] - [Push]   4. Check APNs key is uploaded to Sendbird Dashboard
+⚡️  [log] - [Push]   5. Must test on real device, not simulator
+⚡️  TO JS undefined
+⚡️  [log] - [Push] register() call completed
+⚡️  [log] - [Push] Waiting for registration event...
+⚡️  [log] - [Push] ========================================
+⚡️  [log] - [Push] EARLY INITIALIZATION STARTING
+⚡️  To Native ->  PushNotifications addListener 14006812
+⚡️  To Native ->  PushNotifications addListener 14006813
+⚡️  To Native ->  PushNotifications addListener 14006814
+⚡️  [log] - [Push] ========================================
+⚡️  To Native ->  PushNotifications addListener 14006815
+⚡️  [log] - [Push] Platform: ios
+⚡️  To Native ->  PushNotifications checkPermissions 14006816
+⚡️  [log] - [Push] Is Native: true
+⚡️  [log] - [Push] Is iOS: true
+⚡️  [log] - [Push] Is Android: false
+⚡️  [log] - [Push] Retrieved cached token from localStorage
+⚡️  [log] - [Push] Found cached token, will use it
+⚡️  [log] - [Push] STEP 1: Setting up native event listeners...
+⚡️  [log] - [Push] Setting up native notification listeners...
+⚡️  [log] - [Push] Setting up registration listeners BEFORE calling register()
+⚡️  [log] - [Push] Registration listeners set up successfully
+⚡️  [log] - [Push] All notification listeners set up successfully
+⚡️  [log] - [Push] Event listeners ready
+⚡️  [log] - [Push] STEP 2: Checking notification permission...
+⚡️  [log] - 12:15:48:935 %cAgora-SDK [DEBUG]: color: #64B5F6; setAppType: 1001
+⚡️  TO JS {"receive":"granted"}
+✅ NATIVE APNs TOKEN: baab132c3a782243efbba7d543ba0fda773261c7f682a544782164ecf481e4b5
+⚡️  TO JS {"value":"BAAB132C3A782243EFBBA7D543BA0FDA773261C7F682A544782164ECF481E4B5"}
+⚡️  TO JS {"value":"BAAB132C3A782243EFBBA7D543BA0FDA773261C7F682A544782164ECF481E4B5"}
+SplashScreen.hideSplash: SplashScreen was automatically hidden after default timeout. You should call `SplashScreen.hide()` as soon as your web app is loaded (or increase the timeout). Read more at https://capacitorjs.com/docs/apis/splash-screen#hiding-the-splash-screen
+⚡️  [log] - [Push] Current permission: granted
+⚡️  [log] - [Push] STEP 3: Registering with APNs/FCM...
+⚡️  [log] - [Push] Calling PushNotifications.register() - token will arrive via event listener
+⚡️  To Native ->  PushNotifications register 14006817
+⚡️  [log] - [Push] Starting native push registration...
+⚡️  [log] - [Push] Platform: ios
+⚡️  [log] - [Push] Checking Capacitor environment...
+⚡️  [log] - [Push] Capacitor.isNativePlatform(): true
+⚡️  [log] - [Push] Capacitor.getPlatform(): ios
+⚡️  [log] - [Push] PushNotifications plugin available: true
+⚡️  [log] - [Push] Available plugins: CapacitorHttp, Console, WebView, CapacitorCookies, SystemBars, Haptics, StatusBar, Camera, PushNotifications, SplashScreen
+⚡️  [log] - [Push] Registration listeners already initialized
+⚡️  [log] - [Push] Calling PushNotifications.register()...
+⚡️  [log] - [Push] IMPORTANT: On iOS, ensure the following in Xcode:
+⚡️  [log] - [Push]   1. Push Notifications capability is added
+⚡️  [log] - [Push]   2. Background Modes > Remote notifications is enabled
+⚡️  [log] - [Push]   3. App.entitlements has aps-environment set
+⚡️  [log] - [Push]   4. APNs key (.p8) is configured in Apple Developer Portal
+⚡️  TO JS undefined
+⚡️  [log] - [Push] =============================================
+⚡️  [log] - [Push] JS registration SUCCESS!
+⚡️  [log] - [Push] Token value: BAAB132C3A782243EFBBA7D543BA0FDA773261C7F682A544782164ECF481E4B5
+⚡️  [log] - [Push] Token length: 64
+⚡️  [log] - [Push] =============================================
+⚡️  [log] - [Push] APNs token saved to localStorage
+⚡️  [log] - [Push] SUCCESS - Received ios device token: BAAB132C3A782243EFBB...ECF481E4B5
+⚡️  [log] - [Push] Token length: 64 characters
+⚡️  [log] - [Push] ✅ SUCCESS - Got device token!
+⚡️  [log] - [Push] Token type: apns
+⚡️  [log] - [Push] Token preview: BAAB132C3A782243EFBB...
+⚡️  [log] - [Push] Token cached to localStorage
+⚡️  [log] - [Push] ========================================
+⚡️  [log] - [Push] EARLY INITIALIZATION COMPLETE
+⚡️  [log] - [Push] ========================================
+⚡️  [log] - [Push] Early init successful - token ready for backend registration
+⚡️  [log] - 12:15:48:982 %cAgora-SDK [DEBUG]: color: #64B5F6; browser ua:  Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148
+⚡️  [log] - 12:15:48:982 %cAgora-SDK [INFO]: color: #1E88E5; font-weight: bold; browser info:  {"name":"WebKit","version":"605","os":"iOS","osVersion":"18.7","browserVersion":"605.1.15","deviceType":"mobile"}
+✅ NATIVE APNs TOKEN: baab132c3a782243efbba7d543ba0fda773261c7f682a544782164ecf481e4b5
+⚡️  [log] - 12:15:48:982 %cAgora-SDK [INFO]: color: #1E88E5; font-weight: bold; browser compatibility:  {"getDisplayMedia":false,"getStreamFromExtension":false,"supportUnifiedPlan":true,"supportMinBitrate":false,"supportSetRtpSenderParameters":true,"supportDualStream":true,"webAudioMediaStreamDest":true,"supportReplaceTrack":true,"supportWebGL":true,"webAudioWithAEC":true,"supportRequestFrame":true,"supportShareAudio":false,"supportDualStreamEncoding":false,"supportDataChannel":false,"supportPCSetConfiguration":true,"supportWebRTCEncodedTransform":false,"supportWebRTCInsertableStream":false,"supportRequestVideoFrameCallback":true,"supportWebCrypto":true}
+⚡️  TO JS {"value":"BAAB132C3A782243EFBBA7D543BA0FDA773261C7F682A544782164ECF481E4B5"}
+⚡️  TO JS {"value":"BAAB132C3A782243EFBBA7D543BA0FDA773261C7F682A544782164ECF481E4B5"}
+⚡️  [log] - [Push] register() call completed successfully
+⚡️  [log] - [Push] Waiting for token via "registration" event listener...
+⚡️  [log] - [Push] If no token appears within 15 seconds, check Xcode configuration
+⚡️  [log] - [Push] =============================================
+⚡️  [log] - [Push] JS registration SUCCESS!
+⚡️  [log] - [Push] Token value: BAAB132C3A782243EFBBA7D543BA0FDA773261C7F682A544782164ECF481E4B5
+⚡️  [log] - [Push] Token length: 64
+⚡️  [log] - [Push] =============================================
+⚡️  [log] - [Push] APNs token saved to localStorage
+⚡️  [log] - [Push] SUCCESS - Received ios device token: BAAB132C3A782243EFBB...ECF481E4B5
+⚡️  [log] - [Push] Token length: 64 characters
+⚡️  WebView loaded
+⚡️  [log] - [API Query] /api/auth/user response: 200
+⚡️  [log] - [API Query] /api/profile -> https://fusionmatch.replit.app/api/profile
+⚡️  [log] - [API] Using JWT token for request
+⚡️  [log] - Connecting to WebSocket: wss://fusionmatch.replit.app/ws
+⚡️  [error] - WebSocket error: {"isTrusted":true}
+⚡️  [log] - WebSocket disconnected
+⚡️  [log] - Reconnecting in 1000ms (attempt 1/5)
+⚡️  [log] - [API Query] /api/profile response: 404
+⚡️  To Native ->  Haptics impact 14006818
+⚡️  TO JS undefined
+Attempted to change to mode Portrait with an unsupported device (BackWideDual). Auto device for both positions unsupported, returning Auto device for same position anyway (BackAuto).
+Attempted to change to mode Portrait with an unsupported device (BackWideDual). Auto device for both positions unsupported, returning Auto device for same position anyway (BackAuto).
+Attempted to change to mode Portrait with an unsupported device (BackAuto). Auto device for both positions unsupported, returning Auto device for same position anyway (BackAuto).
+Attempted to change to mode Portrait with an unsupported device (BackWideDual). Auto device for both positions unsupported, returning Auto device for same position anyway (BackAuto).
+Could not create XPC object into key .Value from FigClock[HostTimeClock]: 0x107d7f100 retainCount: 18 allocator: 0x1ff898ca8 current time: {70748688249875/1000000000 = 70748.688} = 70748.688250 seconds
+<<<< FigCaptureSourceRemote >>>> Fig assert: "err == 0 " at bail (FigCaptureSourceRemote.m:569) - (err=-17281)
+Unexpected constituent device type (null) for device (null)
+Unexpected constituent device type (null) for device (null)
+Could not create XPC object into key .Value from FigClock[HostTimeClock]: 0x107d7f100 retainCount: 26 allocator: 0x1ff898ca8 current time: {70750225330166/1000000000 = 70750.225} = 70750.225330 seconds
+<<<< FigCaptureSourceRemote >>>> Fig assert: "err == 0 " at bail (FigCaptureSourceRemote.m:569) - (err=-17281)
+Could not create XPC object into key .Value from FigClock[HostTimeClock]: 0x107d7f100 retainCount: 40 allocator: 0x1ff898ca8 current time: {70750226837250/1000000000 = 70750.227} = 70750.226837 seconds
+<<<< FigCaptureSourceRemote >>>> Fig assert: "err == 0 " at bail (FigCaptureSourceRemote.m:569) - (err=-17281)
+Could not create XPC object into key .Value from FigClock[HostTimeClock]: 0x107d7f100 retainCount: 40 allocator: 0x1ff898ca8 current time: {70750226897166/1000000000 = 70750.227} = 70750.226897 seconds
+<<<< FigCaptureSourceRemote >>>> Fig assert: "err == 0 " at bail (FigCaptureSourceRemote.m:569) - (err=-17281)
+Could not create XPC object into key .Value from FigClock[HostTimeClock]: 0x107d7f100 retainCount: 34 allocator: 0x1ff898ca8 current time: {70752208057666/1000000000 = 70752.208} = 70752.208058 seconds
+<<<< FigCaptureSourceRemote >>>> Fig assert: "err == 0 " at bail (FigCaptureSourceRemote.m:569) - (err=-17281)
+⚡️  [log] - [Photo Upload] Original image dimensions: 2316 x 3088
+⚡️  [log] - [Photo Upload] Canvas dimensions: 1440 x 1920
+⚡️  [log] - [Photo Upload] Base64 length: 821855
+⚡️  To Native ->  CapacitorHttp post 14006819
+⚡️  TO JS {"url":"https:\/\/fusionmatch.replit.app\/api\/photos\/upload-base64","status":200,"data":{"message":"Photo uploaded successfully","photoUrl":"https:\/\/fusionmatch.replit.app\/api\/images\/profile\/5014615c-4b1e-4545-b5ef-c36bf0355777\/c1419f9c247bd40b70f
+Attempted to change to mode Portrait with an unsupported device (BackAuto). Auto device for both positions unsupported, returning Auto device for same position anyway (BackAuto).
+Attempted to change to mode Portrait with an unsupported device (BackWideDual). Auto device for both positions unsupported, returning Auto device for same position anyway (BackAuto).
+Could not create XPC object into key .Value from FigClock[HostTimeClock]: 0x107d7f100 retainCount: 58 allocator: 0x1ff898ca8 current time: {70756421017708/1000000000 = 70756.421} = 70756.421018 seconds
+<<<< FigCaptureSourceRemote >>>> Fig assert: "err == 0 " at bail (FigCaptureSourceRemote.m:569) - (err=-17281)
+Could not create XPC object into key .Value from FigClock[HostTimeClock]: 0x107d7f100 retainCount: 27 allocator: 0x1ff898ca8 current time: {70756509077791/1000000000 = 70756.509} = 70756.509078 seconds
+<<<< FigCaptureSourceRemote >>>> Fig assert: "err == 0 " at bail (FigCaptureSourceRemote.m:569) - (err=-17281)
+Could not create XPC object into key .Value from FigClock[HostTimeClock]: 0x107d7f100 retainCount: 34 allocator: 0x1ff898ca8 current time: {70758306574416/1000000000 = 70758.307} = 70758.306574 seconds
+<<<< FigCaptureSourceRemote >>>> Fig assert: "err == 0 " at bail (FigCaptureSourceRemote.m:569) - (err=-17281)
+⚡️  [log] - [Photo Upload] Original image dimensions: 2316 x 3088
+⚡️  [log] - [Photo Upload] Canvas dimensions: 1440 x 1920
+⚡️  [log] - [Photo Upload] Base64 length: 793019
+⚡️  To Native ->  CapacitorHttp post 14006820
+⚡️  TO JS {"status":200,"data":{"photoUrl":"https:\/\/fusionmatch.replit.app\/api\/images\/profile\/5014615c-4b1e-4545-b5ef-c36bf0355777\/3a38f1c2110e85ef7c8d967707cb9864.jpeg","success":true,"message":"Photo uploaded successfully"},"url":"https:\/\/fusionmatch.repl
+Attempted to change to mode Portrait with an unsupported device (BackAuto). Auto device for both positions unsupported, returning Auto device for same position anyway (BackAuto).
+Attempted to change to mode Portrait with an unsupported device (BackWideDual). Auto device for both positions unsupported, returning Auto device for same position anyway (BackAuto).
+Could not create XPC object into key .Value from FigClock[HostTimeClock]: 0x107d7f100 retainCount: 58 allocator: 0x1ff898ca8 current time: {70762290603666/1000000000 = 70762.291} = 70762.290604 seconds
+<<<< FigCaptureSourceRemote >>>> Fig assert: "err == 0 " at bail (FigCaptureSourceRemote.m:569) - (err=-17281)
+Could not create XPC object into key .Value from FigClock[HostTimeClock]: 0x107d7f100 retainCount: 65 allocator: 0x1ff898ca8 current time: {70762589618250/1000000000 = 70762.590} = 70762.589618 seconds
+<<<< FigCaptureSourceRemote >>>> Fig assert: "err == 0 " at bail (FigCaptureSourceRemote.m:569) - (err=-17281)
+Could not create XPC object into key .Value from FigClock[HostTimeClock]: 0x107d7f100 retainCount: 34 allocator: 0x1ff898ca8 current time: {70764222997250/1000000000 = 70764.223} = 70764.222997 seconds
+<<<< FigCaptureSourceRemote >>>> Fig assert: "err == 0 " at bail (FigCaptureSourceRemote.m:569) - (err=-17281)
+⚡️  [log] - [Photo Upload] Original image dimensions: 2316 x 3088
+⚡️  [log] - [Photo Upload] Canvas dimensions: 1440 x 1920
+⚡️  [log] - [Photo Upload] Base64 length: 814199
+⚡️  To Native ->  CapacitorHttp post 14006821
+Could not create XPC object into key .Value from FigClock[HostTimeClock]: 0x107d7f100 retainCount: 34 allocator: 0x1ff898ca8 current time: {70768638006375/1000000000 = 70768.638} = 70768.638006 seconds
+<<<< FigCaptureSourceRemote >>>> Fig assert: "err == 0 " at bail (FigCaptureSourceRemote.m:569) - (err=-17281)
+⚡️  TO JS {"headers":{"access-control-expose-headers":"Set-Cookie","alt-svc":"h3=\":443\"; ma=2592000,h3-29=\":443\"; ma=2592000","via":"1.1 google","x-cloud-trace-context":"90c3428a59b811de15c01f77ac3bd738;o=1","date":"Fri, 02 Jan 2026 12:16:16 GMT","access-control
+⚡️  To Native ->  Haptics impact 14006822
+⚡️  TO JS undefined
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x12f5bcbe0 h=--& v=--& _UIToolbarContentView:0x11ccca300.width == 0   (active)>",
+    "<NSLayoutConstraint:0x11ccf6530 H:|-(0)-[_UIButtonBarStackView:0x11cebe800]   (active, names: '|':_UIToolbarContentView:0x11ccca300 )>",
+    "<NSLayoutConstraint:0x11ccf5950 H:[_UIButtonBarStackView:0x11cebe800]-(0)-|   (active, names: '|':_UIToolbarContentView:0x11ccca300 )>",
+    "<NSLayoutConstraint:0x12f543340 'IB_Leading_Leading' H:|-(0)-[_UIModernBarButton:0x12f509880]   (active, names: '|':_UIButtonBarButton:0x12f4a3200 )>",
+    "<NSLayoutConstraint:0x12f543890 'IB_Leading_Leading' H:|-(>=5)-[_UIModernBarButton:0x12f509c00]   (active, names: '|':_UIButtonBarButton:0x12f4a3480 )>",
+    "<NSLayoutConstraint:0x12f543390 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x12f509880]-(>=8)-|   (active, names: '|':_UIButtonBarButton:0x12f4a3200 )>",
+    "<NSLayoutConstraint:0x12f5438e0 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x12f509c00]-(>=5)-|   (active, names: '|':_UIButtonBarButton:0x12f4a3480 )>",
+    "<NSLayoutConstraint:0x12f543e30 'TB_Leading_Leading' H:|-(8)-[_UIModernBarButton:0x12f509f80]   (active, names: '|':_UIButtonBarButton:0x12f4a3700 )>",
+    "<NSLayoutConstraint:0x12f543e80 'TB_Trailing_Trailing' H:[_UIModernBarButton:0x12f509f80]-(0)-|   (active, names: '|':_UIButtonBarButton:0x12f4a3700 )>",
+    "<NSLayoutConstraint:0x12f5bc000 'UISV-canvas-connection' UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide'.leading == _UIButtonBarButton:0x12f4a3200.leading   (active)>",
+    "<NSLayoutConstraint:0x12f5bc280 'UISV-canvas-connection' UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide'.trailing == _UIButtonBarButton:0x12f4a3700.trailing   (active)>",
+    "<NSLayoutConstraint:0x12f5bc2d0 'UISV-spacing' H:[_UIButtonBarButton:0x12f4a3200]-(0)-[UIView:0x128f62140]   (active)>",
+    "<NSLayoutConstraint:0x12f5bc320 'UISV-spacing' H:[UIView:0x128f62140]-(0)-[_UIButtonBarButton:0x12f4a3480]   (active)>",
+    "<NSLayoutConstraint:0x12f5bc370 'UISV-spacing' H:[_UIButtonBarButton:0x12f4a3480]-(0)-[UIView:0x128f62bc0]   (active)>",
+    "<NSLayoutConstraint:0x12f5bc3c0 'UISV-spacing' H:[UIView:0x128f62bc0]-(0)-[_UIButtonBarButton:0x12f4a3700]   (active)>",
+    "<NSLayoutConstraint:0x11ccf4a00 'UIView-leftMargin-guide-constraint' H:|-(0)-[UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide'](LTR)   (active, names: '|':_UIButtonBarStackView:0x11cebe800 )>",
+    "<NSLayoutConstraint:0x11ccf48c0 'UIView-rightMargin-guide-constraint' H:[UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide']-(0)-|(LTR)   (active, names: '|':_UIButtonBarStackView:0x11cebe800 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x12f543390 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x12f509880]-(>=8)-|   (active, names: '|':_UIButtonBarButton:0x12f4a3200 )>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x12f5bcbe0 h=--& v=--& _UIToolbarContentView:0x11ccca300.width == 0   (active)>",
+    "<NSLayoutConstraint:0x11ccf6530 H:|-(0)-[_UIButtonBarStackView:0x11cebe800]   (active, names: '|':_UIToolbarContentView:0x11ccca300 )>",
+    "<NSLayoutConstraint:0x11ccf5950 H:[_UIButtonBarStackView:0x11cebe800]-(0)-|   (active, names: '|':_UIToolbarContentView:0x11ccca300 )>",
+    "<NSLayoutConstraint:0x12f543890 'IB_Leading_Leading' H:|-(>=5)-[_UIModernBarButton:0x12f509c00]   (active, names: '|':_UIButtonBarButton:0x12f4a3480 )>",
+    "<NSLayoutConstraint:0x12f5438e0 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x12f509c00]-(>=5)-|   (active, names: '|':_UIButtonBarButton:0x12f4a3480 )>",
+    "<NSLayoutConstraint:0x12f543e30 'TB_Leading_Leading' H:|-(8)-[_UIModernBarButton:0x12f509f80]   (active, names: '|':_UIButtonBarButton:0x12f4a3700 )>",
+    "<NSLayoutConstraint:0x12f543e80 'TB_Trailing_Trailing' H:[_UIModernBarButton:0x12f509f80]-(0)-|   (active, names: '|':_UIButtonBarButton:0x12f4a3700 )>",
+    "<NSLayoutConstraint:0x12f5bc000 'UISV-canvas-connection' UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide'.leading == _UIButtonBarButton:0x12f4a3200.leading   (active)>",
+    "<NSLayoutConstraint:0x12f5bc280 'UISV-canvas-connection' UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide'.trailing == _UIButtonBarButton:0x12f4a3700.trailing   (active)>",
+    "<NSLayoutConstraint:0x12f5bc2d0 'UISV-spacing' H:[_UIButtonBarButton:0x12f4a3200]-(0)-[UIView:0x128f62140]   (active)>",
+    "<NSLayoutConstraint:0x12f5bc320 'UISV-spacing' H:[UIView:0x128f62140]-(0)-[_UIButtonBarButton:0x12f4a3480]   (active)>",
+    "<NSLayoutConstraint:0x12f5bc370 'UISV-spacing' H:[_UIButtonBarButton:0x12f4a3480]-(0)-[UIView:0x128f62bc0]   (active)>",
+    "<NSLayoutConstraint:0x12f5bc3c0 'UISV-spacing' H:[UIView:0x128f62bc0]-(0)-[_UIButtonBarButton:0x12f4a3700]   (active)>",
+    "<NSLayoutConstraint:0x11ccf4a00 'UIView-leftMargin-guide-constraint' H:|-(0)-[UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide'](LTR)   (active, names: '|':_UIButtonBarStackView:0x11cebe800 )>",
+    "<NSLayoutConstraint:0x11ccf48c0 'UIView-rightMargin-guide-constraint' H:[UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide']-(0)-|(LTR)   (active, names: '|':_UIButtonBarStackView:0x11cebe800 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x12f5438e0 'IB_Trailing_Trailing' H:[_UIModernBarButton:0x12f509c00]-(>=5)-|   (active, names: '|':_UIButtonBarButton:0x12f4a3480 )>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x12f5bcbe0 h=--& v=--& _UIToolbarContentView:0x11ccca300.width == 0   (active)>",
+    "<NSLayoutConstraint:0x11ccf6530 H:|-(0)-[_UIButtonBarStackView:0x11cebe800]   (active, names: '|':_UIToolbarContentView:0x11ccca300 )>",
+    "<NSLayoutConstraint:0x11ccf5950 H:[_UIButtonBarStackView:0x11cebe800]-(0)-|   (active, names: '|':_UIToolbarContentView:0x11ccca300 )>",
+    "<NSLayoutConstraint:0x12f543e30 'TB_Leading_Leading' H:|-(8)-[_UIModernBarButton:0x12f509f80]   (active, names: '|':_UIButtonBarButton:0x12f4a3700 )>",
+    "<NSLayoutConstraint:0x12f543e80 'TB_Trailing_Trailing' H:[_UIModernBarButton:0x12f509f80]-(0)-|   (active, names: '|':_UIButtonBarButton:0x12f4a3700 )>",
+    "<NSLayoutConstraint:0x12f5bc000 'UISV-canvas-connection' UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide'.leading == _UIButtonBarButton:0x12f4a3200.leading   (active)>",
+    "<NSLayoutConstraint:0x12f5bc280 'UISV-canvas-connection' UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide'.trailing == _UIButtonBarButton:0x12f4a3700.trailing   (active)>",
+    "<NSLayoutConstraint:0x12f5bc2d0 'UISV-spacing' H:[_UIButtonBarButton:0x12f4a3200]-(0)-[UIView:0x128f62140]   (active)>",
+    "<NSLayoutConstraint:0x12f5bc320 'UISV-spacing' H:[UIView:0x128f62140]-(0)-[_UIButtonBarButton:0x12f4a3480]   (active)>",
+    "<NSLayoutConstraint:0x12f5bc370 'UISV-spacing' H:[_UIButtonBarButton:0x12f4a3480]-(0)-[UIView:0x128f62bc0]   (active)>",
+    "<NSLayoutConstraint:0x12f5bc3c0 'UISV-spacing' H:[UIView:0x128f62bc0]-(0)-[_UIButtonBarButton:0x12f4a3700]   (active)>",
+    "<NSLayoutConstraint:0x11ccf4a00 'UIView-leftMargin-guide-constraint' H:|-(0)-[UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide'](LTR)   (active, names: '|':_UIButtonBarStackView:0x11cebe800 )>",
+    "<NSLayoutConstraint:0x11ccf48c0 'UIView-rightMargin-guide-constraint' H:[UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide']-(0)-|(LTR)   (active, names: '|':_UIButtonBarStackView:0x11cebe800 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x12f543e80 'TB_Trailing_Trailing' H:[_UIModernBarButton:0x12f509f80]-(0)-|   (active, names: '|':_UIButtonBarButton:0x12f4a3700 )>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x12f5bcc80 h=--& v=--& _UIToolbarContentView:0x11ccca300.height == 0   (active)>",
+    "<NSLayoutConstraint:0x11ccf6490 V:|-(0)-[_UIButtonBarStackView:0x11cebe800]   (active, names: '|':_UIToolbarContentView:0x11ccca300 )>",
+    "<NSLayoutConstraint:0x11ccf61c0 _UIButtonBarStackView:0x11cebe800.bottom == _UIToolbarContentView:0x11ccca300.bottom   (active)>",
+    "<NSLayoutConstraint:0x12f5bd0e0 UIImageView:0x12f502800.centerY == _UIModernBarButton:0x12f509880.centerY   (active)>",
+    "<NSLayoutConstraint:0x12f543610 'IB_Baseline_Baseline' _UIModernBarButton:0x12f509880.lastBaseline == UILayoutGuide:0x12f4a9ce0'UIViewLayoutMarginsGuide'.bottom   (active)>",
+    "<NSLayoutConstraint:0x12f543660 'IB_Top_Top' V:|-(>=0)-[_UIModernBarButton:0x12f509880]   (active, names: '|':_UIButtonBarButton:0x12f4a3200 )>",
+    "<NSLayoutConstraint:0x12f543750 'UIButtonBar.maximumAlignmentSize' _UIButtonBarButton:0x12f4a3200.height == UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide'.height   (active)>",
+    "<NSLayoutConstraint:0x11ccf4730 'UIView-bottomMargin-guide-constraint' V:[UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide']-(0)-|   (active, names: '|':_UIButtonBarStackView:0x11cebe800 )>",
+    "<NSLayoutConstraint:0x12f543570 'UIView-bottomMargin-guide-constraint' V:[UILayoutGuide:0x12f4a9ce0'UIViewLayoutMarginsGuide']-(16)-|   (active, names: '|':_UIButtonBarButton:0x12f4a3200 )>",
+    "<NSLayoutConstraint:0x11ccf5ae0 'UIView-topMargin-guide-constraint' V:|-(0)-[UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide']   (active, names: '|':_UIButtonBarStackView:0x11cebe800 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x12f5bd0e0 UIImageView:0x12f502800.centerY == _UIModernBarButton:0x12f509880.centerY   (active)>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x12f5bcc80 h=--& v=--& _UIToolbarContentView:0x11ccca300.height == 0   (active)>",
+    "<NSLayoutConstraint:0x11ccf6490 V:|-(0)-[_UIButtonBarStackView:0x11cebe800]   (active, names: '|':_UIToolbarContentView:0x11ccca300 )>",
+    "<NSLayoutConstraint:0x11ccf61c0 _UIButtonBarStackView:0x11cebe800.bottom == _UIToolbarContentView:0x11ccca300.bottom   (active)>",
+    "<NSLayoutConstraint:0x12f5bd220 UIImageView:0x12f502a00.centerY == _UIModernBarButton:0x12f509c00.centerY   (active)>",
+    "<NSLayoutConstraint:0x12f543b60 'IB_Baseline_Baseline' _UIModernBarButton:0x12f509c00.lastBaseline == UILayoutGuide:0x12f4a9dc0'UIViewLayoutMarginsGuide'.bottom   (active)>",
+    "<NSLayoutConstraint:0x12f543bb0 'IB_Top_Top' V:|-(>=0)-[_UIModernBarButton:0x12f509c00]   (active, names: '|':_UIButtonBarButton:0x12f4a3480 )>",
+    "<NSLayoutConstraint:0x12f543ca0 'UIButtonBar.maximumAlignmentSize' _UIButtonBarButton:0x12f4a3480.height == UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide'.height   (active)>",
+    "<NSLayoutConstraint:0x11ccf4730 'UIView-bottomMargin-guide-constraint' V:[UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide']-(0)-|   (active, names: '|':_UIButtonBarStackView:0x11cebe800 )>",
+    "<NSLayoutConstraint:0x12f543ac0 'UIView-bottomMargin-guide-constraint' V:[UILayoutGuide:0x12f4a9dc0'UIViewLayoutMarginsGuide']-(16)-|   (active, names: '|':_UIButtonBarButton:0x12f4a3480 )>",
+    "<NSLayoutConstraint:0x11ccf5ae0 'UIView-topMargin-guide-constraint' V:|-(0)-[UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide']   (active, names: '|':_UIButtonBarStackView:0x11cebe800 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x12f5bd220 UIImageView:0x12f502a00.centerY == _UIModernBarButton:0x12f509c00.centerY   (active)>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+Unable to simultaneously satisfy constraints.
+	Probably at least one of the constraints in the following list is one you don't want. 
+	Try this: 
+		(1) look at each constraint and try to figure out which you don't expect; 
+		(2) find the code that added the unwanted constraint or constraints and fix it. 
+	(Note: If you're seeing NSAutoresizingMaskLayoutConstraints that you don't understand, refer to the documentation for the UIView property translatesAutoresizingMaskIntoConstraints) 
+(
+    "<NSAutoresizingMaskLayoutConstraint:0x12f5bcc80 h=--& v=--& _UIToolbarContentView:0x11ccca300.height == 0   (active)>",
+    "<NSLayoutConstraint:0x11ccf6490 V:|-(0)-[_UIButtonBarStackView:0x11cebe800]   (active, names: '|':_UIToolbarContentView:0x11ccca300 )>",
+    "<NSLayoutConstraint:0x11ccf61c0 _UIButtonBarStackView:0x11cebe800.bottom == _UIToolbarContentView:0x11ccca300.bottom   (active)>",
+    "<NSLayoutConstraint:0x12f5bd360 UIButtonLabel:0x12f50a300.centerY == _UIModernBarButton:0x12f509f80.centerY + 0.5   (active)>",
+    "<NSLayoutConstraint:0x118e83ed0 'TB_Baseline_Baseline' _UIModernBarButton:0x12f509f80.lastBaseline == UILayoutGuide:0x12f4a9ea0'UIViewLayoutMarginsGuide'.bottom   (active)>",
+    "<NSLayoutConstraint:0x118e836b0 'TB_Top_Top' V:|-(>=0)-[_UIModernBarButton:0x12f509f80]   (active, names: '|':_UIButtonBarButton:0x12f4a3700 )>",
+    "<NSLayoutConstraint:0x128fe3520 'UIButtonBar.maximumAlignmentSize' _UIButtonBarButton:0x12f4a3700.height == UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide'.height   (active)>",
+    "<NSLayoutConstraint:0x11ccf4730 'UIView-bottomMargin-guide-constraint' V:[UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide']-(0)-|   (active, names: '|':_UIButtonBarStackView:0x11cebe800 )>",
+    "<NSLayoutConstraint:0x12f543f70 'UIView-bottomMargin-guide-constraint' V:[UILayoutGuide:0x12f4a9ea0'UIViewLayoutMarginsGuide']-(16)-|   (active, names: '|':_UIButtonBarButton:0x12f4a3700 )>",
+    "<NSLayoutConstraint:0x11ccf5ae0 'UIView-topMargin-guide-constraint' V:|-(0)-[UILayoutGuide:0x118e78e00'UIViewLayoutMarginsGuide']   (active, names: '|':_UIButtonBarStackView:0x11cebe800 )>"
+)
+
+Will attempt to recover by breaking constraint 
+<NSLayoutConstraint:0x12f5bd360 UIButtonLabel:0x12f50a300.centerY == _UIModernBarButton:0x12f509f80.centerY + 0.5   (active)>
+
+Make a symbolic breakpoint at UIViewAlertForUnsatisfiableConstraints to catch this in the debugger.
+The methods in the UIConstraintBasedLayoutDebugging category on UIView listed in <UIKitCore/UIView.h> may also be helpful.
+-[RTIInputSystemClient remoteTextInputSessionWithID:textSuggestionsChanged:]  Can only set suggestions for an active session. sessionID = 9059A81B-3938-4E5A-8498-54B9C78121EB
+containerToPush is nil, will not push anything to candidate receiver for request token: FD6C3CCE
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+⚡️  To Native ->  Haptics impact 14006823
+⚡️  TO JS undefined
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+⚡️  To Native ->  Haptics impact 14006824
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006825
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006826
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006827
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006828
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006829
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006830
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006831
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006832
+⚡️  TO JS undefined
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:textSuggestionsChanged:]  Can only set suggestions for an active session. sessionID = 0C853240-F9A8-4515-88DF-433C80E429B4
+⚡️  To Native ->  Haptics impact 14006833
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006834
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006835
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006836
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006837
+⚡️  TO JS undefined
+-[RTIInputSystemClient remoteTextInputSessionWithID:performInputOperation:]  perform input operation requires a valid sessionID. inputModality = Keyboard, inputOperation = <null selector>, customInfoType = UIEmojiSearchOperations
+-[RTIInputSystemClient remoteTextInputSessionWithID:textSuggestionsChanged:]  Can only set suggestions for an active session. sessionID = 0C853240-F9A8-4515-88DF-433C80E429B4
+Could not find cached accumulator for token=566A7629 type:0 in -[TUIKeyboardCandidateMultiplexer receiveExternalAutocorrectionUpdate:requestToken:]_block_invoke
+Could not find cached accumulator for token=566A7629 type:0 in -[TUIKeyboardCandidateMultiplexer _queueOnly_willHandleDeliveryForCandidates:requestToken:]
+Could not find cached accumulator for token=0E9C766C type:0 in -[TUIKeyboardCandidateMultiplexer receiveExternalAutocorrectionUpdate:requestToken:]_block_invoke
+Could not find cached accumulator for token=0E9C766C type:0 in -[TUIKeyboardCandidateMultiplexer _queueOnly_willHandleDeliveryForCandidates:requestToken:]
+Could not find cached accumulator for token=B5B98435 type:0 in -[TUIKeyboardCandidateMultiplexer receiveExternalAutocorrectionUpdate:requestToken:]_block_invoke
+Could not find cached accumulator for token=B5B98435 type:0 in -[TUIKeyboardCandidateMultiplexer _queueOnly_willHandleDeliveryForCandidates:requestToken:]
+Could not find cached accumulator for token=B5B98435 type:0 in -[TUIKeyboardCandidateMultiplexer _queueOnly_willHandleDeliveryForCandidates:requestToken:]
+Could not find cached accumulator for token=9DCE9508 type:0 in -[TUIKeyboardCandidateMultiplexer receiveExternalAutocorrectionUpdate:requestToken:]_block_invoke
+Could not find cached accumulator for token=9DCE9508 type:0 in -[TUIKeyboardCandidateMultiplexer _queueOnly_willHandleDeliveryForCandidates:requestToken:]
+Could not find cached accumulator for token=CBE6EB8E type:0 in -[TUIKeyboardCandidateMultiplexer receiveExternalAutocorrectionUpdate:requestToken:]_block_invoke
+Could not find cached accumulator for token=CBE6EB8E type:0 in -[TUIKeyboardCandidateMultiplexer _queueOnly_willHandleDeliveryForCandidates:requestToken:]
+Error: this application, or a library it uses, has passed an invalid numeric value (NaN, or not-a-number) to CoreGraphics API and this value is being ignored. Please fix this problem.
+If you want to see the backtrace, please set CG_NUMERICS_SHOW_BACKTRACE environmental variable.
+Error: this application, or a library it uses, has passed an invalid numeric value (NaN, or not-a-number) to CoreGraphics API and this value is being ignored. Please fix this problem.
+If you want to see the backtrace, please set CG_NUMERICS_SHOW_BACKTRACE environmental variable.
+Error: this application, or a library it uses, has passed an invalid numeric value (NaN, or not-a-number) to CoreGraphics API and this value is being ignored. Please fix this problem.
+If you want to see the backtrace, please set CG_NUMERICS_SHOW_BACKTRACE environmental variable.
+Error: this application, or a library it uses, has passed an invalid numeric value (NaN, or not-a-number) to CoreGraphics API and this value is being ignored. Please fix this problem.
+If you want to see the backtrace, please set CG_NUMERICS_SHOW_BACKTRACE environmental variable.
+Error: this application, or a library it uses, has passed an invalid numeric value (NaN, or not-a-number) to CoreGraphics API and this value is being ignored. Please fix this problem.
+If you want to see the backtrace, please set CG_NUMERICS_SHOW_BACKTRACE environmental variable.
+Error: this application, or a library it uses, has passed an invalid numeric value (NaN, or not-a-number) to CoreGraphics API and this value is being ignored. Please fix this problem.
+If you want to see the backtrace, please set CG_NUMERICS_SHOW_BACKTRACE environmental variable.
+Attempted to update accumulator from source type: 0, after completion has already been called for token:[A0D1C896]. This is an error and will be ignored.
+⚡️  To Native ->  Haptics impact 14006838
+⚡️  [log] - [API] Using JWT token for request
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006839
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006840
+⚡️  TO JS undefined
+⚡️  [log] - 12:17:58:773 %cAgora-SDK [DEBUG]: color: #64B5F6; [device-check] default input or output not found
+⚡️  To Native ->  Haptics impact 14006841
+⚡️  TO JS undefined
+WebContent[7417] AudioComponentPluginMgr.mm:590   reg server remote proxy error Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.audio.AudioComponentRegistrar was invalidated: Connection init failed at lookup with error 1 - Operation no
+WebContent[7417] AudioComponentPluginMgr.mm:590   reg server remote proxy error Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.audio.AudioComponentRegistrar was invalidated: Connection init failed at lookup with error 1 - Operation no
+WebContent[7417] AudioComponentPluginMgr.mm:590   reg server remote proxy error Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.audio.AudioComponentRegistrar was invalidated: Connection init failed at lookup with error 1 - Operation no
+WebContent[7417] AudioSampleBufferConverter getting kAudioCodecPropertyDelayMode failed with 1886547824
+⚡️  To Native ->  Haptics impact 14006842
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006843
+⚡️  TO JS undefined
+⚡️  To Native ->  CapacitorHttp post 14006844
+⚡️  TO JS {"url":"https:\/\/fusionmatch.replit.app\/api\/video\/upload","status":400,"headers":{"server":"Google Frontend","access-control-allow-headers":"Content-Type, Authorization, X-Requested-With, Accept, Origin","access-control-allow-credentials":"true","via":
+⚡️  To Native ->  Haptics impact 14006845
+⚡️  TO JS undefined
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+⚡️  To Native ->  Haptics impact 14006846
+⚡️  TO JS undefined
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+⚡️  To Native ->  Haptics impact 14006847
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006848
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006849
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006850
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006851
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006852
+⚡️  TO JS undefined
+⚡️  To Native ->  Haptics impact 14006853
+⚡️  TO JS undefined
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+⚡️  To Native ->  Haptics impact 14006854
+⚡️  TO JS undefined
+WebContent[7417] AudioComponentPluginMgr.mm:590   reg server remote proxy error Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.audio.AudioComponentRegistrar was invalidated: Connection init failed at lookup with error 1 - Operation no
+WebContent[7417] AudioComponentPluginMgr.mm:590   reg server remote proxy error Error Domain=NSCocoaErrorDomain Code=4099 "The connection to service named com.apple.audio.AudioComponentRegistrar was invalidated: Connection init failed at lookup with error 1 - Operation no
+WebContent[7417] AudioSampleBufferConverter getting kAudioCodecPropertyDelayMode failed with 1886547824
+⚡️  To Native ->  Haptics impact 14006855
+⚡️  TO JS undefined
+WebContent[7417] Unable to find source 5181 for videoFrameAvailable
+WebContent[7417] Unable to find source 5181 for videoFrameAvailable
+WebContent[7417] Unable to find source 5181 for videoFrameAvailable
+WebContent[7417] Unable to find source 5181 for videoFrameAvailable
+WebContent[7417] Unable to find source 5181 for videoFrameAvailable
+WebContent[7417] Unable to find source 5181 for videoFrameAvailable
+WebContent[7417] Unable to find source 5181 for videoFrameAvailable
+WebContent[7417] Unable to find source 5181 for videoFrameAvailable
+WebContent[7417] Unable to find source 5181 for videoFrameAvailable
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435
+WebContent[7417] << FigXPC >> figXPCConnection_validateReplyType signalled err=-16155 (kFigXPCError_MessageSendFailed) (Message sending failure) at FigXPCClientServer.c:1435

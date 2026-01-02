@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Video, StopCircle, Play, RotateCcw, Upload, Loader2, Lightbulb } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Video, StopCircle, Play, RotateCcw, Upload, Loader2, Lightbulb, X } from "lucide-react";
 import { isCapacitorNative } from "@/lib/platform";
 
 const VIDEO_PROMPTS = [
@@ -36,6 +36,7 @@ export function VideoRecorder({
   const [cameraActive, setCameraActive] = useState(false);
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
   const [showPrompts, setShowPrompts] = useState(true);
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<HTMLVideoElement>(null);
@@ -60,7 +61,6 @@ export function VideoRecorder({
   const [isMediaRecorderSupported, setIsMediaRecorderSupported] = useState(true);
 
   useEffect(() => {
-    // Check if MediaRecorder is supported
     if (typeof MediaRecorder === 'undefined') {
       setIsMediaRecorderSupported(false);
     }
@@ -68,58 +68,61 @@ export function VideoRecorder({
 
   const startCamera = async () => {
     setCameraError(null);
+    setIsFullscreenOpen(true);
+    
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "user", width: { ideal: 720 }, height: { ideal: 1280 } },
+      console.log('[VideoRecorder] Requesting camera access...');
+      
+      const constraints: MediaStreamConstraints = {
+        video: {
+          facingMode: "user",
+          width: { ideal: 720 },
+          height: { ideal: 1280 }
+        },
         audio: true,
-      });
+      };
+      
+      console.log('[VideoRecorder] Using constraints:', JSON.stringify(constraints));
+      
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      console.log('[VideoRecorder] Got stream with tracks:', stream.getTracks().map(t => `${t.kind}: ${t.label}`));
+      
       streamRef.current = stream;
+      
+      await new Promise<void>((resolve) => setTimeout(resolve, 100));
+      
       if (videoRef.current) {
+        videoRef.current.srcObject = null;
+        
+        videoRef.current.setAttribute('autoplay', 'true');
+        videoRef.current.setAttribute('playsinline', 'true');
+        videoRef.current.setAttribute('webkit-playsinline', 'true');
+        videoRef.current.setAttribute('muted', 'true');
+        videoRef.current.muted = true;
+        
         videoRef.current.srcObject = stream;
         
-        // Set webkit-specific attributes for iOS
-        videoRef.current.setAttribute('webkit-playsinline', 'true');
-        videoRef.current.setAttribute('playsinline', 'true');
+        console.log('[VideoRecorder] Stream attached to video element');
         
-        // For iOS/Safari, we need to wait for loadedmetadata before playing
-        await new Promise<void>((resolve, reject) => {
-          if (!videoRef.current) {
-            reject(new Error('Video element not found'));
-            return;
-          }
-          
-          const video = videoRef.current;
-          
-          // If already ready, play immediately
-          if (video.readyState >= 2) {
-            video.play()
-              .then(() => resolve())
-              .catch(reject);
-            return;
-          }
-          
-          // Wait for metadata to load
-          const onLoadedMetadata = () => {
-            video.removeEventListener('loadedmetadata', onLoadedMetadata);
-            video.play()
-              .then(() => resolve())
-              .catch(reject);
-          };
-          
-          video.addEventListener('loadedmetadata', onLoadedMetadata);
-          
-          // Timeout fallback
-          setTimeout(() => {
-            video.removeEventListener('loadedmetadata', onLoadedMetadata);
-            video.play()
-              .then(() => resolve())
-              .catch(() => resolve()); // Don't fail on timeout, camera might still work
-          }, 2000);
-        });
+        try {
+          await videoRef.current.play();
+          console.log('[VideoRecorder] Video playback started');
+        } catch (playError) {
+          console.warn('[VideoRecorder] Auto-play failed, trying again:', playError);
+          setTimeout(async () => {
+            try {
+              await videoRef.current?.play();
+              console.log('[VideoRecorder] Delayed play succeeded');
+            } catch (e) {
+              console.error('[VideoRecorder] Delayed play also failed:', e);
+            }
+          }, 500);
+        }
       }
+      
       setCameraActive(true);
     } catch (error: any) {
-      console.error("Error accessing camera:", error);
+      console.error("[VideoRecorder] Error accessing camera:", error);
       let errorMessage = "Unable to access camera. Please check your permissions.";
       
       if (error.name === 'NotAllowedError') {
@@ -132,6 +135,23 @@ export function VideoRecorder({
         errorMessage = "No camera found. Please connect a camera and try again.";
       } else if (error.name === 'NotReadableError') {
         errorMessage = "Camera is in use by another app. Please close other apps using the camera.";
+      } else if (error.name === 'OverconstrainedError') {
+        errorMessage = "Camera constraints not supported. Trying with basic settings...";
+        try {
+          const basicStream = await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: true,
+          });
+          streamRef.current = basicStream;
+          if (videoRef.current) {
+            videoRef.current.srcObject = basicStream;
+            await videoRef.current.play();
+          }
+          setCameraActive(true);
+          return;
+        } catch (basicError) {
+          console.error("[VideoRecorder] Basic camera also failed:", basicError);
+        }
       }
       
       setCameraError(errorMessage);
@@ -146,12 +166,16 @@ export function VideoRecorder({
     setCameraActive(false);
   };
 
+  const closeFullscreen = () => {
+    stopCamera();
+    setIsFullscreenOpen(false);
+  };
+
   const startRecording = () => {
     if (!streamRef.current) return;
 
     chunksRef.current = [];
     
-    // Determine the best supported MIME type (iOS needs mp4, others prefer webm)
     let mimeType = 'video/webm';
     if (MediaRecorder.isTypeSupported('video/webm;codecs=vp9')) {
       mimeType = 'video/webm;codecs=vp9';
@@ -162,6 +186,8 @@ export function VideoRecorder({
     } else if (MediaRecorder.isTypeSupported('video/webm')) {
       mimeType = 'video/webm';
     }
+    
+    console.log('[VideoRecorder] Using MIME type:', mimeType);
     
     const mediaRecorder = new MediaRecorder(streamRef.current, {
       mimeType,
@@ -219,6 +245,7 @@ export function VideoRecorder({
 
   const handleUpload = () => {
     if (recordedVideo) {
+      setIsFullscreenOpen(false);
       onVideoRecorded(recordedVideo);
     }
   };
@@ -227,23 +254,33 @@ export function VideoRecorder({
     setCurrentPromptIndex((prev) => (prev + 1) % VIDEO_PROMPTS.length);
   };
 
+  const handleSkip = () => {
+    closeFullscreen();
+    onCancel?.();
+  };
+
   if (recordedVideoUrl) {
     return (
-      <Card className="p-6">
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-center">Preview Your Video</h3>
+      <Dialog open={isFullscreenOpen} onOpenChange={(open) => !open && handleSkip()}>
+        <DialogContent className="max-w-md w-full p-0 gap-0 h-[90vh] max-h-[700px] flex flex-col">
+          <div className="p-4 border-b flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Preview Your Video</h3>
+            <Button variant="ghost" size="icon" onClick={handleSkip}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
           
-          <div className="relative aspect-[9/16] max-h-[400px] mx-auto bg-black rounded-lg overflow-hidden">
+          <div className="flex-1 bg-black flex items-center justify-center overflow-hidden">
             <video
               ref={previewRef}
               src={recordedVideoUrl}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
               controls
               playsInline
             />
           </div>
 
-          <div className="flex gap-3 justify-center">
+          <div className="p-4 border-t flex gap-3 justify-center">
             <Button 
               variant="outline" 
               onClick={retakeVideo}
@@ -271,13 +308,13 @@ export function VideoRecorder({
               )}
             </Button>
           </div>
-        </div>
-      </Card>
+        </DialogContent>
+      </Dialog>
     );
   }
 
   return (
-    <Card className="p-6">
+    <>
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Record Your Intro Video</h3>
@@ -307,84 +344,105 @@ export function VideoRecorder({
           </div>
         )}
 
-        {!cameraActive ? (
-          <div className="flex flex-col items-center gap-4 py-8">
-            <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
-              <Video className="h-10 w-10 text-primary" />
+        <div className="flex flex-col items-center gap-4 py-8">
+          <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
+            <Video className="h-10 w-10 text-primary" />
+          </div>
+          
+          {!isMediaRecorderSupported ? (
+            <div className="text-center space-y-3">
+              <p className="text-muted-foreground text-sm max-w-xs">
+                Video recording is not supported on your device. You can skip this step and add a video later from your profile settings.
+              </p>
+              {onCancel && (
+                <Button onClick={onCancel} data-testid="button-skip-video">
+                  Continue Without Video
+                </Button>
+              )}
             </div>
-            
-            {!isMediaRecorderSupported ? (
-              <div className="text-center space-y-3">
-                <p className="text-muted-foreground text-sm max-w-xs">
-                  Video recording is not supported on your device. You can skip this step and add a video later from your profile settings.
-                </p>
-                {onCancel && (
-                  <Button onClick={onCancel} data-testid="button-skip-video">
-                    Continue Without Video
-                  </Button>
-                )}
-              </div>
-            ) : cameraError ? (
-              <div className="text-center space-y-3">
-                <p className="text-destructive text-sm max-w-xs">
+          ) : (
+            <>
+              <p className="text-center text-muted-foreground text-sm max-w-xs">
+                Record a short video introduction so potential matches can get to know you better
+              </p>
+              <Button onClick={startCamera} data-testid="button-start-camera">
+                <Video className="h-4 w-4 mr-2" />
+                Start Camera
+              </Button>
+              {onCancel && (
+                <Button variant="ghost" onClick={onCancel} data-testid="button-skip-video">
+                  Skip for now
+                </Button>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      <Dialog open={isFullscreenOpen && !recordedVideoUrl} onOpenChange={(open) => !open && handleSkip()}>
+        <DialogContent className="max-w-md w-full p-0 gap-0 h-[90vh] max-h-[700px] flex flex-col">
+          <div className="p-4 border-b flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-semibold">Record Video</h3>
+              <Badge variant="outline">20 sec max</Badge>
+            </div>
+            <Button variant="ghost" size="icon" onClick={handleSkip}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="flex-1 bg-black relative overflow-hidden">
+            {cameraError ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
+                <p className="text-destructive text-sm max-w-xs mb-4">
                   {cameraError}
                 </p>
-                <div className="flex gap-3 justify-center">
+                <div className="flex gap-3">
                   <Button variant="outline" onClick={startCamera} data-testid="button-retry-camera">
                     Try Again
                   </Button>
-                  {onCancel && (
-                    <Button variant="ghost" onClick={onCancel} data-testid="button-skip-video">
-                      Skip for now
-                    </Button>
-                  )}
                 </div>
               </div>
             ) : (
               <>
-                <p className="text-center text-muted-foreground text-sm max-w-xs">
-                  Record a short video introduction so potential matches can get to know you better
-                </p>
-                <Button onClick={startCamera} data-testid="button-start-camera">
-                  <Video className="h-4 w-4 mr-2" />
-                  Start Camera
-                </Button>
-                {onCancel && (
-                  <Button variant="ghost" onClick={onCancel} data-testid="button-skip-video">
-                    Skip for now
-                  </Button>
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className="w-full h-full object-cover"
+                  style={{ 
+                    transform: 'scaleX(-1)',
+                    WebkitTransform: 'scaleX(-1)'
+                  }}
+                />
+                
+                {isRecording && (
+                  <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex items-center gap-2 z-10">
+                    <div className="h-3 w-3 rounded-full bg-red-500 animate-pulse" />
+                    <span className="text-white font-bold text-xl bg-black/50 px-3 py-1 rounded-full">
+                      {countdown}s
+                    </span>
+                  </div>
+                )}
+                
+                {!cameraActive && !cameraError && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 text-white animate-spin" />
+                  </div>
                 )}
               </>
             )}
           </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="relative aspect-[9/16] max-h-[400px] mx-auto bg-black rounded-lg overflow-hidden">
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                className="w-full h-full object-cover transform scale-x-[-1]"
-              />
-              
-              {isRecording && (
-                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-red-500 animate-pulse" />
-                  <span className="text-white font-bold text-xl bg-black/50 px-3 py-1 rounded-full">
-                    {countdown}s
-                  </span>
-                </div>
-              )}
-            </div>
 
+          <div className="p-4 border-t">
             <div className="flex flex-col gap-3 items-center">
               <div className="flex gap-3 justify-center">
                 {!isRecording ? (
                   <>
                     <Button 
                       variant="outline" 
-                      onClick={stopCamera}
+                      onClick={handleSkip}
                       data-testid="button-cancel-camera"
                     >
                       Cancel
@@ -392,6 +450,7 @@ export function VideoRecorder({
                     <Button 
                       onClick={startRecording}
                       className="bg-red-600 hover:bg-red-700"
+                      disabled={!cameraActive || !!cameraError}
                       data-testid="button-start-recording"
                     >
                       <div className="h-3 w-3 rounded-full bg-white mr-2" />
@@ -409,13 +468,10 @@ export function VideoRecorder({
                   </Button>
                 )}
               </div>
-              {onCancel && !isRecording && (
+              {!isRecording && (
                 <Button 
                   variant="ghost" 
-                  onClick={() => {
-                    stopCamera();
-                    onCancel();
-                  }}
+                  onClick={handleSkip}
                   data-testid="button-skip-video-active"
                 >
                   Skip for now
@@ -423,9 +479,9 @@ export function VideoRecorder({
               )}
             </div>
           </div>
-        )}
-      </div>
-    </Card>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
