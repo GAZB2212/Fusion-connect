@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Video, Loader2, Lightbulb, X, Play, RotateCcw, Upload, RefreshCw, Zap, Sparkles, Clock } from "lucide-react";
+import { Video, Loader2, Lightbulb, X, Play, RotateCcw, Upload, RefreshCw } from "lucide-react";
 import { isCapacitorNative, isIOS } from "@/lib/platform";
 import { requestCameraAndMicrophonePermissions } from "@/lib/permissions";
 import { motion, AnimatePresence } from "framer-motion";
@@ -486,35 +486,16 @@ export function VideoRecorder({
                     <X className="h-5 w-5" />
                   </button>
                   
-                  <div className="flex flex-col gap-4">
-                    <button onClick={flipCamera} className="flex flex-col items-center gap-1 group">
-                      <div className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md border border-white/10 flex items-center justify-center text-white group-hover:bg-black/50 transition-colors">
-                        <RefreshCw className="h-4 w-4" />
-                      </div>
-                      <span className="text-[10px] font-medium text-white drop-shadow-lg">Flip</span>
-                    </button>
-                    
-                    <button className="flex flex-col items-center gap-1 group opacity-50">
-                      <div className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md border border-white/10 flex items-center justify-center text-white">
-                        <Zap className="h-4 w-4" />
-                      </div>
-                      <span className="text-[10px] font-medium text-white drop-shadow-lg">Flash</span>
-                    </button>
-
-                    <button className="flex flex-col items-center gap-1 group opacity-50">
-                      <div className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md border border-white/10 flex items-center justify-center text-white">
-                        <Sparkles className="h-4 w-4" />
-                      </div>
-                      <span className="text-[10px] font-medium text-white drop-shadow-lg">Effects</span>
-                    </button>
-                    
-                    <button className="flex flex-col items-center gap-1 group opacity-50">
-                      <div className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md border border-white/10 flex items-center justify-center text-white">
-                        <Clock className="h-4 w-4" />
-                      </div>
-                      <span className="text-[10px] font-medium text-white drop-shadow-lg">Timer</span>
-                    </button>
-                  </div>
+                  <button 
+                    onClick={flipCamera} 
+                    className="flex flex-col items-center gap-1 group"
+                    data-testid="button-flip-camera"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md border border-white/10 flex items-center justify-center text-white group-hover:bg-black/50 transition-colors">
+                      <RefreshCw className="h-4 w-4" />
+                    </div>
+                    <span className="text-[10px] font-medium text-white drop-shadow-lg">Flip</span>
+                  </button>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -587,20 +568,24 @@ export function VideoRecorder({
                   <span className="text-xs font-medium">Skip</span>
                 </button>
 
-                <div className="relative cursor-pointer" onClick={isRecording ? stopRecording : startRecording}>
+                <button 
+                  className="relative cursor-pointer flex items-center justify-center"
+                  onClick={isRecording ? stopRecording : startRecording}
+                  data-testid={isRecording ? "button-stop-recording" : "button-start-recording"}
+                >
                   <motion.div 
                     animate={isRecording ? { scale: 1.1, borderColor: '#f59e0b' } : { scale: 1, borderColor: 'white' }}
-                    className="w-20 h-20 rounded-full border-[5px] border-white transition-colors duration-300"
-                  />
-                  <motion.div 
-                    animate={isRecording ? { scale: 0.6, borderRadius: 8 } : { scale: 1, borderRadius: 999 }}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-[#f59e0b] rounded-full transition-all duration-300"
-                    style={{ 
-                      boxShadow: isRecording ? '0 0 20px rgba(245, 158, 11, 0.5)' : 'none'
-                    }}
-                    data-testid={isRecording ? "button-stop-recording" : "button-start-recording"}
-                  />
-                </div>
+                    className="w-20 h-20 rounded-full border-[5px] border-white flex items-center justify-center"
+                  >
+                    <motion.div 
+                      animate={isRecording ? { width: 28, height: 28, borderRadius: 6 } : { width: 56, height: 56, borderRadius: 999 }}
+                      className="bg-[#f59e0b]"
+                      style={{ 
+                        boxShadow: isRecording ? '0 0 20px rgba(245, 158, 11, 0.5)' : 'none'
+                      }}
+                    />
+                  </motion.div>
+                </button>
 
                 <div className="w-12 h-12" />
               </div>
