@@ -453,11 +453,14 @@ export function VideoRecorder({
               autoPlay
               playsInline
               muted
-              className="absolute inset-0 w-full h-full object-cover"
               style={{ 
+                width: '100%',
+                height: '100%',
+                objectFit: 'contain',
                 transform: facingMode === 'user' ? 'scaleX(-1)' : 'none',
                 WebkitTransform: facingMode === 'user' ? 'scaleX(-1)' : 'none'
               }}
+              className="absolute inset-0"
             />
             
             <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/60 pointer-events-none" />
