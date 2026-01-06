@@ -2,9 +2,10 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Video, StopCircle, Loader2, Lightbulb, X, Play, RotateCcw, Upload } from "lucide-react";
+import { Video, Loader2, Lightbulb, X, Play, RotateCcw, Upload, RefreshCw, Zap, Sparkles, Clock } from "lucide-react";
 import { isCapacitorNative, isIOS } from "@/lib/platform";
 import { requestCameraAndMicrophonePermissions } from "@/lib/permissions";
+import { motion, AnimatePresence } from "framer-motion";
 
 const VIDEO_PROMPTS = [
   "Tell us about yourself and what you're looking for",
@@ -38,6 +39,7 @@ export function VideoRecorder({
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
   const [showPrompts, setShowPrompts] = useState(true);
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const previewRef = useRef<HTMLVideoElement>(null);
@@ -86,7 +88,7 @@ export function VideoRecorder({
       
       const constraints: MediaStreamConstraints = {
         video: {
-          facingMode: "user",
+          facingMode: facingMode,
           width: { ideal: 720 },
           height: { ideal: 1280 }
         },
@@ -182,12 +184,23 @@ export function VideoRecorder({
     setIsFullscreenOpen(false);
   };
 
+  const flipCamera = async () => {
+    const newMode = facingMode === "user" ? "environment" : "user";
+    setFacingMode(newMode);
+    
+    if (cameraActive && !isRecording) {
+      stopCamera();
+      setTimeout(() => {
+        startCamera();
+      }, 100);
+    }
+  };
+
   const startRecording = () => {
     if (!streamRef.current) return;
 
     chunksRef.current = [];
     
-    // Test supported MIME types - iOS Safari only supports mp4
     const supportedTypes = [
       'video/mp4',
       'video/mp4;codecs=avc1',
@@ -201,9 +214,8 @@ export function VideoRecorder({
       console.log(`[VideoRecorder] ${type}: ${MediaRecorder.isTypeSupported(type)}`);
     });
     
-    let mimeType = 'video/mp4'; // Default to mp4 for better iOS compatibility
+    let mimeType = 'video/mp4';
     
-    // Find the first supported type
     for (const type of supportedTypes) {
       if (MediaRecorder.isTypeSupported(type)) {
         mimeType = type;
@@ -286,34 +298,43 @@ export function VideoRecorder({
     closeFullscreen();
   };
 
+  const progressPercentage = ((20 - countdown) / 20) * 100;
+
   if (recordedVideoUrl) {
     return (
       <Dialog open={isFullscreenOpen} onOpenChange={(open) => !open && !isUploading && handleCloseDialog()}>
-        <DialogContent className="max-w-md w-full p-0 gap-0 h-[90vh] max-h-[700px] flex flex-col">
+        <DialogContent className="max-w-full w-full h-full max-h-full p-0 gap-0 flex flex-col border-0 rounded-none bg-black">
           {isUploading ? (
             <div className="flex-1 flex flex-col items-center justify-center p-8 gap-6">
               <div className="relative">
-                <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Video className="h-12 w-12 text-primary" />
+                <div className="h-24 w-24 rounded-full bg-[#f59e0b]/20 flex items-center justify-center">
+                  <Video className="h-12 w-12 text-[#f59e0b]" />
                 </div>
-                <div className="absolute inset-0 h-24 w-24 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
+                <div className="absolute inset-0 h-24 w-24 rounded-full border-4 border-[#f59e0b]/30 border-t-[#f59e0b] animate-spin" />
               </div>
               <div className="text-center space-y-2">
-                <h3 className="text-lg font-semibold">Uploading Your Video</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="text-lg font-semibold text-white">Uploading Your Video</h3>
+                <p className="text-sm text-white/70">
                   Please wait while we save your intro video...
                 </p>
               </div>
             </div>
           ) : (
-            <>
-              <div className="p-4 border-b flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Preview Your Video</h3>
-                <Button type="button" variant="ghost" size="icon" onClick={handleCloseDialog}>
-                  <X className="h-4 w-4" />
-                </Button>
+            <div className="relative w-full h-full flex flex-col">
+              <div className="absolute top-0 w-full z-20 pt-12 pb-4 px-6 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent">
+                <button 
+                  onClick={handleCloseDialog}
+                  className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/50 transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+                <div className="px-3 py-1.5 bg-black/30 backdrop-blur-md rounded-full border border-white/10 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-[#f59e0b] rounded-full animate-pulse" />
+                  <span className="text-xs font-medium text-white">Preview</span>
+                </div>
+                <div className="w-10" />
               </div>
-              
+
               <div className="flex-1 bg-black flex items-center justify-center overflow-hidden">
                 <video
                   ref={previewRef}
@@ -324,26 +345,32 @@ export function VideoRecorder({
                 />
               </div>
 
-              <div className="p-4 border-t flex gap-3 justify-center">
-                <Button 
-                  type="button"
-                  variant="outline" 
-                  onClick={retakeVideo}
-                  data-testid="button-retake-video"
-                >
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  Retake
-                </Button>
-                <Button 
-                  type="button"
-                  onClick={handleUpload}
-                  data-testid="button-upload-video"
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Use This Video
-                </Button>
+              <div className="absolute bottom-0 w-full z-20 pb-10 pt-6 px-6 bg-gradient-to-t from-black/80 to-transparent">
+                <div className="flex gap-4 justify-center">
+                  <button 
+                    onClick={retakeVideo}
+                    className="flex flex-col items-center gap-2 group"
+                    data-testid="button-retake-video"
+                  >
+                    <div className="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white group-hover:bg-white/20 transition-colors">
+                      <RotateCcw className="h-6 w-6" />
+                    </div>
+                    <span className="text-xs font-medium text-white/80">Retake</span>
+                  </button>
+
+                  <button 
+                    onClick={handleUpload}
+                    className="flex flex-col items-center gap-2 group"
+                    data-testid="button-upload-video"
+                  >
+                    <div className="w-14 h-14 rounded-full bg-[#f59e0b] flex items-center justify-center text-[#0a1628] group-hover:bg-[#fbbf24] transition-colors">
+                      <Upload className="h-6 w-6" />
+                    </div>
+                    <span className="text-xs font-medium text-white/80">Use Video</span>
+                  </button>
+                </div>
               </div>
-            </>
+            </div>
           )}
         </DialogContent>
       </Dialog>
@@ -418,107 +445,165 @@ export function VideoRecorder({
       </div>
 
       <Dialog open={isFullscreenOpen} onOpenChange={(open) => !open && handleCloseDialog()}>
-        <DialogContent className="max-w-md w-full p-0 gap-0 h-[90vh] max-h-[700px] flex flex-col">
-          <div className="p-4 border-b flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg font-semibold">Record Video</h3>
-              <Badge variant="outline">20 sec max</Badge>
-            </div>
-            <Button type="button" variant="ghost" size="icon" onClick={handleCloseDialog}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+        <DialogContent className="max-w-full w-full h-full max-h-full p-0 gap-0 flex flex-col border-0 rounded-none bg-black">
+          <div className="relative w-full h-full flex flex-col">
+            
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ 
+                transform: facingMode === 'user' ? 'scaleX(-1)' : 'none',
+                WebkitTransform: facingMode === 'user' ? 'scaleX(-1)' : 'none'
+              }}
+            />
+            
+            <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/60 pointer-events-none" />
 
-          <div className="flex-1 bg-black relative overflow-hidden">
-            {cameraError ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-                <p className="text-destructive text-sm max-w-xs mb-4">
-                  {cameraError}
-                </p>
-                <div className="flex gap-3">
-                  <Button type="button" variant="outline" onClick={startCamera} data-testid="button-retry-camera">
+            <div className="absolute top-0 left-0 w-full h-1.5 bg-white/20 z-30">
+              <motion.div 
+                className="h-full bg-[#f59e0b]"
+                initial={{ width: 0 }}
+                animate={{ width: isRecording ? `${progressPercentage}%` : 0 }}
+                transition={{ duration: 0.5, ease: "linear" }}
+              />
+            </div>
+
+            <AnimatePresence>
+              {!isRecording && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="relative z-10 pt-14 px-6 flex justify-between items-start"
+                >
+                  <button 
+                    onClick={handleCloseDialog}
+                    className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/50 transition-colors"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                  
+                  <div className="flex flex-col gap-4">
+                    <button onClick={flipCamera} className="flex flex-col items-center gap-1 group">
+                      <div className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md border border-white/10 flex items-center justify-center text-white group-hover:bg-black/50 transition-colors">
+                        <RefreshCw className="h-4 w-4" />
+                      </div>
+                      <span className="text-[10px] font-medium text-white drop-shadow-lg">Flip</span>
+                    </button>
+                    
+                    <button className="flex flex-col items-center gap-1 group opacity-50">
+                      <div className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md border border-white/10 flex items-center justify-center text-white">
+                        <Zap className="h-4 w-4" />
+                      </div>
+                      <span className="text-[10px] font-medium text-white drop-shadow-lg">Flash</span>
+                    </button>
+
+                    <button className="flex flex-col items-center gap-1 group opacity-50">
+                      <div className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md border border-white/10 flex items-center justify-center text-white">
+                        <Sparkles className="h-4 w-4" />
+                      </div>
+                      <span className="text-[10px] font-medium text-white drop-shadow-lg">Effects</span>
+                    </button>
+                    
+                    <button className="flex flex-col items-center gap-1 group opacity-50">
+                      <div className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md border border-white/10 flex items-center justify-center text-white">
+                        <Clock className="h-4 w-4" />
+                      </div>
+                      <span className="text-[10px] font-medium text-white drop-shadow-lg">Timer</span>
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="flex-1 flex flex-col items-center justify-center relative z-10">
+              <AnimatePresence>
+                {isRecording && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="text-white font-bold text-5xl drop-shadow-lg"
+                    style={{ fontFamily: "'Poppins', sans-serif" }}
+                  >
+                    00:{countdown < 10 ? `0${countdown}` : countdown}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {!cameraActive && !cameraError && (
+                <div className="flex flex-col items-center gap-4">
+                  <Loader2 className="h-10 w-10 text-white animate-spin" />
+                  <p className="text-white/70 text-sm">Starting camera...</p>
+                </div>
+              )}
+
+              {cameraError && (
+                <div className="flex flex-col items-center gap-4 p-6 text-center">
+                  <p className="text-red-400 text-sm max-w-xs">
+                    {cameraError}
+                  </p>
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={startCamera} 
+                    className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                    data-testid="button-retry-camera"
+                  >
                     Try Again
                   </Button>
                 </div>
-              </div>
-            ) : (
-              <>
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="w-full h-full object-cover"
-                  style={{ 
-                    transform: 'scaleX(-1)',
-                    WebkitTransform: 'scaleX(-1)'
-                  }}
-                />
-                
-                {isRecording && (
-                  <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex items-center gap-2 z-10">
-                    <div className="h-3 w-3 rounded-full bg-red-500 animate-pulse" />
-                    <span className="text-white font-bold text-xl bg-black/50 px-3 py-1 rounded-full">
-                      {countdown}s
-                    </span>
-                  </div>
-                )}
-                
-                {!cameraActive && !cameraError && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Loader2 className="h-8 w-8 text-white animate-spin" />
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-
-          <div className="p-4 border-t">
-            <div className="flex flex-col gap-3 items-center">
-              <div className="flex gap-3 justify-center">
-                {!isRecording ? (
-                  <>
-                    <Button 
-                      type="button"
-                      variant="outline" 
-                      onClick={handleSkip}
-                      data-testid="button-cancel-camera"
-                    >
-                      Cancel
-                    </Button>
-                    <Button 
-                      type="button"
-                      onClick={startRecording}
-                      className="bg-red-600 hover:bg-red-700"
-                      disabled={!cameraActive || !!cameraError}
-                      data-testid="button-start-recording"
-                    >
-                      <div className="h-3 w-3 rounded-full bg-white mr-2" />
-                      Start Recording
-                    </Button>
-                  </>
-                ) : (
-                  <Button 
-                    type="button"
-                    onClick={stopRecording}
-                    variant="destructive"
-                    data-testid="button-stop-recording"
-                  >
-                    <StopCircle className="h-4 w-4 mr-2" />
-                    Stop Recording
-                  </Button>
-                )}
-              </div>
-              {!isRecording && (
-                <Button 
-                  type="button"
-                  variant="ghost" 
-                  onClick={handleSkip}
-                  data-testid="button-skip-video-active"
-                >
-                  Skip for now
-                </Button>
               )}
+            </div>
+
+            <div className="relative z-10 pb-12 px-6 w-full flex flex-col items-center">
+              
+              <AnimatePresence>
+                {!isRecording && cameraActive && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    className="mb-8 text-center"
+                  >
+                    <h3 className="text-white font-bold text-xl mb-1 drop-shadow-lg" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                      Video Intro
+                    </h3>
+                    <p className="text-white/80 text-sm drop-shadow-md">
+                      You have 20 seconds to introduce yourself
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="flex items-center justify-between w-full px-6">
+                <button 
+                  onClick={handleSkip}
+                  className="w-12 h-12 rounded-full bg-black/30 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/50 transition-colors"
+                >
+                  <span className="text-xs font-medium">Skip</span>
+                </button>
+
+                <div className="relative cursor-pointer" onClick={isRecording ? stopRecording : startRecording}>
+                  <motion.div 
+                    animate={isRecording ? { scale: 1.1, borderColor: '#f59e0b' } : { scale: 1, borderColor: 'white' }}
+                    className="w-20 h-20 rounded-full border-[5px] border-white transition-colors duration-300"
+                  />
+                  <motion.div 
+                    animate={isRecording ? { scale: 0.6, borderRadius: 8 } : { scale: 1, borderRadius: 999 }}
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-[#f59e0b] rounded-full transition-all duration-300"
+                    style={{ 
+                      boxShadow: isRecording ? '0 0 20px rgba(245, 158, 11, 0.5)' : 'none'
+                    }}
+                    data-testid={isRecording ? "button-stop-recording" : "button-start-recording"}
+                  />
+                </div>
+
+                <div className="w-12 h-12" />
+              </div>
             </div>
           </div>
         </DialogContent>

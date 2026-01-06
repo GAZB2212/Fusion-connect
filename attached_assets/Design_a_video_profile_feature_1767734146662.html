@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lasso - Video Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            red: '#FF0000',
+                            black: '#000000',
+                            gray: '#F5F5F5',
+                            dark: '#1A1A1A'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Poppins', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 4px 20px rgba(0, 0, 0, 0.05)',
+                        'glow': '0 0 20px rgba(255, 0, 0, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(255, 0, 0, 0); }
+            100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+        }
+        
+        @keyframes progress {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+
+        .recording-pulse {
+            animation: pulse-ring 2s infinite;
+        }
+
+        .progress-animate {
+            animation: progress 15s linear forwards;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 flex items-center justify-center min-h-screen p-4 font-sans">
+
+    <!-- Mobile Device Container -->
+    <main id="app-container" class="w-[375px] h-[840px] bg-black relative overflow-hidden shadow-2xl rounded-[40px] flex flex-col">
+        
+        <!-- UI State Management Script -->
+        <script>
+            let isRecording = false;
+            let timerInterval;
+            let seconds = 15;
+
+            function toggleRecording() {
+                const btn = document.getElementById('record-btn');
+                const ring = document.getElementById('record-ring');
+                const timer = document.getElementById('recording-timer');
+                const progressBar = document.getElementById('progress-bar-fill');
+                const instructions = document.getElementById('instructions');
+                const controls = document.getElementById('top-controls');
+                
+                isRecording = !isRecording;
+
+                if (isRecording) {
+                    // Start Recording State
+                    btn.classList.add('scale-75');
+                    btn.classList.replace('bg-brand-red', 'bg-white');
+                    ring.classList.add('scale-125', 'border-brand-red');
+                    ring.classList.remove('border-white');
+                    timer.classList.remove('hidden');
+                    instructions.classList.add('opacity-0');
+                    controls.classList.add('opacity-0');
+                    progressBar.classList.add('progress-animate');
+                    
+                    // Simulate timer
+                    let timeLeft = 15;
+                    timerInterval = setInterval(() => {
+                        timeLeft--;
+                        timer.innerText = `00:${timeLeft < 10 ? '0' + timeLeft : timeLeft}`;
+                        if (timeLeft <= 0) stopRecording();
+                    }, 1000);
+
+                } else {
+                    stopRecording();
+                }
+            }
+
+            function stopRecording() {
+                clearInterval(timerInterval);
+                // Transition to review screen
+                document.getElementById('camera-view').classList.add('hidden');
+                document.getElementById('review-view').classList.remove('hidden');
+            }
+
+            function retakeVideo() {
+                document.getElementById('review-view').classList.add('hidden');
+                document.getElementById('camera-view').classList.remove('hidden');
+                
+                // Reset UI
+                isRecording = false;
+                const btn = document.getElementById('record-btn');
+                const ring = document.getElementById('record-ring');
+                const timer = document.getElementById('recording-timer');
+                const progressBar = document.getElementById('progress-bar-fill');
+                const instructions = document.getElementById('instructions');
+                const controls = document.getElementById('top-controls');
+
+                btn.classList.remove('scale-75');
+                btn.classList.replace('bg-white', 'bg-brand-red');
+                ring.classList.remove('scale-125', 'border-brand-red');
+                ring.classList.add('border-white');
+                timer.classList.add('hidden');
+                timer.innerText = "00:15";
+                instructions.classList.remove('opacity-0');
+                controls.classList.remove('opacity-0');
+                progressBar.classList.remove('progress-animate');
+                // Reset animation trick
+                void progressBar.offsetWidth; 
+            }
+
+            function saveVideo() {
+                // Ideally this would save and go back to profile
+                alert("Video saved to profile!");
+            }
+        </script>
+
+        <!-- VIEW 1: CAMERA RECORDING INTERFACE -->
+        <div id="camera-view" class="relative w-full h-full flex flex-col">
+            <!-- Camera Feed Background (Simulated) -->
+            <div class="absolute inset-0 z-0">
+                <img class="w-full h-full object-cover opacity-80" src="https://storage.googleapis.com/uxpilot-auth.appspot.com/8f6941fd0e-ecc107cfdf0d8a7982d9.png" alt="selfie portrait of young woman looking at camera, natural lighting, casual style, blurred background" />
+                <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/60"></div>
+            </div>
+
+            <!-- Top Controls -->
+            <div id="top-controls" class="relative z-10 pt-14 px-6 flex justify-between items-start transition-opacity duration-300">
+                <button class="w-10 h-10 rounded-full bg-black/20 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/40 transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+                
+                <div class="flex flex-col gap-4">
+                    <button class="flex flex-col items-center gap-1 group">
+                        <div class="w-10 h-10 rounded-full bg-black/20 backdrop-blur-md border border-white/10 flex items-center justify-center text-white group-hover:bg-black/40 transition-colors">
+                            <i class="fa-solid fa-rotate text-sm"></i>
+                        </div>
+                        <span class="text-[10px] font-medium text-white shadow-sm">Flip</span>
+                    </button>
+                    
+                    <button class="flex flex-col items-center gap-1 group">
+                        <div class="w-10 h-10 rounded-full bg-black/20 backdrop-blur-md border border-white/10 flex items-center justify-center text-white group-hover:bg-black/40 transition-colors">
+                            <i class="fa-solid fa-bolt text-sm"></i>
+                        </div>
+                        <span class="text-[10px] font-medium text-white shadow-sm">Flash</span>
+                    </button>
+
+                    <button class="flex flex-col items-center gap-1 group">
+                        <div class="w-10 h-10 rounded-full bg-black/20 backdrop-blur-md border border-white/10 flex items-center justify-center text-white group-hover:bg-black/40 transition-colors">
+                            <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
+                        </div>
+                        <span class="text-[10px] font-medium text-white shadow-sm">Effects</span>
+                    </button>
+                    
+                    <button class="flex flex-col items-center gap-1 group">
+                        <div class="w-10 h-10 rounded-full bg-black/20 backdrop-blur-md border border-white/10 flex items-center justify-center text-white group-hover:bg-black/40 transition-colors">
+                            <i class="fa-solid fa-clock text-sm"></i>
+                        </div>
+                        <span class="text-[10px] font-medium text-white shadow-sm">Timer</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recording Progress Bar (Top) -->
+            <div class="absolute top-0 left-0 w-full h-1.5 bg-white/20 z-20">
+                <div id="progress-bar-fill" class="h-full bg-brand-red w-0"></div>
+            </div>
+
+            <!-- Center Content -->
+            <div class="flex-1 flex flex-col items-center justify-center relative z-10">
+                <div id="recording-timer" class="hidden text-white font-display font-bold text-4xl mb-8 drop-shadow-lg">
+                    00:15
+                </div>
+            </div>
+
+            <!-- Bottom Controls -->
+            <div class="relative z-10 pb-12 px-6 w-full flex flex-col items-center">
+                
+                <div id="instructions" class="mb-8 text-center transition-opacity duration-300">
+                    <h3 class="text-white font-display font-bold text-xl mb-1 drop-shadow-md">Video Intro</h3>
+                    <p class="text-white/80 text-sm drop-shadow-md">You have 15s to introduce yourself.</p>
+                </div>
+
+                <div class="flex items-center justify-between w-full px-8">
+                    <!-- Gallery Button -->
+                    <button class="w-10 h-10 rounded-lg overflow-hidden border-2 border-white/20 hover:border-white transition-colors">
+                        <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" class="w-full h-full object-cover">
+                    </button>
+
+                    <!-- Record Button -->
+                    <div class="relative cursor-pointer" onclick="toggleRecording()">
+                        <!-- Outer Ring -->
+                        <div id="record-ring" class="w-20 h-20 rounded-full border-[5px] border-white transition-all duration-300"></div>
+                        <!-- Inner Circle -->
+                        <div id="record-btn" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-brand-red rounded-full transition-all duration-300 hover:scale-95"></div>
+                    </div>
+
+                    <!-- Filter/Sticker Button (Placeholder) -->
+                    <button class="w-10 h-10 rounded-full bg-black/20 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-black/40 transition-colors">
+                        <i class="fa-regular fa-face-smile text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW 2: VIDEO REVIEW / PROFILE PREVIEW -->
+        <div id="review-view" class="hidden relative w-full h-full flex flex-col bg-white">
+            
+            <!-- Header -->
+            <div class="absolute top-0 w-full z-20 pt-12 pb-4 px-6 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent">
+                <button onclick="retakeVideo()" class="w-10 h-10 flex items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white hover:bg-black/40">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <div class="px-3 py-1 bg-black/20 backdrop-blur-md rounded-full border border-white/10 flex items-center gap-2">
+                    <div class="w-2 h-2 bg-brand-red rounded-full animate-pulse"></div>
+                    <span class="text-xs font-medium text-white">Preview</span>
+                </div>
+                <button class="text-white font-semibold text-sm hover:text-brand-red transition-colors" onclick="saveVideo()">Done</button>
+            </div>
+
+            <!-- Video Content (Simulated with Image) -->
+            <div class="relative w-full h-3/5 bg-black overflow-hidden group">
+                <img class="w-full h-full object-cover opacity-90" src="https://storage.googleapis.com/uxpilot-auth.appspot.com/0687185b31-b69ef9f6cf57c9249712.png" alt="portrait of smiling young woman, looking directly at camera, high quality, video still frame style" />
+                
+                <!-- Video Controls Overlay -->
+                <div class="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/20 transition-colors">
+                    <button class="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center pl-1 hover:scale-105 transition-transform">
+                        <i class="fa-solid fa-play text-2xl text-white"></i>
+                    </button>
+                </div>
+
+                <!-- Video Badge -->
+                <div class="absolute bottom-4 left-4 flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+                    <i class="fa-solid fa-video text-brand-red text-xs"></i>
+                    <span class="text-xs font-medium text-white">Intro Video</span>
+                </div>
+
+                <!-- Sound Control -->
+                <button class="absolute bottom-4 right-4 w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-white">
+                    <i class="fa-solid fa-volume-high text-xs"></i>
+                </button>
+            </div>
+
+            <!-- Profile Context Preview -->
+            <div class="flex-1 bg-white -mt-6 relative z-10 rounded-t-3xl px-6 pt-8 pb-6 flex flex-col">
+                <!-- Drag Handle -->
+                <div class="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1 bg-gray-200 rounded-full"></div>
+
+                <div class="flex items-start justify-between mb-2">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-2xl font-display font-bold text-brand-black">Sarah, 24</h2>
+                            <!-- Verification Badge -->
+                            <div class="w-5 h-5 bg-brand-red rounded-full flex items-center justify-center text-white text-[10px]">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                        </div>
+                        <p class="text-gray-500 text-sm mt-1 flex items-center gap-1">
+                            <i class="fa-solid fa-location-dot text-brand-red text-xs"></i> 2 miles away
+                        </p>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex gap-3">
+                        <button class="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-red-200 hover:text-red-500 hover:bg-red-50 transition-all shadow-sm">
+                            <i class="fa-solid fa-xmark text-xl"></i>
+                        </button>
+                        <button class="w-12 h-12 rounded-full bg-brand-red text-white flex items-center justify-center shadow-lg shadow-red-200 hover:scale-105 transition-transform">
+                            <i class="fa-solid fa-heart text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Video Verification Status -->
+                <div class="mt-4 mb-6 p-4 bg-red-50 rounded-2xl border border-red-100 flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-brand-red shadow-sm">
+                        <i class="fa-solid fa-video"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-sm font-bold text-brand-black">Video Verified</h4>
+                        <p class="text-xs text-gray-500">Your profile will get a special badge.</p>
+                    </div>
+                    <div class="w-6 h-6 rounded-full bg-brand-red flex items-center justify-center text-white text-xs">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                </div>
+
+                <!-- CTA -->
+                <div class="mt-auto space-y-3">
+                    <button onclick="saveVideo()" class="w-full h-14 bg-brand-red text-white font-semibold rounded-xl shadow-lg shadow-red-200 active:scale-95 transition-transform flex items-center justify-center gap-2">
+                        Add to Profile
+                    </button>
+                    <button onclick="retakeVideo()" class="w-full h-14 bg-white text-gray-600 font-semibold rounded-xl border border-gray-200 hover:bg-gray-50 active:scale-95 transition-transform">
+                        Retake Video
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</body>
+</html>
