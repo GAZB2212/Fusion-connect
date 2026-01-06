@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Video, Loader2, Lightbulb, X, Play, RotateCcw, Upload, RefreshCw } from "lucide-react";
+import { Video, Loader2, Lightbulb, X, Play, RotateCcw, Upload } from "lucide-react";
 import { isCapacitorNative, isIOS } from "@/lib/platform";
 import { requestCameraAndMicrophonePermissions } from "@/lib/permissions";
 import { motion, AnimatePresence } from "framer-motion";
@@ -491,16 +491,7 @@ export function VideoRecorder({
                     <X className="h-5 w-5" />
                   </button>
                   
-                  <button 
-                    onClick={flipCamera} 
-                    className="flex flex-col items-center gap-1 group"
-                    data-testid="button-flip-camera"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-black/30 backdrop-blur-md border border-white/10 flex items-center justify-center text-white group-hover:bg-black/50 transition-colors">
-                      <RefreshCw className="h-4 w-4" />
-                    </div>
-                    <span className="text-[10px] font-medium text-white drop-shadow-lg">Flip</span>
-                  </button>
+                  <div className="w-10" />
                 </motion.div>
               )}
             </AnimatePresence>
