@@ -458,10 +458,9 @@ export function VideoRecorder({
               style={{ 
                 width: '100%',
                 height: '100%',
-                objectFit: isCapacitorNative() ? 'contain' : 'cover',
-                backgroundColor: 'black',
-                transform: facingMode === 'user' ? 'scaleX(-1)' : 'none',
-                WebkitTransform: facingMode === 'user' ? 'scaleX(-1)' : 'none'
+                objectFit: 'cover',
+                transform: facingMode === 'user' ? 'scaleX(-1) scale(0.8)' : 'scale(0.8)',
+                WebkitTransform: facingMode === 'user' ? 'scaleX(-1) scale(0.8)' : 'scale(0.8)'
               }}
               className="absolute inset-0"
             />
