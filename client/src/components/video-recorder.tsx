@@ -87,12 +87,7 @@ export function VideoRecorder({
       console.log('[VideoRecorder] Permissions granted, accessing camera...');
       
       const constraints: MediaStreamConstraints = {
-        video: isCapacitorNative() ? {
-          facingMode: facingMode,
-          aspectRatio: { ideal: 9/16 },
-          width: { ideal: 1080 },
-          height: { ideal: 1920 }
-        } : {
+        video: {
           facingMode: facingMode,
           width: { ideal: 720 },
           height: { ideal: 1280 }
