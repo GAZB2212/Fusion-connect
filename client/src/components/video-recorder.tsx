@@ -459,8 +459,8 @@ export function VideoRecorder({
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
-                transform: facingMode === 'user' ? 'scaleX(-1) scale(0.8)' : 'scale(0.8)',
-                WebkitTransform: facingMode === 'user' ? 'scaleX(-1) scale(0.8)' : 'scale(0.8)'
+                transform: facingMode === 'user' ? 'scaleX(-1) scale(1.25)' : 'scale(1.25)',
+                WebkitTransform: facingMode === 'user' ? 'scaleX(-1) scale(1.25)' : 'scale(1.25)'
               }}
               className="absolute inset-0"
             />
