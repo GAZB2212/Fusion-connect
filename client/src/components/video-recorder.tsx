@@ -89,6 +89,9 @@ export function VideoRecorder({
       const constraints: MediaStreamConstraints = {
         video: isCapacitorNative() ? {
           facingMode: facingMode,
+          aspectRatio: { ideal: 9/16 },
+          width: { ideal: 1080 },
+          height: { ideal: 1920 }
         } : {
           facingMode: facingMode,
           width: { ideal: 720 },
@@ -455,10 +458,8 @@ export function VideoRecorder({
               autoPlay
               playsInline
               muted
-              className="absolute inset-0 w-full h-full"
+              className="absolute inset-0 w-full h-full object-cover"
               style={{ 
-                objectFit: isCapacitorNative() ? 'contain' : 'cover',
-                backgroundColor: 'black',
                 transform: facingMode === 'user' ? 'scaleX(-1)' : 'none',
                 WebkitTransform: facingMode === 'user' ? 'scaleX(-1)' : 'none'
               }}
