@@ -89,6 +89,7 @@ export function VideoRecorder({
       const constraints: MediaStreamConstraints = {
         video: {
           facingMode: facingMode,
+          aspectRatio: { ideal: 9/16 },
           width: { ideal: 720 },
           height: { ideal: 1280 }
         },
@@ -456,7 +457,7 @@ export function VideoRecorder({
               style={{ 
                 width: '100%',
                 height: '100%',
-                objectFit: 'contain',
+                objectFit: 'cover',
                 transform: facingMode === 'user' ? 'scaleX(-1)' : 'none',
                 WebkitTransform: facingMode === 'user' ? 'scaleX(-1)' : 'none'
               }}
