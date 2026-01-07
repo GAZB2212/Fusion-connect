@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,13 +11,13 @@ import {
   MapPin, 
   CheckCircle2,
   Loader2,
-  Sparkles
+  Sparkles,
+  Clock,
+  Users,
+  Wifi
 } from "lucide-react";
-import { IOSHeader } from "@/components/ios-header";
 import { PullToRefresh } from "@/components/pull-to-refresh";
 import { useTranslation } from "react-i18next";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
 import type { Profile } from "@shared/schema";
 
 interface LikeData {
@@ -32,10 +32,12 @@ interface LikesResponse {
   hasActiveSubscription: boolean;
 }
 
+type FilterType = 'recent' | 'nearby' | 'compatible' | 'online';
+
 export default function Likes() {
   const [, setLocation] = useLocation();
   const { t } = useTranslation();
-  const { toast } = useToast();
+  const [activeFilter, setActiveFilter] = useState<FilterType>('recent');
 
   const { data, isLoading, refetch } = useQuery<LikesResponse>({
     queryKey: ["/api/likes"],
@@ -63,6 +65,13 @@ export default function Likes() {
     }
   };
 
+  const filters: { id: FilterType; label: string; icon: React.ReactNode }[] = [
+    { id: 'recent', label: t('likes.filterRecent', 'Recent'), icon: <Clock className="h-3 w-3" /> },
+    { id: 'nearby', label: t('likes.filterNearby', 'Nearby'), icon: <MapPin className="h-3 w-3" /> },
+    { id: 'compatible', label: t('likes.filterCompatible', 'Compatible'), icon: <Heart className="h-3 w-3" /> },
+    { id: 'online', label: t('likes.filterOnline', 'Online'), icon: <Wifi className="h-3 w-3" /> },
+  ];
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -76,36 +85,72 @@ export default function Likes() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      <div className="min-h-screen" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 6rem)' }}>
-        <IOSHeader 
-          title={t('likes.title', 'Likes You')}
-          subtitle={likes.length > 0 ? t('likes.subtitle', '{{count}} people like you', { count: likes.length }) : undefined}
-        />
+      <div className="min-h-screen bg-muted/30" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 6rem)' }}>
+        <header 
+          className="sticky top-0 z-30 bg-background/95 backdrop-blur-xl border-b border-border/50"
+          style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}
+        >
+          <div className="px-4 pb-3">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-2xl font-bold text-foreground">
+                {t('likes.title', 'Likes You')}
+              </h1>
+              {likes.length > 0 && (
+                <Badge className="bg-primary/10 text-primary border-0 gap-1.5 px-3 py-1">
+                  <Heart className="h-3 w-3 fill-primary" />
+                  {likes.length}
+                </Badge>
+              )}
+            </div>
+            
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+              {filters.map((filter) => (
+                <button
+                  key={filter.id}
+                  onClick={() => setActiveFilter(filter.id)}
+                  className={`px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 transition-colors ${
+                    activeFilter === filter.id
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+                  data-testid={`button-filter-${filter.id}`}
+                >
+                  {filter.icon}
+                  {filter.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </header>
 
-        <div className="px-4 py-4">
+        <main className="px-4 pt-4">
           {!hasActiveSubscription && likes.length > 0 && (
-            <Card 
-              className="mb-6 p-4 bg-gradient-to-r from-[#f59e0b]/20 to-[#f59e0b]/10 border-[#f59e0b]/30 cursor-pointer hover-elevate"
+            <div 
+              className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-[#0A1628] to-[#1a2744] relative overflow-hidden shadow-lg cursor-pointer"
               onClick={() => setLocation("/subscribe")}
-              data-testid="card-premium-upsell"
+              data-testid="card-premium-banner"
             >
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-full bg-[#f59e0b]/20 flex items-center justify-center flex-shrink-0">
-                  <Crown className="h-6 w-6 text-[#f59e0b]" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-foreground">
-                    {t('likes.upgradeTitle', 'Upgrade to see who likes you')}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {t('likes.upgradeDesc', '£9.99/month • See clear photos and connect')}
-                  </p>
-                </div>
-                <Button size="sm" className="flex-shrink-0" data-testid="button-upgrade-now">
-                  {t('likes.upgradeNow', 'Upgrade')}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#f59e0b] rounded-full blur-3xl opacity-20 -mr-10 -mt-10" />
+              <div className="relative z-10 flex flex-col items-start">
+                <Badge className="bg-[#f59e0b] text-white border-0 text-[10px] font-bold px-2 py-0.5 mb-2">
+                  PREMIUM
+                </Badge>
+                <h3 className="font-bold text-lg text-white leading-tight mb-1">
+                  {t('likes.seeWhoLikes', 'See who likes you')}
+                </h3>
+                <p className="text-white/60 text-xs mb-3">
+                  {t('likes.upgradeToUnblur', 'Upgrade to Premium to unblur photos and match instantly.')}
+                </p>
+                <Button 
+                  size="sm" 
+                  className="bg-white text-[#0A1628] hover:bg-white/90 font-bold"
+                  data-testid="button-upgrade-banner"
+                >
+                  <Crown className="h-4 w-4 mr-1.5 text-[#f59e0b]" />
+                  {t('likes.upgradeNow', 'Upgrade Now')}
                 </Button>
               </div>
-            </Card>
+            </div>
           )}
 
           {likes.length === 0 ? (
@@ -129,18 +174,40 @@ export default function Likes() {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
-              {likes.map((like) => (
-                <LikeCard
-                  key={like.swipeId}
-                  profile={like.profile}
-                  isBlurred={!hasActiveSubscription}
-                  onClick={() => handleCardClick(like.profile.userId)}
-                />
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-2 gap-3 pb-8">
+                {likes.map((like, index) => (
+                  <LikeCard
+                    key={like.swipeId}
+                    profile={like.profile}
+                    isBlurred={!hasActiveSubscription}
+                    isNew={index < 2}
+                    onClick={() => handleCardClick(like.profile.userId)}
+                  />
+                ))}
+              </div>
+
+              {!hasActiveSubscription && likes.length > 0 && (
+                <div className="fixed bottom-16 left-0 right-0 z-20 pointer-events-none" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+                  <div className="h-32 bg-gradient-to-t from-background via-background/90 to-transparent flex flex-col items-center justify-end pb-4 px-6 pointer-events-auto">
+                    <Button 
+                      size="lg"
+                      className="w-full max-w-sm bg-gradient-to-r from-[#f59e0b] to-[#d97706] hover:from-[#d97706] hover:to-[#b45309] text-white font-bold shadow-lg"
+                      onClick={() => setLocation("/subscribe")}
+                      data-testid="button-unlock-all"
+                    >
+                      <Lock className="h-4 w-4 mr-2" />
+                      {t('likes.unlockAllLikes', 'Unlock All Likes')}
+                    </Button>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {t('likes.startingFrom', 'Starting from £9.99/month')}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </>
           )}
-        </div>
+        </main>
       </div>
     </PullToRefresh>
   );
@@ -149,81 +216,81 @@ export default function Likes() {
 interface LikeCardProps {
   profile: Profile;
   isBlurred: boolean;
+  isNew?: boolean;
   onClick: () => void;
 }
 
-function LikeCard({ profile, isBlurred, onClick }: LikeCardProps) {
-  const { t } = useTranslation();
+function LikeCard({ profile, isBlurred, isNew, onClick }: LikeCardProps) {
   const mainPhoto = profile.photos?.[profile.mainPhotoIndex || 0] || profile.photos?.[0];
   
   return (
-    <Card 
-      className="overflow-hidden hover-elevate active-elevate-2"
+    <div 
+      className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-card shadow-sm cursor-pointer hover-elevate active-elevate-2"
+      onClick={onClick}
       data-testid={`card-like-${profile.userId}`}
     >
-      <div className="aspect-[3/4] relative">
+      <div className="absolute inset-0 bg-muted">
         {mainPhoto ? (
           <img
             src={mainPhoto}
             alt={profile.displayName}
             className={`w-full h-full object-cover transition-all duration-300 ${
-              isBlurred ? 'blur-2xl scale-110' : ''
+              isBlurred ? 'blur-xl scale-110' : ''
             }`}
           />
         ) : (
-          <div className="w-full h-full bg-muted flex items-center justify-center">
-            <Heart className="h-12 w-12 text-muted-foreground/50" />
+          <div className="w-full h-full flex items-center justify-center">
+            <Heart className="h-12 w-12 text-muted-foreground/30" />
           </div>
         )}
-
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-
-        {isBlurred && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="h-16 w-16 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
-              <Lock className="h-8 w-8 text-white" />
-            </div>
-          </div>
-        )}
-
-        <div className="absolute bottom-0 left-0 right-0 p-3">
-          <div className="flex items-center gap-1 mb-1">
-            <h3 className="font-semibold text-white text-lg truncate">
-              {profile.displayName}
-            </h3>
-            {profile.age && (
-              <span className="text-white/90 text-lg">, {profile.age}</span>
-            )}
-            {profile.faceVerified && (
-              <CheckCircle2 className="h-4 w-4 text-[#f59e0b] flex-shrink-0" />
-            )}
-          </div>
-          {profile.location && (
-            <div className="flex items-center gap-1 text-white/70 text-sm">
-              <MapPin className="h-3 w-3" />
-              <span className="truncate">{profile.location}</span>
-            </div>
-          )}
-        </div>
       </div>
       
-      <div className="p-3">
-        <Button 
-          className="w-full" 
-          size="sm"
-          onClick={onClick}
-          data-testid={`button-view-profile-${profile.userId}`}
-        >
-          {isBlurred ? (
-            <>
-              <Lock className="h-4 w-4 mr-2" />
-              {t('likes.unlockProfile', 'Unlock Profile')}
-            </>
-          ) : (
-            t('likes.viewProfile', 'View Profile')
-          )}
-        </Button>
+      <div className="absolute inset-0 bg-black/10" />
+
+      {isBlurred && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-2">
+            <Lock className="h-5 w-5 text-white" />
+          </div>
+        </div>
+      )}
+
+      {isNew && (
+        <div className="absolute top-2 right-2">
+          <Badge className="bg-[#f59e0b] text-white border-0 text-[10px] font-bold px-2 py-0.5">
+            NEW
+          </Badge>
+        </div>
+      )}
+
+      <div className="absolute bottom-0 w-full p-3 bg-gradient-to-t from-black/70 to-transparent">
+        {isBlurred ? (
+          <>
+            <div className="h-4 w-16 bg-white/50 rounded mb-1 backdrop-blur-sm" />
+            <div className="h-3 w-24 bg-white/30 rounded backdrop-blur-sm" />
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-1 mb-0.5">
+              <h3 className="font-semibold text-white text-base truncate">
+                {profile.displayName}
+              </h3>
+              {profile.age && (
+                <span className="text-white/90 text-base">, {profile.age}</span>
+              )}
+              {profile.faceVerified && (
+                <CheckCircle2 className="h-3.5 w-3.5 text-[#f59e0b] flex-shrink-0" />
+              )}
+            </div>
+            {profile.location && (
+              <div className="flex items-center gap-1 text-white/70 text-xs">
+                <MapPin className="h-3 w-3" />
+                <span className="truncate">{profile.location}</span>
+              </div>
+            )}
+          </>
+        )}
       </div>
-    </Card>
+    </div>
   );
 }
