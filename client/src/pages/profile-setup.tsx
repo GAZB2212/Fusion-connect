@@ -52,7 +52,7 @@ const STEP_TITLES: Record<number, { title: string; subtitle: string }> = {
   1: { title: "Add Your Photos", subtitle: "Show your best self with at least 3 clear photos" },
   2: { title: "What's your name?", subtitle: "This is how you'll appear to others" },
   3: { title: "How old are you?", subtitle: "You must be 18 or older to use Fusion" },
-  4: { title: "What's your gender?", subtitle: "Select your gender" },
+  4: { title: "Are you a brother or sister?", subtitle: "Select one" },
   5: { title: "Where are you based?", subtitle: "We'll show you people nearby" },
   6: { title: "How tall are you?", subtitle: "Optional, but it helps with matching" },
   7: { title: "What's your ethnicity?", subtitle: "Select all that apply" },
@@ -860,8 +860,8 @@ export default function ProfileSetup() {
             {step === 4 && (
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { value: "male", label: "Male" },
-                  { value: "female", label: "Female" },
+                  { value: "male", label: "Brother" },
+                  { value: "female", label: "Sister" },
                 ].map((option) => (
                   <button
                     key={option.value}
