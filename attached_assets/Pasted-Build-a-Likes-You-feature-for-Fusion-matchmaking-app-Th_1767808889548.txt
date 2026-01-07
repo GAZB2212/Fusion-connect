@@ -1,0 +1,57 @@
+Build a "Likes You" feature for Fusion matchmaking app. This shows users who have liked them, with premium gating.
+
+Requirements:
+
+1. NEW TAB in bottom navigation between "For You" and "Matches":
+   - Icon: Heart outline (gold when active)
+   - Label: "Likes"
+   - Route: /likes
+
+2. DATABASE:
+   - Use existing "swipes" table
+   - Query: Get all users who swiped right on current user (direction = 'right')
+   - Filter out users current user has already swiped on (no mutual matches shown here)
+   - Order by most recent swipe first
+
+3. PAGE LAYOUT:
+   - Header: "Likes You" with heart icon
+   - Count badge: "X people like you"
+   - Premium upsell banner if no subscription (gold background, crown icon, "Upgrade to see who likes you - £9.99/month", "Upgrade Now" button)
+   - 2-column grid of profile cards
+
+4. PROFILE CARDS:
+   - Show profile photo (BLURRED for free users with blur-2xl filter, CLEAR for premium subscribers)
+   - Lock icon overlay for free users
+   - Name, age always visible: "Sarah, 27"
+   - Location visible: "London"
+   - Verified badge if applicable
+   - Gradient overlay at bottom
+
+5. SUBSCRIPTION CHECK:
+   - Check current user's subscription status from database
+   - If subscriptionStatus = 'active' OR subscriptionStatus = 'trialing': show clear photos
+   - If no subscription: blur photos with CSS blur filter
+
+6. CLICK BEHAVIOR:
+   When user clicks a card:
+   - Navigate to full profile view page (create route: /profile/:userId)
+   - Show full profile with all details
+   - At bottom: "Like" (gold heart button) and "Pass" (navy X button)
+   - If user clicks "Like": create match (both swiped right), redirect to /matches
+   - If user clicks "Pass": record swipe as left, remove from "Likes You" grid
+
+7. FULL PROFILE VIEW PAGE:
+   - Large photo carousel
+   - All profile details (bio, Islamic values, interests, etc.)
+   - Action buttons at bottom
+
+8. STYLING:
+   - Use Fusion brand colors (navy #0f172a, gold #f59e0b)
+   - Card shadows and hover effects
+   - Smooth transitions
+   - Mobile-responsive grid
+
+9. EMPTY STATE:
+   - If no likes yet: Show message "No likes yet. Keep swiping to find your match!"
+
+Build this feature integrated with existing Fusion codebase, using existing components and database schema.
