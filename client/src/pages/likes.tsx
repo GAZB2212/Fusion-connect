@@ -72,13 +72,13 @@ export default function Likes() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      <div className="min-h-screen pb-24">
+      <div className="min-h-screen" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 6rem)' }}>
         <IOSHeader 
           title={t('likes.title', 'Likes You')}
           subtitle={likes.length > 0 ? t('likes.subtitle', '{{count}} people like you', { count: likes.length }) : undefined}
         />
 
-        <div className="container max-w-3xl mx-auto px-4 py-4">
+        <div className="px-4 py-4">
           {!hasActiveSubscription && likes.length > 0 && (
             <Card 
               className="mb-6 p-4 bg-gradient-to-r from-[#f59e0b]/20 to-[#f59e0b]/10 border-[#f59e0b]/30 cursor-pointer hover-elevate"

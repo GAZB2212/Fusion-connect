@@ -34,10 +34,11 @@ export function IOSHeader({
   return (
     <header 
       className={cn(
-        "sticky top-0 z-30 pt-14",
+        "sticky top-0 z-30",
         "bg-background/80 backdrop-blur-xl border-b border-border/50",
         className
       )}
+      style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}
       data-testid="ios-header"
     >
       <div className="px-4 pb-3">

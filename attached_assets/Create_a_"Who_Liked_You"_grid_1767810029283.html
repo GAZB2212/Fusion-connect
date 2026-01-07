@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Who Liked You - Lasso</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        window.FontAwesomeConfig = { autoReplaceSvg: 'nest' };
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        lasso: {
+                            red: '#FF0000',
+                            black: '#000000',
+                            gray: '#F3F4F6',
+                            dark: '#1F2937',
+                            gold: '#FFD700'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'up': '0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        ::-webkit-scrollbar { display: none; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .glass-overlay {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .gold-gradient {
+            background: linear-gradient(135deg, #FFD700 0%, #FDB931 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen font-sans text-lasso-black">
+
+    <!-- Mobile Container -->
+    <div id="app-container" class="relative w-full max-w-[375px] h-[840px] bg-white shadow-2xl overflow-hidden rounded-[30px] border-[8px] border-gray-900">
+        
+        <!-- Status Bar -->
+        <div class="absolute top-0 w-full h-12 flex justify-between items-center px-6 z-50 pointer-events-none bg-white/90 backdrop-blur-sm">
+            <span class="text-sm font-semibold">9:41</span>
+            <div class="flex gap-2 text-xs">
+                <i class="fa-solid fa-signal"></i>
+                <i class="fa-solid fa-wifi"></i>
+                <i class="fa-solid fa-battery-full"></i>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <header id="likes-header" class="absolute top-12 left-0 w-full px-6 py-4 bg-white z-40 border-b border-gray-100">
+            <div class="flex items-center justify-between mb-4">
+                <h1 class="text-2xl font-bold">Likes You</h1>
+                <div class="bg-red-50 text-lasso-red px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                    <i class="fa-solid fa-heart"></i> 24
+                </div>
+            </div>
+            
+            <!-- Filters -->
+            <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+                <button class="px-4 py-2 bg-black text-white rounded-full text-xs font-semibold whitespace-nowrap">Recent</button>
+                <button class="px-4 py-2 bg-gray-100 text-gray-500 rounded-full text-xs font-semibold whitespace-nowrap">Nearby</button>
+                <button class="px-4 py-2 bg-gray-100 text-gray-500 rounded-full text-xs font-semibold whitespace-nowrap">Compatible</button>
+                <button class="px-4 py-2 bg-gray-100 text-gray-500 rounded-full text-xs font-semibold whitespace-nowrap">Online</button>
+            </div>
+        </header>
+
+        <!-- Main Content: Scrollable Grid -->
+        <main id="likes-grid-container" class="absolute inset-0 top-[120px] bottom-[80px] overflow-y-auto hide-scrollbar bg-gray-50">
+            
+            <!-- Teaser Banner -->
+            <div class="mx-4 mt-4 mb-6 p-4 rounded-2xl bg-gradient-to-r from-gray-900 to-gray-800 text-white relative overflow-hidden shadow-lg">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-lasso-red rounded-full blur-3xl opacity-20 -mr-10 -mt-10"></div>
+                <div class="relative z-10 flex flex-col items-start">
+                    <span class="bg-lasso-red text-[10px] font-bold px-2 py-0.5 rounded text-white mb-2">PREMIUM</span>
+                    <h3 class="font-bold text-lg leading-tight mb-1">See who likes you</h3>
+                    <p class="text-gray-300 text-xs mb-3">Upgrade to Gold to unblur photos and match instantly.</p>
+                    <button class="bg-white text-black text-xs font-bold px-4 py-2 rounded-full">Upgrade Now</button>
+                </div>
+            </div>
+
+            <!-- Grid -->
+            <div class="grid grid-cols-2 gap-3 px-4 pb-24">
+                
+                <!-- Card 1: Blurred (Teaser) -->
+                <div class="relative aspect-[3/4] rounded-2xl overflow-hidden bg-white shadow-sm group">
+                    <div class="absolute inset-0 bg-gray-200">
+                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg" class="w-full h-full object-cover blur-md scale-110" alt="User">
+                    </div>
+                    <div class="absolute inset-0 bg-black/10"></div>
+                    <!-- Lock Overlay -->
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <div class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-2">
+                            <i class="fa-solid fa-lock text-white"></i>
+                        </div>
+                    </div>
+                    <!-- Bottom Info (Blurred text effect) -->
+                    <div class="absolute bottom-0 w-full p-3 bg-gradient-to-t from-black/60 to-transparent">
+                        <div class="h-4 w-16 bg-white/50 rounded mb-1 backdrop-blur-sm"></div>
+                        <div class="h-3 w-24 bg-white/30 rounded backdrop-blur-sm"></div>
+                    </div>
+                </div>
+
+                 <!-- Card 2: Blurred -->
+                 <div class="relative aspect-[3/4] rounded-2xl overflow-hidden bg-white shadow-sm">
+                    <div class="absolute inset-0 bg-gray-200">
+                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg" class="w-full h-full object-cover blur-md scale-110" alt="User">
+                    </div>
+                    <div class="absolute inset-0 bg-black/10"></div>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <div class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-2">
+                            <i class="fa-solid fa-lock text-white"></i>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-0 w-full p-3 bg-gradient-to-t from-black/60 to-transparent">
+                        <div class="h-4 w-20 bg-white/50 rounded mb-1 backdrop-blur-sm"></div>
+                        <div class="h-3 w-12 bg-white/30 rounded backdrop-blur-sm"></div>
+                    </div>
+                     <!-- New Badge -->
+                     <div class="absolute top-2 right-2 bg-lasso-red text-white text-[10px] font-bold px-2 py-0.5 rounded-full">NEW</div>
+                </div>
+
+                <!-- Card 3: Blurred -->
+                <div class="relative aspect-[3/4] rounded-2xl overflow-hidden bg-white shadow-sm">
+                    <div class="absolute inset-0 bg-gray-200">
+                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-6.jpg" class="w-full h-full object-cover blur-md scale-110" alt="User">
+                    </div>
+                    <div class="absolute inset-0 bg-black/10"></div>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <div class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-2">
+                            <i class="fa-solid fa-lock text-white"></i>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-0 w-full p-3 bg-gradient-to-t from-black/60 to-transparent">
+                        <div class="h-4 w-14 bg-white/50 rounded mb-1 backdrop-blur-sm"></div>
+                        <div class="h-3 w-20 bg-white/30 rounded backdrop-blur-sm"></div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Blurred -->
+                <div class="relative aspect-[3/4] rounded-2xl overflow-hidden bg-white shadow-sm">
+                    <div class="absolute inset-0 bg-gray-200">
+                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-7.jpg" class="w-full h-full object-cover blur-md scale-110" alt="User">
+                    </div>
+                    <div class="absolute inset-0 bg-black/10"></div>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <div class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-2">
+                            <i class="fa-solid fa-lock text-white"></i>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-0 w-full p-3 bg-gradient-to-t from-black/60 to-transparent">
+                        <div class="h-4 w-18 bg-white/50 rounded mb-1 backdrop-blur-sm"></div>
+                        <div class="h-3 w-10 bg-white/30 rounded backdrop-blur-sm"></div>
+                    </div>
+                </div>
+
+                <!-- Card 5: Blurred -->
+                <div class="relative aspect-[3/4] rounded-2xl overflow-hidden bg-white shadow-sm">
+                    <div class="absolute inset-0 bg-gray-200">
+                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-8.jpg" class="w-full h-full object-cover blur-md scale-110" alt="User">
+                    </div>
+                    <div class="absolute inset-0 bg-black/10"></div>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <div class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-2">
+                            <i class="fa-solid fa-lock text-white"></i>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-0 w-full p-3 bg-gradient-to-t from-black/60 to-transparent">
+                        <div class="h-4 w-12 bg-white/50 rounded mb-1 backdrop-blur-sm"></div>
+                        <div class="h-3 w-16 bg-white/30 rounded backdrop-blur-sm"></div>
+                    </div>
+                </div>
+
+                <!-- Card 6: Blurred -->
+                <div class="relative aspect-[3/4] rounded-2xl overflow-hidden bg-white shadow-sm">
+                    <div class="absolute inset-0 bg-gray-200">
+                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-9.jpg" class="w-full h-full object-cover blur-md scale-110" alt="User">
+                    </div>
+                    <div class="absolute inset-0 bg-black/10"></div>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <div class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-2">
+                            <i class="fa-solid fa-lock text-white"></i>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-0 w-full p-3 bg-gradient-to-t from-black/60 to-transparent">
+                        <div class="h-4 w-16 bg-white/50 rounded mb-1 backdrop-blur-sm"></div>
+                        <div class="h-3 w-14 bg-white/30 rounded backdrop-blur-sm"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Fixed Bottom Overlay CTA -->
+        <div id="premium-overlay" class="absolute bottom-[80px] left-0 w-full z-30 pointer-events-none">
+            <div class="h-32 bg-gradient-to-t from-white via-white/90 to-transparent flex flex-col items-center justify-end pb-6 px-6 pointer-events-auto">
+                <button class="w-full bg-lasso-red text-white font-bold py-4 rounded-full shadow-lg shadow-red-200 active:scale-95 transition-transform flex items-center justify-center gap-2 animate-bounce-slow">
+                    <i class="fa-solid fa-unlock"></i>
+                    <span>See who likes you</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav class="absolute bottom-0 w-full h-[80px] bg-white border-t border-gray-100 flex justify-around items-center px-2 pb-4 z-50">
+            <button class="w-16 h-full flex flex-col items-center justify-center text-gray-400 hover:text-lasso-red transition-colors">
+                <i class="fa-solid fa-layer-group text-xl mb-1"></i>
+            </button>
+            
+            <button class="w-16 h-full flex flex-col items-center justify-center text-gray-400 hover:text-lasso-red transition-colors">
+                <i class="fa-regular fa-compass text-xl mb-1"></i>
+            </button>
+
+            <button class="w-16 h-full flex flex-col items-center justify-center text-lasso-red transition-colors relative">
+                <div class="absolute top-3 right-3 w-2.5 h-2.5 bg-lasso-red rounded-full border-2 border-white"></div>
+                <i class="fa-solid fa-heart text-2xl mb-1 drop-shadow-sm"></i>
+            </button>
+
+            <button class="w-16 h-full flex flex-col items-center justify-center text-gray-400 hover:text-lasso-red transition-colors">
+                <i class="fa-regular fa-message text-xl mb-1"></i>
+            </button>
+            
+            <button class="w-16 h-full flex flex-col items-center justify-center text-gray-400 hover:text-lasso-red transition-colors">
+                <i class="fa-regular fa-user text-xl mb-1"></i>
+            </button>
+        </nav>
+
+        <!-- Premium Modal (Hidden by default, shown on click simulation) -->
+        <div id="premium-modal" class="absolute inset-0 z-[60] hidden">
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="togglePremiumModal()"></div>
+            <div class="absolute bottom-0 w-full bg-white rounded-t-[30px] p-6 pb-10 transform transition-transform duration-300 translate-y-0">
+                <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mb-6"></div>
+                
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-heart text-lasso-red text-3xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold mb-2">Lasso Gold</h2>
+                    <p class="text-gray-500 text-sm px-6">See everyone who likes you, match instantly, and find your person faster.</p>
+                </div>
+
+                <!-- Features List -->
+                <div class="space-y-4 mb-8">
+                    <div class="flex items-center gap-4 p-3 rounded-xl bg-gray-50">
+                        <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm text-lasso-red">
+                            <i class="fa-solid fa-eye"></i>
+                        </div>
+                        <div class="text-sm font-medium">See who likes you</div>
+                        <i class="fa-solid fa-check text-green-500 ml-auto"></i>
+                    </div>
+                    <div class="flex items-center gap-4 p-3 rounded-xl bg-gray-50">
+                        <div class="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm text-lasso-red">
+                            <i class="fa-solid fa-infinity"></i>
+                        </div>
+                        <div class="text-sm font-medium">Unlimited likes</div>
+                        <i class="fa-solid fa-check text-green-500 ml-auto"></i>
+                    </div>
+                </div>
+
+                <!-- Pricing Options -->
+                <div class="grid grid-cols-3 gap-3 mb-8">
+                    <div class="border border-gray-200 rounded-2xl p-3 text-center opacity-60">
+                        <div class="text-xs font-bold text-gray-400 mb-1">1 Month</div>
+                        <div class="text-lg font-bold">$19.99</div>
+                    </div>
+                    <div class="border-2 border-lasso-red bg-red-50 rounded-2xl p-3 text-center relative">
+                        <div class="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-lasso-red text-white text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">MOST POPULAR</div>
+                        <div class="text-xs font-bold text-lasso-red mb-1">6 Months</div>
+                        <div class="text-lg font-bold">$9.99<span class="text-xs font-normal">/mo</span></div>
+                    </div>
+                    <div class="border border-gray-200 rounded-2xl p-3 text-center opacity-60">
+                        <div class="text-xs font-bold text-gray-400 mb-1">12 Months</div>
+                        <div class="text-lg font-bold">$7.99<span class="text-xs font-normal">/mo</span></div>
+                    </div>
+                </div>
+
+                <button class="w-full bg-gradient-to-r from-lasso-red to-red-600 text-white font-bold py-4 rounded-full shadow-lg shadow-red-200 active:scale-95 transition-transform mb-4">
+                    Continue
+                </button>
+                <button class="w-full text-xs font-semibold text-gray-400 uppercase tracking-wide" onclick="togglePremiumModal()">No thanks</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Simple function to toggle the premium modal for demonstration
+        function togglePremiumModal() {
+            const modal = document.getElementById('premium-modal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        // Attach event listeners to buttons that should trigger the modal
+        document.addEventListener('DOMContentLoaded', () => {
+            const upgradeButtons = document.querySelectorAll('button:not([onclick])');
+            upgradeButtons.forEach(btn => {
+                if (btn.innerText.includes('Upgrade') || btn.innerText.includes('See who')) {
+                    btn.onclick = togglePremiumModal;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
