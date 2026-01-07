@@ -2145,6 +2145,15 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
       return res.status(400).json({ message: "Please complete your profile first" });
     }
 
+    // Ensure user has a gender set for proper filtering
+    if (!userProfile.gender) {
+      return res.status(400).json({ message: "Please set your gender in your profile" });
+    }
+
+    // Determine target gender (opposite gender matching)
+    const targetGender = userProfile.gender === 'male' ? 'female' : 'male';
+    console.log(`[DISCOVER] User ${userId} (${userProfile.gender}) looking for ${targetGender} profiles`);
+
     // Get IDs of already swiped profiles
     const alreadySwiped = await db
       .select({ swipedId: swipes.swipedId })
@@ -2153,8 +2162,19 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
 
     const swipedIds = alreadySwiped.map((s) => s.swipedId);
 
-    // Get profiles to show (opposite gender, not self, not already swiped, active profiles)
-    // Fetch more than needed to allow for distance sorting
+    // Get IDs of blocked users (both directions)
+    const blockedByMe = await db
+      .select({ blockedId: blockedUsers.blockedId })
+      .from(blockedUsers)
+      .where(eq(blockedUsers.blockerId, userId));
+    const blockedMe = await db
+      .select({ blockerId: blockedUsers.blockerId })
+      .from(blockedUsers)
+      .where(eq(blockedUsers.blockedId, userId));
+    
+    const blockedIds = [...blockedByMe.map(b => b.blockedId), ...blockedMe.map(b => b.blockerId)];
+
+    // Get profiles to show (opposite gender only, not self, not already swiped, active profiles)
     let discoverProfiles = await db
       .select({
         profile: profiles,
@@ -2167,13 +2187,16 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
           ne(profiles.userId, userId),
           eq(profiles.isActive, true),
           eq(profiles.isComplete, true),
-          ne(profiles.gender, userProfile.gender),
-          swipedIds.length > 0 ? notInArray(profiles.userId, swipedIds) : undefined
+          eq(profiles.gender, targetGender), // Explicit opposite gender match
+          swipedIds.length > 0 ? notInArray(profiles.userId, swipedIds) : undefined,
+          blockedIds.length > 0 ? notInArray(profiles.userId, blockedIds) : undefined
         )
       )
-      .limit(100); // Fetch more to allow sorting
+      .limit(100);
 
-    // DEV MODE: If no profiles found and we're in development, loop all profiles (ignore swipes)
+    console.log(`[DISCOVER] Found ${discoverProfiles.length} profiles for user ${userId}`);
+
+    // DEV MODE: If no profiles found and we're in development, loop all profiles (ignore swipes but keep gender filter)
     if (discoverProfiles.length === 0 && process.env.NODE_ENV === 'development') {
       discoverProfiles = await db
         .select({
@@ -2187,10 +2210,11 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
             ne(profiles.userId, userId),
             eq(profiles.isActive, true),
             eq(profiles.isComplete, true),
-            ne(profiles.gender, userProfile.gender)
+            eq(profiles.gender, targetGender) // Keep gender filter in dev mode too
           )
         )
         .limit(100);
+      console.log(`[DISCOVER DEV] Fallback found ${discoverProfiles.length} profiles`);
     }
 
     // Sort by distance if user has coordinates
