@@ -2870,6 +2870,121 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
     res.json({ success: true, isMatch, matchId });
   });
 
+  // Get users who liked current user (Likes You feature)
+  app.get("/api/likes", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const userId = req.user.id;
+
+      // Check subscription status
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, userId))
+        .limit(1);
+
+      const hasActiveSubscription = user?.subscriptionStatus === 'active' || user?.subscriptionStatus === 'trialing';
+
+      // Get all users who swiped right on current user
+      const likedBySwipes = await db
+        .select()
+        .from(swipes)
+        .where(and(
+          eq(swipes.swipedId, userId),
+          eq(swipes.direction, 'right')
+        ))
+        .orderBy(desc(swipes.createdAt));
+
+      // Get users that current user has already swiped on (to exclude)
+      const currentUserSwipes = await db
+        .select({ swipedId: swipes.swipedId })
+        .from(swipes)
+        .where(eq(swipes.swiperId, userId));
+
+      const swipedUserIds = currentUserSwipes.map(s => s.swipedId);
+
+      // Filter out users current user has already swiped on
+      const pendingLikes = likedBySwipes.filter(s => !swipedUserIds.includes(s.swiperId));
+
+      // Get profiles for these users
+      const likesWithProfiles = [];
+      for (const swipe of pendingLikes) {
+        const [profileData] = await db
+          .select({
+            profile: profiles,
+            user: users,
+          })
+          .from(profiles)
+          .innerJoin(users, eq(profiles.userId, users.id))
+          .where(eq(profiles.userId, swipe.swiperId))
+          .limit(1);
+
+        if (profileData) {
+          likesWithProfiles.push({
+            swipeId: swipe.id,
+            swipedAt: swipe.createdAt,
+            profile: {
+              ...profileData.profile,
+              photos: profileData.profile.photos?.map(url => toAbsoluteUrl(url)) || [],
+            },
+          });
+        }
+      }
+
+      res.json({
+        likes: likesWithProfiles,
+        count: likesWithProfiles.length,
+        hasActiveSubscription,
+      });
+    } catch (error) {
+      console.error('[LIKES] Error fetching likes:', error);
+      res.status(500).json({ message: "Failed to fetch likes" });
+    }
+  });
+
+  // Get a specific user's profile by ID (for viewing from Likes page)
+  app.get("/api/users/:userId/profile", isAuthenticated, async (req: any, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const currentUserId = req.user.id;
+
+      // Check subscription status
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, currentUserId))
+        .limit(1);
+
+      const hasActiveSubscription = user?.subscriptionStatus === 'active' || user?.subscriptionStatus === 'trialing';
+
+      // Get the profile
+      const [profileData] = await db
+        .select({
+          profile: profiles,
+          user: users,
+        })
+        .from(profiles)
+        .innerJoin(users, eq(profiles.userId, users.id))
+        .where(eq(profiles.userId, userId))
+        .limit(1);
+
+      if (!profileData) {
+        return res.status(404).json({ message: "Profile not found" });
+      }
+
+      res.json({
+        profile: {
+          ...profileData.profile,
+          photos: profileData.profile.photos?.map(url => toAbsoluteUrl(url)) || [],
+          introVideoUrl: profileData.profile.introVideoUrl ? toAbsoluteUrl(profileData.profile.introVideoUrl) : null,
+        },
+        hasActiveSubscription,
+      });
+    } catch (error) {
+      console.error('[PROFILE] Error fetching user profile:', error);
+      res.status(500).json({ message: "Failed to fetch profile" });
+    }
+  });
+
   // Get matches
   app.get("/api/matches", isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;

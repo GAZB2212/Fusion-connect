@@ -41,6 +41,8 @@ import TermsOfService from "@/pages/terms-of-service";
 import ChaperonePortal from "@/pages/chaperone-portal";
 import GuidanceHub from "@/pages/guidance-hub";
 import IncomingCall from "@/pages/incoming-call";
+import Likes from "@/pages/likes";
+import UserProfile from "@/pages/user-profile";
 import NotFound from "@/pages/not-found";
 import { BottomNav } from "@/components/navigation";
 import IncomingCallBanner, { type IncomingCallData } from "@/components/IncomingCallBanner";
@@ -175,6 +177,8 @@ function Router() {
       <Route path="/launch" component={Launch} />
       <Route path="/admin/qr-code" component={AdminQR} />
       <Route path="/suggestions" component={Suggestions} />
+      <Route path="/likes" component={Likes} />
+      <Route path="/profile/:userId" component={UserProfile} />
       <Route path="/matches" component={Matches} />
       <Route path="/matches/:matchId/profile" component={MatchProfile} />
       <Route path="/messages/:matchId?" component={Messages} />

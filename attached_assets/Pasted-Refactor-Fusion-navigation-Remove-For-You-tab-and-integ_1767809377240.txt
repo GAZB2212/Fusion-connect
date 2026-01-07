@@ -1,0 +1,50 @@
+Refactor Fusion navigation: Remove "For You" tab and integrate AI matches into Discover page.
+
+Changes Required:
+
+1. REMOVE "For You" TAB from bottom navigation:
+   - Delete /for-you route
+   - Remove "For You" from navigation component
+   - New navigation: Discover | Likes | Matches | Messages | Settings (5 tabs)
+
+2. UPDATE DISCOVER PAGE (/discover):
+   
+   Add "Curated Matches" section at the top:
+   - Card with gold accent border
+   - Sparkle icon (✨) 
+   - Heading: "8 Curated Matches for You Today"
+   - Subheading: "Based on your values and preferences"
+   - Show count: "X of 8 viewed today"
+   - Horizontally scrollable carousel of profile cards (not full swipe cards)
+   - Each card shows: photo, name, age, location, compatibility percentage
+   - Click card to view full profile with swipe actions
+   - Gold "View All" button to expand to full-screen curated view
+
+3. CURATED MATCHES LOGIC:
+   - Use existing "For You" matching algorithm (values-based compatibility scoring)
+   - Generate 8 profiles daily
+   - Store in database with date generated
+   - Reset daily at midnight
+   - Track which curated profiles user has viewed/swiped today
+
+4. BELOW CURATED SECTION:
+   - Divider with text: "Or keep discovering"
+   - Regular discovery swipe stack (existing functionality)
+   - All profiles that aren't in today's curated picks
+
+5. STYLING:
+   - Curated section: White card with gold left border, subtle shadow
+   - Profile cards in carousel: 280px width, rounded corners, gold verified badges
+   - Smooth horizontal scroll with momentum
+   - Show 1.3 cards at a time to indicate scrollability
+
+6. EMPTY STATE:
+   - If all 8 curated matches viewed/swiped: "Check back tomorrow for new curated matches!"
+   - Collapse section to small banner
+
+7. MOBILE OPTIMIZATION:
+   - Ensure carousel scrolls smoothly on touch devices
+   - Cards properly sized for mobile screens
+   - Maintain existing swipe functionality below
+
+Update navigation component, discover page, and integrate existing For You algorithm. Keep all existing functionality, just reorganize the UI.
