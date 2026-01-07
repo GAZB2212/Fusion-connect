@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, X, MapPin, Play, ChevronLeft, ChevronRight, ShieldCheck, Users, Sparkles, Moon, Star, User, Ruler, Briefcase, GraduationCap, Baby, Loader2, Info } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Heart, X, MapPin, Play, ChevronLeft, ChevronRight, ShieldCheck, Users, Sparkles, Moon, Star, User, Ruler, Briefcase, GraduationCap, Baby, Loader2, Info, CheckCircle2, Clock, Crown, ArrowRight } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { ProfileWithUser } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -22,7 +23,22 @@ import { cn } from "@/lib/utils";
 import { getPromptById, type ProfilePromptAnswer } from "@/lib/islamicPrompts";
 import { haptic } from "@/lib/haptics";
 
-// Photo Carousel component for expanded profile view
+interface ForYouPick {
+  id: string;
+  profile: ProfileWithUser;
+  compatibilityScore: number;
+  matchReasons: string[];
+  userAction: string | null;
+  isForYouPick: boolean;
+}
+
+interface SuggestionsResponse {
+  picks: ForYouPick[];
+  dailyLimit: number;
+  picksRemaining: number;
+  resetTime: string;
+}
+
 function ProfilePhotoCarousel({ photos, displayName }: { photos: string[]; displayName: string }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -66,7 +82,6 @@ function ProfilePhotoCarousel({ photos, displayName }: { photos: string[]; displ
           />
         </AnimatePresence>
         
-        {/* Navigation arrows */}
         {photos.length > 1 && (
           <>
             {activeIndex > 0 && (
@@ -89,7 +104,6 @@ function ProfilePhotoCarousel({ photos, displayName }: { photos: string[]; displ
         )}
       </div>
       
-      {/* Dots indicator */}
       {photos.length > 1 && (
         <div className="flex justify-center gap-1.5 mt-3">
           {photos.map((_, idx) => (
@@ -108,7 +122,6 @@ function ProfilePhotoCarousel({ photos, displayName }: { photos: string[]; displ
   );
 }
 
-// Video player with error handling for the intro video modal
 function VideoModalPlayer({ videoUrl, displayName }: { videoUrl: string; displayName: string }) {
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -158,6 +171,240 @@ function VideoModalPlayer({ videoUrl, displayName }: { videoUrl: string; display
   );
 }
 
+function CuratedMatchCard({ 
+  pick, 
+  onSwipe,
+  isLoading 
+}: { 
+  pick: ForYouPick; 
+  onSwipe: (direction: 'right' | 'left') => void;
+  isLoading: boolean;
+}) {
+  const [, setLocation] = useLocation();
+  const profile = pick.profile;
+  const photo = profile.photos?.[profile.mainPhotoIndex || 0] || profile.photos?.[0];
+  const displayName = profile.useNickname ? profile.displayName?.split(' ')[0] : profile.displayName;
+  
+  return (
+    <Card 
+      className="flex-shrink-0 w-[260px] overflow-hidden cursor-pointer hover-elevate active-elevate-2 border-[#f59e0b]/30"
+      onClick={() => setLocation(`/profile/${profile.userId}`)}
+      data-testid={`card-curated-${profile.userId}`}
+    >
+      <div className="relative aspect-[3/4]">
+        {photo ? (
+          <img
+            src={photo}
+            alt={displayName}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-muted flex items-center justify-center">
+            <User className="h-12 w-12 text-muted-foreground/50" />
+          </div>
+        )}
+        
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+        
+        <div className="absolute top-3 right-3">
+          <Badge className="bg-[#f59e0b]/90 text-white border-0 gap-1 px-2 py-1 text-xs font-semibold">
+            {pick.compatibilityScore}% Match
+          </Badge>
+        </div>
+        
+        <div className="absolute bottom-0 left-0 right-0 p-3">
+          <div className="flex items-center gap-1.5 mb-1">
+            <h3 className="font-semibold text-white text-base truncate">
+              {displayName}
+            </h3>
+            {profile.age && (
+              <span className="text-white/90 text-base">, {profile.age}</span>
+            )}
+            {profile.faceVerified && (
+              <CheckCircle2 className="h-4 w-4 text-[#f59e0b] flex-shrink-0" />
+            )}
+          </div>
+          {profile.location && (
+            <div className="flex items-center gap-1 text-white/70 text-xs">
+              <MapPin className="h-3 w-3" />
+              <span className="truncate">{profile.location}</span>
+            </div>
+          )}
+          
+          {pick.matchReasons && pick.matchReasons.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {pick.matchReasons.slice(0, 2).map((reason, idx) => (
+                <Badge key={idx} variant="outline" className="text-[10px] bg-white/10 text-white/90 border-white/20 px-1.5 py-0.5">
+                  {reason}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function CuratedMatchesSection({ 
+  onViewProfile 
+}: { 
+  onViewProfile: (userId: string) => void;
+}) {
+  const { t } = useTranslation();
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [timeUntilReset, setTimeUntilReset] = useState<string>("");
+
+  const { data, isLoading } = useQuery<SuggestionsResponse>({
+    queryKey: ["/api/suggestions"],
+  });
+
+  useEffect(() => {
+    if (!data?.resetTime) return;
+
+    const updateCountdown = () => {
+      const now = new Date();
+      const reset = new Date(data.resetTime);
+      const diff = reset.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        setTimeUntilReset(t('forYou.refreshing', 'Refreshing...'));
+        queryClient.invalidateQueries({ queryKey: ["/api/suggestions"] });
+        return;
+      }
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      setTimeUntilReset(`${hours}h ${minutes}m`);
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 60000);
+    return () => clearInterval(interval);
+  }, [data?.resetTime, t]);
+
+  const handleSwipe = async (pick: ForYouPick, direction: "right" | "left") => {
+    haptic.medium();
+
+    try {
+      if (pick.id) {
+        await apiRequest("POST", `/api/suggestions/${pick.id}/action`, {
+          action: direction === "right" ? "liked" : "passed",
+        });
+      }
+
+      const response = await apiRequest("POST", "/api/swipe", {
+        swipedId: pick.profile.userId,
+        direction,
+      });
+
+      const result = await response.json();
+
+      if (result.isMatch) {
+        haptic.success();
+        toast({
+          title: t('discover.itsAMatch'),
+          description: t('discover.matchNotification'),
+        });
+        setLocation("/matches");
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["/api/suggestions"] });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to swipe",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const picks = (data && Array.isArray(data.picks)) ? data.picks : [];
+  const remainingPicks = Array.isArray(picks) ? picks.filter(p => p && !p.userAction) : [];
+  const viewedCount = picks.length - remainingPicks.length;
+
+  if (isLoading) {
+    return (
+      <Card className="mx-4 mb-4 p-4 border-l-4 border-l-[#f59e0b] bg-card">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-full bg-[#f59e0b]/20 flex items-center justify-center animate-pulse">
+            <Sparkles className="h-5 w-5 text-[#f59e0b]" />
+          </div>
+          <div>
+            <div className="h-4 w-40 bg-muted rounded animate-pulse mb-2" />
+            <div className="h-3 w-32 bg-muted rounded animate-pulse" />
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  if (remainingPicks.length === 0 && picks.length > 0) {
+    return (
+      <Card className="mx-4 mb-4 p-4 border-l-4 border-l-[#f59e0b]/50 bg-card/50">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-full bg-muted/50 flex items-center justify-center">
+            <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <div className="flex-1">
+            <p className="font-medium text-muted-foreground">
+              {t('forYou.allViewedToday', 'All curated matches viewed today!')}
+            </p>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground/70">
+              <Clock className="h-3 w-3" />
+              <span>{t('forYou.newMatchesIn', 'New matches in')} {timeUntilReset}</span>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  if (picks.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mb-4">
+      <Card className="mx-4 mb-3 p-4 border-l-4 border-l-[#f59e0b] bg-card shadow-sm">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-[#f59e0b]/20 flex items-center justify-center">
+              <Sparkles className="h-5 w-5 text-[#f59e0b]" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-foreground">
+                {t('forYou.curatedMatches', '8 Curated Matches for You Today')}
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                {t('forYou.basedOnValues', 'Based on your values and preferences')} • {viewedCount} {t('forYou.ofViewed', 'of')} {picks.length} {t('forYou.viewed', 'viewed')}
+              </p>
+            </div>
+          </div>
+        </div>
+      </Card>
+      
+      <div 
+        ref={scrollRef}
+        className="flex gap-3 overflow-x-auto pb-3 px-4 snap-x snap-mandatory scrollbar-hide"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {remainingPicks.map((pick) => (
+          <div key={pick.id} className="snap-start">
+            <CuratedMatchCard
+              pick={pick}
+              onSwipe={(dir) => handleSwipe(pick, dir)}
+              isLoading={false}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -175,7 +422,6 @@ export default function Home() {
   const [isProfileExpanded, setIsProfileExpanded] = useState(false);
   const [imageLoadError, setImageLoadError] = useState(false);
   
-  // First-time swipe hints
   const [hasSwipedOnce, setHasSwipedOnce] = useState(
     localStorage.getItem('hasSwipedBefore') === 'true'
   );
@@ -216,6 +462,7 @@ export default function Home() {
       setImageLoadError(false);
       setIsProfileExpanded(false);
       queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/likes"] });
     },
     onError: (error) => {
       toast({
@@ -228,7 +475,6 @@ export default function Home() {
 
   const handleSwipe = (direction: "right" | "left") => {
     if (currentProfile) {
-      // Mark first swipe
       if (!hasSwipedOnce) {
         setHasSwipedOnce(true);
         localStorage.setItem('hasSwipedBefore', 'true');
@@ -284,13 +530,11 @@ export default function Home() {
 
   const currentProfile = profiles[currentIndex];
 
-  // Reset photo state when profile changes
   useEffect(() => {
     setCurrentPhotoIndex(0);
     setImageLoadError(false);
   }, [currentProfile?.id]);
 
-  // Card entry animation
   useEffect(() => {
     const card = cardRef.current;
     if (card && currentProfile?.id) {
@@ -318,13 +562,17 @@ export default function Home() {
 
   if (!currentProfile) {
     return (
-      <div className="fixed inset-0 bottom-16 flex items-center justify-center bg-background">
-        <div className="text-center px-4">
+      <div className="min-h-screen pb-20 bg-background">
+        <div className="pt-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}>
+          <CuratedMatchesSection onViewProfile={(userId) => setLocation(`/profile/${userId}`)} />
+        </div>
+        
+        <div className="flex flex-col items-center justify-center px-4 py-16">
           <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
             <Heart className="h-12 w-12 text-primary" />
           </div>
           <h2 className="text-2xl font-bold mb-2">{t('discover.noMoreProfiles')}</h2>
-          <p className="text-muted-foreground mb-6">
+          <p className="text-muted-foreground mb-6 text-center">
             {t('discover.checkBackLater')}
           </p>
         </div>
@@ -347,8 +595,7 @@ export default function Home() {
   const currentPhoto = photos[currentPhotoIndex] || photos[0];
 
   return (
-    <div className="fixed inset-0 bottom-16 bg-background overflow-hidden">
-      {/* Swipe Animations */}
+    <div className="fixed inset-0 bottom-16 bg-background overflow-hidden flex flex-col">
       <AnimatePresence>
         {showAnimation === 'like' && (
           <>
@@ -358,7 +605,6 @@ export default function Home() {
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-gradient-to-b from-primary/30 via-primary/20 to-primary/30 backdrop-blur-md pointer-events-none z-50"
             />
-            {/* Decorative Stars */}
             {[...Array(8)].map((_, i) => (
               <motion.div
                 key={i}
@@ -375,7 +621,6 @@ export default function Home() {
                 <Star className="h-6 w-6 text-primary fill-primary" />
               </motion.div>
             ))}
-            {/* Main Heart with Crescent */}
             <motion.div
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: [0, 1.2, 1], opacity: [0, 1, 1, 0] }}
@@ -417,10 +662,23 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      {/* Full Screen Profile Card */}
+      <div className="flex-shrink-0 overflow-y-auto" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="pt-4">
+          <CuratedMatchesSection onViewProfile={(userId) => setLocation(`/profile/${userId}`)} />
+        </div>
+        
+        <div className="flex items-center gap-3 px-4 py-3">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-xs text-muted-foreground font-medium">
+            {t('discover.orKeepDiscovering', 'Or keep discovering')}
+          </span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+      </div>
+
       <div 
         ref={cardRef}
-        className="absolute inset-0 bottom-0 cursor-grab active:cursor-grabbing"
+        className="flex-1 relative cursor-grab active:cursor-grabbing"
         style={cardStyle}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -428,7 +686,6 @@ export default function Home() {
         onClick={handlePhotoTap}
         data-testid="card-profile"
       >
-        {/* Photo */}
         <div className="absolute inset-0">
           {currentPhoto && !imageLoadError ? (
             <img
@@ -454,9 +711,8 @@ export default function Home() {
           )}
         </div>
 
-        {/* Photo Navigation Dots */}
         {photos.length > 1 && (
-          <div className="absolute top-4 left-4 right-4 flex gap-1 z-20" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+          <div className="absolute top-4 left-4 right-4 flex gap-1 z-20">
             {photos.map((_, idx) => (
               <div
                 key={idx}
@@ -471,7 +727,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Photo Navigation Arrows (Desktop) */}
         {photos.length > 1 && (
           <>
             <button
@@ -499,9 +754,8 @@ export default function Home() {
           </>
         )}
 
-        {/* Video Intro Button */}
         {currentProfile.introVideoUrl && (
-          <div className="absolute top-16 right-4 z-20" style={{ top: 'calc(env(safe-area-inset-top) + 2rem)' }}>
+          <div className="absolute top-16 right-4 z-20">
             <Button
               size="icon"
               className="h-12 w-12 rounded-full bg-white/90 hover:bg-white shadow-xl active:scale-95 transition-transform"
@@ -516,15 +770,13 @@ export default function Home() {
           </div>
         )}
 
-        {/* Swipe Indicators */}
         <AnimatePresence>
           {isDragging && dragOffset.x > 50 && (
             <motion.div 
               initial={{ opacity: 0, scale: 0.8, rotate: -20 }}
               animate={{ opacity: 1, scale: 1, rotate: -15 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              className="absolute top-24 left-6 bg-primary text-primary-foreground px-8 py-4 rounded-lg font-bold text-2xl shadow-2xl z-30"
-              style={{ top: 'calc(env(safe-area-inset-top) + 4rem)' }}
+              className="absolute top-8 left-6 bg-primary text-primary-foreground px-8 py-4 rounded-lg font-bold text-2xl shadow-2xl z-30"
             >
               LIKE
             </motion.div>
@@ -534,26 +786,21 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.8, rotate: 20 }}
               animate={{ opacity: 1, scale: 1, rotate: 15 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              className="absolute top-24 right-6 bg-white text-black px-8 py-4 rounded-lg font-bold text-2xl shadow-2xl z-30"
-              style={{ top: 'calc(env(safe-area-inset-top) + 4rem)' }}
+              className="absolute top-8 right-6 bg-white text-black px-8 py-4 rounded-lg font-bold text-2xl shadow-2xl z-30"
             >
               PASS
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Ghosted Swipe Arrows - First time only */}
         {!hasSwipedOnce && (
           <>
-            {/* Left arrow */}
             <div className="absolute left-6 top-1/2 -translate-y-1/2 pointer-events-none z-10">
               <ChevronLeft 
                 className="w-14 h-14 text-white/40 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] animate-pulse" 
                 strokeWidth={2.5} 
               />
             </div>
-            
-            {/* Right arrow */}
             <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none z-10">
               <ChevronRight 
                 className="w-14 h-14 text-white/40 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] animate-pulse" 
@@ -563,12 +810,9 @@ export default function Home() {
           </>
         )}
 
-        {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent pointer-events-none" style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 25%, rgba(0,0,0,0.1) 50%, transparent 100%)' }} />
 
-        {/* Profile Info Overlay - positioned above buttons and bottom nav */}
         <div className="absolute bottom-40 left-0 right-0 px-5 text-white z-10">
-          {/* Verification Badges */}
           <div className="flex items-center gap-2 mb-3">
             {currentProfile.isVerified && (
               <Badge className="bg-emerald-500/90 text-white border-0 gap-1.5 px-2.5 py-1">
@@ -590,10 +834,8 @@ export default function Home() {
             )}
           </div>
 
-          {/* Name and Age */}
           <h2 className="text-4xl font-bold mb-2 drop-shadow-lg">{displayName}, {age}</h2>
           
-          {/* Location and Profession */}
           <div className="flex items-center gap-3 text-white/90 mb-3">
             {currentProfile.profession && (
               <span className="font-medium">{currentProfile.profession}</span>
@@ -609,7 +851,6 @@ export default function Home() {
             )}
           </div>
 
-          {/* Religious Info Badges */}
           <div className="flex flex-wrap gap-2 mb-4">
             {currentProfile.sect && currentProfile.sect !== 'No preference' && (
               <Badge variant="outline" className="bg-white/10 text-white border-white/30 backdrop-blur-sm">
@@ -628,7 +869,6 @@ export default function Home() {
             )}
           </div>
 
-          {/* Islamic Profile Prompt */}
           {currentProfile.profilePrompts && (currentProfile.profilePrompts as ProfilePromptAnswer[]).length > 0 && (
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 mb-3">
               {(() => {
@@ -645,7 +885,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Bio */}
           {currentProfile.bio && !currentProfile.profilePrompts && (
             <p className="text-base leading-relaxed text-white/90 line-clamp-2 mb-2">
               {currentProfile.bio}
@@ -653,9 +892,7 @@ export default function Home() {
           )}
         </div>
 
-        {/* Compact Action Buttons - positioned above bottom nav */}
         <div className="absolute bottom-20 left-0 right-0 flex justify-center items-center gap-4 px-4 z-20">
-          {/* Pass button - small, ghosted */}
           <button 
             onClick={(e) => {
               e.stopPropagation();
@@ -668,7 +905,6 @@ export default function Home() {
             <X className="w-5 h-5 text-white/70" strokeWidth={2.5} />
           </button>
           
-          {/* Info button - small, ghosted */}
           <button 
             onClick={(e) => {
               e.stopPropagation();
@@ -681,7 +917,6 @@ export default function Home() {
             <Info className="w-5 h-5 text-white/70" strokeWidth={2.5} />
           </button>
           
-          {/* Like button - slightly bigger with gold accent */}
           <button 
             onClick={(e) => {
               e.stopPropagation();
@@ -696,7 +931,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Video Modal */}
       <Dialog open={showVideoModal} onOpenChange={setShowVideoModal}>
         <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-black border-0">
           <DialogHeader className="sr-only">
@@ -714,7 +948,6 @@ export default function Home() {
         </DialogContent>
       </Dialog>
 
-      {/* Subscribe Dialog */}
       <Dialog open={showSubscribeDialog} onOpenChange={setShowSubscribeDialog}>
         <DialogContent className="sm:max-w-md bg-card border-primary/20">
           <DialogHeader>
@@ -739,7 +972,6 @@ export default function Home() {
         </DialogContent>
       </Dialog>
 
-      {/* Expanded Profile Sheet - slides up from bottom */}
       <AnimatePresence>
         {isProfileExpanded && currentProfile && (
           <motion.div
@@ -757,7 +989,6 @@ export default function Home() {
             }}
             className="fixed inset-x-0 bottom-0 top-[35%] bg-card rounded-t-3xl z-50 shadow-2xl touch-pan-x"
           >
-            {/* Handle bar */}
             <div 
               className="flex justify-center pt-3 pb-2 cursor-pointer"
               onClick={() => setIsProfileExpanded(false)}
@@ -767,12 +998,10 @@ export default function Home() {
             
             <ScrollArea className="h-[calc(100%-60px)]">
               <div className="pb-32">
-                {/* Photo Carousel */}
                 {photos.length > 0 && (
                   <ProfilePhotoCarousel photos={photos} displayName={displayName} />
                 )}
 
-                {/* Name and verification */}
                 <div className="flex items-center gap-2 mb-4 px-5">
                   <h2 className="text-2xl font-bold">{displayName}, {age}</h2>
                   {currentProfile.isVerified && (
@@ -780,7 +1009,6 @@ export default function Home() {
                   )}
                 </div>
 
-                {/* Location */}
                 {currentProfile.location && (
                   <p className="flex items-center gap-1 text-muted-foreground mb-4 px-5">
                     <MapPin className="h-4 w-4" />
@@ -788,7 +1016,6 @@ export default function Home() {
                   </p>
                 )}
 
-                {/* Bio */}
                 {currentProfile.bio && (
                   <div className="mb-6 px-5">
                     <h3 className="text-sm font-semibold text-muted-foreground mb-2">{t('discover.aboutMe')}</h3>
@@ -796,7 +1023,6 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* Profile Prompts */}
                 {currentProfile.profilePrompts && (currentProfile.profilePrompts as ProfilePromptAnswer[]).length > 0 && (
                   <div className="space-y-3 mb-6 px-5">
                     {(currentProfile.profilePrompts as ProfilePromptAnswer[]).map((prompt, idx) => {
@@ -811,7 +1037,6 @@ export default function Home() {
                   </div>
                 )}
 
-                {/* Basic Info */}
                 <div className="mb-6 px-5">
                   <h3 className="text-sm font-semibold text-muted-foreground mb-3">{t('profile.basicInfo')}</h3>
                   <div className="grid grid-cols-2 gap-3">
@@ -842,7 +1067,6 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Religious Info */}
                 <div className="mb-6 px-5">
                   <h3 className="text-sm font-semibold text-muted-foreground mb-3">{t('profile.religiousBackground')}</h3>
                   <div className="flex flex-wrap gap-2">
@@ -871,7 +1095,6 @@ export default function Home() {
               </div>
             </ScrollArea>
 
-            {/* Fixed Action Buttons at bottom */}
             <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-card via-card to-transparent pt-8">
               <div className="flex gap-3">
                 <Button 
