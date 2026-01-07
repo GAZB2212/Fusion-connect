@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, X, MapPin, Play, ChevronLeft, ChevronRight, ShieldCheck, Users, Sparkles, Moon, Star, Ruler, Briefcase, GraduationCap, Baby, Loader2, Info } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Heart, X, MapPin, Play, ChevronLeft, ChevronRight, ShieldCheck, Users, Sparkles, Moon, Star, User, Ruler, Briefcase, GraduationCap, Baby, Loader2, Info, CheckCircle2, Clock, Crown, ArrowRight } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { ProfileWithUser } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -21,6 +22,22 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { getPromptById, type ProfilePromptAnswer } from "@/lib/islamicPrompts";
 import { haptic } from "@/lib/haptics";
+
+interface ForYouPick {
+  id: string;
+  profile: ProfileWithUser;
+  compatibilityScore: number;
+  matchReasons: string[];
+  userAction: string | null;
+  isForYouPick: boolean;
+}
+
+interface SuggestionsResponse {
+  picks: ForYouPick[];
+  dailyLimit: number;
+  picksRemaining: number;
+  resetTime: string;
+}
 
 function ProfilePhotoCarousel({ photos, displayName }: { photos: string[]; displayName: string }) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -145,6 +162,7 @@ function VideoModalPlayer({ videoUrl, displayName }: { videoUrl: string; display
         playsInline
         onLoadedData={() => setIsLoading(false)}
         onError={() => {
+          console.log('[VideoModalPlayer] Video playback error for:', videoUrl);
           setHasError(true);
           setIsLoading(false);
         }}
@@ -153,41 +171,237 @@ function VideoModalPlayer({ videoUrl, displayName }: { videoUrl: string; display
   );
 }
 
-function CuratedBanner() {
+function CuratedMatchCard({ 
+  pick, 
+  onSwipe,
+  isLoading 
+}: { 
+  pick: ForYouPick; 
+  onSwipe: (direction: 'right' | 'left') => void;
+  isLoading: boolean;
+}) {
   const [, setLocation] = useLocation();
+  const profile = pick.profile;
+  const photo = profile.photos?.[profile.mainPhotoIndex || 0] || profile.photos?.[0];
+  const displayName = profile.useNickname ? profile.displayName?.split(' ')[0] : profile.displayName;
+  
+  return (
+    <Card 
+      className="flex-shrink-0 w-[260px] overflow-hidden cursor-pointer hover-elevate active-elevate-2 border-[#f59e0b]/30"
+      onClick={() => setLocation(`/profile/${profile.userId}`)}
+      data-testid={`card-curated-${profile.userId}`}
+    >
+      <div className="relative aspect-[3/4]">
+        {photo ? (
+          <img
+            src={photo}
+            alt={displayName}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-muted flex items-center justify-center">
+            <User className="h-12 w-12 text-muted-foreground/50" />
+          </div>
+        )}
+        
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+        
+        <div className="absolute top-3 right-3">
+          <Badge className="bg-[#f59e0b]/90 text-white border-0 gap-1 px-2 py-1 text-xs font-semibold">
+            {pick.compatibilityScore}% Match
+          </Badge>
+        </div>
+        
+        <div className="absolute bottom-0 left-0 right-0 p-3">
+          <div className="flex items-center gap-1.5 mb-1">
+            <h3 className="font-semibold text-white text-base truncate">
+              {displayName}
+            </h3>
+            {profile.age && (
+              <span className="text-white/90 text-base">, {profile.age}</span>
+            )}
+            {profile.faceVerified && (
+              <CheckCircle2 className="h-4 w-4 text-[#f59e0b] flex-shrink-0" />
+            )}
+          </div>
+          {profile.location && (
+            <div className="flex items-center gap-1 text-white/70 text-xs">
+              <MapPin className="h-3 w-3" />
+              <span className="truncate">{profile.location}</span>
+            </div>
+          )}
+          
+          {pick.matchReasons && pick.matchReasons.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+              {pick.matchReasons.slice(0, 2).map((reason, idx) => (
+                <Badge key={idx} variant="outline" className="text-[10px] bg-white/10 text-white/90 border-white/20 px-1.5 py-0.5">
+                  {reason}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function CuratedMatchesSection({ 
+  onViewProfile 
+}: { 
+  onViewProfile: (userId: string) => void;
+}) {
   const { t } = useTranslation();
-  const [hasAnimated, setHasAnimated] = useState(false);
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [timeUntilReset, setTimeUntilReset] = useState<string>("");
+
+  const { data, isLoading } = useQuery<SuggestionsResponse>({
+    queryKey: ["/api/suggestions"],
+  });
 
   useEffect(() => {
-    const timer = setTimeout(() => setHasAnimated(true), 2000);
-    return () => clearTimeout(timer);
-  }, []);
+    if (!data?.resetTime) return;
+
+    const updateCountdown = () => {
+      const now = new Date();
+      const reset = new Date(data.resetTime);
+      const diff = reset.getTime() - now.getTime();
+
+      if (diff <= 0) {
+        setTimeUntilReset(t('forYou.refreshing', 'Refreshing...'));
+        queryClient.invalidateQueries({ queryKey: ["/api/suggestions"] });
+        return;
+      }
+
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      setTimeUntilReset(`${hours}h ${minutes}m`);
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 60000);
+    return () => clearInterval(interval);
+  }, [data?.resetTime, t]);
+
+  const handleSwipe = async (pick: ForYouPick, direction: "right" | "left") => {
+    haptic.medium();
+
+    try {
+      if (pick.id) {
+        await apiRequest("POST", `/api/suggestions/${pick.id}/action`, {
+          action: direction === "right" ? "liked" : "passed",
+        });
+      }
+
+      const response = await apiRequest("POST", "/api/swipe", {
+        swipedId: pick.profile.userId,
+        direction,
+      });
+
+      const result = await response.json();
+
+      if (result.isMatch) {
+        haptic.success();
+        toast({
+          title: t('discover.itsAMatch'),
+          description: t('discover.matchNotification'),
+        });
+        setLocation("/matches");
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["/api/suggestions"] });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to swipe",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const picks = (data && Array.isArray(data.picks)) ? data.picks : [];
+  const remainingPicks = Array.isArray(picks) ? picks.filter(p => p && !p.userAction) : [];
+  const viewedCount = picks.length - remainingPicks.length;
+
+  if (isLoading) {
+    return (
+      <Card className="mx-4 mb-4 p-4 border-l-4 border-l-[#f59e0b] bg-card">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-full bg-[#f59e0b]/20 flex items-center justify-center animate-pulse">
+            <Sparkles className="h-5 w-5 text-[#f59e0b]" />
+          </div>
+          <div>
+            <div className="h-4 w-40 bg-muted rounded animate-pulse mb-2" />
+            <div className="h-3 w-32 bg-muted rounded animate-pulse" />
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  if (remainingPicks.length === 0 && picks.length > 0) {
+    return (
+      <Card className="mx-4 mb-4 p-4 border-l-4 border-l-[#f59e0b]/50 bg-card/50">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-full bg-muted/50 flex items-center justify-center">
+            <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <div className="flex-1">
+            <p className="font-medium text-muted-foreground">
+              {t('forYou.allViewedToday', 'All curated matches viewed today!')}
+            </p>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground/70">
+              <Clock className="h-3 w-3" />
+              <span>{t('forYou.newMatchesIn', 'New matches in')} {timeUntilReset}</span>
+            </div>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  if (picks.length === 0) {
+    return null;
+  }
 
   return (
-    <motion.button
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      onClick={() => setLocation("/curated")}
-      className={cn(
-        "w-[90%] mx-auto h-12 px-4 rounded-2xl",
-        "bg-white/30 backdrop-blur-xl",
-        "border border-white/20",
-        "shadow-lg",
-        "flex items-center justify-between",
-        "hover:scale-[1.02] active:scale-[0.98] transition-transform duration-200",
-        !hasAnimated && "animate-pulse"
-      )}
-      data-testid="button-curated-banner"
-    >
-      <div className="flex items-center gap-2">
-        <Sparkles className="h-4 w-4 text-[#f59e0b]" />
-        <span className="text-sm font-medium text-foreground">
-          {t('curated.bannerTitle', '8 Curated Matches')}
-        </span>
+    <div className="mb-4">
+      <Card className="mx-4 mb-3 p-4 border-l-4 border-l-[#f59e0b] bg-card shadow-sm">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-[#f59e0b]/20 flex items-center justify-center">
+              <Sparkles className="h-5 w-5 text-[#f59e0b]" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-foreground">
+                {t('forYou.curatedMatches', '8 Curated Matches for You Today')}
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                {t('forYou.basedOnValues', 'Based on your values and preferences')} • {viewedCount} {t('forYou.ofViewed', 'of')} {picks.length} {t('forYou.viewed', 'viewed')}
+              </p>
+            </div>
+          </div>
+        </div>
+      </Card>
+      
+      <div 
+        ref={scrollRef}
+        className="flex gap-3 overflow-x-auto pb-3 px-4 snap-x snap-mandatory scrollbar-hide"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {remainingPicks.map((pick) => (
+          <div key={pick.id} className="snap-start">
+            <CuratedMatchCard
+              pick={pick}
+              onSwipe={(dir) => handleSwipe(pick, dir)}
+              isLoading={false}
+            />
+          </div>
+        ))}
       </div>
-      <ChevronRight className="h-3 w-3 text-muted-foreground" />
-    </motion.button>
+    </div>
   );
 }
 
@@ -348,12 +562,12 @@ export default function Home() {
 
   if (!currentProfile) {
     return (
-      <div className="fixed inset-0 bottom-16 bg-background flex flex-col">
-        <div className="pt-4 flex justify-center" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}>
-          <CuratedBanner />
+      <div className="min-h-screen pb-20 bg-background">
+        <div className="pt-4" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}>
+          <CuratedMatchesSection onViewProfile={(userId) => setLocation(`/profile/${userId}`)} />
         </div>
         
-        <div className="flex-1 flex flex-col items-center justify-center px-4">
+        <div className="flex flex-col items-center justify-center px-4 py-16">
           <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
             <Heart className="h-12 w-12 text-primary" />
           </div>
@@ -381,7 +595,7 @@ export default function Home() {
   const currentPhoto = photos[currentPhotoIndex] || photos[0];
 
   return (
-    <div className="fixed inset-0 bottom-16 bg-background overflow-hidden">
+    <div className="fixed inset-0 bottom-16 bg-background overflow-hidden flex flex-col">
       <AnimatePresence>
         {showAnimation === 'like' && (
           <>
@@ -448,16 +662,23 @@ export default function Home() {
         )}
       </AnimatePresence>
 
-      <div 
-        className="absolute z-40 w-full flex justify-center"
-        style={{ top: 'calc(env(safe-area-inset-top) + 16px)' }}
-      >
-        <CuratedBanner />
+      <div className="flex-shrink-0 overflow-y-auto" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="pt-4">
+          <CuratedMatchesSection onViewProfile={(userId) => setLocation(`/profile/${userId}`)} />
+        </div>
+        
+        <div className="flex items-center gap-3 px-4 py-3">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-xs text-muted-foreground font-medium">
+            {t('discover.orKeepDiscovering', 'Or keep discovering')}
+          </span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
       </div>
 
       <div 
         ref={cardRef}
-        className="absolute inset-0 cursor-grab active:cursor-grabbing"
+        className="flex-1 relative cursor-grab active:cursor-grabbing"
         style={cardStyle}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -473,7 +694,13 @@ export default function Home() {
               alt={displayName}
               className="w-full h-full object-cover"
               loading="eager"
-              onError={() => setImageLoadError(true)}
+              onLoad={() => {
+                console.log('[Home] Image loaded successfully:', currentPhoto);
+              }}
+              onError={(e) => {
+                console.log('[Home] Image load error for:', currentPhoto, e);
+                setImageLoadError(true);
+              }}
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-b from-primary/20 to-primary/40 flex items-center justify-center">
@@ -485,7 +712,7 @@ export default function Home() {
         </div>
 
         {photos.length > 1 && (
-          <div className="absolute top-20 left-4 right-4 flex gap-1 z-20" style={{ top: 'calc(env(safe-area-inset-top) + 80px)' }}>
+          <div className="absolute top-4 left-4 right-4 flex gap-1 z-20">
             {photos.map((_, idx) => (
               <div
                 key={idx}
@@ -528,7 +755,7 @@ export default function Home() {
         )}
 
         {currentProfile.introVideoUrl && (
-          <div className="absolute right-4 z-20" style={{ top: 'calc(env(safe-area-inset-top) + 90px)' }}>
+          <div className="absolute top-16 right-4 z-20">
             <Button
               size="icon"
               className="h-12 w-12 rounded-full bg-white/90 hover:bg-white shadow-xl active:scale-95 transition-transform"
@@ -549,7 +776,7 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.8, rotate: -20 }}
               animate={{ opacity: 1, scale: 1, rotate: -15 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              className="absolute top-32 left-6 bg-primary text-primary-foreground px-8 py-4 rounded-lg font-bold text-2xl shadow-2xl z-30"
+              className="absolute top-8 left-6 bg-primary text-primary-foreground px-8 py-4 rounded-lg font-bold text-2xl shadow-2xl z-30"
             >
               LIKE
             </motion.div>
@@ -559,7 +786,7 @@ export default function Home() {
               initial={{ opacity: 0, scale: 0.8, rotate: 20 }}
               animate={{ opacity: 1, scale: 1, rotate: 15 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              className="absolute top-32 right-6 bg-white text-black px-8 py-4 rounded-lg font-bold text-2xl shadow-2xl z-30"
+              className="absolute top-8 right-6 bg-white text-black px-8 py-4 rounded-lg font-bold text-2xl shadow-2xl z-30"
             >
               PASS
             </motion.div>

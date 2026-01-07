@@ -41,7 +41,6 @@ import ChaperonePortal from "@/pages/chaperone-portal";
 import GuidanceHub from "@/pages/guidance-hub";
 import IncomingCall from "@/pages/incoming-call";
 import Likes from "@/pages/likes";
-import Curated from "@/pages/curated";
 import UserProfile from "@/pages/user-profile";
 import NotFound from "@/pages/not-found";
 import { BottomNav } from "@/components/navigation";
@@ -174,7 +173,6 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/curated" component={Curated} />
       <Route path="/launch" component={Launch} />
       <Route path="/admin/qr-code" component={AdminQR} />
       <Route path="/likes" component={Likes} />
