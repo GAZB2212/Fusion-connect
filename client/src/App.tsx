@@ -34,6 +34,7 @@ import MatchProfile from "@/pages/match-profile";
 import Messages from "@/pages/messages";
 import Settings from "@/pages/settings";
 import Subscribe from "@/pages/subscribe";
+import Suggestions from "@/pages/suggestions";
 import Feedback from "@/pages/feedback";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
@@ -175,6 +176,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/launch" component={Launch} />
       <Route path="/admin/qr-code" component={AdminQR} />
+      <Route path="/suggestions" component={Suggestions} />
       <Route path="/likes" component={Likes} />
       <Route path="/profile/:userId" component={UserProfile} />
       <Route path="/matches" component={Matches} />

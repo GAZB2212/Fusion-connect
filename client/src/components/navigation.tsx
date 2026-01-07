@@ -1,4 +1,4 @@
-import { Heart, Users, MessageSquare, Settings as SettingsIcon, HeartHandshake } from "lucide-react";
+import { Heart, Users, MessageSquare, Settings as SettingsIcon, Sparkles, HeartHandshake } from "lucide-react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { useVideoCall } from "@/contexts/VideoCallContext";
@@ -13,6 +13,7 @@ export function BottomNav() {
 
   const navItems = [
     { icon: Heart, label: t('nav.discover'), path: "/", testId: "nav-discover" },
+    { icon: Sparkles, label: t('nav.forYou', 'For You'), path: "/suggestions", testId: "nav-suggestions" },
     { icon: HeartHandshake, label: t('nav.likes', 'Likes'), path: "/likes", testId: "nav-likes" },
     { icon: Users, label: t('nav.matches'), path: "/matches", testId: "nav-matches" },
     { icon: MessageSquare, label: t('nav.messages'), path: "/messages", testId: "nav-messages" },
