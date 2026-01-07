@@ -44,8 +44,12 @@ export default function Likes() {
     refetchOnWindowFocus: true,
   });
 
-  const likes = data?.likes || [];
+  const rawLikes = data?.likes || [];
   const hasActiveSubscription = data?.hasActiveSubscription || false;
+  
+  const likes = rawLikes.filter((like, index, self) => 
+    index === self.findIndex((l) => l.profile.userId === like.profile.userId)
+  );
 
   const handleRefresh = async () => {
     await refetch();
@@ -149,12 +153,12 @@ interface LikeCardProps {
 }
 
 function LikeCard({ profile, isBlurred, onClick }: LikeCardProps) {
+  const { t } = useTranslation();
   const mainPhoto = profile.photos?.[profile.mainPhotoIndex || 0] || profile.photos?.[0];
   
   return (
     <Card 
-      className="relative overflow-hidden cursor-pointer hover-elevate active-elevate-2 group"
-      onClick={onClick}
+      className="overflow-hidden hover-elevate active-elevate-2"
       data-testid={`card-like-${profile.userId}`}
     >
       <div className="aspect-[3/4] relative">
@@ -201,6 +205,24 @@ function LikeCard({ profile, isBlurred, onClick }: LikeCardProps) {
             </div>
           )}
         </div>
+      </div>
+      
+      <div className="p-3">
+        <Button 
+          className="w-full" 
+          size="sm"
+          onClick={onClick}
+          data-testid={`button-view-profile-${profile.userId}`}
+        >
+          {isBlurred ? (
+            <>
+              <Lock className="h-4 w-4 mr-2" />
+              {t('likes.unlockProfile', 'Unlock Profile')}
+            </>
+          ) : (
+            t('likes.viewProfile', 'View Profile')
+          )}
+        </Button>
       </div>
     </Card>
   );
