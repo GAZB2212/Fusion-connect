@@ -65,6 +65,9 @@ function CustomChannelPreview({ channel, onClick, isSelected, currentUserId, mat
   // Get the main match (first non-current user)
   const mainMatch = otherMembers[0];
   
+  // Check if the main match is online (Sendbird provides connectionStatus)
+  const isOnline = (mainMatch as any)?.connectionStatus === 'online';
+  
   // Check if there's a chaperone (more than 2 members total means chaperone is present)
   const hasChaperone = members.length > 2;
   
@@ -138,6 +141,13 @@ function CustomChannelPreview({ channel, onClick, isSelected, currentUserId, mat
             {displayName.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
+        {/* Online indicator - green dot */}
+        {isOnline && (
+          <div 
+            className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full ring-2 ring-background"
+            data-testid="online-indicator"
+          />
+        )}
       </div>
       
       {/* Content - WhatsApp style with message preview */}
@@ -251,6 +261,9 @@ export default function Messages() {
   const otherProfile = currentMatch 
     ? (currentMatch.user1Id === user?.id ? currentMatch.user2Profile : currentMatch.user1Profile)
     : null;
+
+  // Track online status for chat header
+  const [isOtherUserOnline, setIsOtherUserOnline] = useState(false);
 
   // Check if there's an active chaperone for this conversation
   const { data: chaperones } = useQuery<Chaperone[]>({
@@ -566,11 +579,17 @@ export default function Messages() {
     if (channel?.url) {
       setCurrentChannelUrl(channel.url);
       setLocation(`/messages/${channel.url}`);
+      
+      // Check online status of other members
+      const members = channel.members || [];
+      const otherMember = members.find((m: any) => m.userId !== user?.id);
+      setIsOtherUserOnline(otherMember?.connectionStatus === 'online');
     }
   };
 
   const handleBackToList = () => {
     setCurrentChannelUrl(null);
+    setIsOtherUserOnline(false);
     setLocation("/messages");
   };
 
@@ -622,7 +641,7 @@ export default function Messages() {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           
-          {/* Profile Picture with Chaperone Indicator */}
+          {/* Profile Picture with Online/Chaperone Indicators */}
           <div 
             className="relative cursor-pointer group"
             onClick={() => otherProfile && setLocation(`/matches/${currentMatch?.id}/profile`)}
@@ -637,8 +656,8 @@ export default function Messages() {
                 {otherProfile?.displayName?.charAt(0)?.toUpperCase() || '?'}
               </AvatarFallback>
             </Avatar>
-            {/* Wali Badge */}
-            {hasActiveChaperone && (
+            {/* Wali Badge - takes priority over online indicator */}
+            {hasActiveChaperone ? (
               <div 
                 className="absolute -bottom-1 -right-1 px-1.5 py-0.5 rounded-full bg-amber-500 flex items-center gap-0.5 ring-2 ring-background"
                 title="Wali is present"
@@ -646,6 +665,12 @@ export default function Messages() {
                 <Users className="h-2.5 w-2.5 text-black" />
                 <span className="text-[8px] font-bold text-black tracking-wide uppercase">Wali</span>
               </div>
+            ) : isOtherUserOnline && (
+              /* Online indicator - green dot */
+              <div 
+                className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full ring-2 ring-background"
+                data-testid="header-online-indicator"
+              />
             )}
           </div>
           
@@ -1051,16 +1076,21 @@ export default function Messages() {
         /* Ensure message status container is visible */
         .fusion-chat .sendbird-message-status,
         .fusion-chat [class*="message-status"],
-        .fusion-chat [class*="MessageStatus"] {
+        .fusion-chat [class*="MessageStatus"],
+        .fusion-chat .sendbird-message-content__middle__body-container__created-at,
+        .fusion-chat [class*="outgoing"] [class*="status"] {
           display: flex !important;
           visibility: visible !important;
           opacity: 1 !important;
+          align-items: center !important;
+          gap: 4px !important;
         }
 
         /* Message content menu state (where read receipts appear) */
         .fusion-chat .sendbird-message-content-menu__outgoing-menu__state,
         .fusion-chat [class*="outgoing-menu__state"],
-        .fusion-chat [class*="message-content"] [class*="state"] {
+        .fusion-chat [class*="message-content"] [class*="state"],
+        .fusion-chat .sendbird-message-content__right [class*="status"] {
           display: flex !important;
           visibility: visible !important;
           opacity: 1 !important;
@@ -1071,42 +1101,70 @@ export default function Messages() {
         .fusion-chat [class*="message-status"] svg,
         .fusion-chat [class*="MessageStatus"] svg,
         .fusion-chat .sendbird-icon-done,
-        .fusion-chat .sendbird-icon-done-all {
-          display: block !important;
+        .fusion-chat .sendbird-icon-done-all,
+        .fusion-chat .sendbird-icon-read,
+        .fusion-chat .sendbird-icon-delivered,
+        .fusion-chat .sendbird-icon-sent {
+          display: inline-flex !important;
           visibility: visible !important;
           opacity: 1 !important;
+          width: 16px !important;
+          height: 16px !important;
         }
 
-        /* Sent status - single gray tick */
+        /* SENT status - single gray tick (one checkmark) */
         .fusion-chat .sendbird-message-status--sent .sendbird-message-status__icon,
         .fusion-chat .sendbird-message-status__icon--sent,
         .fusion-chat [class*="message-status--sent"] svg,
-        .fusion-chat .sendbird-icon-done {
+        .fusion-chat [class*="MessageStatus"][class*="sent"] svg,
+        .fusion-chat .sendbird-icon-done:not(.sendbird-icon-done-all) {
           color: hsl(var(--muted-foreground)) !important;
           fill: hsl(var(--muted-foreground)) !important;
         }
+        .fusion-chat .sendbird-message-status--sent svg path,
+        .fusion-chat [class*="message-status--sent"] svg path {
+          fill: hsl(var(--muted-foreground)) !important;
+        }
 
-        /* Delivered status - double gray ticks */
+        /* DELIVERED status - double gray ticks (two checkmarks) */
         .fusion-chat .sendbird-message-status--delivered .sendbird-message-status__icon,
         .fusion-chat .sendbird-message-status__icon--delivered,
-        .fusion-chat [class*="message-status--delivered"] svg {
+        .fusion-chat [class*="message-status--delivered"] svg,
+        .fusion-chat [class*="MessageStatus"][class*="delivered"] svg {
           color: hsl(var(--muted-foreground)) !important;
           fill: hsl(var(--muted-foreground)) !important;
         }
+        .fusion-chat .sendbird-message-status--delivered svg path,
+        .fusion-chat [class*="message-status--delivered"] svg path {
+          fill: hsl(var(--muted-foreground)) !important;
+        }
 
-        /* Read status - double GREEN ticks */
+        /* READ status - double GREEN ticks */
         .fusion-chat .sendbird-message-status--read .sendbird-message-status__icon,
         .fusion-chat .sendbird-message-status__icon--read,
         .fusion-chat [class*="message-status--read"] svg,
-        .fusion-chat .sendbird-icon-done-all {
+        .fusion-chat [class*="MessageStatus"][class*="read"] svg,
+        .fusion-chat .sendbird-icon-done-all,
+        .fusion-chat .sendbird-icon-read {
           color: #22c55e !important;
           fill: #22c55e !important;
         }
 
         /* Target SVG paths inside icons for read state */
         .fusion-chat .sendbird-message-status--read svg path,
-        .fusion-chat [class*="message-status--read"] svg path {
+        .fusion-chat [class*="message-status--read"] svg path,
+        .fusion-chat .sendbird-icon-done-all path,
+        .fusion-chat .sendbird-icon-read path {
           fill: #22c55e !important;
+        }
+
+        /* Pending/Sending status - gray clock or single tick */
+        .fusion-chat .sendbird-message-status--pending .sendbird-message-status__icon,
+        .fusion-chat [class*="message-status--pending"] svg,
+        .fusion-chat .sendbird-icon-spinner {
+          color: hsl(var(--muted-foreground)) !important;
+          fill: hsl(var(--muted-foreground)) !important;
+          opacity: 0.6 !important;
         }
 
         /* ===== VOICE MESSAGE - SHOW BACK/CANCEL BUTTON ===== */
