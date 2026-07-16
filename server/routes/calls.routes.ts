@@ -16,6 +16,7 @@ import {
 } from "@shared/schema";
 import { eq, and, or, desc } from "drizzle-orm";
 import { sendVideoCallNotification } from "../pushNotifications";
+import { sendCallVoipPush } from "../voipPush";
 import { createRequire } from "module";
 
 const require = createRequire(import.meta.url);
@@ -503,6 +504,16 @@ export function registerCallRoutes(app: Express) {
         type: 'incoming_call',
         data: pushData,
       });
+
+      // VoIP push (Phase 2): wakes a fully-closed app to show the native
+      // CallKit incoming-call screen. No-op until APNS_* env vars are set.
+      sendCallVoipPush(calleeUserId, {
+        callId,
+        callerName,
+        callType,
+        channel: channelName,
+        callerId: callerUserId,
+      }).catch(err => console.error('[Call] VoIP push failed:', err));
 
       // Ring timeout: if nobody answers within the window, mark the call
       // missed, stop the ring on both ends, and leave a note in the chat.

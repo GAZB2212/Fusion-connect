@@ -72,9 +72,9 @@ export function registerPushRoutes(app: Express) {
         ...req.body
       });
 
-      // Determine platform from type if not provided
-      const platform = validatedData.platform || 
-        (validatedData.type === 'apns' ? 'ios' : 
+      // Determine platform from type if not provided (voip is iOS-only)
+      const platform = validatedData.platform ||
+        (validatedData.type === 'apns' || validatedData.type === 'voip' ? 'ios' :
          validatedData.type === 'fcm' ? 'android' : 'web');
       
       // Default environment to production (TestFlight uses production APNs)

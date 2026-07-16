@@ -516,7 +516,7 @@ export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions
 }).omit({ id: true, createdAt: true });
 
 export const insertPushTokenSchema = createInsertSchema(pushTokens, {
-  type: z.enum(["web", "fcm", "apns"]),
+  type: z.enum(["web", "fcm", "apns", "voip"]),
   token: z.string().min(1, "Token is required"),
   endpoint: z.string().url().optional(),
   auth: z.string().optional(),
