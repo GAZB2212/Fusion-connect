@@ -8,10 +8,14 @@ import { Input } from "@/components/ui/input";
 import { CheckCircle2, Loader2, Zap, Tag } from "lucide-react";
 import { useLocation } from "wouter";
 
-if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
-  throw new Error('Missing required Stripe key: VITE_STRIPE_PUBLIC_KEY');
+// A missing key must not crash the whole app at module load — it only
+// disables checkout on this page. Native builds must pass VITE_STRIPE_PUBLIC_KEY
+// (and VITE_API_URL) at build time; see capacitor.config.ts.
+const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
+if (!stripePublicKey) {
+  console.error('Missing VITE_STRIPE_PUBLIC_KEY: subscription checkout is unavailable in this build');
 }
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+const stripePromise = stripePublicKey ? loadStripe(stripePublicKey) : null;
 
 export default function Subscribe() {
   const [clientSecret, setClientSecret] = useState("");
