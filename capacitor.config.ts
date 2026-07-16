@@ -27,7 +27,9 @@ const config: CapacitorConfig = {
   },
 
   ios: {
-    contentInset: 'automatic',
+    // 'never' lets the web content render edge-to-edge under the status bar
+    // and home indicator — the UI already pads itself with safe-area insets
+    contentInset: 'never',
     backgroundColor: '#0a1628',
   },
 
