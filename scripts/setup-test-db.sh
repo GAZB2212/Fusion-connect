@@ -8,6 +8,6 @@ set -euo pipefail
 
 TEST_DATABASE_URL="${TEST_DATABASE_URL:-postgres://postgres@localhost:5433/fusion_test}"
 
-echo "Applying schema to ${TEST_DATABASE_URL}"
-DATABASE_URL="$TEST_DATABASE_URL" npx drizzle-kit push --force
+echo "Applying migrations to ${TEST_DATABASE_URL}"
+DATABASE_URL="$TEST_DATABASE_URL" npx drizzle-kit migrate
 echo "Test database ready. Run: npm test"
