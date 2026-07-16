@@ -21,6 +21,61 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const { RtcTokenBuilder, RtcRole } = require("agora-token");
 
+// How long an unanswered call rings before it's marked missed
+const RING_TIMEOUT_MS = 30_000;
+
+/**
+ * After the ring window, if the call is still 'ringing' (nobody accepted or
+ * declined), mark it missed, stop the ring on both ends via WebSocket, and
+ * post a "Missed call" note into the pair's chat.
+ */
+function scheduleRingTimeout(callId: string, callerUserId: string, calleeUserId: string) {
+  setTimeout(async () => {
+    try {
+      const [call] = await db
+        .select()
+        .from(callSessions)
+        .where(eq(callSessions.callId, callId))
+        .limit(1);
+
+      if (!call || call.status !== 'ringing') {
+        return; // Already accepted, declined, or ended — nothing to do
+      }
+
+      await db
+        .update(callSessions)
+        .set({ status: 'missed', endedAt: new Date() })
+        .where(eq(callSessions.callId, callId));
+
+      // Stop the ringing UI on both devices
+      broadcastToUser(calleeUserId, { type: 'call_cancelled', data: { callId, reason: 'missed' } });
+      broadcastToUser(callerUserId, { type: 'call_missed', data: { callId } });
+
+      // Leave a note in the chat, if these two users have a match/channel
+      const [match] = await db
+        .select()
+        .from(matches)
+        .where(
+          or(
+            and(eq(matches.user1Id, callerUserId), eq(matches.user2Id, calleeUserId)),
+            and(eq(matches.user1Id, calleeUserId), eq(matches.user2Id, callerUserId))
+          )
+        )
+        .limit(1);
+
+      if (match) {
+        SendbirdService.sendSystemMessage(match.id, '📞 Missed call').catch(err => {
+          console.error('[Call] Failed to post missed-call note:', err);
+        });
+      }
+
+      console.log(`[Call] Call ${callId} timed out — marked missed`);
+    } catch (err) {
+      console.error('[Call] Ring timeout handler error:', err);
+    }
+  }, RING_TIMEOUT_MS);
+}
+
 export function registerCallRoutes(app: Express) {
   // Video Call endpoints
   app.post("/api/video-call/initiate", isAuthenticated, async (req: any, res: Response) => {
@@ -448,6 +503,10 @@ export function registerCallRoutes(app: Express) {
         type: 'incoming_call',
         data: pushData,
       });
+
+      // Ring timeout: if nobody answers within the window, mark the call
+      // missed, stop the ring on both ends, and leave a note in the chat.
+      scheduleRingTimeout(callId, callerUserId, calleeUserId);
 
       res.json({
         callId,
