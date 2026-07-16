@@ -629,7 +629,7 @@ export default function Home() {
           </div>
 
           {/* Islamic Profile Prompt */}
-          {currentProfile.profilePrompts && (currentProfile.profilePrompts as ProfilePromptAnswer[]).length > 0 && (
+          {Array.isArray(currentProfile.profilePrompts) && (currentProfile.profilePrompts as ProfilePromptAnswer[]).length > 0 && (
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 mb-3">
               {(() => {
                 const prompts = currentProfile.profilePrompts as ProfilePromptAnswer[];
@@ -797,7 +797,7 @@ export default function Home() {
                 )}
 
                 {/* Profile Prompts */}
-                {currentProfile.profilePrompts && (currentProfile.profilePrompts as ProfilePromptAnswer[]).length > 0 && (
+                {Array.isArray(currentProfile.profilePrompts) && (currentProfile.profilePrompts as ProfilePromptAnswer[]).length > 0 && (
                   <div className="space-y-3 mb-6 px-5">
                     {(currentProfile.profilePrompts as ProfilePromptAnswer[]).map((prompt, idx) => {
                       const promptConfig = getPromptById(prompt.promptId);

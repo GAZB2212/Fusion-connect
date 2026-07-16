@@ -285,7 +285,7 @@ export default function UserProfile() {
             </div>
           )}
 
-          {profile.profilePrompts && Array.isArray(profile.profilePrompts) && (profile.profilePrompts as Array<{ promptId: string; answer: string }>).length > 0 && (
+          {Array.isArray(profile.profilePrompts) && (profile.profilePrompts as Array<{ promptId: string; answer: string }>).length > 0 && (
             <div className="space-y-4">
               {(profile.profilePrompts as Array<{ promptId: string; answer: string }>).map((prompt, idx) => (
                 <Card key={idx} className="p-4">

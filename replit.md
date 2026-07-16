@@ -33,7 +33,10 @@ The platform features a luxury aesthetic with a deep navy primary color, gold ac
 
 ### System Design Choices
 - **Full-stack TypeScript:** Type safety across the application.
-- **RESTful API:** Clearly defined endpoints.
+- **RESTful API:** Clearly defined endpoints, organized as feature modules under `server/routes/` (auth, billing, verification, discovery, matches, chaperones, calls, push, safety, etc.) registered from `server/routes/index.ts`.
+- **Schema migrations:** Drizzle SQL migrations in `migrations/` (`npm run db:generate` / `npm run db:migrate`); see DEPLOYMENT.md.
+- **Tests:** Integration test suite (`npm test`, vitest + supertest) against a local PostgreSQL database; CI runs typecheck, tests, and build on every push/PR.
+- **Chat is Sendbird-only:** the legacy DB-backed messaging endpoints were removed; the `ws` WebSocket layer carries match and call events.
 - **WebSocket Infrastructure:** Real-time messaging and call notifications with `ws` package, supporting 1000+ concurrent users.
 - **PostgreSQL Database:** Primary data persistence, utilizing Neon for serverless scalability.
 - **Session-based Authentication:** Secure, HTTP-only cookies for web sessions.
