@@ -559,7 +559,7 @@ export function registerCallRoutes(app: Express) {
         .where(eq(callSessions.callId, callId));
 
       // Generate Agora RTC token for the callee
-      const agoraAppId = process.env.AGORA_APP_ID;
+      const agoraAppId = process.env.AGORA_APP_ID || process.env.VITE_AGORA_APP_ID;
       const agoraCertificate = process.env.AGORA_APP_CERTIFICATE;
       
       if (!agoraAppId || !agoraCertificate) {
@@ -742,7 +742,7 @@ export function registerCallRoutes(app: Express) {
       }
 
       // Generate Agora RTC token
-      const agoraAppId = process.env.AGORA_APP_ID;
+      const agoraAppId = process.env.AGORA_APP_ID || process.env.VITE_AGORA_APP_ID;
       const agoraCertificate = process.env.AGORA_APP_CERTIFICATE;
       
       if (!agoraAppId || !agoraCertificate) {
