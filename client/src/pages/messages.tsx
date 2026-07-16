@@ -281,120 +281,28 @@ export default function Messages() {
     return currentMatch.user1Id === user.id ? currentMatch.user2Id : currentMatch.user1Id;
   };
 
-  // Check for incoming calls
-  const { data: incomingCall } = useQuery<VideoCall | null>({
-    queryKey: ["/api/video-call/incoming", currentChannelUrl],
-    queryFn: async () => {
-      if (!currentChannelUrl) return null;
-      const token = getAuthToken();
-      const res = await fetch(getApiUrl(`/api/video-call/incoming/${currentChannelUrl}`), {
-        credentials: 'include',
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-      });
-      if (!res.ok) return null;
-      return res.json();
-    },
-    enabled: !!currentChannelUrl && !activeCall,
-    refetchInterval: 3000,
-  });
-
-  // Handle incoming call
-  useEffect(() => {
-    // Don't restart a call we just ended
-    if (incomingCall && incomingCall.id === endedCallId) {
-      return;
-    }
-    if (incomingCall && !activeCall && (incomingCall.status === 'initiated' || incomingCall.status === 'active')) {
-      // Start ringing for incoming call
-      startIncomingRing();
-      
-      setActiveCall(incomingCall);
-      // Fetch token for the call
-      const token = getAuthToken();
-      fetch(getApiUrl(`/api/video-call/token/${incomingCall.id}`), { 
-        credentials: 'include',
-        headers: token ? { 'Authorization': `Bearer ${token}` } : {},
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.token) {
-            setCallToken(data.token);
-            setIsCallActive(true);
-          }
-        })
-        .catch(err => console.error('Failed to get call token:', err));
-    }
-  }, [incomingCall, activeCall, endedCallId, setIsCallActive, startIncomingRing]);
+  // Incoming calls are handled app-wide by the IncomingCallBanner (see App.tsx),
+  // which listens for the 'incoming_call' WebSocket event and routes to the
+  // shared /call/:callId screen — so calls ring on any screen, not just here.
 
   // Video call mutation
+  // Unified call flow: create the invite, then jump to the shared call screen
+  // as the caller. The callee gets an app-wide incoming-call banner (via the
+  // 'incoming_call' WebSocket event) and a push notification.
   const startCallMutation = useMutation({
     mutationFn: async () => {
-      console.log('[VideoCall] Starting call mutation...');
       const receiverId = getOtherUserId();
-      console.log('[VideoCall] receiverId:', receiverId, 'currentChannelUrl:', currentChannelUrl);
-      if (!receiverId || !currentChannelUrl) {
+      if (!receiverId) {
         throw new Error("Cannot start call");
       }
-      console.log('[VideoCall] Making API request to initiate call');
-      const res = await apiRequest("POST", "/api/video-call/initiate", {
-        matchId: currentChannelUrl,
-        receiverId,
+      const res = await apiRequest("POST", "/api/call/invite", {
+        calleeUserId: receiverId,
+        callType: "video",
       });
-      console.log('[VideoCall] API response received, status:', res.status);
-      const call = await res.json();
-      console.log('[VideoCall] Parsed call data:', call);
-      return call as VideoCall;
+      return res.json() as Promise<{ callId: string; callType: string }>;
     },
-    onSuccess: async (call) => {
-      console.log('[VideoCall] Call initiated successfully:', call);
-      
-      // Fetch token for the call FIRST before setting any state
-      try {
-        console.log('[VideoCall] Fetching token for call:', call.id);
-        const callToken = getAuthToken();
-        const tokenRes = await fetch(getApiUrl(`/api/video-call/token/${call.id}`), { 
-          credentials: 'include',
-          headers: callToken ? { 'Authorization': `Bearer ${callToken}` } : {},
-        });
-        console.log('[VideoCall] Token response status:', tokenRes.status);
-        
-        if (!tokenRes.ok) {
-          throw new Error(`Token request failed: ${tokenRes.status}`);
-        }
-        
-        const tokenData = await tokenRes.json();
-        console.log('[VideoCall] Token data:', tokenData);
-        
-        if (tokenData.token) {
-          console.log('[VideoCall] Setting all call states together');
-          // Start outgoing ring sound
-          startOutgoingRing();
-          
-          // Set all states together to avoid race conditions
-          setActiveCall(call);
-          setCallToken(tokenData.token);
-          setIsCallActive(true);
-          
-          toast({
-            title: "Calling...",
-            description: "Starting video call",
-          });
-        } else {
-          console.error('[VideoCall] No token in response:', tokenData);
-          toast({
-            title: "Call failed",
-            description: "Could not get video token",
-            variant: "destructive",
-          });
-        }
-      } catch (err) {
-        console.error('[VideoCall] Failed to get call token:', err);
-        toast({
-          title: "Call failed",
-          description: "Could not connect to video service",
-          variant: "destructive",
-        });
-      }
+    onSuccess: (data) => {
+      setLocation(`/call/${data.callId}?role=caller&callType=${data.callType}`);
     },
     onError: (error: any) => {
       toast({

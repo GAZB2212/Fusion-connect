@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import type { Profile } from "@shared/schema";
 import { 
   initializeEarly, 
@@ -16,7 +16,7 @@ import {
 import { initPush, getStoredPushToken, getPushTokenType, setNavigationCallbackForPush, setIncomingCallCallback } from "@/lib/push";
 import { isCapacitorNative } from "@/lib/platform";
 import { VideoCallProvider } from "@/contexts/VideoCallContext";
-import { WebSocketProvider } from "@/contexts/WebSocketContext";
+import { WebSocketProvider, useWebSocketEvent } from "@/contexts/WebSocketContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { TextSizeProvider } from "@/contexts/TextSizeContext";
 import Landing from "@/pages/landing";
@@ -204,6 +204,32 @@ function AppContent() {
   
   // Incoming call banner state
   const [incomingCall, setIncomingCall] = useState<IncomingCallData | null>(null);
+
+  // App-wide incoming-call listener: shows the banner on ANY screen while the
+  // app is open (previously only the open chat thread detected calls, so a
+  // call would ring with no answer screen unless you were already in that chat)
+  useWebSocketEvent(
+    "incoming_call",
+    useCallback((data: any) => {
+      if (!data?.callId) return;
+      setIncomingCall({
+        callId: data.callId,
+        callerName: data.callerName || "Someone",
+        callerId: data.callerId,
+        callType: data.callType === "audio" ? "audio" : "video",
+        channel: data.channel,
+      });
+    }, [])
+  );
+
+  // Clear the banner if the caller cancels, ends, or the call times out
+  const dismissIfMatching = useCallback((data: any) => {
+    setIncomingCall((current) =>
+      current && data?.callId === current.callId ? null : current
+    );
+  }, []);
+  useWebSocketEvent("call_cancelled", dismissIfMatching);
+  useWebSocketEvent("call_ended", dismissIfMatching);
   
   // Inline notification for mobile
   const { notification } = useInlineNotification();
