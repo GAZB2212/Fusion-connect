@@ -726,7 +726,7 @@ export class SendbirdService {
             custom_type: 'call_notification',
           },
           push_option: 'force', // Send push even if user is online
-          apns_bundle_id: process.env.APNS_BUNDLE_ID || 'com.fusioncouples.app',
+          apns_bundle_id: process.env.APNS_BUNDLE_ID || 'com.gajocreative.fusion',
           sound: 'default',
           push_template: 'default',
           // Custom notification fields
