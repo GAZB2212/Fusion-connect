@@ -1,0 +1,55 @@
+Read receipt
+
+Feedback
+Read receipt is a feature that allows a user to know whether their messages have been read by other users in the channel. The UI for read receipt appears in each message cell of the SBUGroupChannelViewController class as well as in each channel cell in the 
+listComponent
+ of the SBUGroupChannelListViewController class. If the sender’s message has been read by all recipients in the channel, a colored double-tick icon will appear above the message’s timestamp. Read receipt is only visible to the sender of the message.
+To view the image in full screen, click on theImage|A side-by-side image showing the read receipt in group channel view and channel list view.
+
+In a group channel view, the read status of a message is displayed through the stateImageView of SBUMessageStateView, which is either in the SBUUserMessageCell class or the SBUFileMessageCell class depending on the type of the message.
+Note : In order to use this feature, you must first create a channel and enable the chat service. To learn how to allow users to chat in a channel, refer to Chat in a group channel.
+You can also display the read status in the channel list. If a user's message has been read by all the other users in the channel, a colored double-tick icon will appear next to the message’s timestamp, which is only visible to the sender of the message.
+How to use
+
+Feedback
+While the read receipt feature is turned on by default in the SBUGroupChannelViewController class, you have to set isChannelListMessageReceiptStateEnabled to true in the SBUGroupChannelListViewController class. Implement the code below to turn on the read receipt in a channel list view.
+Swift
+
+
+
+SBUGlobals.isChannelListMessageReceiptStateEnabled = true
+Customize the UI for read receipt
+
+Feedback
+You can customize the UI for read receipt using the SBUMessageCellTheme in the SBUTheme and through the iconDoneAll property of the SBUIconSet.
+SBUMessageCellTheme
+
+Feedback
+The following table shows a customizable theme property of read receipt in a group channel view.
+Category
+Property
+Description
+Message state
+readReceiptStateColor
+The color of the read receipt state element.
+SBUChannelCellTheme
+
+Feedback
+The following table shows a customizable theme property of read receipt in each channel cell in a channel list view.
+Category
+Property
+Description
+Channel state
+readReceiptStateColor
+The color of the read receipt state element.
+SBUIconSet
+
+Feedback
+The following table shows a customizable read receipt icon.
+Icon
+Image
+Description
+IconDoneAll
+To view the image in full screen, click on theDone All icon
+An icon used to indicate that a message has been read by all members of a channel.
+Note : The same double-tick icon is used for both read receipt and delivery receipt. The only difference is the color of the icon. Default icon colors used for read receipt are secondary_300 for Light theme, and secondary_200 for Dark theme.
