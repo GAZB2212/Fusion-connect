@@ -32,6 +32,38 @@ These exist only in development and return 404 in production:
 
 The corresponding client buttons (Skip Verification, Skip Payment, Testing Tools in Settings) only render in dev builds.
 
+## Database migrations
+
+Schema changes are tracked as SQL migrations in `migrations/` (the old
+`db:push` workflow applied schema changes directly with no history).
+
+- After editing `shared/schema.ts`, run `npm run db:generate` to create a
+  migration, review the SQL, and commit it.
+- Apply migrations with `npm run db:migrate` (uses `DATABASE_URL`).
+- Fresh databases: just run `npm run db:migrate` — the baseline migration
+  creates the full schema.
+- **The existing production database** already has all tables, so the
+  baseline must be marked as applied (once) instead of executed:
+
+  ```sql
+  CREATE SCHEMA IF NOT EXISTS drizzle;
+  CREATE TABLE IF NOT EXISTS drizzle.__drizzle_migrations (
+    id SERIAL PRIMARY KEY,
+    hash text NOT NULL,
+    created_at bigint
+  );
+  INSERT INTO drizzle.__drizzle_migrations (hash, created_at)
+  VALUES ('e4f3d65d3c90388e0ed2a9741af9dc35b454cb98af438ebe0bf97ee6f23a46a0', 1784190989325);
+  ```
+
+  After that, future migrations apply normally with `npm run db:migrate`.
+
+## Running tests
+
+`npm test` runs the integration suite against a local PostgreSQL database
+(default `postgres://postgres@localhost:5433/fusion_test`, override with
+`TEST_DATABASE_URL`). Create it once with `./scripts/setup-test-db.sh`.
+
 ## Before go-live
 
 1. Rotate `SESSION_SECRET` — the old JWT fallback secret was in source control, so existing tokens must be invalidated.
