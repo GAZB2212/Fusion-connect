@@ -561,10 +561,14 @@ export function registerCallRoutes(app: Express) {
       // Generate Agora RTC token for the callee
       const agoraAppId = process.env.AGORA_APP_ID || process.env.VITE_AGORA_APP_ID;
       const agoraCertificate = process.env.AGORA_APP_CERTIFICATE;
-      
+
       if (!agoraAppId || !agoraCertificate) {
-        console.error('[Call] Agora credentials not configured');
-        return res.status(500).json({ message: "Video calling not configured" });
+        const missing = [
+          !agoraAppId ? "AGORA_APP_ID" : null,
+          !agoraCertificate ? "AGORA_APP_CERTIFICATE" : null,
+        ].filter(Boolean).join(", ");
+        console.error(`[Call] Agora credentials not configured — missing: ${missing}`);
+        return res.status(500).json({ message: `Video calling not configured (missing: ${missing})` });
       }
 
       const uid = Math.floor(Math.random() * 100000);
@@ -744,9 +748,14 @@ export function registerCallRoutes(app: Express) {
       // Generate Agora RTC token
       const agoraAppId = process.env.AGORA_APP_ID || process.env.VITE_AGORA_APP_ID;
       const agoraCertificate = process.env.AGORA_APP_CERTIFICATE;
-      
+
       if (!agoraAppId || !agoraCertificate) {
-        return res.status(500).json({ message: "Video calling not configured" });
+        const missing = [
+          !agoraAppId ? "AGORA_APP_ID" : null,
+          !agoraCertificate ? "AGORA_APP_CERTIFICATE" : null,
+        ].filter(Boolean).join(", ");
+        console.error(`[Call] Agora credentials not configured — missing: ${missing}`);
+        return res.status(500).json({ message: `Video calling not configured (missing: ${missing})` });
       }
 
       const uid = Math.floor(Math.random() * 100000);
