@@ -32,12 +32,14 @@ export function IOSHeader({
   };
 
   return (
-    <header 
+    <header
       className={cn(
-        "sticky top-0 z-30 pt-14",
+        "sticky top-0 z-30",
         "bg-background/80 backdrop-blur-xl border-b border-border/50",
         className
       )}
+      // Follow the device status bar height, never less than the 56px web look
+      style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 3.5rem)' }}
       data-testid="ios-header"
     >
       <div className="px-4 pb-3">

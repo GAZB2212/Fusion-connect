@@ -628,7 +628,7 @@ export default function Messages() {
   }
 
   return (
-    <div className="fixed inset-0 bottom-16 pt-14 flex flex-col bg-background overflow-hidden">
+    <div className="fixed inset-0 bottom-16 flex flex-col bg-background overflow-hidden" style={{ paddingTop: 'max(env(safe-area-inset-top, 0px), 3.5rem)' }}>
       {/* Premium Chat Header */}
       {currentChannelUrl ? (
         <header className="flex-shrink-0 h-16 px-3 border-b border-border bg-background/95 backdrop-blur-xl flex items-center gap-3 z-10">

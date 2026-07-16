@@ -332,6 +332,16 @@
  * Automatic contrast adjustment.
  */
 @layer utilities {
+  /* Standard spacing around the fixed bottom nav (h-16 = 4rem plus the
+     device safe-area inset). Every page must use these instead of ad-hoc
+     pb-20/pb-24/bottom-16 values so spacing is identical across screens. */
+  .bottom-nav-offset {
+    bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+  }
+  .pb-nav {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+  }
+
 
   /* Hide ugly search cancel button in Chrome until we can style it properly */
   input[type="search"]::-webkit-search-cancel-button {

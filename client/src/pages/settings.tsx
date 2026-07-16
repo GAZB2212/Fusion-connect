@@ -561,7 +561,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-nav">
       <IOSHeader 
         title={t('settings.title')}
         subtitle={t('settings.manageAccount', 'Manage your account and preferences')}

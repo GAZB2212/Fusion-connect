@@ -72,7 +72,7 @@ export default function Likes() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      <div className="min-h-screen pb-24">
+      <div className="min-h-screen pb-nav">
         <IOSHeader 
           title={t('likes.title', 'Likes You')}
           subtitle={likes.length > 0 ? t('likes.subtitle', '{{count}} people like you', { count: likes.length }) : undefined}

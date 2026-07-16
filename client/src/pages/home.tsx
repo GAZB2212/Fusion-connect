@@ -307,7 +307,7 @@ export default function Home() {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bottom-16 flex items-center justify-center bg-background">
+      <div className="fixed inset-0 bottom-nav-offset flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">{t('common.loading')}</p>
@@ -318,7 +318,7 @@ export default function Home() {
 
   if (!currentProfile) {
     return (
-      <div className="fixed inset-0 bottom-16 flex items-center justify-center bg-background">
+      <div className="fixed inset-0 bottom-nav-offset flex items-center justify-center">
         <div className="text-center px-4">
           <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-6">
             <Heart className="h-12 w-12 text-primary" />
@@ -347,7 +347,7 @@ export default function Home() {
   const currentPhoto = photos[currentPhotoIndex] || photos[0];
 
   return (
-    <div className="fixed inset-0 bottom-16 bg-background overflow-hidden">
+    <div className="fixed inset-0 bottom-nav-offset bg-background overflow-hidden">
       {/* Swipe Animations */}
       <AnimatePresence>
         {showAnimation === 'like' && (

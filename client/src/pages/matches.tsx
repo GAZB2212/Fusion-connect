@@ -92,7 +92,7 @@ export default function Matches() {
   // Show paywall if subscription is required
   if (requiresSubscription) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] golden-shimmer pb-20">
+      <div className="min-h-screen bg-gradient-to-b from-black via-[#0A0E17] to-[#0E1220] golden-shimmer pb-nav">
         <div className="container max-w-3xl mx-auto py-8 px-4">
           <div className="mb-8 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
@@ -169,7 +169,7 @@ export default function Matches() {
   }
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen pb-nav">
       <IOSHeader 
         title={t('matches.title')} 
         subtitle={t('matches.subtitle', { count: matches.length })}
