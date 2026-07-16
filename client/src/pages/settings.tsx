@@ -1544,43 +1544,45 @@ export default function Settings() {
           </div>
         </Card>
 
-        {/* Testing Tools (Development) */}
-        <Card className="p-6 mb-6 border-primary/20">
-          <h2 className="text-xl font-semibold mb-2 text-primary">Testing Tools</h2>
-          <p className="text-sm text-muted-foreground mb-4">Development and testing utilities</p>
-          <div className="space-y-3">
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={() => resetMatchesMutation.mutate()}
-              disabled={resetMatchesMutation.isPending}
-              data-testid="button-reset-matches"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              {resetMatchesMutation.isPending ? "Resetting..." : "Reset All Matches"}
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={() => cleanupChannelsMutation.mutate()}
-              disabled={cleanupChannelsMutation.isPending}
-              data-testid="button-cleanup-channels"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              {cleanupChannelsMutation.isPending ? "Cleaning..." : "Cleanup Old Chats"}
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={() => cleanupMessagesMutation.mutate()}
-              disabled={cleanupMessagesMutation.isPending}
-              data-testid="button-cleanup-messages"
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              {cleanupMessagesMutation.isPending ? "Cleaning..." : "Remove Duplicate Welcome Messages"}
-            </Button>
-          </div>
-        </Card>
+        {/* Testing Tools — development builds only */}
+        {import.meta.env.DEV && (
+          <Card className="p-6 mb-6 border-primary/20">
+            <h2 className="text-xl font-semibold mb-2 text-primary">Testing Tools</h2>
+            <p className="text-sm text-muted-foreground mb-4">Development and testing utilities</p>
+            <div className="space-y-3">
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => resetMatchesMutation.mutate()}
+                disabled={resetMatchesMutation.isPending}
+                data-testid="button-reset-matches"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {resetMatchesMutation.isPending ? "Resetting..." : "Reset All Matches"}
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => cleanupChannelsMutation.mutate()}
+                disabled={cleanupChannelsMutation.isPending}
+                data-testid="button-cleanup-channels"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {cleanupChannelsMutation.isPending ? "Cleaning..." : "Cleanup Old Chats"}
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => cleanupMessagesMutation.mutate()}
+                disabled={cleanupMessagesMutation.isPending}
+                data-testid="button-cleanup-messages"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {cleanupMessagesMutation.isPending ? "Cleaning..." : "Remove Duplicate Welcome Messages"}
+              </Button>
+            </div>
+          </Card>
+        )}
 
         {/* Account */}
         <Card className="p-6">

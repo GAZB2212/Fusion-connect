@@ -524,11 +524,12 @@ export default function Messages() {
   });
 
   useEffect(() => {
-    if (user) {
+    // Backfill endpoint only exists in development
+    if (user && import.meta.env.DEV) {
       const hasBackfilled = sessionStorage.getItem('channels_backfilled');
       if (!hasBackfilled) {
         const token = getAuthToken();
-        fetch(getApiUrl('/api/dev/backfill-channels'), { 
+        fetch(getApiUrl('/api/dev/backfill-channels'), {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',

@@ -35,9 +35,7 @@ export function BlockUserDialog({
     setIsBlocking(true);
 
     try {
-      await apiRequest(`/api/users/${userId}/block`, {
-        method: "POST",
-      });
+      await apiRequest("POST", `/api/users/${userId}/block`);
 
       // Invalidate relevant queries
       await queryClient.invalidateQueries({ queryKey: ["/api/matches"] });

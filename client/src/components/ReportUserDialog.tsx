@@ -46,10 +46,7 @@ export function ReportUserDialog({
     setIsSubmitting(true);
 
     try {
-      await apiRequest(`/api/users/${userId}/report`, {
-        method: "POST",
-        body: JSON.stringify({ reason, details }),
-      });
+      await apiRequest("POST", `/api/users/${userId}/report`, { reason, details });
 
       toast({
         title: "Report submitted",

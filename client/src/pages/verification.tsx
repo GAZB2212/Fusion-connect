@@ -405,17 +405,19 @@ export default function Verification() {
               )}
             </div>
 
-            {/* Dev Mode Bypass */}
-            <Button 
-              onClick={devBypass} 
-              variant="ghost" 
-              size="sm"
-              className="w-full text-xs text-muted-foreground hover:text-foreground"
-              disabled={isVerifying}
-              data-testid="button-dev-bypass"
-            >
-              Skip Verification (Testing Only)
-            </Button>
+            {/* Dev Mode Bypass — never rendered in production builds */}
+            {import.meta.env.DEV && (
+              <Button
+                onClick={devBypass}
+                variant="ghost"
+                size="sm"
+                className="w-full text-xs text-muted-foreground hover:text-foreground"
+                disabled={isVerifying}
+                data-testid="button-dev-bypass"
+              >
+                Skip Verification (Testing Only)
+              </Button>
+            )}
           </div>
         </div>
       </Card>

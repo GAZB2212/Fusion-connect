@@ -286,27 +286,29 @@ export default function Subscribe() {
               Continue Without Promo Code
             </Button>
           </CardContent>
-          <CardFooter className="flex-col gap-2">
-            <div className="w-full border-t border-white/10 my-2"></div>
-            <Button 
-              onClick={activateDevPremium}
-              disabled={activatingDev}
-              className="w-full bg-emerald-600 hover:bg-emerald-700"
-              data-testid="button-dev-activate"
-            >
-              {activatingDev ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Activating...
-                </>
-              ) : (
-                <>
-                  <Zap className="mr-2 h-4 w-4" />
-                  Dev Mode: Activate Premium
-                </>
-              )}
-            </Button>
-          </CardFooter>
+          {import.meta.env.DEV && (
+            <CardFooter className="flex-col gap-2">
+              <div className="w-full border-t border-white/10 my-2"></div>
+              <Button
+                onClick={activateDevPremium}
+                disabled={activatingDev}
+                className="w-full bg-emerald-600 hover:bg-emerald-700"
+                data-testid="button-dev-activate"
+              >
+                {activatingDev ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Activating...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="mr-2 h-4 w-4" />
+                    Dev Mode: Activate Premium
+                  </>
+                )}
+              </Button>
+            </CardFooter>
+          )}
         </Card>
       </div>
     );
@@ -433,27 +435,31 @@ export default function Subscribe() {
               </button>
             </p>
           </div>
-          <div className="w-full border-t border-white/10 my-2"></div>
-          <p className="text-xs text-[#F8F4E3]/40 text-center mb-2">Development Mode</p>
-          <Button 
-            onClick={activateDevPremium}
-            disabled={activatingDev}
-            variant="outline"
-            className="w-full border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
-            data-testid="button-dev-activate-footer"
-          >
-            {activatingDev ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Activating...
-              </>
-            ) : (
-              <>
-                <Zap className="mr-2 h-4 w-4" />
-                Skip Payment (Dev Mode)
-              </>
-            )}
-          </Button>
+          {import.meta.env.DEV && (
+            <>
+              <div className="w-full border-t border-white/10 my-2"></div>
+              <p className="text-xs text-[#F8F4E3]/40 text-center mb-2">Development Mode</p>
+              <Button
+                onClick={activateDevPremium}
+                disabled={activatingDev}
+                variant="outline"
+                className="w-full border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+                data-testid="button-dev-activate-footer"
+              >
+                {activatingDev ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Activating...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="mr-2 h-4 w-4" />
+                    Skip Payment (Dev Mode)
+                  </>
+                )}
+              </Button>
+            </>
+          )}
         </CardFooter>
       </Card>
     </div>

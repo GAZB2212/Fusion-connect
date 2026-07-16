@@ -86,6 +86,15 @@ function profileWithAbsoluteUrls<T extends { photos?: string[] | null; videoIntr
   };
 }
 
+// Guard for development/testing-only endpoints. In production these
+// return 404 so they are indistinguishable from routes that don't exist.
+const requireDev: import("express").RequestHandler = (_req, res, next) => {
+  if (process.env.NODE_ENV === "development") {
+    return next();
+  }
+  res.status(404).json({ message: "Not found" });
+};
+
 // Configure multer for photo uploads (memory storage)
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -347,7 +356,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // DEVELOPMENT: Activate premium without payment (always available for testing)
-  app.post('/api/dev/activate-premium', isAuthenticated, async (req: any, res: Response) => {
+  app.post('/api/dev/activate-premium', requireDev, isAuthenticated, async (req: any, res: Response) => {
     const userId = req.user.id;
 
     try {
@@ -371,13 +380,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // ADMIN: Seed demo profiles for testing (call this on production to populate test data)
+  // ADMIN: Seed demo profiles for testing. Disabled unless ADMIN_SEED_KEY is
+  // explicitly configured — never enable this on a production database.
   app.post('/api/admin/seed-demo-profiles', async (req: Request, res: Response) => {
     const { adminKey } = req.body;
-    
-    // Simple admin key protection - change this to a secure value
-    if (adminKey !== 'fusion-seed-2024') {
-      return res.status(401).json({ message: "Unauthorized" });
+
+    if (!process.env.ADMIN_SEED_KEY || adminKey !== process.env.ADMIN_SEED_KEY) {
+      return res.status(404).json({ message: "Not found" });
     }
 
     try {
@@ -769,15 +778,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     let event;
 
     try {
-      // For development, we may not have a webhook secret
       const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-      
+
       if (webhookSecret) {
         event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
-      } else {
-        // In development without webhook secret, just parse the body
+      } else if (process.env.NODE_ENV === 'development') {
+        // Local development without a webhook secret: accept unverified events
         event = JSON.parse(req.body);
-        console.warn('⚠️  Webhook verification skipped (no STRIPE_WEBHOOK_SECRET)');
+        console.warn('⚠️  Webhook verification skipped (no STRIPE_WEBHOOK_SECRET, development only)');
+      } else {
+        // Never process unverified subscription events in production
+        console.error('STRIPE_WEBHOOK_SECRET is not set — rejecting webhook');
+        return res.status(500).send('Webhook not configured');
       }
     } catch (err: any) {
       console.error('Webhook signature verification failed:', err.message);
@@ -1066,7 +1078,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // DEVELOPMENT: Manual verification bypass (always available for testing)
-  app.post("/api/dev-verify", isAuthenticated, async (req: any, res: Response) => {
+  app.post("/api/dev-verify", requireDev, isAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user.id;
       
@@ -1116,7 +1128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // DEVELOPMENT: Reset all matches
-  app.post("/api/dev/reset-matches", isAuthenticated, async (req: any, res: Response) => {
+  app.post("/api/dev/reset-matches", requireDev, isAuthenticated, async (req: any, res: Response) => {
     try {
       console.log(`[DEV] Resetting all matches`);
       
@@ -2255,10 +2267,14 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
     const userId = req.user.id;
     const { swipedId, direction } = req.body;
 
-    console.log(`[SWIPE] User ${userId} swiped ${direction} on ${swipedId}`);
-
-    if (!swipedId || !direction) {
-      return res.status(400).json({ message: "Missing swipedId or direction" });
+    if (!swipedId || typeof swipedId !== "string") {
+      return res.status(400).json({ message: "Missing swipedId" });
+    }
+    if (direction !== "left" && direction !== "right") {
+      return res.status(400).json({ message: "direction must be 'left' or 'right'" });
+    }
+    if (swipedId === userId) {
+      return res.status(400).json({ message: "Cannot swipe on yourself" });
     }
 
     // MANDATORY: Check if user has completed face verification
@@ -2269,34 +2285,39 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
       .limit(1);
 
     if (!userProfile || !userProfile.faceVerified) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         message: "Face verification required",
         requiresVerification: true,
         details: "Please complete face verification before you can start swiping. This helps us ensure everyone on Fusion is genuine."
       });
     }
 
-    // Record the swipe
-    await db.insert(swipes).values({
-      swiperId: userId,
-      swipedId,
-      direction,
-    });
+    // Record the swipe, updating the direction if this pair was already swiped
+    // so repeat swipes can't pile up duplicate rows
+    const [existingSwipe] = await db
+      .select()
+      .from(swipes)
+      .where(and(eq(swipes.swiperId, userId), eq(swipes.swipedId, swipedId)))
+      .limit(1);
+
+    if (existingSwipe) {
+      await db
+        .update(swipes)
+        .set({ direction })
+        .where(eq(swipes.id, existingSwipe.id));
+    } else {
+      await db.insert(swipes).values({
+        swiperId: userId,
+        swipedId,
+        direction,
+      });
+    }
 
     let isMatch = false;
     let matchId: string | null = null;
 
     // If this is a right swipe, check for mutual match
     if (direction === "right") {
-      console.log(`[SWIPE] Checking for mutual match between ${userId} and ${swipedId}`);
-      
-      // Debug: Show all swipes from the other user
-      const allSwipesFromOther = await db
-        .select()
-        .from(swipes)
-        .where(eq(swipes.swiperId, swipedId));
-      console.log(`[SWIPE DEBUG] All swipes from ${swipedId}:`, JSON.stringify(allSwipesFromOther));
-      
       const [mutualSwipe] = await db
         .select()
         .from(swipes)
@@ -2309,11 +2330,8 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
         )
         .limit(1);
 
-      console.log(`[SWIPE DEBUG] Mutual swipe lookup result:`, mutualSwipe ? JSON.stringify(mutualSwipe) : 'null');
-
       if (mutualSwipe) {
-        console.log(`[SWIPE] Found mutual swipe! Creating match...`);
-        
+
         // Check if match already exists to prevent duplicates
         const [existingMatch] = await db
           .select()
@@ -2348,11 +2366,9 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
           const currentUserHasSubscription = currentUser?.subscriptionStatus === 'active' || currentUser?.subscriptionStatus === 'trialing';
           const otherUserHasSubscription = otherUser?.subscriptionStatus === 'active' || otherUser?.subscriptionStatus === 'trialing';
 
-          console.log(`[SWIPE] Subscription check - Current: ${currentUserHasSubscription}, Other: ${otherUserHasSubscription}`);
-
-          // For testing: Allow all matches regardless of subscription
-          // In production, only create match if at least one user has an active subscription
-          const allowAllMatches = true; // Set to false in production
+          // A match requires at least one premium subscriber; the bypass is
+          // for local testing only
+          const allowAllMatches = process.env.NODE_ENV === 'development';
           if (allowAllMatches || currentUserHasSubscription || otherUserHasSubscription) {
             try {
               const [newMatch] = await db.insert(matches).values({
@@ -4614,7 +4630,7 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
   });
 
   // DEVELOPMENT: Backfill Sendbird channels for existing matches
-  app.post('/api/dev/backfill-channels', isAuthenticated, async (req: any, res: Response) => {
+  app.post('/api/dev/backfill-channels', requireDev, isAuthenticated, async (req: any, res: Response) => {
     try {
       console.log('[BACKFILL] Starting channel backfill for existing matches');
       
@@ -4714,7 +4730,7 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
   });
 
   // DEVELOPMENT: Cleanup duplicate welcome messages from all channels
-  app.post('/api/dev/cleanup-welcome-messages', isAuthenticated, async (req: any, res: Response) => {
+  app.post('/api/dev/cleanup-welcome-messages', requireDev, isAuthenticated, async (req: any, res: Response) => {
     try {
       console.log('[CLEANUP] Starting cleanup of duplicate welcome messages');
       
@@ -4741,7 +4757,7 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
   });
 
   // DEVELOPMENT: Cleanup orphaned Sendbird channels (channels without matching database records)
-  app.post('/api/dev/cleanup-orphaned-channels', isAuthenticated, async (req: any, res: Response) => {
+  app.post('/api/dev/cleanup-orphaned-channels', requireDev, isAuthenticated, async (req: any, res: Response) => {
     try {
       console.log('[CLEANUP-CHANNELS] Starting cleanup of orphaned Sendbird channels');
       
@@ -4786,7 +4802,7 @@ Return ONLY the enhanced bio text, no explanations or quotes.`;
   });
 
   // DEVELOPMENT: Backfill Sendbird users for ALL existing users
-  app.post('/api/dev/backfill-sendbird-users', isAuthenticated, async (req: any, res: Response) => {
+  app.post('/api/dev/backfill-sendbird-users', requireDev, isAuthenticated, async (req: any, res: Response) => {
     try {
       console.log('[BACKFILL-USERS] Starting Sendbird user backfill for all users');
       

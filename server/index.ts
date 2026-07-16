@@ -4,32 +4,50 @@ import { setupVite, serveStatic, log } from "./vite";
 import { setupWebSocket } from "./websocket";
 
 const app = express();
+// Stripe webhook signature verification needs the raw request body —
+// this must be mounted before express.json() consumes it.
+app.use('/api/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 
-// CORS configuration for Capacitor iOS/Android app
+// CORS configuration for the Capacitor iOS/Android app.
+// The web client is served from this same server, so it never needs CORS —
+// only the mobile wrapper (capacitor://) and any origins listed in
+// ALLOWED_ORIGINS (comma-separated) are allowed. Reflecting arbitrary
+// origins with credentials would let any website call the API with a
+// logged-in user's cookies.
+const allowedOrigins = new Set([
+  'capacitor://localhost',
+  'ionic://localhost',
+  'http://localhost',
+  'https://localhost',
+  ...(process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()).filter(Boolean) ?? []),
+]);
+const isDev = process.env.NODE_ENV === 'development';
+
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  
-  // For Capacitor apps and development, allow the origin
-  // Always set the origin header to support credentials
-  if (origin) {
+
+  const originAllowed =
+    origin &&
+    (allowedOrigins.has(origin) ||
+      // Any localhost port during development (Vite dev server, etc.)
+      (isDev && /^https?:\/\/localhost(:\d+)?$/.test(origin)));
+
+  if (originAllowed) {
     res.setHeader('Access-Control-Allow-Origin', origin);
-  } else {
-    // For requests without origin (like mobile apps making direct requests)
-    res.setHeader('Access-Control-Allow-Origin', 'capacitor://localhost');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+    res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
+    res.setHeader('Vary', 'Origin');
   }
-  
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
-  res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
-  
+
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
+    return res.sendStatus(originAllowed || !origin ? 200 : 403);
   }
-  
+
   next();
 });
 
