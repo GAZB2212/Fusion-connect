@@ -149,6 +149,7 @@ interface LikeCardProps {
 }
 
 function LikeCard({ profile, isBlurred, onClick }: LikeCardProps) {
+  const { t } = useTranslation();
   const mainPhoto = profile.photos?.[profile.mainPhotoIndex || 0] || profile.photos?.[0];
   
   return (
@@ -182,15 +183,17 @@ function LikeCard({ profile, isBlurred, onClick }: LikeCardProps) {
           </div>
         )}
 
+        {/* Free users only see a teaser — name, age and verification stay
+            behind the paywall, otherwise the blur is the only thing sold */}
         <div className="absolute bottom-0 left-0 right-0 p-3">
           <div className="flex items-center gap-1 mb-1">
             <h3 className="font-semibold text-white text-lg truncate">
-              {profile.displayName}
+              {isBlurred ? t('likes.someone', 'Someone') : profile.displayName}
             </h3>
-            {profile.age && (
+            {!isBlurred && profile.age && (
               <span className="text-white/90 text-lg">, {profile.age}</span>
             )}
-            {profile.faceVerified && (
+            {!isBlurred && profile.faceVerified && (
               <CheckCircle2 className="h-4 w-4 text-[#f59e0b] flex-shrink-0" />
             )}
           </div>

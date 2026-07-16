@@ -3,7 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, X, MapPin, Play, ChevronLeft, ChevronRight, ShieldCheck, Users, Sparkles, Moon, Star, User, Ruler, Briefcase, GraduationCap, Baby, Loader2, Info } from "lucide-react";
+import { Heart, X, MapPin, Play, ChevronLeft, ChevronRight, ShieldCheck, Users, Sparkles, Moon, Star, User, Ruler, Briefcase, GraduationCap, Baby, Loader2, Info, RefreshCw } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { ProfileWithUser } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -327,6 +327,22 @@ export default function Home() {
           <p className="text-muted-foreground mb-6">
             {t('discover.checkBackLater')}
           </p>
+          <div className="flex flex-col gap-3 max-w-xs mx-auto">
+            <Button
+              onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/discover"] })}
+              data-testid="button-check-again"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              {t('discover.checkAgain', 'Check Again')}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setLocation("/settings")}
+              data-testid="button-review-profile"
+            >
+              {t('discover.reviewProfile', 'Review My Profile')}
+            </Button>
+          </div>
         </div>
       </div>
     );

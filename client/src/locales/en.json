@@ -89,7 +89,9 @@
     "controlWhoSees": "Control who sees your photos and profile",
     "perMonthCancel": "per month • Cancel anytime",
     "subscribeNow": "Subscribe Now",
-    "autoRenew": "Your subscription will automatically renew each month"
+    "autoRenew": "Your subscription will automatically renew each month",
+    "subtitle_one": "{{count}} person you both liked",
+    "subtitle_other": "{{count}} people you both liked"
   },
   "messages": {
     "title": "Messages",
@@ -325,5 +327,10 @@
     "small": "Small",
     "medium": "Medium",
     "large": "Large"
+  },
+  "likes": {
+    "subtitle_one": "{{count}} person likes you",
+    "subtitle_other": "{{count}} people like you",
+    "someone": "Someone"
   }
 }

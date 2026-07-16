@@ -277,8 +277,9 @@ export default function Matches() {
                       {t('matches.sendMessage')}
                     </Button>
                     <Button
-                      variant="destructive"
-                      className="w-full"
+                      variant="ghost"
+                      size="sm"
+                      className="w-full text-destructive hover:text-destructive"
                       onClick={() => {
                         setSelectedMatchId(match.id);
                         setSelectedMatchName(displayName);
@@ -293,6 +294,15 @@ export default function Matches() {
                 </Card>
               );
             })}
+          </div>
+          <div className="text-center mt-6">
+            <Button
+              variant="ghost"
+              onClick={() => setLocation("/")}
+              data-testid="button-keep-swiping"
+            >
+              {t('matches.keepSwiping')}
+            </Button>
           </div>
           </PullToRefresh>
         )}

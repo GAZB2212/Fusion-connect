@@ -1066,7 +1066,9 @@ export default function Settings() {
                     <SelectItem key={lang.code} value={lang.code} data-testid={`option-language-${lang.code}`}>
                       <span className="flex items-center gap-2">
                         <span>{lang.nativeName}</span>
-                        <span className="text-muted-foreground">({lang.name})</span>
+                        {lang.name !== lang.nativeName && (
+                          <span className="text-muted-foreground">({lang.name})</span>
+                        )}
                       </span>
                     </SelectItem>
                   ))}
