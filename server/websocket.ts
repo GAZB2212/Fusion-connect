@@ -7,6 +7,7 @@ import connectPgSimple from 'connect-pg-simple';
 import { db } from './db';
 import { eq } from 'drizzle-orm';
 import { users } from '../shared/schema';
+import { verifyToken } from './auth';
 
 const PgSession = connectPgSimple(session);
 
@@ -41,22 +42,42 @@ export function setupWebSocket(server: Server) {
 
   // Handle WebSocket upgrade
   server.on('upgrade', (request, socket, head) => {
-    const { pathname } = parse(request.url || '');
-    
+    const parsed = parse(request.url || '', true);
+    const pathname = parsed.pathname;
+
     if (pathname === '/ws') {
-      // Parse cookies from the upgrade request
-      const cookies = request.headers.cookie;
-      
-      if (!cookies) {
-        console.log('WebSocket: No cookies found');
+      const req = request as any;
+
+      // Native app (Capacitor) authenticates with a JWT, not a session cookie.
+      // Accept a token via the ?token= query param and verify it directly.
+      const tokenParam = parsed.query?.token;
+      const token = Array.isArray(tokenParam) ? tokenParam[0] : tokenParam;
+      if (token) {
+        const decoded = verifyToken(token);
+        if (decoded?.userId) {
+          req.user = { id: decoded.userId };
+          console.log(`WebSocket upgrade authenticated via JWT: user ${decoded.userId}`);
+          wss.handleUpgrade(request, socket, head, (ws) => {
+            wss.emit('connection', ws, request);
+          });
+          return;
+        }
+        console.log('WebSocket: Invalid JWT token');
         socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
         socket.destroy();
         return;
       }
 
-      // Create proper request/response objects for session middleware
-      const req = request as any;
-      
+      // Web: authenticate via the session cookie
+      const cookies = request.headers.cookie;
+
+      if (!cookies) {
+        console.log('WebSocket: No cookies or token found');
+        socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+        socket.destroy();
+        return;
+      }
+
       // Create a minimal response object that session middleware needs
       const res: any = {
         getHeader: () => {},

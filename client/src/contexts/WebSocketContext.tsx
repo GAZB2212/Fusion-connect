@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { getWebSocketUrl } from '@/lib/queryClient';
+import { getWebSocketUrl, getAuthToken } from '@/lib/queryClient';
 
 interface WebSocketContextType {
   isConnected: boolean;
@@ -30,10 +30,13 @@ export function WebSocketProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Create WebSocket connection using production URL for Capacitor apps
-    const wsUrl = getWebSocketUrl('/ws');
-    
-    console.log('Connecting to WebSocket:', wsUrl);
+    // Create WebSocket connection using production URL for Capacitor apps.
+    // The native app has no session cookie, so pass the JWT as a query param
+    // for the server to authenticate the upgrade.
+    const authToken = getAuthToken();
+    const wsUrl = getWebSocketUrl('/ws') + (authToken ? `?token=${encodeURIComponent(authToken)}` : '');
+
+    console.log('Connecting to WebSocket:', getWebSocketUrl('/ws'));
     const ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
