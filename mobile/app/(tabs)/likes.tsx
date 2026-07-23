@@ -4,14 +4,13 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/ui";
-import { useAuth } from "@/auth";
+import { useSubscription } from "@/useSubscription";
 import { colors, spacing, radius } from "@/theme";
 import type { LikeEntry } from "@/types";
 
 export default function Likes() {
   const router = useRouter();
-  const { user } = useAuth();
-  const hasSub = user?.subscriptionStatus === "active" || user?.subscriptionStatus === "trialing";
+  const { isPremium: hasSub } = useSubscription();
 
   const { data: likes = [], isLoading } = useQuery<LikeEntry[]>({ queryKey: ["/api/likes"] });
 
