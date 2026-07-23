@@ -6,29 +6,16 @@
     "orientation": "portrait",
     "scheme": "fusion",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
     "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0F1826"
-    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.gajocreative.fusion",
-      "buildNumber": "41",
+      "buildNumber": "42",
       "infoPlist": {
         "NSCameraUsageDescription": "Fusion needs camera access for face verification and video calls.",
         "NSMicrophoneUsageDescription": "Fusion needs microphone access for voice and video calls.",
         "NSPhotoLibraryUsageDescription": "Fusion needs photo access so you can add photos to your profile.",
-        "UIBackgroundModes": [
-          "voip",
-          "remote-notification",
-          "audio",
-          "voip",
-          "remote-notification",
-          "audio"
-        ],
+        "UIBackgroundModes": ["voip", "remote-notification", "audio"],
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -43,7 +30,15 @@
       "expo-router",
       "expo-secure-store",
       "expo-font",
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#0F1826"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
