@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "Fusion",
+    "slug": "fusion",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "fusion",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0F1826"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.gajocreative.fusion",
+      "buildNumber": "40",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Fusion needs camera access for face verification and video calls.",
+        "NSMicrophoneUsageDescription": "Fusion needs microphone access for voice and video calls.",
+        "NSPhotoLibraryUsageDescription": "Fusion needs photo access so you can add photos to your profile.",
+        "UIBackgroundModes": ["voip", "remote-notification", "audio"]
+      }
+    },
+    "android": {
+      "package": "com.gajocreative.fusion",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#0F1826"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "apiUrl": "https://www.fusioncouples.co.uk"
+    }
+  }
+}
