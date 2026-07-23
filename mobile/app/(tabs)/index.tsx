@@ -1,16 +1,20 @@
 import { useState, useRef } from "react";
 import { View, StyleSheet, Image, Animated, Pressable, ActivityIndicator, ScrollView } from "react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { ApiError } from "@/api";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/ui";
 import { apiRequest } from "@/api";
+import { useProfile } from "@/useProfile";
 import { colors, spacing, radius } from "@/theme";
 import type { DiscoverProfile, SwipeResult } from "@/types";
 import { MatchModal } from "@/components/MatchModal";
 
 export default function Discover() {
   const qc = useQueryClient();
+  const router = useRouter();
   const [index, setIndex] = useState(0);
   const [matched, setMatched] = useState<DiscoverProfile | null>(null);
   const position = useRef(new Animated.ValueXY()).current;
@@ -18,6 +22,8 @@ export default function Discover() {
   const { data: profiles = [], isLoading, refetch } = useQuery<DiscoverProfile[]>({
     queryKey: ["/api/discover"],
   });
+
+  const { data: myProfile } = useProfile();
 
   const swipe = useMutation({
     mutationFn: async ({ swipedId, direction }: { swipedId: string; direction: "left" | "right" }) => {
@@ -28,6 +34,13 @@ export default function Discover() {
         const p = profiles.find((x) => x.userId === variables.swipedId);
         if (p) setMatched(p);
         qc.invalidateQueries({ queryKey: ["/api/matches"] });
+      }
+    },
+    onError: (e) => {
+      // Backend requires face verification before swiping
+      if (e instanceof ApiError && e.status === 403) {
+        setIndex((i) => Math.max(0, i - 1)); // don't lose the card
+        router.push("/profile-setup");
       }
     },
   });
@@ -53,6 +66,27 @@ export default function Discover() {
       <Screen title="Discover">
         <View style={styles.center}>
           <ActivityIndicator color={colors.primary} size="large" />
+        </View>
+      </Screen>
+    );
+  }
+
+  // Face verification is required before matching
+  if (myProfile && !myProfile.faceVerified) {
+    return (
+      <Screen title="Discover">
+        <View style={styles.center}>
+          <View style={styles.emptyIcon}>
+            <Ionicons name="shield-checkmark-outline" size={44} color={colors.primary} />
+          </View>
+          <Text style={styles.emptyTitle}>Verify to start matching</Text>
+          <Text variant="muted" style={styles.emptyText}>
+            A quick selfie confirms you're genuine. It keeps Fusion safe for everyone.
+          </Text>
+          <Pressable style={styles.refreshBtn} onPress={() => router.push("/profile-setup")}>
+            <Ionicons name="camera" size={18} color={colors.primaryForeground} />
+            <Text style={styles.refreshText}>Verify now</Text>
+          </Pressable>
         </View>
       </Screen>
     );
