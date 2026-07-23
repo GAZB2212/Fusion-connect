@@ -15,6 +15,7 @@ import { registerChaperoneRoutes } from "./chaperones.routes";
 import { registerCallRoutes } from "./calls.routes";
 import { registerPushRoutes } from "./push.routes";
 import { registerSafetyRoutes } from "./safety.routes";
+import { registerIapRoutes } from "./iap.routes";
 import { registerMiscRoutes } from "./misc.routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -35,6 +36,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerCallRoutes(app);
   registerPushRoutes(app);
   registerSafetyRoutes(app);
+  registerIapRoutes(app);
   registerMiscRoutes(app);
 
   const httpServer = createServer(app);

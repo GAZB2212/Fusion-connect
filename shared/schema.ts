@@ -39,6 +39,10 @@ export const users = pgTable("users", {
   stripeSubscriptionId: varchar("stripe_subscription_id"),
   subscriptionStatus: varchar("subscription_status"), // active, canceled, past_due, etc.
   subscriptionEndsAt: timestamp("subscription_ends_at"),
+
+  // Apple In-App Purchase fields (native app subscriptions)
+  appleOriginalTransactionId: varchar("apple_original_transaction_id"),
+  subscriptionPlatform: varchar("subscription_platform"), // 'stripe' | 'apple'
   
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
