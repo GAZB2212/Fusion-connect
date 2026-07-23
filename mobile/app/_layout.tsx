@@ -7,6 +7,7 @@ import { View, ActivityIndicator, StyleSheet } from "react-native";
 import { queryClient } from "@/api";
 import { AuthProvider, useAuth } from "@/auth";
 import { SendbirdProvider } from "@/sendbird";
+import { CallProvider } from "@/calls";
 import { colors } from "@/theme";
 
 function RootNavigator() {
@@ -43,8 +44,10 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <SendbirdProvider>
-              <StatusBar style="light" />
-              <RootNavigator />
+              <CallProvider>
+                <StatusBar style="light" />
+                <RootNavigator />
+              </CallProvider>
             </SendbirdProvider>
           </AuthProvider>
         </QueryClientProvider>

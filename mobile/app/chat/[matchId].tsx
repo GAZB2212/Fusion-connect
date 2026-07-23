@@ -19,6 +19,7 @@ import type { BaseMessage } from "@sendbird/chat/message";
 import { Background } from "@/components/Background";
 import { Text } from "@/components/ui";
 import { connectSendbird, getSendbird } from "@/sendbird";
+import { useCall } from "@/calls";
 import { apiRequest } from "@/api";
 import { useAuth } from "@/auth";
 import { colors, spacing, radius, gold } from "@/theme";
@@ -47,12 +48,14 @@ export default function Chat() {
   const name = params.name ? String(params.name) : "Chat";
   const photo = params.photo ? String(params.photo) : undefined;
 
+  const { startCall } = useCall();
   const [channel, setChannel] = useState<GroupChannel | null>(null);
   const [messages, setMessages] = useState<BaseMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
   const [partnerTyping, setPartnerTyping] = useState(false);
+  const [partnerId, setPartnerId] = useState<string | null>(null);
 
   const channelRef = useRef<GroupChannel | null>(null);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -85,6 +88,8 @@ export default function Chat() {
 
         channelRef.current = ch;
         setChannel(ch);
+        const partner = ch.members.find((m) => m.userId !== myId);
+        if (partner) setPartnerId(partner.userId);
 
         const query = ch.createPreviousMessageListQuery({ limit: 60, reverse: true });
         const history = await query.load();
@@ -234,16 +239,27 @@ export default function Chat() {
         </View>
         <Pressable
           onPress={() =>
-            router.push({ pathname: "/call/[callId]", params: { callId: matchId, name, photo: photo ?? "" } })
+            partnerId && startCall({ calleeUserId: partnerId, callType: "audio", name, photo })
           }
-          hitSlop={10}
-          style={styles.callBtn}
+          disabled={!partnerId}
+          hitSlop={8}
+          style={[styles.callBtn, !partnerId && styles.callBtnDisabled]}
         >
-          <Ionicons name="call" size={20} color={colors.primary} />
+          <Ionicons name="call" size={19} color={colors.primary} />
+        </Pressable>
+        <Pressable
+          onPress={() =>
+            partnerId && startCall({ calleeUserId: partnerId, callType: "video", name, photo })
+          }
+          disabled={!partnerId}
+          hitSlop={8}
+          style={[styles.callBtn, !partnerId && styles.callBtnDisabled]}
+        >
+          <Ionicons name="videocam" size={19} color={colors.primary} />
         </Pressable>
       </View>
     ),
-    [name, photo, partnerTyping, matchId, router]
+    [name, photo, partnerTyping, partnerId, startCall, router]
   );
 
   return (
@@ -350,6 +366,7 @@ const styles = StyleSheet.create({
     borderColor: gold.border,
     backgroundColor: gold.soft,
   },
+  callBtnDisabled: { opacity: 0.4 },
 
   list: { paddingHorizontal: spacing.md, paddingVertical: spacing.md, gap: 2 },
 

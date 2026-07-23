@@ -38,6 +38,17 @@
           "resizeMode": "contain",
           "backgroundColor": "#0F1826"
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "15.1"
+          },
+          "android": {
+            "minSdkVersion": 24
+          }
+        }
       ]
     ],
     "experiments": {
