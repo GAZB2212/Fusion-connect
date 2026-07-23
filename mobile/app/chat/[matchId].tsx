@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  ActionSheetIOS,
+  Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,6 +18,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { GroupChannelHandler } from "@sendbird/chat/groupChannel";
 import type { GroupChannel } from "@sendbird/chat/groupChannel";
 import type { BaseMessage } from "@sendbird/chat/message";
+import { useQueryClient } from "@tanstack/react-query";
 import { Background } from "@/components/Background";
 import { Text } from "@/components/ui";
 import { connectSendbird, getSendbird } from "@/sendbird";
@@ -49,6 +52,7 @@ export default function Chat() {
   const photo = params.photo ? String(params.photo) : undefined;
 
   const { startCall } = useCall();
+  const queryClient = useQueryClient();
   const [channel, setChannel] = useState<GroupChannel | null>(null);
   const [messages, setMessages] = useState<BaseMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -167,6 +171,92 @@ export default function Chat() {
       });
   };
 
+  const doUnmatch = () => {
+    Alert.alert("Unmatch", `Unmatch with ${name.split(" ")[0]}? This removes your conversation.`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Unmatch",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await apiRequest("DELETE", `/api/matches/${matchId}`);
+            await queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
+          } catch {
+            // ignore
+          }
+          router.back();
+        },
+      },
+    ]);
+  };
+
+  const doBlock = () => {
+    if (!partnerId) return;
+    Alert.alert("Block", `Block ${name.split(" ")[0]}? They won't be able to contact you.`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Block",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await apiRequest("POST", `/api/users/${partnerId}/block`);
+            await queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
+          } catch {
+            // ignore
+          }
+          router.back();
+        },
+      },
+    ]);
+  };
+
+  const doReport = () => {
+    if (!partnerId) return;
+    const submit = async (reason: string) => {
+      try {
+        await apiRequest("POST", `/api/users/${partnerId}/report`, { reason });
+        Alert.alert("Thank you", "Our team will review this report.");
+      } catch {
+        // ignore
+      }
+    };
+    const reasons = ["Inappropriate messages", "Fake profile", "Harassment", "Other"];
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        { title: "Report reason", options: [...reasons, "Cancel"], cancelButtonIndex: reasons.length },
+        (i) => {
+          if (i < reasons.length) submit(reasons[i]);
+        }
+      );
+    } else {
+      Alert.alert("Report reason", undefined, [
+        ...reasons.map((r) => ({ text: r, onPress: () => submit(r) })),
+        { text: "Cancel", style: "cancel" as const },
+      ]);
+    }
+  };
+
+  const openMenu = () => {
+    const options = ["Unmatch", "Block", "Report", "Cancel"];
+    if (Platform.OS === "ios") {
+      ActionSheetIOS.showActionSheetWithOptions(
+        { options, destructiveButtonIndex: 1, cancelButtonIndex: 3 },
+        (i) => {
+          if (i === 0) doUnmatch();
+          else if (i === 1) doBlock();
+          else if (i === 2) doReport();
+        }
+      );
+    } else {
+      Alert.alert(name, undefined, [
+        { text: "Unmatch", onPress: doUnmatch },
+        { text: "Block", style: "destructive", onPress: doBlock },
+        { text: "Report", onPress: doReport },
+        { text: "Cancel", style: "cancel" },
+      ]);
+    }
+  };
+
   const renderItem = useCallback(
     ({ item, index }: { item: BaseMessage; index: number }) => {
       if (item.isAdminMessage?.()) {
@@ -257,9 +347,13 @@ export default function Chat() {
         >
           <Ionicons name="videocam" size={19} color={colors.primary} />
         </Pressable>
+        <Pressable onPress={openMenu} hitSlop={8} style={styles.menuBtn}>
+          <Ionicons name="ellipsis-horizontal" size={20} color={colors.foreground} />
+        </Pressable>
       </View>
     ),
-    [name, photo, partnerTyping, partnerId, startCall, router]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [name, photo, partnerTyping, partnerId, startCall]
   );
 
   return (
@@ -367,6 +461,7 @@ const styles = StyleSheet.create({
     backgroundColor: gold.soft,
   },
   callBtnDisabled: { opacity: 0.4 },
+  menuBtn: { width: 32, height: 40, alignItems: "center", justifyContent: "center" },
 
   list: { paddingHorizontal: spacing.md, paddingVertical: spacing.md, gap: 2 },
 
