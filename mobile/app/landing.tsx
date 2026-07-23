@@ -1,4 +1,4 @@
-import { View, StyleSheet, ImageBackground } from "react-native";
+import { View, StyleSheet, ImageBackground, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, Button } from "@/components/ui";
@@ -9,15 +9,19 @@ export default function Landing() {
 
   return (
     <ImageBackground
-      source={require("../assets/pattern.png")}
-      resizeMode="repeat"
+      source={require("../assets/landing-bg.png")}
+      resizeMode="cover"
       style={styles.bg}
-      imageStyle={{ opacity: 0.5 }}
     >
+      {/* Darken slightly so the wordmark and buttons stay legible over the art */}
+      <View style={styles.scrim} />
       <SafeAreaView style={styles.safe}>
         <View style={styles.hero}>
-          {/* Gold "fusion" wordmark */}
-          <Text style={styles.wordmark}>fusion</Text>
+          <Image
+            source={require("../assets/wordmark.png")}
+            style={styles.wordmark}
+            resizeMode="contain"
+          />
           <Text style={styles.tagline}>find your perfect match</Text>
           <Text style={styles.subtitle}>Where Muslims Meet</Text>
         </View>
@@ -40,16 +44,12 @@ export default function Landing() {
 }
 
 const styles = StyleSheet.create({
-  bg: { flex: 1, backgroundColor: colors.background },
+  bg: { flex: 1, backgroundColor: colors.backgroundDeep },
+  scrim: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(10,22,40,0.35)" },
   safe: { flex: 1, justifyContent: "space-between", paddingHorizontal: spacing.xl, paddingBottom: spacing.xl },
   hero: { flex: 1, alignItems: "center", justifyContent: "center" },
-  wordmark: {
-    fontSize: 64,
-    color: colors.primary,
-    fontStyle: "italic",
-    fontWeight: "600",
-  },
-  tagline: { color: colors.foreground, fontSize: 14, marginTop: -8, opacity: 0.9 },
+  wordmark: { width: 260, height: 150 },
+  tagline: { color: colors.foreground, fontSize: 15, marginTop: -12, opacity: 0.9 },
   subtitle: { color: colors.foreground, fontSize: 22, marginTop: spacing.xxl, letterSpacing: 1 },
   actions: { gap: spacing.sm },
   legal: { textAlign: "center", marginTop: spacing.lg },

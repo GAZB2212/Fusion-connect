@@ -27,6 +27,8 @@ function RootNavigator() {
       <Stack.Screen name="landing" />
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="profile-setup" />
+      <Stack.Screen name="subscribe" options={{ presentation: "modal" }} />
       <Stack.Screen name="call/[callId]" options={{ presentation: "fullScreenModal" }} />
     </Stack>
   );

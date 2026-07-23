@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, StyleSheet, KeyboardAvoidingView, Platform, Pressable, ScrollView } from "react-native";
+import { View, StyleSheet, KeyboardAvoidingView, Platform, Pressable, ScrollView, Image } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, Button, Input } from "@/components/ui";
@@ -41,7 +41,11 @@ export default function Signup() {
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.flex}>
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-          <Text style={styles.wordmark}>fusion</Text>
+          <Image
+            source={require("../../assets/wordmark.png")}
+            style={styles.wordmark}
+            resizeMode="contain"
+          />
           <Text variant="title" style={styles.heading}>
             Create your account
           </Text>
@@ -75,7 +79,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   flex: { flex: 1 },
   body: { flexGrow: 1, justifyContent: "center", paddingHorizontal: spacing.xl },
-  wordmark: { fontSize: 44, color: colors.primary, fontStyle: "italic", fontWeight: "600", textAlign: "center" },
+  wordmark: { width: 200, height: 88, alignSelf: "center" },
   heading: { textAlign: "center", marginTop: spacing.sm, marginBottom: spacing.xl },
   form: { gap: spacing.md },
   error: { color: colors.destructive, fontSize: 14 },
