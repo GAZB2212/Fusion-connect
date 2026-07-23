@@ -11,7 +11,8 @@ import {
   TextInputProps,
   ViewStyle,
 } from "react-native";
-import { colors, radius, spacing, fontSize } from "@/theme";
+import { LinearGradient } from "expo-linear-gradient";
+import { colors, radius, spacing, fontSize, gradients, shadow, gold } from "@/theme";
 
 export function Text(props: TextProps & { variant?: "body" | "muted" | "title" | "display" }) {
   const { variant = "body", style, ...rest } = props;
@@ -27,13 +28,47 @@ export function Button(
 ) {
   const { title, loading, variant = "primary", disabled, style, ...rest } = props;
   const isDisabled = disabled || loading;
+
+  const inner = loading ? (
+    <ActivityIndicator color={variant === "primary" ? colors.primaryForeground : colors.primary} />
+  ) : (
+    <RNText style={[styles.btnText, variant === "primary" ? styles.btnTextPrimary : styles.btnTextAccent]}>
+      {title}
+    </RNText>
+  );
+
+  // Primary buttons get a gold gradient fill + soft glow for a premium feel
+  if (variant === "primary") {
+    return (
+      <Pressable
+        {...rest}
+        disabled={isDisabled}
+        style={(state) => [
+          styles.btnShadow,
+          !isDisabled && shadow.goldGlow,
+          isDisabled && styles.btnDisabled,
+          state.pressed && styles.btnPressed,
+          typeof style === "function" ? style(state) : style,
+        ]}
+      >
+        <LinearGradient
+          colors={gradients.gold}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.btn}
+        >
+          {inner}
+        </LinearGradient>
+      </Pressable>
+    );
+  }
+
   return (
     <Pressable
       {...rest}
       disabled={isDisabled}
       style={(state) => [
         styles.btn,
-        variant === "primary" && styles.btnPrimary,
         variant === "outline" && styles.btnOutline,
         variant === "ghost" && styles.btnGhost,
         isDisabled && styles.btnDisabled,
@@ -41,18 +76,7 @@ export function Button(
         typeof style === "function" ? style(state) : style,
       ]}
     >
-      {loading ? (
-        <ActivityIndicator color={variant === "primary" ? colors.primaryForeground : colors.primary} />
-      ) : (
-        <RNText
-          style={[
-            styles.btnText,
-            variant === "primary" ? styles.btnTextPrimary : styles.btnTextAccent,
-          ]}
-        >
-          {title}
-        </RNText>
-      )}
+      {inner}
     </Pressable>
   );
 }
@@ -78,29 +102,30 @@ const styles = StyleSheet.create({
   title: { fontSize: fontSize.xxl, fontWeight: "700" },
   display: { fontSize: fontSize.display, fontWeight: "700", letterSpacing: -0.5 },
 
+  btnShadow: { borderRadius: radius.full },
   btn: {
-    height: 52,
+    height: 56,
     borderRadius: radius.full,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: spacing.xl,
     flexDirection: "row",
+    overflow: "hidden",
   },
-  btnPrimary: { backgroundColor: colors.primary },
-  btnOutline: { borderWidth: 1, borderColor: colors.primary, backgroundColor: "transparent" },
+  btnOutline: { borderWidth: 1.5, borderColor: gold.border, backgroundColor: "rgba(212,175,55,0.06)" },
   btnGhost: { backgroundColor: "transparent" },
   btnDisabled: { opacity: 0.5 },
-  btnPressed: { opacity: 0.85, transform: [{ scale: 0.99 }] },
-  btnText: { fontSize: fontSize.base, fontWeight: "600" },
+  btnPressed: { opacity: 0.9, transform: [{ scale: 0.985 }] },
+  btnText: { fontSize: fontSize.base, fontWeight: "700", letterSpacing: 0.3 },
   btnTextPrimary: { color: colors.primaryForeground },
   btnTextAccent: { color: colors.primary },
 
   input: {
-    height: 52,
+    minHeight: 54,
     borderRadius: radius.md,
-    backgroundColor: colors.input,
+    backgroundColor: "rgba(255,255,255,0.05)",
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: gold.faintBorder,
     paddingHorizontal: spacing.lg,
     color: colors.foreground,
     fontSize: fontSize.base,
@@ -111,5 +136,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.cardBorder,
     padding: spacing.lg,
+    ...shadow.card,
   },
 });

@@ -45,8 +45,13 @@ export default function Matches() {
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
           renderItem={({ item }) => {
             const p = otherProfile(item);
+            const openChat = () =>
+              router.push({
+                pathname: "/chat/[matchId]",
+                params: { matchId: item.id, name: p.displayName, photo: p.photos?.[0] ?? "" },
+              });
             return (
-              <Pressable style={styles.card} onPress={() => router.push(`/(tabs)/messages`)}>
+              <Pressable style={styles.card} onPress={openChat}>
                 {p.photos?.[0] ? (
                   <Image source={{ uri: p.photos[0] }} style={styles.avatar} />
                 ) : (
@@ -61,9 +66,9 @@ export default function Matches() {
                   </Text>
                   {p.location ? <Text variant="muted">{p.location}</Text> : null}
                 </View>
-                <View style={styles.msgBtn}>
+                <Pressable style={styles.msgBtn} onPress={openChat} hitSlop={8}>
                   <Ionicons name="chatbubble" size={18} color={colors.primaryForeground} />
-                </View>
+                </Pressable>
               </Pressable>
             );
           }}

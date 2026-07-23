@@ -3,6 +3,7 @@ import { View, StyleSheet, KeyboardAvoidingView, Platform, Pressable, ScrollView
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, Button, Input } from "@/components/ui";
+import { Background } from "@/components/Background";
 import { useAuth } from "@/auth";
 import { ApiError } from "@/api";
 import { colors, spacing } from "@/theme";
@@ -38,6 +39,7 @@ export default function Signup() {
   };
 
   return (
+    <Background>
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.flex}>
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
@@ -72,11 +74,12 @@ export default function Signup() {
         </Pressable>
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </Background>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1, backgroundColor: "transparent" },
   flex: { flex: 1 },
   body: { flexGrow: 1, justifyContent: "center", paddingHorizontal: spacing.xl },
   wordmark: { width: 200, height: 88, alignSelf: "center" },

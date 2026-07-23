@@ -9,9 +9,10 @@ import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { Text, Button, Input } from "@/components/ui";
 import { ChipGroup } from "@/components/Chips";
+import { Background } from "@/components/Background";
 import { apiRequest, ApiError } from "@/api";
 import { PROMPTS } from "@/prompts";
-import { colors, spacing, radius } from "@/theme";
+import { colors, spacing, radius, gold } from "@/theme";
 
 const SECTS = ["No preference", "Sunni", "Shia", "Sufi", "Other"];
 const PRACTICE = ["Strictly practising", "Actively practising", "Moderately practising", "Not very practising"];
@@ -168,6 +169,7 @@ export default function ProfileSetup() {
   };
 
   return (
+    <Background>
     <SafeAreaView style={styles.safe}>
       {/* Progress */}
       <View style={styles.progressRow}>
@@ -294,6 +296,7 @@ export default function ProfileSetup() {
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </Background>
   );
 }
 
@@ -307,9 +310,9 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  progressRow: { flexDirection: "row", gap: 6, paddingHorizontal: spacing.xl, paddingTop: spacing.sm },
-  progressSeg: { flex: 1, height: 4, borderRadius: 2, backgroundColor: colors.input },
+  safe: { flex: 1, backgroundColor: "transparent" },
+  progressRow: { flexDirection: "row", gap: 6, paddingHorizontal: spacing.xl, paddingTop: spacing.md },
+  progressSeg: { flex: 1, height: 5, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.08)" },
   progressActive: { backgroundColor: colors.primary },
   content: { padding: spacing.xl, gap: spacing.lg, paddingBottom: spacing.xxl },
   stepLabel: { marginBottom: -spacing.sm },
@@ -328,7 +331,7 @@ const styles = StyleSheet.create({
   addTile: { borderWidth: 1, borderColor: colors.border, borderStyle: "dashed", alignItems: "center", justifyContent: "center", backgroundColor: colors.card },
   removePhoto: { position: "absolute", top: 4, right: 4, backgroundColor: "rgba(0,0,0,0.6)", borderRadius: 12, width: 24, height: 24, alignItems: "center", justifyContent: "center" },
   verifyIcon: { alignSelf: "center", width: 120, height: 120, borderRadius: 60, backgroundColor: "rgba(212,175,55,0.12)", alignItems: "center", justifyContent: "center", marginTop: spacing.xl },
-  footer: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: spacing.lg, gap: spacing.md, borderTopWidth: 1, borderTopColor: colors.border },
+  footer: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: spacing.lg, gap: spacing.md, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.06)", backgroundColor: "rgba(7,12,22,0.5)" },
   backBtn: { width: 60 },
   cta: { flex: 1 },
   waliActions: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: spacing.lg },

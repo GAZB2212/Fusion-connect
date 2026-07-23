@@ -6,6 +6,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { View, ActivityIndicator, StyleSheet } from "react-native";
 import { queryClient } from "@/api";
 import { AuthProvider, useAuth } from "@/auth";
+import { SendbirdProvider } from "@/sendbird";
 import { colors } from "@/theme";
 
 function RootNavigator() {
@@ -28,6 +29,7 @@ function RootNavigator() {
       <Stack.Screen name="(auth)" />
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="profile-setup" />
+      <Stack.Screen name="chat/[matchId]" />
       <Stack.Screen name="subscribe" options={{ presentation: "modal" }} />
       <Stack.Screen name="call/[callId]" options={{ presentation: "fullScreenModal" }} />
     </Stack>
@@ -40,8 +42,10 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
-            <StatusBar style="light" />
-            <RootNavigator />
+            <SendbirdProvider>
+              <StatusBar style="light" />
+              <RootNavigator />
+            </SendbirdProvider>
           </AuthProvider>
         </QueryClientProvider>
       </SafeAreaProvider>

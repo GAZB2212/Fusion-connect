@@ -3,6 +3,7 @@ import { View, StyleSheet, KeyboardAvoidingView, Platform, Pressable, Image } fr
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, Button, Input } from "@/components/ui";
+import { Background } from "@/components/Background";
 import { useAuth } from "@/auth";
 import { ApiError } from "@/api";
 import { colors, spacing } from "@/theme";
@@ -33,6 +34,7 @@ export default function Login() {
   };
 
   return (
+    <Background>
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -79,11 +81,12 @@ export default function Login() {
         </Pressable>
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </Background>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1, backgroundColor: "transparent" },
   flex: { flex: 1 },
   body: { flex: 1, justifyContent: "center", paddingHorizontal: spacing.xl },
   wordmark: { width: 200, height: 88, alignSelf: "center" },

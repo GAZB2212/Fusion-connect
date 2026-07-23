@@ -73,3 +73,39 @@ export const font = {
   semibold: "System",
   bold: "System",
 } as const;
+
+// Gradients for depth (used with expo-linear-gradient).
+export const gradients = {
+  // Screen backdrop: deep navy with subtle vertical falloff
+  screen: ["#101B2D", "#0A1220", "#070C16"] as [string, string, string],
+  // Gold sweep for premium buttons / accents
+  gold: ["#E7C765", "#D4AF37", "#B8942A"] as [string, string, string],
+  // Dark scrim over imagery so text stays legible
+  scrim: ["rgba(7,12,22,0)", "rgba(7,12,22,0.85)"] as [string, string],
+  // Card sheen
+  card: ["rgba(255,255,255,0.05)", "rgba(255,255,255,0.01)"] as [string, string],
+};
+
+// Elevation presets (iOS shadow). Gold glow for selected/premium elements.
+export const shadow = {
+  card: {
+    shadowColor: "#000",
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 6,
+  },
+  goldGlow: {
+    shadowColor: "#D4AF37",
+    shadowOpacity: 0.45,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
+} as const;
+
+export const gold = {
+  soft: "rgba(212,175,55,0.12)",
+  border: "rgba(212,175,55,0.35)",
+  faintBorder: "rgba(212,175,55,0.18)",
+} as const;
