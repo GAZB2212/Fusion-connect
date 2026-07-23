@@ -16,12 +16,20 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.gajocreative.fusion",
-      "buildNumber": "40",
+      "buildNumber": "41",
       "infoPlist": {
         "NSCameraUsageDescription": "Fusion needs camera access for face verification and video calls.",
         "NSMicrophoneUsageDescription": "Fusion needs microphone access for voice and video calls.",
         "NSPhotoLibraryUsageDescription": "Fusion needs photo access so you can add photos to your profile.",
-        "UIBackgroundModes": ["voip", "remote-notification", "audio"]
+        "UIBackgroundModes": [
+          "voip",
+          "remote-notification",
+          "audio",
+          "voip",
+          "remote-notification",
+          "audio"
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -34,13 +42,20 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-font"
+      "expo-font",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true
     },
     "extra": {
-      "apiUrl": "https://www.fusioncouples.co.uk"
+      "apiUrl": "https://www.fusioncouples.co.uk",
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "468e8d09-737d-464b-8b5a-95d629005ed7"
+      }
     }
   }
 }
