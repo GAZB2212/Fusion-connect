@@ -7,6 +7,11 @@
     "scheme": "fusion",
     "userInterfaceStyle": "dark",
     "icon": "./assets/icon.png",
+    "runtimeVersion": { "policy": "fingerprint" },
+    "updates": {
+      "url": "https://u.expo.dev/468e8d09-737d-464b-8b5a-95d629005ed7",
+      "fallbackToCacheTimeout": 0
+    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.gajocreative.fusion",
