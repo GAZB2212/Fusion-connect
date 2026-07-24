@@ -7,7 +7,7 @@
     "scheme": "fusion",
     "userInterfaceStyle": "dark",
     "icon": "./assets/icon.png",
-    "runtimeVersion": { "policy": "fingerprint" },
+    "runtimeVersion": { "policy": "appVersion" },
     "updates": {
       "url": "https://u.expo.dev/468e8d09-737d-464b-8b5a-95d629005ed7",
       "fallbackToCacheTimeout": 0
