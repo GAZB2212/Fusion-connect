@@ -10,6 +10,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Text, Button, Input } from "@/components/ui";
 import { ChipGroup } from "@/components/Chips";
 import { Background } from "@/components/Background";
+import { useAuth } from "@/auth";
 import { apiRequest, ApiError } from "@/api";
 import { PROMPTS } from "@/prompts";
 import { colors, spacing, radius, gold } from "@/theme";
@@ -24,7 +25,14 @@ const STEPS = ["About you", "Your faith", "Prompt", "Photos", "Wali", "Verify"];
 export default function ProfileSetup() {
   const router = useRouter();
   const qc = useQueryClient();
+  const { signOut } = useAuth();
   const [step, setStep] = useState(0);
+
+  const confirmLogout = () =>
+    Alert.alert("Log out", "Leave onboarding and sign out? Your progress here isn't saved.", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Log out", style: "destructive", onPress: signOut },
+    ]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -171,6 +179,15 @@ export default function ProfileSetup() {
   return (
     <Background>
     <SafeAreaView style={styles.safe}>
+      {/* Top bar: back-to-login escape */}
+      <View style={styles.topBar}>
+        <Text style={styles.setupBrand}>Set up your profile</Text>
+        <Pressable onPress={confirmLogout} hitSlop={10} style={styles.logoutBtn}>
+          <Ionicons name="log-out-outline" size={17} color={colors.mutedForeground} />
+          <Text style={styles.logoutText}>Log out</Text>
+        </Pressable>
+      </View>
+
       {/* Progress */}
       <View style={styles.progressRow}>
         {STEPS.map((_, i) => (
@@ -311,6 +328,16 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "transparent" },
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.sm,
+  },
+  setupBrand: { color: colors.foreground, fontSize: 15, fontWeight: "600" },
+  logoutBtn: { flexDirection: "row", alignItems: "center", gap: 4, paddingVertical: 4 },
+  logoutText: { color: colors.mutedForeground, fontSize: 14 },
   progressRow: { flexDirection: "row", gap: 6, paddingHorizontal: spacing.xl, paddingTop: spacing.md },
   progressSeg: { flex: 1, height: 5, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.08)" },
   progressActive: { backgroundColor: colors.primary },
