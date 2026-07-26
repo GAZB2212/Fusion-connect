@@ -181,7 +181,9 @@ export default function ProfileSetup() {
     <SafeAreaView style={styles.safe}>
       {/* Top bar: back-to-login escape */}
       <View style={styles.topBar}>
-        <Text style={styles.setupBrand}>Set up your profile</Text>
+        <Pressable onPress={() => router.push("/diagnostics")} hitSlop={10}>
+          <Text style={styles.setupBrand}>Set up your profile</Text>
+        </Pressable>
         <Pressable onPress={confirmLogout} hitSlop={10} style={styles.logoutBtn}>
           <Ionicons name="log-out-outline" size={17} color={colors.mutedForeground} />
           <Text style={styles.logoutText}>Log out</Text>

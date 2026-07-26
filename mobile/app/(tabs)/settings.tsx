@@ -126,6 +126,7 @@ export default function Settings() {
         </Section>
 
         <Section title="Account">
+          <Row icon="pulse-outline" label="Diagnostics" onPress={() => router.push("/diagnostics")} />
           <Row icon="log-out-outline" label="Sign out" onPress={signOut} />
           <Row icon="trash-outline" label="Delete account" destructive onPress={confirmDelete} last />
         </Section>

@@ -32,6 +32,7 @@ function RootNavigator() {
       <Stack.Screen name="profile-setup" />
       <Stack.Screen name="settings/edit-profile" />
       <Stack.Screen name="settings/blocked" />
+      <Stack.Screen name="diagnostics" />
       <Stack.Screen name="chat/[matchId]" />
       <Stack.Screen name="subscribe" options={{ presentation: "modal" }} />
       <Stack.Screen name="call/[callId]" options={{ presentation: "fullScreenModal" }} />
