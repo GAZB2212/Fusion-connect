@@ -7,6 +7,7 @@ import { GroupChannelHandler, GroupChannelListOrder } from "@sendbird/chat/group
 import type { GroupChannel } from "@sendbird/chat/groupChannel";
 import { Screen } from "@/components/Screen";
 import { Text } from "@/components/ui";
+import { TypingDots } from "@/components/TypingDots";
 import { useSendbird, getSendbird } from "@/sendbird";
 import { useAuth } from "@/auth";
 import { colors, spacing, radius } from "@/theme";
@@ -47,6 +48,8 @@ export default function Messages() {
 
   // Sendbird channels give us last message + unread per match (keyed by url = matchId).
   const [channelMap, setChannelMap] = useState<Map<string, GroupChannel>>(new Map());
+  // Channels (by url) where the other person is currently typing.
+  const [typingChannels, setTypingChannels] = useState<Set<string>>(new Set());
 
   const loadChannels = useCallback(async () => {
     if (!ready) return;
@@ -83,6 +86,15 @@ export default function Messages() {
     const handler = new GroupChannelHandler({
       onMessageReceived: () => loadChannels(),
       onChannelChanged: () => loadChannels(),
+      onTypingStatusUpdated: (ch) => {
+        const someoneElseTyping = ch.getTypingUsers().some((u) => u.userId !== user?.id);
+        setTypingChannels((prev) => {
+          const next = new Set(prev);
+          if (someoneElseTyping) next.add(ch.url);
+          else next.delete(ch.url);
+          return next;
+        });
+      },
     });
     sb.groupChannel.addGroupChannelHandler(LIST_HANDLER_ID, handler);
     return () => sb.groupChannel.removeGroupChannelHandler(LIST_HANDLER_ID);
@@ -157,9 +169,16 @@ export default function Messages() {
                     <Text style={styles.time}>{timeAgo(ch?.lastMessage?.createdAt)}</Text>
                   </View>
                   <View style={styles.rowBottom}>
-                    <Text style={[styles.preview, unread > 0 && styles.previewUnread]} numberOfLines={1}>
-                      {previewOf(ch)}
-                    </Text>
+                    {typingChannels.has(item.id) ? (
+                      <View style={styles.typingWrap}>
+                        <TypingDots />
+                        <Text style={styles.typingLabel}>typing…</Text>
+                      </View>
+                    ) : (
+                      <Text style={[styles.preview, unread > 0 && styles.previewUnread]} numberOfLines={1}>
+                        {previewOf(ch)}
+                      </Text>
+                    )}
                     {unread > 0 ? (
                       <View style={styles.badge}>
                         <Text style={styles.badgeText}>{unread > 99 ? "99+" : unread}</Text>
@@ -194,6 +213,8 @@ const styles = StyleSheet.create({
   rowBottom: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   preview: { flex: 1, fontSize: 14, color: colors.mutedForeground },
   previewUnread: { color: colors.foreground, fontWeight: "500" },
+  typingWrap: { flex: 1, flexDirection: "row", alignItems: "center", gap: spacing.sm },
+  typingLabel: { fontSize: 14, color: colors.primary, fontStyle: "italic" },
   badge: {
     minWidth: 22,
     height: 22,
