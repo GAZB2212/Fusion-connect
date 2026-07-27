@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { View, StyleSheet, FlatList, Image, Pressable, ActivityIndicator, RefreshControl } from "react-native";
 import { useRouter, useFocusEffect } from "expo-router";
+import { useQuery } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
 import { GroupChannelHandler, GroupChannelListOrder } from "@sendbird/chat/groupChannel";
 import type { GroupChannel } from "@sendbird/chat/groupChannel";
@@ -9,11 +10,12 @@ import { Text } from "@/components/ui";
 import { useSendbird, getSendbird } from "@/sendbird";
 import { useAuth } from "@/auth";
 import { colors, spacing, radius } from "@/theme";
+import type { MatchEntry, Profile } from "@/types";
 
 const LIST_HANDLER_ID = "fusion_channel_list_handler";
 
-function lastMessagePreview(ch: GroupChannel): string {
-  const m: any = ch.lastMessage;
+function previewOf(ch?: GroupChannel): string {
+  const m: any = ch?.lastMessage;
   if (!m) return "Say salaam 👋";
   if (m.isFileMessage?.()) return "📷 Photo";
   return m.message || "";
@@ -35,64 +37,76 @@ function timeAgo(ms?: number): string {
 export default function Messages() {
   const router = useRouter();
   const { user } = useAuth();
-  const { ready, error: connError, reconnect } = useSendbird();
-  const [channels, setChannels] = useState<GroupChannel[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const { ready } = useSendbird();
 
-  const load = useCallback(async () => {
+  // Conversations are the people you've MATCHED with — one row per match.
+  // Chaperones live inside each match's chat, never as their own conversation.
+  const { data: matches = [], isLoading: matchesLoading, refetch, isRefetching } = useQuery<MatchEntry[]>({
+    queryKey: ["/api/matches"],
+  });
+
+  // Sendbird channels give us last message + unread per match (keyed by url = matchId).
+  const [channelMap, setChannelMap] = useState<Map<string, GroupChannel>>(new Map());
+
+  const loadChannels = useCallback(async () => {
     if (!ready) return;
     try {
       const sb = getSendbird();
       const query = sb.groupChannel.createMyGroupChannelListQuery({
         includeEmpty: true,
-        limit: 50,
+        limit: 100,
         order: GroupChannelListOrder.LATEST_LAST_MESSAGE,
       });
       const list = await query.next();
-      setChannels(list);
+      const map = new Map<string, GroupChannel>();
+      for (const c of list) map.set(c.url, c);
+      setChannelMap(map);
     } catch {
-      // leave whatever we have
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+      // keep whatever we have
     }
   }, [ready]);
 
   useEffect(() => {
-    load();
-  }, [load]);
+    loadChannels();
+  }, [loadChannels]);
 
-  // Refresh when returning to the tab.
   useFocusEffect(
     useCallback(() => {
-      load();
-    }, [load])
+      refetch();
+      loadChannels();
+    }, [refetch, loadChannels])
   );
 
-  // Live-update the list on new messages / read status.
   useEffect(() => {
     if (!ready) return;
     const sb = getSendbird();
     const handler = new GroupChannelHandler({
-      onMessageReceived: () => load(),
-      onChannelChanged: () => load(),
+      onMessageReceived: () => loadChannels(),
+      onChannelChanged: () => loadChannels(),
     });
     sb.groupChannel.addGroupChannelHandler(LIST_HANDLER_ID, handler);
     return () => sb.groupChannel.removeGroupChannelHandler(LIST_HANDLER_ID);
-  }, [ready, load]);
+  }, [ready, loadChannels]);
 
-  const partnerOf = (ch: GroupChannel) => ch.members.find((m) => m.userId !== user?.id);
+  const partnerOf = (m: MatchEntry): Profile =>
+    m.user1Id === user?.id ? m.user2Profile : m.user1Profile;
 
-  const openChat = (ch: GroupChannel) => {
-    const p = partnerOf(ch);
+  // Sort matches by their latest message (active chats first).
+  const rows = [...matches].sort((a, b) => {
+    const ta = channelMap.get(a.id)?.lastMessage?.createdAt ?? 0;
+    const tb = channelMap.get(b.id)?.lastMessage?.createdAt ?? 0;
+    return tb - ta;
+  });
+
+  const openChat = (m: MatchEntry) => {
+    const p = partnerOf(m);
     router.push({
       pathname: "/chat/[matchId]",
-      params: { matchId: ch.url, name: p?.nickname || "Chat", photo: p?.profileUrl || "" },
+      params: { matchId: m.id, name: p.displayName, photo: p.photos?.[0] ?? "" },
     });
   };
 
-  if (loading && !ready && !connError) {
+  if (matchesLoading) {
     return (
       <Screen title="Messages" subtitle="Your conversations">
         <View style={styles.center}>
@@ -102,25 +116,12 @@ export default function Messages() {
     );
   }
 
-  if (connError) {
-    return (
-      <Screen title="Messages" subtitle="Your conversations">
-        <View style={styles.center}>
-          <Ionicons name="cloud-offline-outline" size={40} color={colors.mutedForeground} />
-          <Text variant="muted" style={{ marginTop: spacing.md, textAlign: "center" }}>
-            {connError}
-          </Text>
-          <Pressable onPress={reconnect} style={styles.retry}>
-            <Text style={{ color: colors.primary, fontWeight: "600" }}>Try again</Text>
-          </Pressable>
-        </View>
-      </Screen>
-    );
-  }
-
   return (
-    <Screen title="Messages" subtitle={channels.length ? `${channels.length} conversations` : "Your conversations"}>
-      {channels.length === 0 ? (
+    <Screen
+      title="Messages"
+      subtitle={rows.length ? `${rows.length} conversation${rows.length === 1 ? "" : "s"}` : "Your conversations"}
+    >
+      {rows.length === 0 ? (
         <View style={styles.center}>
           <Ionicons name="chatbubbles-outline" size={44} color={colors.mutedForeground} />
           <Text variant="muted" style={{ marginTop: spacing.md, textAlign: "center" }}>
@@ -129,26 +130,20 @@ export default function Messages() {
         </View>
       ) : (
         <FlatList
-          data={channels}
-          keyExtractor={(c) => c.url}
+          data={rows}
+          keyExtractor={(m) => m.id}
           contentContainerStyle={{ paddingVertical: spacing.sm }}
           refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => {
-                setRefreshing(true);
-                load();
-              }}
-              tintColor={colors.primary}
-            />
+            <RefreshControl refreshing={isRefetching} onRefresh={() => { refetch(); loadChannels(); }} tintColor={colors.primary} />
           }
           renderItem={({ item }) => {
             const p = partnerOf(item);
-            const unread = item.unreadMessageCount;
+            const ch = channelMap.get(item.id);
+            const unread = ch?.unreadMessageCount ?? 0;
             return (
               <Pressable style={styles.row} onPress={() => openChat(item)}>
-                {p?.profileUrl ? (
-                  <Image source={{ uri: p.profileUrl }} style={styles.avatar} />
+                {p.photos?.[0] ? (
+                  <Image source={{ uri: p.photos[0] }} style={styles.avatar} />
                 ) : (
                   <View style={[styles.avatar, styles.avatarPlaceholder]}>
                     <Ionicons name="person" size={26} color={colors.subtleForeground} />
@@ -157,16 +152,13 @@ export default function Messages() {
                 <View style={styles.rowInfo}>
                   <View style={styles.rowTop}>
                     <Text style={styles.name} numberOfLines={1}>
-                      {p?.nickname || "Match"}
+                      {p.displayName}
                     </Text>
-                    <Text style={styles.time}>{timeAgo(item.lastMessage?.createdAt)}</Text>
+                    <Text style={styles.time}>{timeAgo(ch?.lastMessage?.createdAt)}</Text>
                   </View>
                   <View style={styles.rowBottom}>
-                    <Text
-                      style={[styles.preview, unread > 0 && styles.previewUnread]}
-                      numberOfLines={1}
-                    >
-                      {lastMessagePreview(item)}
+                    <Text style={[styles.preview, unread > 0 && styles.previewUnread]} numberOfLines={1}>
+                      {previewOf(ch)}
                     </Text>
                     {unread > 0 ? (
                       <View style={styles.badge}>
@@ -186,8 +178,6 @@ export default function Messages() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center", padding: spacing.xl },
-  retry: { marginTop: spacing.lg, paddingVertical: spacing.sm, paddingHorizontal: spacing.xl },
-
   row: {
     flexDirection: "row",
     alignItems: "center",
