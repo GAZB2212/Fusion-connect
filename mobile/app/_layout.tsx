@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import * as SplashScreen from "expo-splash-screen";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -8,7 +10,11 @@ import { queryClient } from "@/api";
 import { AuthProvider, useAuth } from "@/auth";
 import { SendbirdProvider } from "@/sendbird";
 import { CallProvider } from "@/calls";
+import { AnimatedSplash } from "@/components/AnimatedSplash";
 import { colors } from "@/theme";
+
+// Hold the native splash so our animated splash can take over seamlessly.
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function RootNavigator() {
   const { loading } = useAuth();
@@ -42,6 +48,7 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
+  const [splashDone, setSplashDone] = useState(false);
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
@@ -51,6 +58,7 @@ export default function RootLayout() {
               <CallProvider>
                 <StatusBar style="light" />
                 <RootNavigator />
+                {!splashDone ? <AnimatedSplash onFinish={() => setSplashDone(true)} /> : null}
               </CallProvider>
             </SendbirdProvider>
           </AuthProvider>
