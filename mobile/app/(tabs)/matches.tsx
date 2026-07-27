@@ -45,13 +45,15 @@ export default function Matches() {
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={colors.primary} />}
           renderItem={({ item }) => {
             const p = otherProfile(item);
+            const openProfile = () =>
+              router.push({ pathname: "/match/[matchId]", params: { matchId: item.id } });
             const openChat = () =>
               router.push({
                 pathname: "/chat/[matchId]",
                 params: { matchId: item.id, name: p.displayName, photo: p.photos?.[0] ?? "" },
               });
             return (
-              <Pressable style={styles.card} onPress={openChat}>
+              <Pressable style={styles.card} onPress={openProfile}>
                 {p.photos?.[0] ? (
                   <Image source={{ uri: p.photos[0] }} style={styles.avatar} />
                 ) : (
