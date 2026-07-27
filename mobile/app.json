@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.gajocreative.fusion",
-      "buildNumber": "42",
+      "buildNumber": "50",
       "infoPlist": {
         "NSCameraUsageDescription": "Fusion needs camera access for face verification and video calls.",
         "NSMicrophoneUsageDescription": "Fusion needs microphone access for voice and video calls.",
