@@ -59,7 +59,8 @@ interface VoipResult {
 function postToApns(
   host: string,
   deviceToken: string,
-  payload: Record<string, unknown>
+  payload: Record<string, unknown>,
+  pushType: "voip" | "alert" = "voip"
 ): Promise<VoipResult> {
   return new Promise((resolve) => {
     const client = http2.connect(host);
@@ -72,8 +73,9 @@ function postToApns(
       ":method": "POST",
       ":path": `/3/device/${deviceToken}`,
       authorization: `bearer ${getAuthToken()}`,
-      "apns-topic": `${BUNDLE_ID}.voip`,
-      "apns-push-type": "voip",
+      // VoIP pushes use the ".voip" topic; alert pushes use the bare bundle id.
+      "apns-topic": pushType === "voip" ? `${BUNDLE_ID}.voip` : BUNDLE_ID,
+      "apns-push-type": pushType,
       "apns-priority": "10",
       "content-type": "application/json",
       "content-length": Buffer.byteLength(body),
@@ -146,10 +148,12 @@ export async function sendCallVoipPush(
           : [(t.environment === "sandbox" ? "sandbox" : envSetting) as keyof typeof APNS_HOSTS];
 
       for (const env of envs) {
-        const result = await postToApns(APNS_HOSTS[env], t.token, {
-          aps: {},
-          ...payload,
-        });
+        const result = await postToApns(
+          APNS_HOSTS[env],
+          t.token,
+          { aps: {}, ...payload },
+          "voip"
+        );
         if (result.success) {
           console.log(`[VoIP] Push delivered to user=${userId} env=${env}`);
           break;
@@ -158,6 +162,76 @@ export async function sendCallVoipPush(
           `[VoIP] Push failed user=${userId} env=${env} status=${result.status} reason=${result.reason}`
         );
         // A bad token should be deactivated so we stop trying it.
+        if (result.reason === "BadDeviceToken" || result.reason === "Unregistered") {
+          await db.update(pushTokens).set({ isActive: false }).where(eq(pushTokens.id, t.id));
+        }
+      }
+    })
+  );
+}
+
+/**
+ * Send a visible "Incoming call" alert notification (with Answer/Decline
+ * actions and a ringtone) to a user's standard APNs tokens. This is what makes
+ * the phone ring + show a notification when the app is backgrounded/closed.
+ * No-op until the APNS_* env vars are set.
+ */
+export async function sendCallAlertPush(
+  userId: string,
+  payload: {
+    callId: string;
+    callerName: string;
+    callType: "video" | "audio";
+    channel: string;
+    callerId: string;
+  }
+): Promise<void> {
+  if (!isVoipConfigured()) return;
+
+  const tokens = await db
+    .select()
+    .from(pushTokens)
+    .where(and(eq(pushTokens.userId, userId), eq(pushTokens.type, "apns"), eq(pushTokens.isActive, true)));
+
+  if (tokens.length === 0) return;
+
+  const envSetting = (process.env.APNS_ENVIRONMENT || "production").toLowerCase();
+
+  await Promise.all(
+    tokens.map(async (t) => {
+      const envs: Array<keyof typeof APNS_HOSTS> =
+        envSetting === "both"
+          ? ["production", "sandbox"]
+          : [(t.environment === "sandbox" ? "sandbox" : envSetting) as keyof typeof APNS_HOSTS];
+
+      for (const env of envs) {
+        const result = await postToApns(
+          APNS_HOSTS[env],
+          t.token,
+          {
+            aps: {
+              alert: {
+                title: "Incoming call",
+                body: `${payload.callerName} is calling you`,
+              },
+              sound: "default",
+              category: "incoming_call",
+              "content-available": 1,
+              "interruption-level": "time-sensitive",
+            },
+            // Custom fields at top level so the app can read them on tap.
+            type: "rtc_call_invite",
+            ...payload,
+          },
+          "alert"
+        );
+        if (result.success) {
+          console.log(`[CallAlert] Push delivered to user=${userId} env=${env}`);
+          break;
+        }
+        console.error(
+          `[CallAlert] Push failed user=${userId} env=${env} status=${result.status} reason=${result.reason}`
+        );
         if (result.reason === "BadDeviceToken" || result.reason === "Unregistered") {
           await db.update(pushTokens).set({ isActive: false }).where(eq(pushTokens.id, t.id));
         }

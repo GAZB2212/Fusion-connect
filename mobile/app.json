@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.gajocreative.fusion",
-      "buildNumber": "50",
+      "buildNumber": "51",
       "infoPlist": {
         "NSCameraUsageDescription": "Fusion needs camera access for face verification and video calls.",
         "NSMicrophoneUsageDescription": "Fusion needs microphone access for voice and video calls.",
@@ -37,6 +37,7 @@
       "expo-secure-store",
       "expo-font",
       "expo-asset",
+      "expo-notifications",
       [
         "expo-splash-screen",
         {

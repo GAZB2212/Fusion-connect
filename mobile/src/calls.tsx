@@ -10,8 +10,10 @@ import { View, StyleSheet, Image, Pressable, Vibration, AppState } from "react-n
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import * as Notifications from "expo-notifications";
 import { Text } from "./components/ui";
 import { apiRequest, getToken, getWebSocketUrl } from "./api";
+import { registerPushToken, setupCallNotificationCategory, extractCallData } from "./push";
 import { useAuth } from "./auth";
 import { colors, spacing, gold } from "./theme";
 
@@ -352,6 +354,66 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   const markConnected = useCallback(() => {
     setActiveCall((prev) => (prev ? { ...prev, phase: "connected" } : prev));
   }, []);
+
+  // Accept a call identified by a push payload (tapped notification).
+  const answerByCallId = useCallback(
+    async (data: {
+      callId?: string;
+      callType?: CallType;
+      callerId?: string;
+      callerName?: string;
+    }) => {
+      const callId = data.callId;
+      if (!callId || activeRef.current) return;
+      stopRinging();
+      try {
+        const creds = await apiRequest<{
+          channel: string;
+          rtcToken: string;
+          uid: number;
+          appId: string;
+          callType: CallType;
+          callerId: string;
+        }>("POST", "/api/call/accept", { callId });
+        setActiveCall({
+          callId,
+          channel: creds.channel,
+          callType: creds.callType || data.callType || "audio",
+          direction: "incoming",
+          phase: "connecting",
+          peerUserId: data.callerId || creds.callerId,
+          peerName: data.callerName || "Caller",
+          appId: creds.appId,
+          rtcToken: creds.rtcToken,
+          uid: creds.uid,
+        });
+        setIncomingCall(null);
+        router.push({ pathname: "/call/[callId]", params: { callId } });
+      } catch {
+        // Call likely already ended
+      }
+    },
+    [router, stopRinging]
+  );
+
+  // Register for push + handle taps/actions on incoming-call notifications.
+  useEffect(() => {
+    if (!user) return;
+    registerPushToken().catch(() => {});
+    setupCallNotificationCategory().catch(() => {});
+
+    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
+      const data = extractCallData(response.notification.request.content.data);
+      if (!data?.callId) return;
+      if (response.actionIdentifier === "DECLINE") {
+        apiRequest("POST", "/api/call/decline", { callId: data.callId }).catch(() => {});
+      } else {
+        answerByCallId(data);
+      }
+    });
+    return () => sub.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, answerByCallId]);
 
   return (
     <CallContext.Provider value={{ activeCall, startCall, endCall, markConnected }}>
