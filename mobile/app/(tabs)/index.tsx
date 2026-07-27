@@ -19,7 +19,7 @@ export default function Discover() {
   const [matched, setMatched] = useState<DiscoverProfile | null>(null);
   const position = useRef(new Animated.ValueXY()).current;
 
-  const { data: profiles = [], isLoading, refetch } = useQuery<DiscoverProfile[]>({
+  const { data: profiles = [], isLoading, isFetching, refetch } = useQuery<DiscoverProfile[]>({
     queryKey: ["/api/discover"],
   });
 
@@ -101,11 +101,22 @@ export default function Discover() {
           </View>
           <Text style={styles.emptyTitle}>No more profiles right now</Text>
           <Text variant="muted" style={styles.emptyText}>
-            Check back soon — new members join every day
+            You've seen everyone for now — check back soon as new members join
           </Text>
-          <Pressable style={styles.refreshBtn} onPress={() => { setIndex(0); refetch(); }}>
-            <Ionicons name="refresh" size={18} color={colors.primaryForeground} />
-            <Text style={styles.refreshText}>Refresh</Text>
+          <Pressable
+            style={[styles.refreshBtn, isFetching && styles.refreshBtnBusy]}
+            disabled={isFetching}
+            onPress={async () => {
+              await refetch();
+              setIndex(0);
+            }}
+          >
+            {isFetching ? (
+              <ActivityIndicator color={colors.primaryForeground} size="small" />
+            ) : (
+              <Ionicons name="refresh" size={18} color={colors.primaryForeground} />
+            )}
+            <Text style={styles.refreshText}>{isFetching ? "Checking…" : "Refresh"}</Text>
           </Pressable>
         </View>
       </Screen>
@@ -195,7 +206,9 @@ const styles = StyleSheet.create({
   refreshBtn: {
     flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: colors.primary,
     paddingHorizontal: spacing.xl, paddingVertical: spacing.md, borderRadius: radius.full,
+    minWidth: 140, justifyContent: "center",
   },
+  refreshBtnBusy: { opacity: 0.7 },
   refreshText: { color: colors.primaryForeground, fontWeight: "600" },
 
   deck: { flex: 1, paddingHorizontal: spacing.lg, paddingTop: spacing.sm },
