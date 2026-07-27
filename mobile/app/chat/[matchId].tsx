@@ -13,7 +13,7 @@ import {
   Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { GroupChannelHandler } from "@sendbird/chat/groupChannel";
 import type { GroupChannel } from "@sendbird/chat/groupChannel";
@@ -52,7 +52,20 @@ export default function Chat() {
   const photo = params.photo ? String(params.photo) : undefined;
 
   const { startCall } = useCall();
+  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
+
+  const placeCall = async (callType: "audio" | "video") => {
+    if (!partnerId) {
+      Alert.alert("Can't call yet", "Still connecting to this chat — try again in a moment.");
+      return;
+    }
+    try {
+      await startCall({ calleeUserId: partnerId, callType, name, photo });
+    } catch (e: any) {
+      Alert.alert("Call failed", e?.message || "Couldn't start the call. Please try again.");
+    }
+  };
   const [channel, setChannel] = useState<GroupChannel | null>(null);
   const [messages, setMessages] = useState<BaseMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -328,9 +341,7 @@ export default function Chat() {
           )}
         </View>
         <Pressable
-          onPress={() =>
-            partnerId && startCall({ calleeUserId: partnerId, callType: "audio", name, photo })
-          }
+          onPress={() => placeCall("audio")}
           disabled={!partnerId}
           hitSlop={8}
           style={[styles.callBtn, !partnerId && styles.callBtnDisabled]}
@@ -338,9 +349,7 @@ export default function Chat() {
           <Ionicons name="call" size={19} color={colors.primary} />
         </Pressable>
         <Pressable
-          onPress={() =>
-            partnerId && startCall({ calleeUserId: partnerId, callType: "video", name, photo })
-          }
+          onPress={() => placeCall("video")}
           disabled={!partnerId}
           hitSlop={8}
           style={[styles.callBtn, !partnerId && styles.callBtnDisabled]}
@@ -404,7 +413,7 @@ export default function Chat() {
             </View>
           ) : null}
 
-          <View style={styles.inputBar}>
+          <View style={[styles.inputBar, { paddingBottom: Math.max(insets.bottom, spacing.sm) }]}>
             <TextInput
               style={styles.input}
               placeholder="Message"

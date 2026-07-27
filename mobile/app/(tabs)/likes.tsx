@@ -12,7 +12,10 @@ export default function Likes() {
   const router = useRouter();
   const { isPremium: hasSub } = useSubscription();
 
-  const { data: likes = [], isLoading } = useQuery<LikeEntry[]>({ queryKey: ["/api/likes"] });
+  const { data, isLoading } = useQuery<{ likes: LikeEntry[]; count: number }>({
+    queryKey: ["/api/likes"],
+  });
+  const likes = data?.likes ?? [];
 
   if (isLoading) {
     return (
