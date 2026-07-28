@@ -252,9 +252,39 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     [clearIncoming]
   );
 
+  // Ask the server whether a call is ringing for me right now. Called when the
+  // app comes to the foreground — e.g. the callee tapped an "Incoming call"
+  // push that woke a closed app; the live signal was missed, but the ringing
+  // call is still on the server, so we surface the answer overlay here.
+  const checkPending = useCallback(async () => {
+    if (activeRef.current || incomingRef.current) return;
+    try {
+      const pending = await apiRequest<{
+        callId: string;
+        channel: string;
+        callType: CallType;
+        callerId: string;
+        callerName: string;
+      } | null>("GET", "/api/call/pending");
+      if (!pending?.callId) return;
+      if (activeRef.current || incomingRef.current) return;
+      setIncomingCall({
+        callId: pending.callId,
+        channel: pending.channel,
+        callType: pending.callType || "audio",
+        callerId: pending.callerId,
+        callerName: pending.callerName || "Someone",
+      });
+      Vibration.vibrate(INCOMING_VIBRATION, true);
+    } catch {
+      // ignore
+    }
+  }, []);
+
   useEffect(() => {
     if (user) {
       connect();
+      checkPending();
     } else {
       disconnect();
       setActiveCall(null);
@@ -264,16 +294,18 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id]);
 
-  // Reconnect the socket when the app returns to the foreground.
+  // When the app returns to the foreground: reconnect the socket AND ask the
+  // server whether a call is ringing (covers a closed app woken by a push).
   useEffect(() => {
     const sub = AppState.addEventListener("change", (state) => {
-      if (state === "active" && user && wsRef.current?.readyState !== WebSocket.OPEN) {
-        connect();
+      if (state === "active" && user) {
+        if (wsRef.current?.readyState !== WebSocket.OPEN) connect();
+        checkPending();
       }
     });
     return () => sub.remove();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, connect]);
+  }, [user?.id, connect, checkPending]);
 
   // Reliable call signaling over Sendbird. Our /ws is best-effort in production
   // (some hosts drop the upgrade), so we also carry every call signal as a

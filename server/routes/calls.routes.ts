@@ -532,10 +532,22 @@ export function registerCallRoutes(app: Express) {
 
       console.log(`[Call] Push summary: iOS=${iosPushSent} Android=${androidPushSent}`);
 
-      // Ring the callee. Primary transport is the Sendbird channel (reliable in
-      // production); the /ws WebSocket is a best-effort secondary.
+      // Ring the callee over the Sendbird channel — the same transport that
+      // reliably delivers chat + push. Sent as a real message so an offline /
+      // closed phone gets a home-screen "Incoming call" push; online members
+      // receive it in-app instantly. /ws is a best-effort instant secondary.
       const signalChannel = await findMatchChannel(callerUserId, calleeUserId);
-      await emitCallSignal(signalChannel, 'incoming_call', calleeUserId, 'incoming_call', pushData);
+      broadcastToUser(calleeUserId, { type: 'incoming_call', data: pushData });
+      if (signalChannel) {
+        const verb = callType === 'video' ? 'is video calling you' : 'is calling you';
+        await SendbirdService.sendCallRing(
+          signalChannel,
+          callerUserId,
+          calleeUserId,
+          pushData,
+          `📞 ${callerName} ${verb}`
+        );
+      }
 
       // VoIP push (Phase 2): wakes a fully-closed app to show the native
       // CallKit incoming-call screen. No-op until APNS_* env vars are set.
@@ -822,6 +834,54 @@ export function registerCallRoutes(app: Express) {
       });
     } catch (error: any) {
       console.error('[Call] Error getting call token:', error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // GET /api/call/pending - The call (if any) currently ringing for me as the
+  // callee. The app polls this when it comes to the foreground (e.g. after the
+  // user taps an "Incoming call" push) so the answer screen still appears even
+  // if the live signal was missed while the app was closed.
+  app.get("/api/call/pending", isAuthenticated, async (req: any, res: Response) => {
+    const userId = req.user.id;
+    try {
+      const [callSession] = await db
+        .select()
+        .from(callSessions)
+        .where(
+          and(
+            eq(callSessions.calleeUserId, userId),
+            eq(callSessions.status, 'ringing')
+          )
+        )
+        .orderBy(desc(callSessions.createdAt))
+        .limit(1);
+
+      if (!callSession || !callSession.createdAt) {
+        return res.json(null);
+      }
+
+      // Ignore stale rings past the ring window.
+      const age = Date.now() - new Date(callSession.createdAt).getTime();
+      if (age > RING_TIMEOUT_MS) {
+        return res.json(null);
+      }
+
+      const [callerProfile] = await db
+        .select()
+        .from(profiles)
+        .where(eq(profiles.userId, callSession.callerUserId))
+        .limit(1);
+
+      res.json({
+        callId: callSession.callId,
+        channel: callSession.channelName,
+        callType: callSession.callType,
+        callerId: callSession.callerUserId,
+        callerName: callerProfile?.displayName || 'Someone',
+      });
+    } catch (error: any) {
+      console.error('[Call] Error fetching pending call:', error);
       res.status(500).json({ message: error.message });
     }
   });

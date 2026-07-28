@@ -315,6 +315,54 @@ export class SendbirdService {
     }
   }
 
+  /**
+   * Ring a callee who may have the app closed. Sends a REAL user message
+   * (MESG) to the match channel — the same message type that already delivers
+   * reliable APNs pushes for chat — so an offline/closed phone gets a
+   * home-screen "Incoming call" notification. Online members receive it
+   * instantly in-app via onMessageReceived (and the client de-dupes by callId).
+   *
+   * custom_type 'call_signal' means the client hides it from the visible chat
+   * and routes it into the call handler. The push_message_template gives the
+   * notification its "X is calling you" wording.
+   */
+  static async sendCallRing(
+    channelUrl: string,
+    callerUserId: string,
+    to: string,
+    payload: Record<string, any>,
+    pushBody: string
+  ): Promise<void> {
+    if (!isConfigured) return;
+    try {
+      const response = await fetch(
+        `${baseUrl}/group_channels/${encodeURIComponent(channelUrl)}/messages`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Api-Token': apiToken!,
+          },
+          body: JSON.stringify({
+            message_type: 'MESG',
+            user_id: callerUserId,
+            message: pushBody,
+            custom_type: 'call_signal',
+            data: JSON.stringify({ signal: 'incoming_call', to, ...payload }),
+          }),
+        }
+      );
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        console.error('[Sendbird] call ring failed:', data);
+      } else {
+        console.log(`[Sendbird] Sent call ring to ${to} on ${channelUrl}`);
+      }
+    } catch (error) {
+      console.error('[Sendbird] Error sending call ring:', error);
+    }
+  }
+
   static async getChannel(channelUrl: string): Promise<any> {
     if (!isConfigured) {
       throw new Error('Sendbird not configured');
