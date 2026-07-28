@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { apiRequest, setToken, clearToken, getToken } from "./api";
-import { queryClient } from "./api";
+import { queryClient, prefetchCoreData } from "./api";
 
 export interface User {
   id: string;
@@ -35,6 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const me = await apiRequest<User>("GET", "/api/auth/user");
       setUser(me);
+      prefetchCoreData(); // warm the tabs while the splash plays
     } catch {
       // Token invalid/expired — clear it
       await clearToken();
@@ -55,6 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
     await setToken(res.token);
     setUser(res.user);
+    prefetchCoreData();
   }, []);
 
   const signUp = useCallback(

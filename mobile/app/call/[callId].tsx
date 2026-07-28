@@ -26,6 +26,7 @@ export default function CallScreen() {
   const [speaker, setSpeaker] = useState(true);
   const [videoOff, setVideoOff] = useState(false);
   const [elapsed, setElapsed] = useState(0);
+  const [joinError, setJoinError] = useState<string | null>(null);
 
   const isVideo = activeCall?.callType === "video";
   const phase = activeCall?.phase;
@@ -58,42 +59,50 @@ export default function CallScreen() {
     if (!activeCall?.appId || !activeCall?.rtcToken || joinedRef.current) return;
     joinedRef.current = true;
 
-    const engine = createAgoraRtcEngine();
-    engineRef.current = engine;
-    engine.initialize({ appId: activeCall.appId });
+    try {
+      const engine = createAgoraRtcEngine();
+      engineRef.current = engine;
+      engine.initialize({ appId: activeCall.appId });
 
-    const handler: IRtcEngineEventHandler = {
-      onJoinChannelSuccess: () => {
-        // local joined; wait for remote
-      },
-      onUserJoined: (_conn, uid) => {
-        setRemoteUid(uid);
-        markConnected();
-      },
-      onUserOffline: () => {
-        setRemoteUid(null);
-        endCall("ended");
-      },
-    };
-    engine.registerEventHandler(handler);
+      const handler: IRtcEngineEventHandler = {
+        onJoinChannelSuccess: () => {
+          // local joined; wait for remote
+        },
+        onUserJoined: (_conn, uid) => {
+          setRemoteUid(uid);
+          markConnected();
+        },
+        onUserOffline: () => {
+          setRemoteUid(null);
+          endCall("ended");
+        },
+        onError: (err, msg) => {
+          // Agora error codes: surface anything fatal (e.g. invalid token/appId).
+          if (msg) setJoinError(`Call error: ${msg}`);
+        },
+      };
+      engine.registerEventHandler(handler);
 
-    if (isVideo) {
-      engine.enableVideo();
-      engine.startPreview();
-    } else {
-      engine.disableVideo();
-      engine.enableAudio();
+      if (isVideo) {
+        engine.enableVideo();
+        engine.startPreview();
+      } else {
+        engine.disableVideo();
+        engine.enableAudio();
+      }
+      engine.setEnableSpeakerphone(true);
+
+      engine.joinChannel(activeCall.rtcToken, activeCall.channel, activeCall.uid ?? 0, {
+        channelProfile: ChannelProfileType.ChannelProfileCommunication,
+        clientRoleType: ClientRoleType.ClientRoleBroadcaster,
+        publishMicrophoneTrack: true,
+        publishCameraTrack: isVideo,
+        autoSubscribeAudio: true,
+        autoSubscribeVideo: isVideo,
+      });
+    } catch (e: any) {
+      setJoinError(e?.message || "Couldn't start the call engine");
     }
-    engine.setEnableSpeakerphone(true);
-
-    engine.joinChannel(activeCall.rtcToken, activeCall.channel, activeCall.uid ?? 0, {
-      channelProfile: ChannelProfileType.ChannelProfileCommunication,
-      clientRoleType: ClientRoleType.ClientRoleBroadcaster,
-      publishMicrophoneTrack: true,
-      publishCameraTrack: isVideo,
-      autoSubscribeAudio: true,
-      autoSubscribeVideo: isVideo,
-    });
 
     return () => teardown();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -134,10 +143,13 @@ export default function CallScreen() {
 
   const statusLabel = () => {
     if (!activeCall) return "";
+    if (joinError) return joinError;
     if (activeCall.phase === "ended") {
       if (activeCall.endReason === "declined") return "Call declined";
       if (activeCall.endReason === "missed") return "No answer";
-      return "Call ended";
+      if (activeCall.endReason === "ended") return "Call ended";
+      // Any other reason is an actual error message worth showing.
+      return activeCall.endReason || "Call ended";
     }
     if (activeCall.phase === "connected") return formatDuration(elapsed);
     if (activeCall.direction === "outgoing") return "Ringing…";

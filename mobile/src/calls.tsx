@@ -201,8 +201,13 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
                     }
                   : prev
               );
-            } catch {
-              endCall("token-failed");
+            } catch (e: any) {
+              // Surface the failure on the call screen instead of silently closing.
+              setActiveCall((prev) =>
+                prev && prev.callId === cur.callId
+                  ? { ...prev, phase: "ended", endReason: e?.message || "connect-failed" }
+                  : prev
+              );
             }
           })();
           break;

@@ -89,10 +89,31 @@ export const queryClient = new QueryClient({
     queries: {
       queryFn: async ({ queryKey }) => apiRequest("GET", queryKey[0] as string),
       retry: false,
-      staleTime: 30_000,
+      // Keep data "fresh" for 5 min so switching tabs shows instantly instead
+      // of re-fetching (and re-spinning) every time.
+      staleTime: 5 * 60_000,
+      // Keep it in memory for half an hour after it's unused.
+      gcTime: 30 * 60_000,
+      refetchOnReconnect: true,
     },
   },
 });
+
+// The main screens' data — prefetched right after login so tabs are already
+// warm by the time the user taps them (no first-open spinner).
+export const PREFETCH_PATHS = [
+  "/api/profile",
+  "/api/matches",
+  "/api/discover",
+  "/api/likes",
+  "/api/subscription-status",
+];
+
+export function prefetchCoreData(): void {
+  for (const path of PREFETCH_PATHS) {
+    queryClient.prefetchQuery({ queryKey: [path] }).catch(() => {});
+  }
+}
 
 export function getWebSocketUrl(path = "/ws", token?: string | null): string {
   const wsBase = API_URL.replace(/^http/, "ws");
