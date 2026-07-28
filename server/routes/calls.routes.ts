@@ -26,6 +26,46 @@ const { RtcTokenBuilder, RtcRole } = require("agora-token");
 const RING_TIMEOUT_MS = 30_000;
 
 /**
+ * Find the Sendbird channel (== match id) shared by two users, if any.
+ * Call signals are delivered over this channel because Sendbird's realtime
+ * transport is reliable in production where our raw /ws upgrade may be dropped.
+ */
+async function findMatchChannel(userA: string, userB: string): Promise<string | null> {
+  const [match] = await db
+    .select({ id: matches.id })
+    .from(matches)
+    .where(
+      or(
+        and(eq(matches.user1Id, userA), eq(matches.user2Id, userB)),
+        and(eq(matches.user1Id, userB), eq(matches.user2Id, userA))
+      )
+    )
+    .limit(1);
+  return match?.id ?? null;
+}
+
+/**
+ * Deliver a call signal to `to` over BOTH transports:
+ *  1. Sendbird channel message (primary — reliable realtime in production)
+ *  2. our /ws WebSocket (secondary — instant when it connects)
+ * The client de-dupes by callId, so receiving on both is harmless.
+ */
+async function emitCallSignal(
+  channelUrl: string | null,
+  signal: string,
+  to: string,
+  wsType: string,
+  data: Record<string, any>
+) {
+  broadcastToUser(to, { type: wsType, data });
+  if (channelUrl) {
+    SendbirdService.sendCallSignal(channelUrl, signal, to, data).catch((err) =>
+      console.error(`[Call] Sendbird signal '${signal}' failed:`, err)
+    );
+  }
+}
+
+/**
  * After the ring window, if the call is still 'ringing' (nobody accepted or
  * declined), mark it missed, stop the ring on both ends via WebSocket, and
  * post a "Missed call" note into the pair's chat.
@@ -48,24 +88,17 @@ function scheduleRingTimeout(callId: string, callerUserId: string, calleeUserId:
         .set({ status: 'missed', endedAt: new Date() })
         .where(eq(callSessions.callId, callId));
 
-      // Stop the ringing UI on both devices
-      broadcastToUser(calleeUserId, { type: 'call_cancelled', data: { callId, reason: 'missed' } });
-      broadcastToUser(callerUserId, { type: 'call_missed', data: { callId } });
+      // Stop the ringing UI on both devices (Sendbird primary + /ws secondary)
+      const timeoutChannel = await findMatchChannel(callerUserId, calleeUserId);
+      await emitCallSignal(timeoutChannel, 'call_cancelled', calleeUserId, 'call_cancelled', {
+        callId,
+        reason: 'missed',
+      });
+      await emitCallSignal(timeoutChannel, 'call_missed', callerUserId, 'call_missed', { callId });
 
       // Leave a note in the chat, if these two users have a match/channel
-      const [match] = await db
-        .select()
-        .from(matches)
-        .where(
-          or(
-            and(eq(matches.user1Id, callerUserId), eq(matches.user2Id, calleeUserId)),
-            and(eq(matches.user1Id, calleeUserId), eq(matches.user2Id, callerUserId))
-          )
-        )
-        .limit(1);
-
-      if (match) {
-        SendbirdService.sendSystemMessage(match.id, '📞 Missed call').catch(err => {
+      if (timeoutChannel) {
+        SendbirdService.sendSystemMessage(timeoutChannel, '📞 Missed call').catch(err => {
           console.error('[Call] Failed to post missed-call note:', err);
         });
       }
@@ -499,11 +532,10 @@ export function registerCallRoutes(app: Express) {
 
       console.log(`[Call] Push summary: iOS=${iosPushSent} Android=${androidPushSent}`);
 
-      // Also send via WebSocket if user is online
-      broadcastToUser(calleeUserId, {
-        type: 'incoming_call',
-        data: pushData,
-      });
+      // Ring the callee. Primary transport is the Sendbird channel (reliable in
+      // production); the /ws WebSocket is a best-effort secondary.
+      const signalChannel = await findMatchChannel(callerUserId, calleeUserId);
+      await emitCallSignal(signalChannel, 'incoming_call', calleeUserId, 'incoming_call', pushData);
 
       // VoIP push (Phase 2): wakes a fully-closed app to show the native
       // CallKit incoming-call screen. No-op until APNS_* env vars are set.
@@ -602,14 +634,12 @@ export function registerCallRoutes(app: Express) {
 
       console.log(`[Call] Generated RTC token for callee=${calleeUserId} channel=${callSession.channelName} uid=${uid}`);
 
-      // Notify caller that call was accepted via WebSocket
-      broadcastToUser(callSession.callerUserId, {
-        type: 'call_accepted',
-        data: {
-          callId,
-          channel: callSession.channelName,
-          calleeUserId,
-        },
+      // Notify caller that call was accepted (Sendbird primary + /ws secondary)
+      const acceptChannel = await findMatchChannel(callSession.callerUserId, calleeUserId);
+      await emitCallSignal(acceptChannel, 'call_accepted', callSession.callerUserId, 'call_accepted', {
+        callId,
+        channel: callSession.channelName,
+        calleeUserId,
       });
 
       res.json({
@@ -660,13 +690,11 @@ export function registerCallRoutes(app: Express) {
         .set({ status: 'declined', endedAt: new Date() })
         .where(eq(callSessions.callId, callId));
 
-      // Notify caller that call was declined via WebSocket
-      broadcastToUser(callSession.callerUserId, {
-        type: 'call_declined',
-        data: {
-          callId,
-          calleeUserId,
-        },
+      // Notify caller that call was declined (Sendbird primary + /ws secondary)
+      const declineChannel = await findMatchChannel(callSession.callerUserId, calleeUserId);
+      await emitCallSignal(declineChannel, 'call_declined', callSession.callerUserId, 'call_declined', {
+        callId,
+        calleeUserId,
       });
 
       res.json({ message: "Call declined" });
@@ -713,17 +741,15 @@ export function registerCallRoutes(app: Express) {
         .set({ status: 'ended', endedAt: new Date() })
         .where(eq(callSessions.callId, callId));
 
-      // Notify the other party via WebSocket
-      const otherUserId = userId === callSession.callerUserId 
-        ? callSession.calleeUserId 
+      // Notify the other party (Sendbird primary + /ws secondary)
+      const otherUserId = userId === callSession.callerUserId
+        ? callSession.calleeUserId
         : callSession.callerUserId;
-      
-      broadcastToUser(otherUserId, {
-        type: 'call_ended',
-        data: {
-          callId,
-          endedBy: userId,
-        },
+
+      const endChannel = await findMatchChannel(userId, otherUserId);
+      await emitCallSignal(endChannel, 'call_ended', otherUserId, 'call_ended', {
+        callId,
+        endedBy: userId,
       });
 
       res.json({ message: "Call ended" });

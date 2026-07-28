@@ -92,11 +92,13 @@ export default function Chat() {
   const myId = user?.id;
 
   // Merge messages, de-duping by stable key and keeping newest-first order.
+  // Call-signal control messages are invisible plumbing — never render them.
   const mergeMessages = useCallback((incoming: BaseMessage[]) => {
+    const visible = incoming.filter((m) => (m as any).customType !== "call_signal");
     setMessages((prev) => {
       const map = new Map<string, BaseMessage>();
       for (const m of prev) map.set(keyFor(m), m);
-      for (const m of incoming) map.set(keyFor(m), m);
+      for (const m of visible) map.set(keyFor(m), m);
       return Array.from(map.values()).sort(
         (a, b) => (b as any).createdAt - (a as any).createdAt
       );

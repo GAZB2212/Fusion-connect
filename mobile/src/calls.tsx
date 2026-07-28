@@ -11,7 +11,9 @@ import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import * as Notifications from "expo-notifications";
+import { GroupChannelHandler } from "@sendbird/chat/groupChannel";
 import { Text } from "./components/ui";
+import { getSendbird } from "./sendbird";
 import { apiRequest, getToken, getWebSocketUrl } from "./api";
 import { registerPushToken, setupCallNotificationCategory, extractCallData } from "./push";
 import { useAuth } from "./auth";
@@ -272,6 +274,44 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     return () => sub.remove();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, connect]);
+
+  // Reliable call signaling over Sendbird. Our /ws is best-effort in production
+  // (some hosts drop the upgrade), so we also carry every call signal as a
+  // silent Sendbird channel control-message — the same transport that makes
+  // chat reliable. The client de-dupes by callId, so double delivery is safe.
+  useEffect(() => {
+    if (!user) return;
+    const handlerId = "fusion_call_signal";
+    const handler = new GroupChannelHandler({
+      onMessageReceived: (_channel, message) => {
+        if ((message as any).customType !== "call_signal") return;
+        let payload: any;
+        try {
+          payload = JSON.parse((message as any).data || "{}");
+        } catch {
+          return;
+        }
+        if (!payload?.signal) return;
+        // The channel delivers to both members; only act on signals addressed
+        // to me (e.g. the caller must ignore the incoming_call it just sent).
+        if (payload.to && payload.to !== user.id) return;
+        handleSignal({ type: payload.signal, data: payload });
+      },
+    });
+    try {
+      getSendbird().groupChannel.addGroupChannelHandler(handlerId, handler);
+    } catch {
+      // Sendbird not initialised yet — the provider will connect shortly.
+    }
+    return () => {
+      try {
+        getSendbird().groupChannel.removeGroupChannelHandler(handlerId);
+      } catch {
+        // ignore
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, handleSignal]);
 
   // ---- Public actions ---------------------------------------------------
   const startCall = useCallback<CallContextValue["startCall"]>(

@@ -267,6 +267,54 @@ export class SendbirdService {
     }
   }
 
+  /**
+   * Deliver a real-time call signal (incoming_call, call_accepted, …) over the
+   * match's Sendbird channel. Sendbird's realtime delivery is proven reliable
+   * (it powers chat), so this is the primary transport for call signaling — our
+   * own /ws WebSocket is a best-effort secondary path that some production
+   * proxies drop.
+   *
+   * Sent as a SILENT admin message: it does NOT bump unread counts, alter the
+   * channel's last message, or fire a push. Online members still receive it
+   * instantly via the SDK's onMessageReceived, which is all we need. The client
+   * filters these out of the visible chat by custom_type.
+   */
+  static async sendCallSignal(
+    channelUrl: string,
+    signal: string,
+    to: string,
+    payload: Record<string, any> = {}
+  ): Promise<void> {
+    if (!isConfigured) return;
+    try {
+      const response = await fetch(
+        `${baseUrl}/group_channels/${encodeURIComponent(channelUrl)}/messages`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Api-Token': apiToken!,
+          },
+          body: JSON.stringify({
+            message_type: 'ADMM',
+            message: ' ',
+            custom_type: 'call_signal',
+            data: JSON.stringify({ signal, to, ...payload }),
+            is_silent: true,
+          }),
+        }
+      );
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        console.error(`[Sendbird] call signal '${signal}' failed:`, data);
+      } else {
+        console.log(`[Sendbird] Sent call signal '${signal}' to ${to} on ${channelUrl}`);
+      }
+    } catch (error) {
+      console.error('[Sendbird] Error sending call signal:', error);
+    }
+  }
+
   static async getChannel(channelUrl: string): Promise<any> {
     if (!isConfigured) {
       throw new Error('Sendbird not configured');
