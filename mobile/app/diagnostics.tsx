@@ -5,8 +5,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { Background } from "@/components/Background";
 import { Text } from "@/components/ui";
+import { useQuery } from "@tanstack/react-query";
 import { API_URL, apiRequest, getToken, ApiError } from "@/api";
 import { useAuth } from "@/auth";
+import type { MatchEntry, Profile } from "@/types";
 import { colors, spacing, radius } from "@/theme";
 
 type Check = { path: string; label: string };
@@ -75,9 +77,13 @@ export default function Diagnostics() {
         <ScrollView contentContainerStyle={styles.content}>
           <View style={styles.metaCard}>
             <Row k="Backend" v={API_URL} />
-            <Row k="Signed in" v={user ? `yes (${user.email})` : "no"} />
+            <Row k="Signed in" v={user ? user.email : "no"} />
+            <Row k="My user ID" v={user?.id || "—"} />
             <Row k="Auth token stored" v={hasToken == null ? "…" : hasToken ? "yes" : "no"} />
           </View>
+
+          <MatchesBreakdown myId={user?.id} />
+
 
           {running && results.length === 0 ? (
             <View style={styles.center}>
@@ -110,6 +116,26 @@ export default function Diagnostics() {
         </ScrollView>
       </SafeAreaView>
     </Background>
+  );
+}
+
+function MatchesBreakdown({ myId }: { myId?: string }) {
+  const { data: matches = [] } = useQuery<MatchEntry[]>({ queryKey: ["/api/matches"] });
+  if (!matches.length) return null;
+  return (
+    <View style={styles.metaCard}>
+      <Text style={styles.matchesTitle}>MY MATCHES (partner = who a call would ring)</Text>
+      {matches.map((m) => {
+        const partner: Profile = m.user1Id === myId ? m.user2Profile : m.user1Profile;
+        const partnerId = m.user1Id === myId ? m.user2Id : m.user1Id;
+        return (
+          <View key={m.id} style={styles.matchRow}>
+            <Text style={styles.matchName}>{partner?.displayName || "?"}</Text>
+            <Text style={styles.matchId}>partner id: {partnerId}</Text>
+          </View>
+        );
+      })}
+    </View>
   );
 }
 
@@ -157,6 +183,10 @@ const styles = StyleSheet.create({
     borderColor: colors.cardBorder,
     padding: spacing.md,
   },
+  matchesTitle: { color: colors.primary, fontSize: 12, fontWeight: "700", letterSpacing: 0.4 },
+  matchRow: { gap: 2 },
+  matchName: { color: colors.foreground, fontSize: 15, fontWeight: "600" },
+  matchId: { color: colors.mutedForeground, fontSize: 12 },
   checkLabel: { color: colors.foreground, fontSize: 15, fontWeight: "600" },
   checkStatus: { color: colors.mutedForeground, fontWeight: "400", fontSize: 13 },
   checkDetail: { color: colors.mutedForeground, fontSize: 12, marginTop: 2 },
