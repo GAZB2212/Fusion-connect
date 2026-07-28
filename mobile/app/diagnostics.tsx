@@ -8,6 +8,7 @@ import { Text } from "@/components/ui";
 import { useQuery } from "@tanstack/react-query";
 import { API_URL, apiRequest, getToken, ApiError } from "@/api";
 import { useAuth } from "@/auth";
+import { useCall } from "@/calls";
 import type { MatchEntry, Profile } from "@/types";
 import { colors, spacing, radius } from "@/theme";
 
@@ -27,6 +28,7 @@ type Result = { label: string; path: string; ok: boolean; status: number | strin
 export default function Diagnostics() {
   const router = useRouter();
   const { user } = useAuth();
+  const { wsConnected } = useCall();
   const [running, setRunning] = useState(false);
   const [hasToken, setHasToken] = useState<boolean | null>(null);
   const [results, setResults] = useState<Result[]>([]);
@@ -79,6 +81,7 @@ export default function Diagnostics() {
             <Row k="Backend" v={API_URL} />
             <Row k="Signed in" v={user ? user.email : "no"} />
             <Row k="My user ID" v={user?.id || "—"} />
+            <Row k="Realtime (calls)" v={wsConnected ? "✅ connected" : "❌ not connected"} />
             <Row k="Auth token stored" v={hasToken == null ? "…" : hasToken ? "yes" : "no"} />
           </View>
 

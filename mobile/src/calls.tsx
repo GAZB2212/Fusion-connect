@@ -55,6 +55,7 @@ interface CallContextValue {
   }) => Promise<void>;
   endCall: (reason?: string) => Promise<void>;
   markConnected: () => void;
+  wsConnected: boolean;
 }
 
 const CallContext = createContext<CallContextValue>({
@@ -62,6 +63,7 @@ const CallContext = createContext<CallContextValue>({
   startCall: async () => {},
   endCall: async () => {},
   markConnected: () => {},
+  wsConnected: false,
 });
 
 const INCOMING_VIBRATION = [0, 800, 1000] as number[];
@@ -71,6 +73,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [activeCall, setActiveCall] = useState<ActiveCall | null>(null);
   const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
+  const [wsConnected, setWsConnected] = useState(false);
 
   const wsRef = useRef<WebSocket | null>(null);
   const pingRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -101,6 +104,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       wsRef.current = ws;
 
       ws.onopen = () => {
+        setWsConnected(true);
         if (pingRef.current) clearInterval(pingRef.current);
         pingRef.current = setInterval(() => {
           try {
@@ -122,6 +126,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       };
 
       ws.onclose = () => {
+        setWsConnected(false);
         if (pingRef.current) clearInterval(pingRef.current);
         if (!closedRef.current) scheduleReconnect();
       };
@@ -421,7 +426,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   }, [user?.id, answerByCallId]);
 
   return (
-    <CallContext.Provider value={{ activeCall, startCall, endCall, markConnected }}>
+    <CallContext.Provider value={{ activeCall, startCall, endCall, markConnected, wsConnected }}>
       {children}
       {incomingCall ? (
         <IncomingCallOverlay
