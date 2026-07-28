@@ -18,7 +18,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { GroupChannelHandler } from "@sendbird/chat/groupChannel";
 import type { GroupChannel } from "@sendbird/chat/groupChannel";
 import type { BaseMessage } from "@sendbird/chat/message";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { MatchEntry } from "@/types";
 import { Background } from "@/components/Background";
 import { Text } from "@/components/ui";
 import { connectSendbird, getSendbird } from "@/sendbird";
@@ -55,13 +56,24 @@ export default function Chat() {
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
 
+  // The call partner is the OTHER real user in this match — derived from the
+  // match record, NOT the Sendbird channel members (which also include
+  // chaperones). Using a chaperone's id would 404 as "user not found".
+  const { data: allMatches = [] } = useQuery<MatchEntry[]>({ queryKey: ["/api/matches"] });
+  const thisMatch = allMatches.find((m) => m.id === matchId);
+  const callPartnerId = thisMatch
+    ? thisMatch.user1Id === user?.id
+      ? thisMatch.user2Id
+      : thisMatch.user1Id
+    : null;
+
   const placeCall = async (callType: "audio" | "video") => {
-    if (!partnerId) {
-      Alert.alert("Can't call yet", "Still connecting to this chat — try again in a moment.");
+    if (!callPartnerId) {
+      Alert.alert("Can't call yet", "Still loading this match — try again in a moment.");
       return;
     }
     try {
-      await startCall({ calleeUserId: partnerId, callType, name, photo });
+      await startCall({ calleeUserId: callPartnerId, callType, name, photo });
     } catch (e: any) {
       Alert.alert("Call failed", e?.message || "Couldn't start the call. Please try again.");
     }
@@ -342,17 +354,17 @@ export default function Chat() {
         </View>
         <Pressable
           onPress={() => placeCall("audio")}
-          disabled={!partnerId}
+          disabled={!callPartnerId}
           hitSlop={8}
-          style={[styles.callBtn, !partnerId && styles.callBtnDisabled]}
+          style={[styles.callBtn, !callPartnerId && styles.callBtnDisabled]}
         >
           <Ionicons name="call" size={19} color={colors.primary} />
         </Pressable>
         <Pressable
           onPress={() => placeCall("video")}
-          disabled={!partnerId}
+          disabled={!callPartnerId}
           hitSlop={8}
-          style={[styles.callBtn, !partnerId && styles.callBtnDisabled]}
+          style={[styles.callBtn, !callPartnerId && styles.callBtnDisabled]}
         >
           <Ionicons name="videocam" size={19} color={colors.primary} />
         </Pressable>
@@ -362,7 +374,7 @@ export default function Chat() {
       </View>
     ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [name, photo, partnerTyping, partnerId, startCall]
+    [name, photo, partnerTyping, callPartnerId]
   );
 
   return (

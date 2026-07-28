@@ -380,7 +380,7 @@ export function registerCallRoutes(app: Express) {
   
   // Rate limiting for call invites (simple in-memory)
   const callInviteRateLimits = new Map<string, { count: number; resetAt: number }>();
-  const CALL_RATE_LIMIT = 5; // Max 5 calls per minute
+  const CALL_RATE_LIMIT = 15; // Max 15 calls per minute
   const CALL_RATE_WINDOW = 60000; // 1 minute
 
   // POST /api/call/invite - Send call invitation to another user
