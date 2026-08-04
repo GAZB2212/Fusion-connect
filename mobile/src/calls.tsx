@@ -16,6 +16,19 @@ import { Text } from "./components/ui";
 import { getSendbird } from "./sendbird";
 import { apiRequest, getToken, getWebSocketUrl } from "./api";
 import { registerPushToken, setupCallNotificationCategory, extractCallData } from "./push";
+import {
+  callKitAvailable,
+  registerVoipPush,
+  onVoipToken,
+  onIncomingReported,
+  onAnswered as onCallKitAnswered,
+  onEnded as onCallKitEnded,
+  fulfillConnected,
+  failConnected,
+  endNativeCall,
+  nativeIdForServerCall,
+  type IncomingCallInfo,
+} from "./callkit";
 import { useAuth } from "./auth";
 import { colors, spacing, gold } from "./theme";
 
@@ -170,6 +183,9 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
 
       switch (type) {
         case "incoming_call": {
+          // On builds with native CallKit, the VoIP push drives the native
+          // incoming-call UI — don't also show our in-app overlay.
+          if (callKitAvailable) return;
           // Ignore if we're already in a call.
           if (activeRef.current || incomingRef.current) return;
           const d = data || {};
@@ -235,6 +251,11 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         }
         case "call_cancelled":
         case "call_missed": {
+          // Stop the native CallKit ring if the caller cancelled / it timed out.
+          if (callKitAvailable && data?.callId) {
+            const nid = nativeIdForServerCall(data.callId);
+            if (nid) endNativeCall(nid);
+          }
           // Incoming ring cancelled by caller / timeout.
           if (incomingRef.current && incomingRef.current.callId === data?.callId) {
             clearIncoming();
@@ -257,6 +278,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   // push that woke a closed app; the live signal was missed, but the ringing
   // call is still on the server, so we surface the answer overlay here.
   const checkPending = useCallback(async () => {
+    // With native CallKit, a missed ring is surfaced by the OS, not us.
+    if (callKitAvailable) return;
     if (activeRef.current || incomingRef.current) return;
     try {
       const pending = await apiRequest<{
@@ -496,6 +519,88 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     return () => sub.remove();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?.id, answerByCallId]);
+
+  // Answer a call the user accepted from the native CallKit UI: accept it on our
+  // backend, join, then tell CallKit the media is connected.
+  const answerViaCallKit = useCallback(
+    async (info: IncomingCallInfo & { nativeId: string; requestId: string }) => {
+      if (activeRef.current) {
+        fulfillConnected(info.requestId);
+        return;
+      }
+      try {
+        const creds = await apiRequest<{
+          channel: string;
+          rtcToken: string;
+          uid: number;
+          appId: string;
+          callType: CallType;
+          callerId: string;
+        }>("POST", "/api/call/accept", { callId: info.serverCallId });
+        setActiveCall({
+          callId: info.serverCallId,
+          channel: creds.channel,
+          callType: creds.callType || info.callType,
+          direction: "incoming",
+          phase: "connecting",
+          peerUserId: info.callerId || creds.callerId,
+          peerName: info.callerName || "Caller",
+          appId: creds.appId,
+          rtcToken: creds.rtcToken,
+          uid: creds.uid,
+        });
+        setIncomingCall(null);
+        router.push({ pathname: "/call/[callId]", params: { callId: info.serverCallId } });
+        fulfillConnected(info.requestId);
+      } catch {
+        // Accept failed (call gone/expired) — let CallKit tear the call down.
+        failConnected(info.nativeId, info.requestId);
+      }
+    },
+    [router]
+  );
+
+  // Native CallKit + VoIP push wiring (iOS builds that bundle the module).
+  useEffect(() => {
+    if (!user || !callKitAvailable) return;
+    registerVoipPush();
+
+    const tokenSub = onVoipToken((token) => {
+      apiRequest("POST", "/api/push/register", {
+        token,
+        type: "voip",
+        platform: "ios",
+        environment: "production",
+      }).catch(() => {});
+    });
+
+    // CallKit is showing the native incoming UI — ensure our overlay isn't too.
+    const reportedSub = onIncomingReported(() => setIncomingCall(null));
+
+    const answeredSub = onCallKitAnswered((info) => {
+      answerViaCallKit(info);
+    });
+
+    const endedSub = onCallKitEnded(({ serverCallId }) => {
+      if (!serverCallId) return;
+      const cur = activeRef.current;
+      if (cur && cur.callId === serverCallId) {
+        // Hung up an answered call.
+        endCall();
+      } else {
+        // Declined before answering.
+        apiRequest("POST", "/api/call/decline", { callId: serverCallId }).catch(() => {});
+      }
+    });
+
+    return () => {
+      tokenSub.remove();
+      reportedSub.remove();
+      answeredSub.remove();
+      endedSub.remove();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, answerViaCallKit]);
 
   return (
     <CallContext.Provider value={{ activeCall, startCall, endCall, markConnected, wsConnected }}>

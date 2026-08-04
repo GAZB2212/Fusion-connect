@@ -147,13 +147,20 @@ export async function sendCallVoipPush(
           ? ["production", "sandbox"]
           : [(t.environment === "sandbox" ? "sandbox" : envSetting) as keyof typeof APNS_HOSTS];
 
+      // expo-callkit-telecom parses this natively (before JS runs) and reports
+      // the call to CallKit. It requires the event nested under `incomingCall`.
+      const voipBody = {
+        incomingCall: {
+          eventId: payload.callId,
+          serverCallId: payload.callId,
+          hasVideo: payload.callType === "video",
+          caller: { id: payload.callerId, displayName: payload.callerName },
+          metadata: { channel: payload.channel, callType: payload.callType },
+        },
+      };
+
       for (const env of envs) {
-        const result = await postToApns(
-          APNS_HOSTS[env],
-          t.token,
-          { aps: {}, ...payload },
-          "voip"
-        );
+        const result = await postToApns(APNS_HOSTS[env], t.token, voipBody, "voip");
         if (result.success) {
           console.log(`[VoIP] Push delivered to user=${userId} env=${env}`);
           break;

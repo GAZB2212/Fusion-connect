@@ -2,7 +2,7 @@
   "expo": {
     "name": "Fusion",
     "slug": "fusion",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "scheme": "fusion",
     "platforms": ["ios", "android"],
@@ -16,7 +16,10 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.gajocreative.fusion",
-      "buildNumber": "51",
+      "buildNumber": "52",
+      "entitlements": {
+        "aps-environment": "production"
+      },
       "infoPlist": {
         "NSCameraUsageDescription": "Fusion needs camera access for face verification and video calls.",
         "NSMicrophoneUsageDescription": "Fusion needs microphone access for voice and video calls.",
@@ -38,6 +41,14 @@
       "expo-font",
       "expo-asset",
       "expo-notifications",
+      [
+        "expo-callkit-telecom",
+        {
+          "microphonePermission": "Fusion needs the microphone for voice and video calls.",
+          "incomingCallTimeout": 45,
+          "defaultRingtoneIos": "default"
+        }
+      ],
       [
         "expo-splash-screen",
         {
