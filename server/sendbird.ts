@@ -834,13 +834,13 @@ export class SendbirdService {
         })
       });
       
-      const responseData = await response.json();
-      
+      // Sendbird's push endpoint can return an empty body on success — parsing
+      // it blindly threw "Unexpected end of JSON input". Read text first.
+      const raw = await response.text();
+      const responseData = raw ? (() => { try { return JSON.parse(raw); } catch { return raw; } })() : null;
+
       if (!response.ok) {
         console.error('[Sendbird] Send push to user failed:', responseData);
-        
-        // Fallback: Try sending via admin message to a system channel or direct messaging
-        // For now, just log the failure
         return false;
       }
       

@@ -504,33 +504,10 @@ export function registerCallRoutes(app: Express) {
         callerName,
         callType,
       };
-      const pushTitle = 'Incoming call';
-      const pushBody = `${callerName} is calling you`;
-
-      // Send push notifications
-      let iosPushSent = 0;
-      let androidPushSent = 0;
-
-      for (const token of calleeTokens) {
-        try {
-          if (token.type === 'apns') {
-            // iOS: Send via Sendbird (since APNs is already working via Sendbird)
-            await SendbirdService.sendPushToUser(calleeUserId, pushTitle, pushBody, pushData);
-            iosPushSent++;
-            console.log(`[Call] Sent iOS push via Sendbird to user=${calleeUserId}`);
-          } else if (token.type === 'fcm') {
-            // Android: Send via FCM (requires Firebase Admin SDK)
-            // For now, also try sending via Sendbird as fallback
-            await SendbirdService.sendPushToUser(calleeUserId, pushTitle, pushBody, pushData);
-            androidPushSent++;
-            console.log(`[Call] Sent Android push via Sendbird to user=${calleeUserId}`);
-          }
-        } catch (pushError) {
-          console.error(`[Call] Failed to send push to token type=${token.type}:`, pushError);
-        }
-      }
-
-      console.log(`[Call] Push summary: iOS=${iosPushSent} Android=${androidPushSent}`);
+      // The callee is rung via the Sendbird channel below (sendCallRing) — a
+      // real message that Sendbird auto-pushes to an offline/closed phone. That
+      // supersedes the old per-token /users/{id}/push call, which returned an
+      // empty body and threw "Unexpected end of JSON input" on every call.
 
       // Ring the callee over the Sendbird channel — the same transport that
       // reliably delivers chat + push. Sent as a real message so an offline /

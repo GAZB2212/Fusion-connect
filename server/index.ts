@@ -88,12 +88,10 @@ app.use((req, res, next) => {
   setupWebSocket(server);
   log('WebSocket server initialized');
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
-
-    res.status(status).json({ message });
-    throw err;
+  // Lightweight liveness endpoint so the platform health probe on "/" always
+  // has a fast 200 to hit, independent of the SPA build.
+  app.get("/healthz", (_req, res) => {
+    res.status(200).json({ ok: true });
   });
 
   // importantly only setup vite in development and after
@@ -104,6 +102,18 @@ app.use((req, res, next) => {
   } else {
     serveStatic(app);
   }
+
+  // Error handler goes LAST, after all routes/static. Respond once and log —
+  // do NOT re-throw (re-throwing here crashed the process, killing every live
+  // WebSocket call connection).
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+    if (!res.headersSent) {
+      res.status(status).json({ message });
+    }
+    console.error("[express] unhandled error:", err);
+  });
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
   // Other ports are firewalled. Default to 5000 if not specified.
