@@ -69,7 +69,15 @@ export function registerProfileRoutes(app: Express) {
 
       res.json(profileWithAbsoluteUrls(profile));
     } catch (error: any) {
-      res.status(400).json({ message: error.message });
+      // Return a clean, human message — never the raw Zod error JSON (which
+      // surfaced in the app as a wall of "gobbledygook" code).
+      if (error?.name === "ZodError" && Array.isArray(error.issues)) {
+        const first = error.issues[0];
+        const field = first?.path?.join(".") || "a field";
+        return res.status(400).json({ message: first?.message || `Please check ${field}.` });
+      }
+      console.error("[Profile] Save error:", error);
+      res.status(400).json({ message: "Couldn't save your profile. Please try again." });
     }
   });
 

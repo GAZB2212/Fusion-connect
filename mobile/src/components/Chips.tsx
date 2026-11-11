@@ -39,8 +39,61 @@ export function ChipGroup({
   );
 }
 
+export function MultiChipGroup({
+  label,
+  hint,
+  options,
+  values,
+  onChange,
+  max,
+}: {
+  label: string;
+  hint?: string;
+  options: string[];
+  values: string[];
+  onChange: (v: string[]) => void;
+  max?: number;
+}) {
+  const toggle = (opt: string) => {
+    if (values.includes(opt)) {
+      onChange(values.filter((v) => v !== opt));
+    } else {
+      if (max && values.length >= max) return;
+      onChange([...values, opt]);
+    }
+  };
+  return (
+    <View style={styles.group}>
+      <View style={styles.labelRow}>
+        <Text style={styles.label}>{label.toUpperCase()}</Text>
+        {hint ? <Text style={styles.hint}>{hint}</Text> : null}
+      </View>
+      <View style={styles.chips}>
+        {options.map((opt) => {
+          const active = values.includes(opt);
+          return (
+            <Pressable
+              key={opt}
+              onPress={() => toggle(opt)}
+              style={({ pressed }) => [
+                styles.chip,
+                active && styles.chipActive,
+                active && shadow.goldGlow,
+                pressed && { opacity: 0.85 },
+              ]}
+            >
+              <Text style={[styles.chipText, active && styles.chipTextActive]}>{opt}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   group: { gap: spacing.md },
+  labelRow: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" },
   label: {
     color: colors.primary,
     fontWeight: "700",
@@ -48,6 +101,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     opacity: 0.9,
   },
+  hint: { color: colors.subtleForeground, fontSize: 12 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
   chip: {
     borderWidth: 1,
