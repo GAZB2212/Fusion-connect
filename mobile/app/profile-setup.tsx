@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   View, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Pressable, Image, ActivityIndicator, Alert,
 } from "react-native";
@@ -11,6 +11,7 @@ import { Text, Button, Input } from "@/components/ui";
 import { ChipGroup, MultiChipGroup } from "@/components/Chips";
 import { Background } from "@/components/Background";
 import { useAuth } from "@/auth";
+import { useProfile } from "@/useProfile";
 import { apiRequest, ApiError } from "@/api";
 import { PROMPTS } from "@/prompts";
 import { colors, spacing, radius } from "@/theme";
@@ -94,8 +95,32 @@ export default function ProfileSetup() {
       { text: "Log out", style: "destructive", onPress: signOut },
     ]);
 
+  // A member who already finished their profile but skipped selfie verification
+  // comes back here from Discover's "Verify now" — take them straight to the
+  // verification step instead of making them redo the whole profile.
+  const { data: existing } = useProfile();
+  const decided = useRef(false);
+  const resumedAtVerify = useRef(false);
+  useEffect(() => {
+    if (decided.current || existing === undefined) return;
+    decided.current = true;
+    if (existing?.isComplete) {
+      resumedAtVerify.current = true;
+      setPhotos(existing.photos ?? []);
+      setStep(STEPS.length - 1);
+    }
+  }, [existing]);
+
   const next = () => { setError(null); setStep((s) => Math.min(STEPS.length - 1, s + 1)); };
-  const back = () => { setError(null); setStep((s) => Math.max(0, s - 1)); };
+  const back = () => {
+    setError(null);
+    if (resumedAtVerify.current && step === STEPS.length - 1) {
+      if (router.canGoBack()) router.back();
+      else router.replace("/(tabs)");
+      return;
+    }
+    setStep((s) => Math.max(0, s - 1));
+  };
 
   // ---- photo upload ----
   const addPhoto = async () => {
@@ -179,6 +204,7 @@ export default function ProfileSetup() {
 
   // ---- verification ----
   const verify = async () => {
+    if (!photos[0]) { setError("Add a profile photo first so we can match your selfie to it."); return; }
     const perm = await ImagePicker.requestCameraPermissionsAsync();
     if (!perm.granted) { setError("Camera access is needed to verify"); return; }
     const res = await ImagePicker.launchCameraAsync({ cameraType: ImagePicker.CameraType.front, quality: 0.6, base64: true });

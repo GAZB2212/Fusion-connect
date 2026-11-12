@@ -10,12 +10,13 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Text } from "@/components/ui";
 import { useAuth } from "@/auth";
 import { useCall } from "@/calls";
+import { openSafetyMenu } from "@/safety";
 import { colors, spacing, radius, gradients, gold } from "@/theme";
 import type { MatchEntry, Profile } from "@/types";
 
@@ -26,6 +27,7 @@ export default function MatchProfile() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const { startCall } = useCall();
+  const queryClient = useQueryClient();
   const { matchId } = useLocalSearchParams<{ matchId: string }>();
   const [photoIndex, setPhotoIndex] = useState(0);
 
@@ -108,6 +110,23 @@ export default function MatchProfile() {
           <SafeAreaView style={styles.galleryTop} edges={["top"]}>
             <Pressable style={styles.backBtn} onPress={() => router.back()} hitSlop={10}>
               <Ionicons name="chevron-back" size={26} color="#fff" />
+            </Pressable>
+            <Pressable
+              style={styles.backBtn}
+              hitSlop={10}
+              accessibilityLabel="Report or block this member"
+              onPress={() =>
+                openSafetyMenu({
+                  userId: partnerUserId!,
+                  name: partner.displayName,
+                  onRemoved: () => {
+                    queryClient.invalidateQueries({ queryKey: ["/api/matches"] });
+                    router.back();
+                  },
+                })
+              }
+            >
+              <Ionicons name="ellipsis-horizontal" size={22} color="#fff" />
             </Pressable>
           </SafeAreaView>
 
@@ -200,7 +219,10 @@ const styles = StyleSheet.create({
   photo: { width, height: PHOTO_H, backgroundColor: colors.input },
   photoPlaceholder: { alignItems: "center", justifyContent: "center" },
   scrim: { position: "absolute", left: 0, right: 0, bottom: 0, height: 200 },
-  galleryTop: { position: "absolute", top: 0, left: 0, right: 0, paddingHorizontal: spacing.md },
+  galleryTop: {
+    position: "absolute", top: 0, left: 0, right: 0, paddingHorizontal: spacing.md,
+    flexDirection: "row", justifyContent: "space-between",
+  },
   backBtn: {
     width: 40,
     height: 40,

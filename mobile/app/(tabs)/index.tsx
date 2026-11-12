@@ -11,6 +11,7 @@ import { useProfile } from "@/useProfile";
 import { colors, spacing, radius } from "@/theme";
 import type { DiscoverProfile, SwipeResult } from "@/types";
 import { MatchModal } from "@/components/MatchModal";
+import { openSafetyMenu } from "@/safety";
 
 export default function Discover() {
   const qc = useQueryClient();
@@ -138,6 +139,24 @@ export default function Discover() {
             { transform: [{ translateX: position.x }, { rotate }] },
           ]}
         >
+          <Pressable
+            style={styles.safetyBtn}
+            hitSlop={10}
+            accessibilityLabel="Report or block this profile"
+            onPress={() =>
+              openSafetyMenu({
+                userId: current.userId,
+                name: current.displayName,
+                // Blocked/reported profiles leave the deck immediately.
+                onRemoved: () => {
+                  setIndex((i) => i + 1);
+                  qc.invalidateQueries({ queryKey: ["/api/matches"] });
+                },
+              })
+            }
+          >
+            <Ionicons name="ellipsis-horizontal" size={20} color="#fff" />
+          </Pressable>
           <ScrollView showsVerticalScrollIndicator={false}>
             {photo ? (
               <Image source={{ uri: photo }} style={styles.photo} />
@@ -215,6 +234,11 @@ const styles = StyleSheet.create({
   card: {
     flex: 1, borderRadius: radius.xl, backgroundColor: colors.card, overflow: "hidden",
     borderWidth: 1, borderColor: colors.cardBorder,
+  },
+  safetyBtn: {
+    position: "absolute", top: spacing.md, right: spacing.md, zIndex: 2,
+    width: 38, height: 38, borderRadius: 19, alignItems: "center", justifyContent: "center",
+    backgroundColor: "rgba(0,0,0,0.45)",
   },
   photo: { width: "100%", height: 440, backgroundColor: colors.input },
   photoPlaceholder: { alignItems: "center", justifyContent: "center" },

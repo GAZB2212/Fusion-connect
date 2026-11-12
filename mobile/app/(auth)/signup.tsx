@@ -16,6 +16,7 @@ import { AuthInput } from "@/components/AuthInput";
 import { Background } from "@/components/Background";
 import { useAuth } from "@/auth";
 import { ApiError } from "@/api";
+import { openPrivacy, openTerms } from "@/legal";
 import { colors, spacing } from "@/theme";
 
 export default function Signup() {
@@ -113,7 +114,10 @@ export default function Signup() {
             </View>
 
             <Text style={styles.legal}>
-              By continuing you agree to our Terms of Service and Privacy Policy.
+              By continuing you agree to our{" "}
+              <Text style={styles.legalLink} onPress={openTerms}>Terms of Service</Text> and{" "}
+              <Text style={styles.legalLink} onPress={openPrivacy}>Privacy Policy</Text>, and to treat
+              other members with respect. Abusive or inappropriate content isn't tolerated.
             </Text>
           </ScrollView>
 
@@ -166,6 +170,7 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     paddingHorizontal: spacing.lg,
   },
+  legalLink: { color: colors.primary, fontSize: 12, textDecorationLine: "underline" },
   footerWrap: { paddingVertical: spacing.lg },
   footer: { textAlign: "center", color: colors.mutedForeground, fontSize: 15 },
   footerAccent: { color: colors.primary, fontWeight: "700" },

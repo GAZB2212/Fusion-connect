@@ -8,9 +8,7 @@ import { useSubscription } from "@/useSubscription";
 import { apiRequest } from "@/api";
 import { colors, spacing, radius, gold } from "@/theme";
 
-const PRIVACY_URL = "https://www.fusioncouples.co.uk/privacy";
-const TERMS_URL = "https://www.fusioncouples.co.uk/terms";
-const SUPPORT_EMAIL = "support@fusioncouples.co.uk";
+import { PRIVACY_URL, TERMS_URL, SUPPORT_EMAIL } from "@/legal";
 
 export default function Settings() {
   const router = useRouter();

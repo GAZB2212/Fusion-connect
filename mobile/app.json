@@ -5,10 +5,15 @@
     "version": "1.1.0",
     "orientation": "portrait",
     "scheme": "fusion",
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "userInterfaceStyle": "dark",
     "icon": "./assets/icon.png",
-    "runtimeVersion": { "policy": "appVersion" },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "updates": {
       "url": "https://u.expo.dev/468e8d09-737d-464b-8b5a-95d629005ed7",
       "fallbackToCacheTimeout": 0
@@ -24,7 +29,10 @@
         "NSCameraUsageDescription": "Fusion needs camera access for face verification and video calls.",
         "NSMicrophoneUsageDescription": "Fusion needs microphone access for voice and video calls.",
         "NSPhotoLibraryUsageDescription": "Fusion needs photo access so you can add photos to your profile.",
-        "UIBackgroundModes": ["voip", "remote-notification", "audio"],
+        "UIBackgroundModes": [
+          "remote-notification",
+          "audio"
+        ],
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -41,14 +49,6 @@
       "expo-font",
       "expo-asset",
       "expo-notifications",
-      [
-        "expo-callkit-telecom",
-        {
-          "microphonePermission": "Fusion needs the microphone for voice and video calls.",
-          "incomingCallTimeout": 45,
-          "defaultRingtoneIos": "default"
-        }
-      ],
       [
         "expo-splash-screen",
         {

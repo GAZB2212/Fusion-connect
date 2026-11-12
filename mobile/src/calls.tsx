@@ -18,6 +18,7 @@ import { apiRequest, getToken, getWebSocketUrl } from "./api";
 import { registerPushToken, setupCallNotificationCategory, extractCallData } from "./push";
 import {
   callKitAvailable,
+  isHandledByCallKit,
   registerVoipPush,
   onVoipToken,
   onIncomingReported,
@@ -25,8 +26,7 @@ import {
   onEnded as onCallKitEnded,
   fulfillConnected,
   failConnected,
-  endNativeCall,
-  nativeIdForServerCall,
+  endNativeCallFor,
   type IncomingCallInfo,
 } from "./callkit";
 import { useAuth } from "./auth";
@@ -82,6 +82,9 @@ const CallContext = createContext<CallContextValue>({
 });
 
 const INCOMING_VIBRATION = [0, 800, 1000] as number[];
+// On CallKit builds, how long to give the native call UI to appear before the
+// in-app overlay steps in as the fallback ring.
+const CALLKIT_GRACE_MS = 2500;
 
 export function CallProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
@@ -99,6 +102,9 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
 
   activeRef.current = activeCall;
   incomingRef.current = incomingCall;
+  // Calls known to be over (cancelled / missed / ended / declined), so a ring
+  // that was waiting out the CallKit grace period never shows late.
+  const finishedCallIds = useRef<Set<string>>(new Set());
 
   const stopRinging = useCallback(() => Vibration.cancel(), []);
 
@@ -183,20 +189,29 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
 
       switch (type) {
         case "incoming_call": {
-          // On builds with native CallKit, the VoIP push drives the native
-          // incoming-call UI — don't also show our in-app overlay.
-          if (callKitAvailable) return;
-          // Ignore if we're already in a call.
-          if (activeRef.current || incomingRef.current) return;
           const d = data || {};
-          setIncomingCall({
-            callId: d.callId,
-            channel: d.channel,
-            callType: (d.callType as CallType) || "audio",
-            callerId: d.callerId,
-            callerName: d.callerName || "Someone",
-          });
-          Vibration.vibrate(INCOMING_VIBRATION, true);
+          if (!d.callId) return;
+          const ring = () => {
+            // Ignore if we're already in a call, the call is already over, or
+            // native CallKit is presenting it.
+            if (activeRef.current || incomingRef.current) return;
+            if (finishedCallIds.current.has(d.callId)) return;
+            if (isHandledByCallKit(d.callId)) return;
+            setIncomingCall({
+              callId: d.callId,
+              channel: d.channel,
+              callType: (d.callType as CallType) || "audio",
+              callerId: d.callerId,
+              callerName: d.callerName || "Someone",
+            });
+            Vibration.vibrate(INCOMING_VIBRATION, true);
+          };
+          // With native CallKit the VoIP push normally rings the phone. The
+          // in-app overlay stays as the fallback: if CallKit hasn't presented
+          // this call shortly after the signal arrives (VoIP push not set up,
+          // delayed or dropped), ring in-app instead of missing the call.
+          if (callKitAvailable) setTimeout(ring, CALLKIT_GRACE_MS);
+          else ring();
           break;
         }
         case "call_accepted": {
@@ -236,33 +251,33 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
           break;
         }
         case "call_declined": {
+          if (data?.callId) finishedCallIds.current.add(data.callId);
           const cur = activeRef.current;
           if (cur && cur.callId === data?.callId) {
             setActiveCall({ ...cur, phase: "ended", endReason: "declined" });
           }
           break;
         }
-        case "call_ended": {
-          const cur = activeRef.current;
-          if (cur && cur.callId === data?.callId) {
-            setActiveCall({ ...cur, phase: "ended", endReason: "ended" });
-          }
-          break;
-        }
+        case "call_ended":
         case "call_cancelled":
         case "call_missed": {
-          // Stop the native CallKit ring if the caller cancelled / it timed out.
-          if (callKitAvailable && data?.callId) {
-            const nid = nativeIdForServerCall(data.callId);
-            if (nid) endNativeCall(nid);
-          }
-          // Incoming ring cancelled by caller / timeout.
-          if (incomingRef.current && incomingRef.current.callId === data?.callId) {
+          if (!data?.callId) return;
+          finishedCallIds.current.add(data.callId);
+          // The other side hung up / cancelled / it timed out: stop every ring
+          // (native CallKit and the in-app overlay) and close an active call.
+          // `call_ended` also arrives while still ringing, when the caller
+          // hangs up before we answer.
+          endNativeCallFor(data.callId, "remote");
+          if (incomingRef.current && incomingRef.current.callId === data.callId) {
             clearIncoming();
           }
           const cur = activeRef.current;
-          if (cur && cur.callId === data?.callId) {
-            setActiveCall({ ...cur, phase: "ended", endReason: "missed" });
+          if (cur && cur.callId === data.callId) {
+            setActiveCall({
+              ...cur,
+              phase: "ended",
+              endReason: type === "call_ended" ? "ended" : "missed",
+            });
           }
           break;
         }
@@ -278,8 +293,6 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   // push that woke a closed app; the live signal was missed, but the ringing
   // call is still on the server, so we surface the answer overlay here.
   const checkPending = useCallback(async () => {
-    // With native CallKit, a missed ring is surfaced by the OS, not us.
-    if (callKitAvailable) return;
     if (activeRef.current || incomingRef.current) return;
     try {
       const pending = await apiRequest<{
@@ -291,6 +304,8 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       } | null>("GET", "/api/call/pending");
       if (!pending?.callId) return;
       if (activeRef.current || incomingRef.current) return;
+      if (finishedCallIds.current.has(pending.callId)) return;
+      if (isHandledByCallKit(pending.callId)) return;
       setIncomingCall({
         callId: pending.callId,
         channel: pending.channel,
@@ -433,6 +448,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
   const declineIncoming = useCallback(async () => {
     const inc = incomingRef.current;
     if (!inc) return;
+    finishedCallIds.current.add(inc.callId);
     clearIncoming();
     try {
       await apiRequest("POST", "/api/call/decline", { callId: inc.callId });
@@ -446,6 +462,9 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
     setActiveCall(null);
     stopRinging();
     if (!cur) return;
+    finishedCallIds.current.add(cur.callId);
+    // Close the native call UI too if this call was answered through CallKit.
+    endNativeCallFor(cur.callId, reason === "ended" || reason === "missed" ? "remote" : "local");
     // Only tell the server if the call wasn't already terminated remotely.
     if (reason !== "declined" && reason !== "ended" && reason !== "missed") {
       try {
@@ -554,7 +573,7 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
         fulfillConnected(info.requestId);
       } catch {
         // Accept failed (call gone/expired) — let CallKit tear the call down.
-        failConnected(info.nativeId, info.requestId);
+        failConnected(info.requestId);
       }
     },
     [router]
@@ -574,8 +593,11 @@ export function CallProvider({ children }: { children: React.ReactNode }) {
       }).catch(() => {});
     });
 
-    // CallKit is showing the native incoming UI — ensure our overlay isn't too.
-    const reportedSub = onIncomingReported(() => setIncomingCall(null));
+    // CallKit is presenting this call natively — stand the in-app overlay down
+    // if it got there first.
+    const reportedSub = onIncomingReported(({ serverCallId }) => {
+      if (incomingRef.current?.callId === serverCallId) clearIncoming();
+    });
 
     const answeredSub = onCallKitAnswered((info) => {
       answerViaCallKit(info);

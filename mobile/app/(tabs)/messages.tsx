@@ -18,6 +18,8 @@ const LIST_HANDLER_ID = "fusion_channel_list_handler";
 function previewOf(ch?: GroupChannel): string {
   const m: any = ch?.lastMessage;
   if (!m) return "Say salaam 👋";
+  // Call rings travel as channel messages; show them as a call, not raw text.
+  if (m.customType === "call_signal") return "📞 Call";
   if (m.isFileMessage?.()) return "📷 Photo";
   return m.message || "";
 }

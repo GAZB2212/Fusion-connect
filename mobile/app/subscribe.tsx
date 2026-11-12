@@ -9,6 +9,7 @@ import { Text, Button } from "@/components/ui";
 import { Background } from "@/components/Background";
 import { apiRequest } from "@/api";
 import { PREMIUM_PRODUCT_ID } from "@/useSubscription";
+import { openPrivacy, openTerms } from "@/legal";
 import { colors, spacing, radius, gold } from "@/theme";
 
 const BENEFITS = [
@@ -173,9 +174,16 @@ export default function Subscribe() {
           </Pressable>
 
           <Text variant="muted" style={styles.note}>
-            Billed monthly through your Apple ID. Renews automatically until cancelled in
-            Settings. Cancel anytime.
+            Fusion Premium is a monthly subscription at {priceLabel} per month, billed through
+            your Apple ID. It renews automatically unless cancelled at least 24 hours before the
+            end of the current period. Manage or cancel anytime in your App Store account
+            settings.
           </Text>
+          <View style={styles.legalRow}>
+            <Text style={styles.legalLink} onPress={openTerms}>Terms of Service</Text>
+            <Text variant="muted" style={styles.legalDot}>·</Text>
+            <Text style={styles.legalLink} onPress={openPrivacy}>Privacy Policy</Text>
+          </View>
         </ScrollView>
       </SafeAreaView>
     </Background>
@@ -229,5 +237,8 @@ const styles = StyleSheet.create({
   error: { color: colors.destructive, fontSize: 14, textAlign: "center" },
   cta: { width: "100%", marginTop: spacing.sm },
   restore: { color: colors.primary, fontWeight: "600", marginTop: spacing.md, fontSize: 15 },
+  legalRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: spacing.sm, marginTop: spacing.md },
+  legalLink: { color: colors.primary, fontSize: 13, textDecorationLine: "underline" },
+  legalDot: { fontSize: 13 },
   note: { textAlign: "center", fontSize: 12, marginTop: spacing.md, lineHeight: 17 },
 });

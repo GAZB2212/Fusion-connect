@@ -1,13 +1,13 @@
 import { Tabs, Redirect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { View, ActivityIndicator, StyleSheet } from "react-native";
+import { View, ActivityIndicator, StyleSheet, Pressable, Text } from "react-native";
 import { colors } from "@/theme";
 import { useAuth } from "@/auth";
-import { useProfile } from "@/useProfile";
+import { useProfile, isNoProfile } from "@/useProfile";
 
 export default function TabsLayout() {
   const { user } = useAuth();
-  const { data: profile, isLoading } = useProfile();
+  const { data: profile, isLoading, error, refetch, isFetching } = useProfile();
 
   // Protect the authenticated area
   if (!user) {
@@ -19,6 +19,25 @@ export default function TabsLayout() {
     return (
       <View style={styles.center}>
         <ActivityIndicator color={colors.primary} size="large" />
+      </View>
+    );
+  }
+
+  // Couldn't reach the server (offline / server error): offer a retry rather
+  // than mistaking an existing member for a new one.
+  if (!profile && profile !== null && !isNoProfile(error)) {
+    return (
+      <View style={styles.center}>
+        <Ionicons name="cloud-offline-outline" size={44} color={colors.mutedForeground} />
+        <Text style={styles.offlineTitle}>Can't reach Fusion</Text>
+        <Text style={styles.offlineText}>Check your connection and try again.</Text>
+        <Pressable style={styles.retryBtn} onPress={() => refetch()} disabled={isFetching}>
+          {isFetching ? (
+            <ActivityIndicator color={colors.primaryForeground} size="small" />
+          ) : (
+            <Text style={styles.retryText}>Try again</Text>
+          )}
+        </Pressable>
       </View>
     );
   }
@@ -80,5 +99,12 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.background, padding: 24 },
+  offlineTitle: { color: colors.foreground, fontSize: 20, fontWeight: "700", marginTop: 16 },
+  offlineText: { color: colors.mutedForeground, fontSize: 15, marginTop: 6, textAlign: "center" },
+  retryBtn: {
+    marginTop: 24, minWidth: 140, alignItems: "center", backgroundColor: colors.primary,
+    borderRadius: 9999, paddingHorizontal: 28, paddingVertical: 14,
+  },
+  retryText: { color: colors.primaryForeground, fontWeight: "600", fontSize: 16 },
 });
