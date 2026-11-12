@@ -8,6 +8,12 @@ import type { Readable } from 'stream';
  * Uses REPLIT_DOMAINS in production, falls back to localhost for development
  */
 export function getBaseUrl(): string {
+  // Host-agnostic: set PUBLIC_BASE_URL on any host (e.g.
+  // https://www.fusioncouples.co.uk). Replit vars kept as legacy fallbacks.
+  if (process.env.PUBLIC_BASE_URL) {
+    return process.env.PUBLIC_BASE_URL.replace(/\/$/, "");
+  }
+
   // Check for production domains
   if (process.env.REPLIT_DOMAINS) {
     const domains = process.env.REPLIT_DOMAINS.split(',');

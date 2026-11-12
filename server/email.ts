@@ -61,11 +61,14 @@ export async function sendPasswordResetEmail(to: string, resetToken: string, use
   const { client, fromEmail } = await getUncachableResendClient();
   console.log(`[Email] Using from email: ${fromEmail}`);
   
-  // Use production domain if available, otherwise dev domain
-  const domain = process.env.REPLIT_DOMAINS 
+  // Host-agnostic public URL (set PUBLIC_BASE_URL on any host); Replit vars are
+  // legacy fallbacks.
+  const domain = process.env.PUBLIC_BASE_URL
+    ? process.env.PUBLIC_BASE_URL.replace(/\/$/, "")
+    : process.env.REPLIT_DOMAINS
     ? 'https://' + process.env.REPLIT_DOMAINS.split(',')[0]
-    : process.env.REPLIT_DEV_DOMAIN 
-      ? 'https://' + process.env.REPLIT_DEV_DOMAIN 
+    : process.env.REPLIT_DEV_DOMAIN
+      ? 'https://' + process.env.REPLIT_DEV_DOMAIN
       : 'http://localhost:5000';
   const resetUrl = `${domain}/reset-password?token=${resetToken}`;
   console.log(`[Email] Reset URL: ${resetUrl}`);

@@ -1,0 +1,88 @@
+# Render blueprint for the Fusion backend.
+# Import this repo as a "Blueprint" in Render, OR create a Web Service manually
+# with: Runtime = Docker, Health Check Path = /healthz, Plan = Starter (NOT Free
+# — the free tier sleeps on idle, which breaks a live app and its WebSockets).
+#
+# The database (Neon) and media storage (R2) are external and do NOT move —
+# just point DATABASE_URL at the SAME Neon connection string the app uses today.
+#
+# Values marked `sync: false` are set once in the Render dashboard (Environment).
+services:
+  - type: web
+    name: fusion-backend
+    runtime: docker
+    plan: starter
+    region: frankfurt            # closest to UK users; change if preferred
+    healthCheckPath: /healthz
+    autoDeploy: true             # redeploy on push to the connected branch
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PUBLIC_BASE_URL
+        value: https://www.fusioncouples.co.uk
+
+      # --- Core (required) ---
+      - key: DATABASE_URL        # the SAME Neon URL used today (copy from Replit)
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+
+      # --- Chat (Sendbird) ---
+      - key: SENDBIRD_APP_ID
+        sync: false
+      - key: SENDBIRD_API_TOKEN
+        sync: false
+
+      # --- Calls (Agora) ---
+      - key: AGORA_APP_ID
+        sync: false
+      - key: AGORA_APP_CERTIFICATE
+        sync: false
+      - key: VITE_AGORA_APP_ID
+        sync: false
+
+      # --- Media storage (Cloudflare R2) ---
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        sync: false
+
+      # --- Email (Resend) ---
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        sync: false
+
+      # --- Face verification (AWS Rekognition) ---
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_REGION
+        sync: false
+
+      # --- Subscriptions (Apple IAP) ---
+      - key: APPLE_IAP_SHARED_SECRET
+        sync: false
+
+      # --- Push / closed-app calls (APNs) ---
+      - key: APNS_KEY_P8
+        sync: false
+      - key: APNS_KEY_ID
+        sync: false
+      - key: APNS_TEAM_ID
+        sync: false
+      - key: APNS_ENVIRONMENT
+        value: production
+
+      # --- Optional / feature-dependent ---
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false

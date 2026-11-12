@@ -1,0 +1,15 @@
+node_modules
+dist
+.git
+.github
+mobile
+ios
+attached_assets
+*.log
+.env
+.env.*
+.replit
+replit.nix
+npm-debug.log*
+.DS_Store
+coverage

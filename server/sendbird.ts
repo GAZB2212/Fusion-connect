@@ -7,6 +7,9 @@ const baseUrl = `https://api-${appId}.sendbird.com/v3`;
 // Get the site URL for converting relative URLs to absolute
 // Production uses the custom domain, otherwise use Replit URL
 const getSiteBaseUrl = (): string => {
+  if (process.env.PUBLIC_BASE_URL) {
+    return process.env.PUBLIC_BASE_URL.replace(/\/$/, "");
+  }
   if (process.env.NODE_ENV === 'production') {
     return 'https://www.fusioncouples.com';
   }
