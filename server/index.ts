@@ -94,6 +94,12 @@ app.use((req, res, next) => {
     res.status(200).json({ ok: true });
   });
 
+  // Unknown API routes get a JSON 404 instead of falling through to the SPA
+  // shell (which answered 200 text/html and confused API clients).
+  app.use("/api", (_req: Request, res: Response) => {
+    res.status(404).json({ message: "Not found" });
+  });
+
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes

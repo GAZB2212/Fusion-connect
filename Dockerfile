@@ -1,16 +1,11 @@
 # Fusion backend — host-agnostic container (Render, Railway, Fly.io, any Docker host).
 # Single stage: the server bundle statically imports vite.config at runtime, so
 # the "dev" dependencies (vite, plugins) must remain installed even in prod —
-# this mirrors how it ran on Replit. build tools are included for native deps
-# (bcrypt).
+# this mirrors how it ran on Replit. No compiler toolchain is needed: the only
+# native dependency (bcrypt) ships prebuilt glibc binaries.
 FROM node:20-bookworm-slim
 
 WORKDIR /app
-
-# Toolchain for native modules (e.g. bcrypt) to compile if no prebuilt binary.
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends python3 make g++ ca-certificates \
-  && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies (including dev — needed at build AND runtime here).
 COPY package*.json ./

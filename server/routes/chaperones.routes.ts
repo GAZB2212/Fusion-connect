@@ -1,5 +1,6 @@
 // Chaperone (Wali) management and portal access
 import type { Express, Request, Response } from "express";
+import { getBaseUrl } from "../r2";
 import { isAuthenticated } from "../auth";
 import { db } from "../db";
 import { SendbirdService } from "../sendbird";
@@ -89,11 +90,9 @@ export function registerChaperoneRoutes(app: Express) {
 
       // Send invitation email to the chaperone
       try {
-        const domain = process.env.REPLIT_DOMAINS 
-          ? 'https://' + process.env.REPLIT_DOMAINS.split(',')[0]
-          : process.env.REPLIT_DEV_DOMAIN 
-            ? 'https://' + process.env.REPLIT_DEV_DOMAIN 
-            : 'http://localhost:5000';
+        // Host-agnostic public URL (PUBLIC_BASE_URL), so the Wali's portal link
+        // is correct on any host — not just Replit.
+        const domain = getBaseUrl();
         const accessLink = `${domain}/chaperone?token=${accessToken}`;
         
         await sendChaperoneInvitationEmail(

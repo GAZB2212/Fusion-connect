@@ -10,6 +10,17 @@ import {
 import { eq } from "drizzle-orm";
 import { profileWithAbsoluteUrls } from "./helpers";
 
+// Member-facing names for profile fields, used in validation messages.
+const PROFILE_FIELD_LABELS: Record<string, string> = {
+  displayName: "your name",
+  age: "your age",
+  gender: "your gender",
+  location: "your location",
+  photos: "your photos",
+  bio: "your bio",
+  lookingFor: "what you're looking for",
+};
+
 export function registerProfileRoutes(app: Express) {
   // Profile endpoints
   app.get("/api/profile", isAuthenticated, async (req: any, res: Response) => {
@@ -73,8 +84,14 @@ export function registerProfileRoutes(app: Express) {
       // surfaced in the app as a wall of "gobbledygook" code).
       if (error?.name === "ZodError" && Array.isArray(error.issues)) {
         const first = error.issues[0];
-        const field = first?.path?.join(".") || "a field";
-        return res.status(400).json({ message: first?.message || `Please check ${field}.` });
+        const field = String(first?.path?.[0] ?? "");
+        const label = PROFILE_FIELD_LABELS[field] || field || "your details";
+        // Zod's built-in messages ("Required", "Expected number…") mean nothing
+        // to a member — name the field instead. Custom messages pass through.
+        const generic = !first?.message || /^(Required|Expected|Invalid)/.test(first.message);
+        return res.status(400).json({
+          message: generic ? `Please check ${label} and try again.` : first.message,
+        });
       }
       console.error("[Profile] Save error:", error);
       res.status(400).json({ message: "Couldn't save your profile. Please try again." });

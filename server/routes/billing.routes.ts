@@ -7,12 +7,16 @@ import { users, matches, earlySignups } from "@shared/schema";
 import { eq, and, or } from "drizzle-orm";
 import { requireDev } from "./helpers";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+// Stripe is optional: the mobile app bills through Apple IAP, so a missing
+// STRIPE_SECRET_KEY must not stop the server from booting. Card-payment routes
+// answer 503 when it is absent.
+const stripe: Stripe | null = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2025-09-30.clover" })
+  : null;
+if (!stripe) {
+  console.warn('[Stripe] STRIPE_SECRET_KEY not set — card payment routes disabled');
 }
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-09-30.clover",
-});
+const STRIPE_DISABLED = { message: "Card payments are not enabled" };
 
 export function registerBillingRoutes(app: Express) {
   // DEVELOPMENT: Activate premium without payment (always available for testing)
@@ -42,6 +46,7 @@ export function registerBillingRoutes(app: Express) {
 
   // Subscription endpoints - Using Checkout Sessions API (modern approach)
   app.post('/api/create-checkout-session', isAuthenticated, async (req: any, res: Response) => {
+    if (!stripe) return res.status(503).json(STRIPE_DISABLED);
     const userId = req.user.id;
     const { promoCode } = req.body;
 
@@ -187,8 +192,9 @@ export function registerBillingRoutes(app: Express) {
     // Check database subscription status first
     const hasActiveDbSubscription = user.subscriptionStatus === 'active' || user.subscriptionStatus === 'trialing';
 
-    // If no Stripe subscription ID, return database status
-    if (!user.stripeSubscriptionId) {
+    // No Stripe subscription (or Stripe disabled, or an Apple IAP subscriber):
+    // the database is the source of truth.
+    if (!user.stripeSubscriptionId || !stripe || user.subscriptionPlatform === 'apple') {
       return res.json({
         hasActiveSubscription: hasActiveDbSubscription,
         status: user.subscriptionStatus || 'none',
@@ -232,6 +238,7 @@ export function registerBillingRoutes(app: Express) {
 
   // Cancel subscription
   app.post('/api/cancel-subscription', isAuthenticated, async (req: any, res: Response) => {
+    if (!stripe) return res.status(503).json(STRIPE_DISABLED);
     const userId = req.user.id;
 
     const [user] = await db
@@ -270,6 +277,7 @@ export function registerBillingRoutes(app: Express) {
 
   // Create Stripe Customer Portal session for subscription management
   app.post('/api/create-portal-session', isAuthenticated, async (req: any, res: Response) => {
+    if (!stripe) return res.status(503).json(STRIPE_DISABLED);
     const userId = req.user.id;
 
     try {
@@ -315,6 +323,7 @@ export function registerBillingRoutes(app: Express) {
 
   // Stripe Webhook Handler - Handles subscription lifecycle events
   app.post('/api/webhook', async (req: Request, res: Response) => {
+    if (!stripe) return res.status(503).json(STRIPE_DISABLED);
     const sig = req.headers['stripe-signature'];
     
     if (!sig) {

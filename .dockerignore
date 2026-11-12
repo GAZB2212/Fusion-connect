@@ -4,7 +4,6 @@ dist
 .github
 mobile
 ios
-attached_assets
 *.log
 .env
 .env.*

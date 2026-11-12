@@ -67,6 +67,12 @@ function postToApns(
     client.on("error", (err) => {
       resolve({ success: false, reason: err.message });
     });
+    // Never let an unreachable APNs hang the call invite that awaits this.
+    const timer = setTimeout(() => {
+      resolve({ success: false, reason: "APNs timeout" });
+      client.destroy();
+    }, 5000);
+    client.on("close", () => clearTimeout(timer));
 
     const body = JSON.stringify(payload);
     const req = client.request({
@@ -114,8 +120,9 @@ function postToApns(
 
 /**
  * Send a VoIP push to every registered VoIP token for a user. Safe to call
- * unconditionally — returns immediately if VoIP isn't configured or the user
- * has no VoIP tokens.
+ * unconditionally. Resolves true only if APNs accepted the push for at least
+ * one device (so the caller knows native CallKit will ring), false if VoIP
+ * isn't configured, the user has no VoIP tokens, or every delivery failed.
  */
 export async function sendCallVoipPush(
   userId: string,
@@ -126,18 +133,19 @@ export async function sendCallVoipPush(
     channel: string;
     callerId: string;
   }
-): Promise<void> {
-  if (!isVoipConfigured()) return;
+): Promise<boolean> {
+  if (!isVoipConfigured()) return false;
 
   const tokens = await db
     .select()
     .from(pushTokens)
     .where(and(eq(pushTokens.userId, userId), eq(pushTokens.type, "voip"), eq(pushTokens.isActive, true)));
 
-  if (tokens.length === 0) return;
+  if (tokens.length === 0) return false;
 
   const envSetting = (process.env.APNS_ENVIRONMENT || "production").toLowerCase();
 
+  let delivered = false;
   await Promise.all(
     tokens.map(async (t) => {
       // Pick the host from the token's own environment, falling back to the
@@ -163,6 +171,7 @@ export async function sendCallVoipPush(
         const result = await postToApns(APNS_HOSTS[env], t.token, voipBody, "voip");
         if (result.success) {
           console.log(`[VoIP] Push delivered to user=${userId} env=${env}`);
+          delivered = true;
           break;
         }
         console.error(
@@ -175,6 +184,7 @@ export async function sendCallVoipPush(
       }
     })
   );
+  return delivered;
 }
 
 /**

@@ -1,12 +1,17 @@
 import Stripe from 'stripe';
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+// Lazily constructed so importing this module never throws when Stripe is
+// not configured (the mobile app bills through Apple IAP).
+let stripeClient: Stripe | null = null;
+function getStripe(): Stripe {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+  }
+  if (!stripeClient) {
+    stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2025-09-30.clover" });
+  }
+  return stripeClient;
 }
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-09-30.clover",
-});
 
 /**
  * Get or create the Fusion Premium subscription price
@@ -17,7 +22,7 @@ export async function getOrCreatePriceId(): Promise<string> {
   if (process.env.STRIPE_PRICE_ID) {
     try {
       // Verify the price still exists
-      await stripe.prices.retrieve(process.env.STRIPE_PRICE_ID);
+      await getStripe().prices.retrieve(process.env.STRIPE_PRICE_ID);
       return process.env.STRIPE_PRICE_ID;
     } catch (error) {
       console.log('Stored price ID not found, creating new one...');
@@ -25,7 +30,7 @@ export async function getOrCreatePriceId(): Promise<string> {
   }
 
   // Search for existing Fusion Premium product
-  const products = await stripe.products.search({
+  const products = await getStripe().products.search({
     query: "name:'Fusion Premium'",
   });
 
@@ -36,7 +41,7 @@ export async function getOrCreatePriceId(): Promise<string> {
     console.log('Found existing Fusion Premium product:', productId);
   } else {
     // Create new product
-    const product = await stripe.products.create({
+    const product = await getStripe().products.create({
       name: 'Fusion Premium',
       description: 'Premium subscription for Fusion - Luxury Muslim matchmaking platform',
     });
@@ -45,7 +50,7 @@ export async function getOrCreatePriceId(): Promise<string> {
   }
 
   // Search for existing price for this product
-  const prices = await stripe.prices.list({
+  const prices = await getStripe().prices.list({
     product: productId,
     active: true,
     type: 'recurring',
@@ -65,7 +70,7 @@ export async function getOrCreatePriceId(): Promise<string> {
   }
 
   // Create new price
-  const price = await stripe.prices.create({
+  const price = await getStripe().prices.create({
     product: productId,
     currency: 'gbp',
     unit_amount: 999, // £9.99 in pence

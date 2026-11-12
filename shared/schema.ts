@@ -480,7 +480,9 @@ export const insertProfileSchema = createInsertSchema(profiles, {
   gender: z.enum(["male", "female"]),
   location: z.string().min(2, "Location is required"),
   bio: z.string().max(500, "Bio must be 500 characters or less").optional(),
-  photos: z.array(z.string()).min(3, "Minimum 3 photos required").max(6, "Maximum 6 photos"),
+  // One clear photo is enough to join (it's what selfie verification matches
+  // against); the app encourages more. Keep in step with the onboarding UI.
+  photos: z.array(z.string()).min(1, "Please add at least one photo").max(6, "Maximum 6 photos"),
   lookingFor: z.enum(["Marriage", "Friendship", "Networking"]).optional(),
   sect: z.string().optional(),
   prayerFrequency: z.string().optional(),

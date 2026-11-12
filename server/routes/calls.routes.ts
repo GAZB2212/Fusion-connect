@@ -16,7 +16,7 @@ import {
 } from "@shared/schema";
 import { eq, and, or, desc } from "drizzle-orm";
 import { sendVideoCallNotification } from "../pushNotifications";
-import { sendCallVoipPush, sendCallAlertPush } from "../voipPush";
+import { sendCallVoipPush } from "../voipPush";
 import { createRequire } from "module";
 
 const require = createRequire(import.meta.url);
@@ -515,29 +515,38 @@ export function registerCallRoutes(app: Express) {
       // receive it in-app instantly. /ws is a best-effort instant secondary.
       const signalChannel = await findMatchChannel(callerUserId, calleeUserId);
       broadcastToUser(calleeUserId, { type: 'incoming_call', data: pushData });
-      if (signalChannel) {
-        const verb = callType === 'video' ? 'is video calling you' : 'is calling you';
-        await SendbirdService.sendCallRing(
-          signalChannel,
-          callerUserId,
-          calleeUserId,
-          pushData,
-          `📞 ${callerName} ${verb}`
-        );
-      }
 
-      // VoIP push (Phase 2): wakes a fully-closed app to show the native
-      // CallKit incoming-call screen. No-op until APNS_* env vars are set.
-      const voipPayload = {
+      // Exactly ONE "wake the phone" path per call, so the callee never gets
+      // stacked notifications for the same ring:
+      //  - APNs accepted a VoIP push -> native CallKit rings full-screen; the
+      //    in-app signal travels silently alongside it.
+      //  - otherwise -> ring with a real Sendbird message, which Sendbird
+      //    pushes to an offline/closed phone (the same pipe as chat pushes).
+      const voipDelivered = await sendCallVoipPush(calleeUserId, {
         callId,
         callerName,
         callType,
         channel: channelName,
         callerId: callerUserId,
-      };
-      sendCallVoipPush(calleeUserId, voipPayload).catch(err => console.error('[Call] VoIP push failed:', err));
-      // Visible "Incoming call" alert (rings + Answer/Decline) for backgrounded apps.
-      sendCallAlertPush(calleeUserId, voipPayload).catch(err => console.error('[Call] Alert push failed:', err));
+      }).catch((err) => {
+        console.error('[Call] VoIP push failed:', err);
+        return false;
+      });
+
+      if (signalChannel) {
+        if (voipDelivered) {
+          await SendbirdService.sendCallSignal(signalChannel, 'incoming_call', calleeUserId, pushData);
+        } else {
+          const verb = callType === 'video' ? 'is video calling you' : 'is calling you';
+          await SendbirdService.sendCallRing(
+            signalChannel,
+            callerUserId,
+            calleeUserId,
+            pushData,
+            `📞 ${callerName} ${verb}`
+          );
+        }
+      }
 
       // Ring timeout: if nobody answers within the window, mark the call
       // missed, stop the ring on both ends, and leave a note in the chat.
@@ -669,6 +678,13 @@ export function registerCallRoutes(app: Express) {
 
       if (!callSession) {
         return res.status(404).json({ message: "Call not found" });
+      }
+
+      // Only a ringing call can be declined. A late decline (e.g. the native
+      // call UI closing after the call already ended) must not rewrite history
+      // or tell the caller their finished call was "declined".
+      if (callSession.status !== 'ringing') {
+        return res.json({ message: `Call is already ${callSession.status}` });
       }
 
       console.log(`[Call] Declining call: callId=${callId} callee=${calleeUserId}`);
